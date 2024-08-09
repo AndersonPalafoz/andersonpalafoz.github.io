@@ -1,0 +1,231 @@
+/* Reseta alguns estilos padrão dos navegadores */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+/* Estilo do container */
+.container {
+    width: 80%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Cabeçalho */
+.header {
+    background-color: #e53935;
+    color: #fff;
+    padding: 15px 0;
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+}
+
+.header nav ul {
+    list-style: none;
+    padding: 10px;
+    text-align: center;
+}
+
+.header nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+.header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.header nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Banner */
+.banner {
+    background-image: url('images/banner.jpg'); /* Substitua pela imagem desejada */
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+    padding: 60px 0;
+    text-align: center;
+}
+
+.banner h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.banner p {
+    font-size: 1.2rem;
+}
+
+.banner .btn {
+    background: #e53935;
+    color: #fff;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.banner .btn:hover {
+    background: #d32f2f;
+}
+
+/* Seção Sobre */
+#about {
+    padding: 40px 0;
+}
+
+#about h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#about p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+#about img {
+    display: block;
+    max-width: 150px;
+    margin: 20px auto;
+    border-radius: 50%;
+}
+
+/* Seção de Cursos */
+#courses {
+    background-color: #f1f1f1;
+    padding: 40px 0;
+}
+
+#courses h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.course {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.course h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.course p {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.course .btn {
+    display: inline-block;
+    margin-top: 10px;
+}
+
+/* Seção de Depoimentos */
+#testimonials {
+    padding: 40px 0;
+}
+
+#testimonials h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.testimonial {
+    margin: 10px 0;
+    padding: 15px;
+    background-color: #fff;
+    border-left: 5px solid #e53935;
+}
+
+/* Seção de Contato */
+#contact {
+    background-color: #f1f1f1;
+    padding: 40px 0;
+}
+
+#contact h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.contact-form {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-form input,
+.contact-form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.contact-form input[type="submit"] {
+    background: #e53935;
+    color: white;
+    cursor: pointer;
+    border: none;
+}
+
+.contact-form input[type="submit"]:hover {
+    background: #d32f2f;
+}
+
+/* Rodapé */
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #e53935;
+    color: #fff;
+}
+
+.footer p {
+    font-size: 1rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .header nav ul {
+        display: block;
+        text-align: center;
+    }
+
+    .header nav ul li {
+        display: block;
+        margin: 10px 0;
+    }
+
+    .banner {
+        padding: 40px 0;
+    }
+
+    #about img {
+        max-width: 100px;
+    }
+}
