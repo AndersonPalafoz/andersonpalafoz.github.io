@@ -1,1 +1,0 @@
-# andersonpalafoz.github.io
