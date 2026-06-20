@@ -13,6 +13,11 @@ import Materials from "./pages/Materials";
 import Blog from "./pages/Blog";
 import Contact from "./pages/Contact";
 import DashboardCourses from "./pages/DashboardCourses";
+import DashboardActivities from "./pages/DashboardActivities";
+import DashboardLibrary from "./pages/DashboardLibrary";
+import DashboardCalendar from "./pages/DashboardCalendar";
+import DashboardCertificates from "./pages/DashboardCertificates";
+import DashboardProfile from "./pages/DashboardProfile";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -25,6 +30,11 @@ function Router() {
       <Route path={"/blog"} component={Blog} />
       <Route path={"/contact"} component={Contact} />
       <Route path={"/dashboard/courses"} component={DashboardCourses} />
+      <Route path={"/dashboard/activities"} component={DashboardActivities} />
+      <Route path={"/dashboard/library"} component={DashboardLibrary} />
+      <Route path={"/dashboard/calendar"} component={DashboardCalendar} />
+      <Route path={"/dashboard/certificates"} component={DashboardCertificates} />
+      <Route path={"/dashboard/profile"} component={DashboardProfile} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
