@@ -41,8 +41,8 @@
 - [ ] Configurar OAuth Google (preparar estrutura)
 - [ ] Implementar fluxo de login/logout
 - [ ] Criar sistema de roles: admin e student
-- [ ] Proteger rotas privadas
-- [ ] Implementar redirecionamento pós-login
+- [x] Proteger rotas privadas com hook useProtectedRoute
+- [x] Implementar redirecionamento pós-login em todas as páginas do dashboard
 
 ## Fase 5.5: Componentes e Utilitários
 
@@ -59,12 +59,12 @@
 - [x] Criar layout de dashboard com sidebar (280px)
 - [x] Implementar navegação lateral: Cursos, Atividades, Biblioteca, Calendário, Certificados, Perfil
 - [x] Criar página de Cursos com listagem em cards de progresso
-- [ ] Criar página de Atividades
-- [ ] Criar página de Atividades
-- [ ] Criar página de Biblioteca do aluno
-- [ ] Criar página de Calendário
-- [ ] Criar página de Certificados
-- [ ] Criar página de Perfil do aluno
+- [x] Criar página de Atividades
+- [x] Criar página de Biblioteca do aluno
+- [x] Criar página de Calendário
+- [x] Criar página de Certificados
+- [x] Criar página de Perfil do aluno
+- [x] Integrar todas as rotas do dashboard no App.tsx
 
 ## Fase 7: Sistema de Cursos
 

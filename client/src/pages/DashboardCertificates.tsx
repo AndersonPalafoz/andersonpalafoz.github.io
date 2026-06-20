@@ -3,8 +3,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Award, Download } from "lucide-react";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 
 export default function DashboardCertificates() {
+  const { loading } = useProtectedRoute();
+
+  if (loading) {
+    return (
+      <StudentDashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </StudentDashboardLayout>
+    );
+  }
   const certificates = [
     {
       id: 1,

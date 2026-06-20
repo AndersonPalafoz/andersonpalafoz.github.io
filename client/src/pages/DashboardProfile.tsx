@@ -6,8 +6,20 @@ import { Label } from "@/components/ui/label";
 import { User, Mail, Calendar } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 
 export default function DashboardProfile() {
+  const { loading } = useProtectedRoute();
+
+  if (loading) {
+    return (
+      <StudentDashboardLayout>
+        <div className="flex items-center justify-center h-96">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      </StudentDashboardLayout>
+    );
+  }
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
     name: "João Silva",
