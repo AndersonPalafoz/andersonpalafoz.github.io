@@ -1,16 +1,30 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import About from "./pages/About";
+import Courses from "./pages/Courses";
+import Materials from "./pages/Materials";
+import Blog from "./pages/Blog";
+import Contact from "./pages/Contact";
+import DashboardCourses from "./pages/DashboardCourses";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/about"} component={About} />
+      <Route path={"/courses"} component={Courses} />
+      <Route path={"/materials"} component={Materials} />
+      <Route path={"/blog"} component={Blog} />
+      <Route path={"/contact"} component={Contact} />
+      <Route path={"/dashboard/courses"} component={DashboardCourses} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -32,7 +46,11 @@ function App() {
       >
         <TooltipProvider>
           <Toaster />
-          <Router />
+          <Navbar />
+          <main className="pt-[72px] min-h-screen">
+            <Router />
+          </main>
+          <Footer />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

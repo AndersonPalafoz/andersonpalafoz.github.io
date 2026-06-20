@@ -16,6 +16,10 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-dark: var(--dark);
+  --color-light: var(--light);
+  --color-white: var(--white);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -43,83 +47,112 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
+  /* Anderson Palafoz Brand Colors - Light Mode */
+  --primary: #D62828;
+  --primary-foreground: #FFFFFF;
+  --primary-hover: #B91C1C;
+  --dark: #333333;
+  --light: #F3F4F6;
+  --white: #FFFFFF;
+  
+  /* Support Colors */
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --error: #DC2626;
+  --info: #2563EB;
+  
+  /* Sidebar Primary */
+  --sidebar-primary: #D62828;
+  --sidebar-primary-foreground: #FFFFFF;
+  
+  /* Chart Colors */
+  --chart-1: #D62828;
+  --chart-2: #B91C1C;
+  --chart-3: #7F1D1D;
+  --chart-4: #991B1B;
+  --chart-5: #DC2626;
+  
+  /* Radius */
+  --radius: 0.75rem;
+  
+  /* Light Mode Tokens */
+  --background: #FFFFFF;
+  --foreground: #333333;
+  --card: #F3F4F6;
+  --card-foreground: #333333;
+  --popover: #FFFFFF;
+  --popover-foreground: #333333;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #333333;
+  --muted: #E5E7EB;
+  --muted-foreground: #6B7280;
+  --accent: #D62828;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E7EB;
+  --input: #FFFFFF;
+  --ring: #D62828;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #333333;
+  --sidebar-accent: #F3F4F6;
+  --sidebar-accent-foreground: #D62828;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #D62828;
 }
 
 .dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  /* Dark Mode Tokens */
+  --primary: #D62828;
+  --primary-foreground: #FFFFFF;
+  --sidebar-primary: #D62828;
+  --sidebar-primary-foreground: #FFFFFF;
+  --chart-1: #D62828;
+  --chart-2: #B91C1C;
+  --chart-3: #7F1D1D;
+  --chart-4: #991B1B;
+  --chart-5: #DC2626;
+  
+  --background: #1F2937;
+  --foreground: #F3F4F6;
+  --card: #374151;
+  --card-foreground: #F3F4F6;
+  --popover: #374151;
+  --popover-foreground: #F3F4F6;
+  --secondary: #4B5563;
+  --secondary-foreground: #E5E7EB;
+  --muted: #6B7280;
+  --muted-foreground: #D1D5DB;
+  --accent: #D62828;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #4B5563;
+  --input: #374151;
+  --ring: #D62828;
+  --sidebar: #111827;
+  --sidebar-foreground: #F3F4F6;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #D62828;
+  --sidebar-border: #4B5563;
+  --sidebar-ring: #D62828;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Poppins', sans-serif;
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+  
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
   [type="button"]:not(:disabled),
@@ -173,5 +206,15 @@
       padding-right: 2rem;
       max-width: 1280px; /* Standard content width */
     }
+  }
+  
+  /* Navbar blur effect */
+  .navbar-blur {
+    @apply backdrop-blur-md bg-background/80;
+  }
+  
+  /* Skeleton loader base */
+  .skeleton {
+    @apply bg-muted animate-pulse rounded-md;
   }
 }
