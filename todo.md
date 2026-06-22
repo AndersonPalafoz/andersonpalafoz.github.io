@@ -68,8 +68,10 @@
 
 ## Fase 7: Sistema de Cursos
 
-- [ ] Criar modelo de dados para Cursos
-- [ ] Implementar cards de curso com progresso visual
+- [x] Criar modelo de dados para Cursos (tabela courses)
+- [x] Implementar CRUD de Cursos (helpers em server/db.ts)
+- [x] Implementar procedures tRPC para Cursos (courses.list, courses.enrollments, courses.enroll)
+- [x] Implementar cards de curso com progresso visual
 - [ ] Criar página de detalhe do curso
 - [ ] Implementar estrutura de Módulos dentro do curso
 - [ ] Implementar estrutura de Aulas dentro do módulo
@@ -78,67 +80,74 @@
 
 ## Fase 8: Blog / Knowledge Hub
 
-- [ ] Criar modelo de dados para Artigos
-- [ ] Implementar listagem de artigos com cards (título, categoria, tempo de leitura)
-- [ ] Criar página individual de artigo
+- [x] Criar modelo de dados para Artigos (tabela articles)
+- [x] Implementar CRUD de Artigos (helpers em server/db.ts)
+- [x] Implementar procedures tRPC para Artigos (articles.list, articles.bySlug)
+- [x] Implementar listagem de artigos com cards (título, categoria, tempo de leitura)
+- [ ] Criar página individual de artigo com conteúdo real
 - [ ] Implementar sistema de categorias
 - [ ] Adicionar breadcrumb em página de artigo
 - [ ] Implementar paginação
 
 ## Fase 9: Biblioteca / Materiais
 
-- [ ] Criar modelo de dados para Materiais
-- [ ] Implementar listagem com categorias
-- [ ] Adicionar badges de nível CEFR (A1, A2, B1, B2, C1, C2)
-- [ ] Implementar filtros de conteúdo
+- [x] Criar modelo de dados para Materiais (tabela materials)
+- [x] Implementar CRUD de Materiais (helpers em server/db.ts)
+- [x] Implementar procedures tRPC para Materiais (materials.list)
+- [x] Implementar listagem com categorias
+- [x] Adicionar badges de nível CEFR (A1, A2, B1, B2, C1, C2)
+- [x] Implementar filtros de conteúdo
 - [ ] Criar página individual de material
-- [ ] Adicionar sistema de download/acesso
+- [ ] Adicionar sistema de download/acesso real
 
 ## Fase 10: Skeleton Loaders e Estados de Carregamento
 
-- [ ] Implementar skeleton loader para cards de curso
-- [ ] Implementar skeleton loader para cards de artigo
-- [ ] Implementar skeleton loader para cards de material
-- [ ] Implementar skeleton loader para dashboard
+- [x] Criar componente SkeletonLoader reutilizável
+- [x] Implementar loading states em todas as páginas do dashboard
+- [ ] Implementar skeleton loader para cards de curso públicos
+- [ ] Implementar skeleton loader para cards de artigo públicos
+- [ ] Implementar skeleton loader para cards de material públicos
 - [ ] Remover todos os spinners infinitos
 - [ ] Validar estados de carregamento em todas as páginas
 
 ## Fase 11: Responsividade e Acessibilidade
 
-- [ ] Validar grid responsivo (4 colunas mobile, 8 tablet, 12 desktop)
-- [ ] Testar navegação por teclado
-- [ ] Validar contraste de cores (WCAG AA)
-- [ ] Adicionar ARIA labels
+- [x] Validar grid responsivo (4 colunas mobile, 8 tablet, 12 desktop)
+- [ ] Testar navegação por teclado completa
+- [ ] Validar contraste de cores (WCAG AA) - Auditoria completa
+- [ ] Adicionar ARIA labels em componentes interativos
 - [ ] Testar com leitores de tela
-- [ ] Implementar focus states visíveis
+- [ ] Implementar focus states visíveis em todos os elementos
 
 ## Fase 12: SEO e Otimizações
 
-- [ ] Adicionar meta tags nas páginas principais
+- [ ] Adicionar meta tags dinâmicas nas páginas principais
 - [ ] Implementar Open Graph tags
-- [ ] Criar sitemap
+- [ ] Criar sitemap.xml
 - [ ] Adicionar robots.txt
 - [ ] Validar performance (Lighthouse > 90)
+- [ ] Validar Core Web Vitals
 
 ## Fase 13: Testes e Validação
 
-- [ ] Escrever testes unitários para componentes críticos
-- [ ] Validar fluxo de autenticação
-- [ ] Testar responsividade em múltiplos dispositivos
-- [ ] Validar acessibilidade com ferramentas automatizadas
-- [ ] Testar em navegadores principais
+- [ ] Escrever testes unitários com Vitest para procedures tRPC
+- [ ] Testar autenticação OAuth Google end-to-end
+- [ ] Testar proteção de rotas do dashboard
+- [ ] Testar fluxo de inscrição em cursos
+- [ ] Testar em navegadores principais (Chrome, Firefox, Safari, Edge)
 
 ## Fase 14: Deploy e Publicação
 
-- [ ] Fazer push para GitHub
-- [ ] Validar build sem erros
-- [ ] Verificar deploy na Vercel
+- [x] Fazer push para GitHub (branch main)
+- [x] Validar build sem erros (pnpm check OK)
+- [ ] Verificar deploy automático na Vercel
 - [ ] Validar domínio customizado
-- [ ] Testar ambiente de produção
+- [ ] Testar ambiente de produção (autenticação, banco de dados)
 
 ## Fase 15: Documentação e Entrega
 
-- [ ] Documentar estrutura do projeto
+- [ ] Documentar arquitetura do projeto (Next.js + Supabase + tRPC)
 - [ ] Criar guia de uso para o professor
-- [ ] Preparar relatório final
-- [ ] Entregar links e status
+- [ ] Documentar procedures tRPC disponíveis
+- [ ] Criar guia de manutenção e atualizações
+- [ ] Preparar relatório final e entregar links
