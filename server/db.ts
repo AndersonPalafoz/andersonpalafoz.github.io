@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, courses, materials, articles, enrollments, certificates, activities } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,71 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Courses queries
+export async function getAllCourses() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(courses);
+}
+
+export async function getCourseById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(courses).where(eq(courses.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Materials queries
+export async function getAllMaterials() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(materials);
+}
+
+export async function getMaterialsByLevel(level: string) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(materials).where(eq(materials.level, level));
+}
+
+// Articles queries
+export async function getAllArticles() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(articles).orderBy(desc(articles.published || articles.createdAt));
+}
+
+export async function getArticleBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(articles).where(eq(articles.slug, slug)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Enrollments queries
+export async function getUserEnrollments(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(enrollments).where(eq(enrollments.userId, userId));
+}
+
+export async function enrollUserInCourse(userId: number, courseId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.insert(enrollments).values({ userId, courseId });
+  return result;
+}
+
+// Certificates queries
+export async function getUserCertificates(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(certificates).where(eq(certificates.userId, userId));
+}
+
+// Activities queries
+export async function getCourseActivities(courseId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(activities).where(eq(activities.courseId, courseId));
+}
