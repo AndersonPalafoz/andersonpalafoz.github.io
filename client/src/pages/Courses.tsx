@@ -1,194 +1,141 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { CEFR_LEVELS } from "@/constants";
 import { BookOpen, Users, Clock } from "lucide-react";
+import { useState, useMemo } from "react";
+import { trpc } from "@/lib/trpc";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Courses() {
-  const courses = [
-    {
-      id: 1,
-      title: "English Basics",
-      level: "A1",
-      description: "Fundamentos essenciais do inglês para iniciantes completos",
-      modules: 8,
-      lessons: 32,
-      duration: "8 semanas",
-      students: 245,
-      progress: 0,
-    },
-    {
-      id: 2,
-      title: "Elementary English",
-      level: "A2",
-      description: "Desenvolvimento de vocabulário e estruturas básicas",
-      modules: 10,
-      lessons: 40,
-      duration: "10 semanas",
-      students: 189,
-      progress: 0,
-    },
-    {
-      id: 3,
-      title: "Intermediate Communication",
-      level: "B1",
-      description: "Fluência conversacional e compreensão de textos",
-      modules: 12,
-      lessons: 48,
-      duration: "12 semanas",
-      students: 156,
-      progress: 0,
-    },
-    {
-      id: 4,
-      title: "Upper Intermediate",
-      level: "B2",
-      description: "Confiança em situações complexas e nuances da língua",
-      modules: 12,
-      lessons: 50,
-      duration: "12 semanas",
-      students: 98,
-      progress: 0,
-    },
-    {
-      id: 5,
-      title: "Advanced English",
-      level: "C1",
-      description: "Domínio avançado e expressão sofisticada",
-      modules: 10,
-      lessons: 45,
-      duration: "10 semanas",
-      students: 67,
-      progress: 0,
-    },
-    {
-      id: 6,
-      title: "Mastery English",
-      level: "C2",
-      description: "Proficiência máxima e especialização temática",
-      modules: 8,
-      lessons: 40,
-      duration: "8 semanas",
-      students: 42,
-      progress: 0,
-    },
-  ];
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
+  const { data: courses, isLoading, error } = trpc.courses.list.useQuery();
 
-  return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-light to-background">
-        <div className="container">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-              Nossos Cursos
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Cursos estruturados conforme o framework CEFR, do iniciante ao avançado
-            </p>
+  const filteredCourses = useMemo(() => {
+    if (!courses) return [];
+    if (!selectedLevel) return courses;
+    return courses.filter(c => c.level === selectedLevel);
+  }, [courses, selectedLevel]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Cursos Disponíveis</h1>
+          <p className="text-muted-foreground mb-8">Aprenda inglês com cursos estruturados por nível CEFR</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i}>
+                <CardHeader>
+                  <Skeleton className="h-6 w-20 mb-2" />
+                  <Skeleton className="h-8 w-full mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-3/4" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
-      </section>
+      </div>
+    );
+  }
 
-      {/* Courses Section */}
-      <section className="py-16 md:py-24 bg-background">
-        <div className="container">
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Cursos Disponíveis</h1>
+          <p className="text-red-500">Erro ao carregar cursos. Tente novamente mais tarde.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold mb-2 text-foreground">Cursos Disponíveis</h1>
+          <p className="text-muted-foreground">Aprenda inglês com cursos estruturados por nível CEFR (A1 a C2)</p>
+        </div>
+
+        {/* Level Filter */}
+        <div className="mb-8">
+          <h3 className="font-semibold mb-3 text-foreground">Filtrar por Nível CEFR</h3>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedLevel === null ? "default" : "outline"}
+              onClick={() => setSelectedLevel(null)}
+              size="sm"
+            >
+              Todos
+            </Button>
+            {CEFR_LEVELS.map((level) => (
+              <Button
+                key={level}
+                variant={selectedLevel === level ? "default" : "outline"}
+                onClick={() => setSelectedLevel(level)}
+                size="sm"
+              >
+                {level}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Results Count */}
+        <div className="mb-6">
+          <p className="text-sm text-muted-foreground">
+            {filteredCourses.length} curso{filteredCourses.length !== 1 ? "s" : ""} encontrado{filteredCourses.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+
+        {/* Courses Grid */}
+        {filteredCourses.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <p className="text-muted-foreground">Nenhum curso encontrado com esse nível.</p>
+          </div>
+        ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {courses.map((course) => (
-              <Card key={course.id} className="hover:shadow-lg transition-shadow flex flex-col">
+            {filteredCourses.map((course) => (
+              <Card key={course.id} className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col">
                 <CardHeader>
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{course.title}</CardTitle>
-                      <CardDescription>{course.description}</CardDescription>
-                    </div>
-                    <Badge className="ml-2 bg-primary text-white">
+                  <div className="flex items-start justify-between mb-2">
+                    <Badge variant="default" className="bg-primary text-white">
                       {course.level}
                     </Badge>
                   </div>
+                  <CardTitle className="line-clamp-2">{course.title}</CardTitle>
+                  <CardDescription className="line-clamp-2">
+                    {course.description || "Sem descrição"}
+                  </CardDescription>
                 </CardHeader>
-
-                <CardContent className="flex-1 space-y-4">
-                  {/* Course Stats */}
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
-                        {course.modules}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Módulos</p>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
-                        {course.lessons}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Aulas</p>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-primary">
-                        {course.students}
-                      </div>
-                      <p className="text-xs text-muted-foreground">Alunos</p>
-                    </div>
-                  </div>
-
-                  {/* Course Details */}
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4" />
-                      <span>{course.duration}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
+                <CardContent className="flex-1 flex flex-col justify-between">
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <BookOpen className="w-4 h-4" />
-                      <span>{course.lessons} aulas interativas</span>
+                      <span>{course.modules || 0} módulos</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <span>{course.students} alunos inscritos</span>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <span>Duração variável</span>
                     </div>
                   </div>
-
-                  {/* CTA Button */}
-                  <Button className="w-full mt-4 bg-primary hover:bg-primary-hover text-white">
+                  <Button className="w-full" variant="default">
                     Explorar Curso
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* CEFR Info Section */}
-      <section className="py-16 md:py-24 bg-card">
-        <div className="container max-w-3xl">
-          <h2 className="text-3xl font-bold text-foreground mb-8 text-center">
-            Sobre o Framework CEFR
-          </h2>
-
-          <p className="text-muted-foreground mb-6 leading-relaxed">
-            O CEFR (Common European Framework of Reference for Languages) é o padrão internacional para descrever proficiência em idiomas. Nossos cursos seguem rigorosamente este framework, garantindo que você progresse de forma estruturada e reconhecida globalmente.
-          </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {CEFR_LEVELS.map((level) => (
-              <div
-                key={level}
-                className="bg-background p-4 rounded-lg text-center border border-border"
-              >
-                <p className="font-bold text-lg text-primary">{level}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {level === "A1" && "Iniciante"}
-                  {level === "A2" && "Elementar"}
-                  {level === "B1" && "Intermediário"}
-                  {level === "B2" && "Intermediário+"}
-                  {level === "C1" && "Avançado"}
-                  {level === "C2" && "Proficiência"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        )}
+      </div>
     </div>
   );
 }
