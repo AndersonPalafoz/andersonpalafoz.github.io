@@ -1,5 +1,6 @@
-import { eq, desc } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { eq } from "drizzle-orm";
 import { InsertUser, users, courses, materials, articles, enrollments, certificates, activities } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -7,9 +8,12 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (!_db && process.env.SUPABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const client = postgres(process.env.SUPABASE_URL, {
+        ssl: 'require',
+      });
+      _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -33,7 +37,6 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     const values: InsertUser = {
       openId: user.openId,
     };
-    const updateSet: Record<string, unknown> = {};
 
     const textFields = ["name", "email", "loginMethod"] as const;
     type TextField = (typeof textFields)[number];
@@ -43,33 +46,33 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       if (value === undefined) return;
       const normalized = value ?? null;
       values[field] = normalized;
-      updateSet[field] = normalized;
     };
 
     textFields.forEach(assignNullable);
 
     if (user.lastSignedIn !== undefined) {
       values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
     }
     if (user.role !== undefined) {
       values.role = user.role;
-      updateSet.role = user.role;
     } else if (user.openId === ENV.ownerOpenId) {
       values.role = 'admin';
-      updateSet.role = 'admin';
     }
 
     if (!values.lastSignedIn) {
       values.lastSignedIn = new Date();
     }
 
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
+    // Upsert user
+    await db.insert(users).values(values).onConflictDoUpdate({
+      target: users.openId,
+      set: {
+        name: values.name,
+        email: values.email,
+        loginMethod: values.loginMethod,
+        lastSignedIn: values.lastSignedIn,
+        role: values.role,
+      },
     });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
@@ -90,37 +93,36 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // Courses queries
-export async function getAllCourses() {
+export async function getCourses() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(courses);
+  return db.select().from(courses);
 }
 
-export async function getCourseById(id: number) {
+export async function getCoursesByLevel(level: string) {
   const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(courses).where(eq(courses.id, id)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  if (!db) return [];
+  return db.select().from(courses).where(eq(courses.level, level));
 }
 
 // Materials queries
-export async function getAllMaterials() {
+export async function getMaterials() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(materials);
+  return db.select().from(materials);
 }
 
 export async function getMaterialsByLevel(level: string) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(materials).where(eq(materials.level, level));
+  return db.select().from(materials).where(eq(materials.level, level));
 }
 
 // Articles queries
-export async function getAllArticles() {
+export async function getArticles() {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(articles).orderBy(desc(articles.published || articles.createdAt));
+  return db.select().from(articles);
 }
 
 export async function getArticleBySlug(slug: string) {
@@ -134,26 +136,25 @@ export async function getArticleBySlug(slug: string) {
 export async function getUserEnrollments(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(enrollments).where(eq(enrollments.userId, userId));
+  return db.select().from(enrollments).where(eq(enrollments.userId, userId));
 }
 
 export async function enrollUserInCourse(userId: number, courseId: number) {
   const db = await getDb();
-  if (!db) return null;
-  const result = await db.insert(enrollments).values({ userId, courseId });
-  return result;
+  if (!db) throw new Error("Database not available");
+  return db.insert(enrollments).values({ userId, courseId, status: "active" });
 }
 
 // Certificates queries
 export async function getUserCertificates(userId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(certificates).where(eq(certificates.userId, userId));
+  return db.select().from(certificates).where(eq(certificates.userId, userId));
 }
 
 // Activities queries
 export async function getCourseActivities(courseId: number) {
   const db = await getDb();
   if (!db) return [];
-  return await db.select().from(activities).where(eq(activities.courseId, courseId));
+  return db.select().from(activities).where(eq(activities.courseId, courseId));
 }
