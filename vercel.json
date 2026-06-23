@@ -4,23 +4,53 @@
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
-  "env": [
-    "DATABASE_URL",
-    "JWT_SECRET",
-    "VITE_APP_ID",
-    "OAUTH_SERVER_URL",
-    "VITE_OAUTH_PORTAL_URL",
-    "OWNER_OPEN_ID",
-    "OWNER_NAME",
-    "BUILT_IN_FORGE_API_URL",
-    "BUILT_IN_FORGE_API_KEY",
-    "VITE_FRONTEND_FORGE_API_KEY",
-    "VITE_FRONTEND_FORGE_API_URL",
-    "VITE_ANALYTICS_ENDPOINT",
-    "VITE_ANALYTICS_WEBSITE_ID",
-    "VITE_APP_TITLE",
-    "VITE_APP_LOGO"
-  ],
+  "env": {
+    "DATABASE_URL": {
+      "description": "MySQL/TiDB connection string"
+    },
+    "JWT_SECRET": {
+      "description": "Session cookie signing secret"
+    },
+    "VITE_APP_ID": {
+      "description": "Manus OAuth application ID"
+    },
+    "OAUTH_SERVER_URL": {
+      "description": "Manus OAuth backend base URL"
+    },
+    "VITE_OAUTH_PORTAL_URL": {
+      "description": "Manus login portal URL"
+    },
+    "OWNER_OPEN_ID": {
+      "description": "Owner's OpenID"
+    },
+    "OWNER_NAME": {
+      "description": "Owner's name"
+    },
+    "BUILT_IN_FORGE_API_URL": {
+      "description": "Manus built-in APIs URL"
+    },
+    "BUILT_IN_FORGE_API_KEY": {
+      "description": "Bearer token for Manus built-in APIs"
+    },
+    "VITE_FRONTEND_FORGE_API_KEY": {
+      "description": "Frontend bearer token for Manus APIs"
+    },
+    "VITE_FRONTEND_FORGE_API_URL": {
+      "description": "Frontend Manus APIs URL"
+    },
+    "VITE_ANALYTICS_ENDPOINT": {
+      "description": "Analytics endpoint"
+    },
+    "VITE_ANALYTICS_WEBSITE_ID": {
+      "description": "Analytics website ID"
+    },
+    "VITE_APP_TITLE": {
+      "description": "Application title"
+    },
+    "VITE_APP_LOGO": {
+      "description": "Application logo URL"
+    }
+  },
   "git": {
     "deploymentEnabled": {
       "main": true
