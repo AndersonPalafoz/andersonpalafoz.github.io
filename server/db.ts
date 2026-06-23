@@ -10,9 +10,18 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db && process.env.SUPABASE_URL) {
     try {
-      const client = postgres(process.env.SUPABASE_URL, {
-        ssl: 'require',
-      });
+      // Construct PostgreSQL connection string from Supabase
+      const supabaseUrl = process.env.SUPABASE_URL;
+      const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+      
+      // Extract host from Supabase URL
+      const url = new URL(supabaseUrl);
+      const host = url.hostname;
+      
+      // Construct connection string for Supabase PostgreSQL
+      const connectionString = `postgresql://postgres:${supabaseKey}@${host}:5432/postgres?sslmode=require`;
+      
+      const client = postgres(connectionString);
       _db = drizzle(client);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
