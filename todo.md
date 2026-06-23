@@ -72,6 +72,7 @@
 - [x] Implementar CRUD de Cursos (helpers em server/db.ts)
 - [x] Implementar procedures tRPC para Cursos (courses.list, courses.enrollments, courses.enroll)
 - [x] Implementar cards de curso com progresso visual
+- [x] Inserir dados de teste de cursos (6 cursos A1-C2)
 - [ ] Criar página de detalhe do curso
 - [ ] Implementar estrutura de Módulos dentro do curso
 - [ ] Implementar estrutura de Aulas dentro do módulo
@@ -84,6 +85,7 @@
 - [x] Implementar CRUD de Artigos (helpers em server/db.ts)
 - [x] Implementar procedures tRPC para Artigos (articles.list, articles.bySlug)
 - [x] Implementar listagem de artigos com cards (título, categoria, tempo de leitura)
+- [x] Inserir dados de teste de artigos (6 artigos com categorias)
 - [ ] Criar página individual de artigo com conteúdo real
 - [ ] Implementar sistema de categorias
 - [ ] Adicionar breadcrumb em página de artigo
@@ -97,6 +99,7 @@
 - [x] Implementar listagem com categorias
 - [x] Adicionar badges de nível CEFR (A1, A2, B1, B2, C1, C2)
 - [x] Implementar filtros de conteúdo
+- [x] Inserir dados de teste de materiais (6 materiais com níveis CEFR)
 - [ ] Criar página individual de material
 - [ ] Adicionar sistema de download/acesso real
 
