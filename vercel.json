@@ -4,7 +4,6 @@
   "installCommand": "pnpm install",
   "framework": "vite",
   "outputDirectory": "dist",
-  "nodeVersion": "22.x",
   "env": {
     "DATABASE_URL": "@database_url",
     "JWT_SECRET": "@jwt_secret",
@@ -21,17 +20,5 @@
     "VITE_ANALYTICS_WEBSITE_ID": "@vite_analytics_website_id",
     "VITE_APP_TITLE": "Anderson Palafoz Platform",
     "VITE_APP_LOGO": "https://manus-storage.s3.amazonaws.com/logos/anderson-palafoz-logo.png"
-  },
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  },
-  "regions": ["sfo1"],
-  "functions": {
-    "server/**": {
-      "memory": 512,
-      "maxDuration": 60
-    }
   }
 }
