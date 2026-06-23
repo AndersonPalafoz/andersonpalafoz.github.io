@@ -1,6 +1,7 @@
 {
   "name": "andersonpalafoz.github.io",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "description": "Plataforma educacional completa para ensino de inglês com Anderson Palafoz",
   "type": "module",
   "license": "MIT",
   "scripts": {
