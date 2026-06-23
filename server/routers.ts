@@ -2,7 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
-import { getAllCourses, getAllMaterials, getAllArticles, getArticleBySlug, getUserEnrollments, enrollUserInCourse, getUserCertificates, getCourseActivities } from "./db";
+import { getCourses, getMaterials, getArticles, getArticleBySlug, getUserEnrollments, enrollUserInCourse, getUserCertificates, getCourseActivities } from "./db";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -19,17 +19,17 @@ export const appRouter = router({
   }),
 
   courses: router({
-    list: publicProcedure.query(() => getAllCourses()),
+    list: publicProcedure.query(() => getCourses()),
     enrollments: protectedProcedure.query(({ ctx }) => getUserEnrollments(ctx.user.id)),
     enroll: protectedProcedure.input(z.object({ courseId: z.number() })).mutation(({ ctx, input }) => enrollUserInCourse(ctx.user.id, input.courseId)),
   }),
 
   materials: router({
-    list: publicProcedure.query(() => getAllMaterials()),
+    list: publicProcedure.query(() => getMaterials()),
   }),
 
   articles: router({
-    list: publicProcedure.query(() => getAllArticles()),
+    list: publicProcedure.query(() => getArticles()),
     bySlug: publicProcedure.input(z.object({ slug: z.string() })).query(({ input }) => getArticleBySlug(input.slug)),
   }),
 
