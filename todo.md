@@ -38,9 +38,9 @@
 
 ## Fase 5: Autenticação e Sistema de Roles
 
-- [ ] Configurar OAuth Google (preparar estrutura)
-- [ ] Implementar fluxo de login/logout
-- [ ] Criar sistema de roles: admin e student
+- [x] Configurar OAuth Google (preparar estrutura)
+- [x] Implementar fluxo de login/logout (via useAuth hook)
+- [x] Criar sistema de roles: admin e student (admin: palafozanderson@gmail.com)
 - [x] Proteger rotas privadas com hook useProtectedRoute
 - [x] Implementar redirecionamento pós-login em todas as páginas do dashboard
 
@@ -86,9 +86,9 @@
 - [x] Implementar procedures tRPC para Artigos (articles.list, articles.bySlug)
 - [x] Implementar listagem de artigos com cards (título, categoria, tempo de leitura)
 - [x] Inserir dados de teste de artigos (6 artigos com categorias)
-- [ ] Criar página individual de artigo com conteúdo real
+- [x] Criar página individual de artigo com conteúdo real (ArticleDetail.tsx)
+- [x] Implementar breadcrumb em página de artigo
 - [ ] Implementar sistema de categorias
-- [ ] Adicionar breadcrumb em página de artigo
 - [ ] Implementar paginação
 
 ## Fase 9: Biblioteca / Materiais
@@ -100,18 +100,18 @@
 - [x] Adicionar badges de nível CEFR (A1, A2, B1, B2, C1, C2)
 - [x] Implementar filtros de conteúdo
 - [x] Inserir dados de teste de materiais (6 materiais com níveis CEFR)
-- [ ] Criar página individual de material
+- [x] Criar página individual de material (MaterialDetail.tsx)
 - [ ] Adicionar sistema de download/acesso real
 
 ## Fase 10: Skeleton Loaders e Estados de Carregamento
 
 - [x] Criar componente SkeletonLoader reutilizável
 - [x] Implementar loading states em todas as páginas do dashboard
+- [x] Implementar skeleton loader para cards de artigo públicos
+- [x] Implementar skeleton loader para cards de material públicos
 - [ ] Implementar skeleton loader para cards de curso públicos
-- [ ] Implementar skeleton loader para cards de artigo públicos
-- [ ] Implementar skeleton loader para cards de material públicos
-- [ ] Remover todos os spinners infinitos
-- [ ] Validar estados de carregamento em todas as páginas
+- [x] Remover todos os spinners infinitos
+- [x] Validar estados de carregamento em todas as páginas
 
 ## Fase 11: Responsividade e Acessibilidade
 
@@ -156,4 +156,4 @@
 - [x] Criar guia de uso para o professor (PLATAFORMA_GUIA.md)
 - [x] Documentar procedures tRPC disponíveis (PLATAFORMA_GUIA.md)
 - [x] Criar guia de manutenção e atualizações (PLATAFORMA_GUIA.md)
-- [ ] Preparar relatório final e entregar links
+- [x] Preparar relatório final e entregar links
