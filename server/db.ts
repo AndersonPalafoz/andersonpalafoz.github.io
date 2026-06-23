@@ -1,169 +1,163 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import { eq } from "drizzle-orm";
-import { InsertUser, users, courses, materials, articles, enrollments, certificates, activities } from "../drizzle/schema";
-import { ENV } from './_core/env';
+import { createClient } from '@supabase/supabase-js';
 
-let _db: ReturnType<typeof drizzle> | null = null;
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.DATABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '';
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
-export async function getDb() {
-  if (!_db && process.env.SUPABASE_URL) {
-    try {
-      // Construct PostgreSQL connection string from Supabase
-      const supabaseUrl = process.env.SUPABASE_URL;
-      const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-      
-      // Extract host from Supabase URL
-      const url = new URL(supabaseUrl);
-      const host = url.hostname;
-      
-      // Construct connection string for Supabase PostgreSQL
-      const connectionString = `postgresql://postgres:${supabaseKey}@${host}:5432/postgres?sslmode=require`;
-      
-      const client = postgres(connectionString);
-      _db = drizzle(client);
-    } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
-      _db = null;
-    }
-  }
-  return _db;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.warn('[Database] Supabase URL or Key not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (recommended)');
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
-  if (!user.openId) {
-    throw new Error("User openId is required for upsert");
-  }
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false }
+});
 
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
+export async function upsertUser(user: any) {
+  if (!user?.openId) throw new Error('User openId is required for upsert');
+  const values: any = {
+    openId: user.openId,
+    lastSignedIn: user.lastSignedIn ? new Date(user.lastSignedIn).toISOString() : new Date().toISOString()
+  };
+  const textFields = ['name', 'email', 'loginMethod', 'role'];
+  for (const f of textFields) {
+    if (Object.prototype.hasOwnProperty.call(user, f)) {
+      values[f] = user[f] ?? null;
+    }
   }
-
   try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    // Upsert user
-    await db.insert(users).values(values).onConflictDoUpdate({
-      target: users.openId,
-      set: {
-        name: values.name,
-        email: values.email,
-        loginMethod: values.loginMethod,
-        lastSignedIn: values.lastSignedIn,
-        role: values.role,
-      },
-    });
-  } catch (error) {
-    console.error("[Database] Failed to upsert user:", error);
-    throw error;
+    const { data, error } = await supabase.from('users').upsert(values, { onConflict: 'openId' }).select();
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('[Database] Failed to upsert user:', err);
+    throw err;
   }
 }
 
 export async function getUserByOpenId(openId: string) {
-  const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
+  if (!openId) return undefined;
+  try {
+    const { data, error } = await supabase.from('users').select('*').eq('openId', openId).limit(1).maybeSingle();
+    if (error) {
+      console.warn('[Database] getUserByOpenId error:', error);
+      return undefined;
+    }
+    return data || undefined;
+  } catch (err) {
+    console.warn('[Database] Cannot get user:', err);
     return undefined;
   }
-
-  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
 }
 
-// Courses queries
 export async function getCourses() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(courses);
+  try {
+    const { data, error } = await supabase.from('courses').select('*');
+    if (error) {
+      console.warn('[Database] getCourses error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getCourses failed:', err);
+    return [];
+  }
 }
 
-export async function getCoursesByLevel(level: string) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(courses).where(eq(courses.level, level));
-}
-
-// Materials queries
 export async function getMaterials() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(materials);
+  try {
+    const { data, error } = await supabase.from('materials').select('*');
+    if (error) {
+      console.warn('[Database] getMaterials error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getMaterials failed:', err);
+    return [];
+  }
 }
 
-export async function getMaterialsByLevel(level: string) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(materials).where(eq(materials.level, level));
-}
-
-// Articles queries
 export async function getArticles() {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(articles);
+  try {
+    const { data, error } = await supabase.from('articles').select('*');
+    if (error) {
+      console.warn('[Database] getArticles error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getArticles failed:', err);
+    return [];
+  }
 }
 
 export async function getArticleBySlug(slug: string) {
-  const db = await getDb();
-  if (!db) return undefined;
-  const result = await db.select().from(articles).where(eq(articles.slug, slug)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  if (!slug) return undefined;
+  try {
+    const { data, error } = await supabase.from('articles').select('*').eq('slug', slug).limit(1).maybeSingle();
+    if (error) {
+      console.warn('[Database] getArticleBySlug error:', error);
+      return undefined;
+    }
+    return data || undefined;
+  } catch (err) {
+    console.warn('[Database] getArticleBySlug failed:', err);
+    return undefined;
+  }
 }
 
-// Enrollments queries
 export async function getUserEnrollments(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(enrollments).where(eq(enrollments.userId, userId));
+  if (!userId) return [];
+  try {
+    const { data, error } = await supabase.from('enrollments').select('*').eq('userId', userId);
+    if (error) {
+      console.warn('[Database] getUserEnrollments error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getUserEnrollments failed:', err);
+    return [];
+  }
 }
 
 export async function enrollUserInCourse(userId: number, courseId: number) {
-  const db = await getDb();
-  if (!db) throw new Error("Database not available");
-  return db.insert(enrollments).values({ userId, courseId, status: "active" });
+  if (!userId || !courseId) throw new Error('userId and courseId are required');
+  try {
+    const { data, error } = await supabase.from('enrollments').insert({ userId, courseId, status: 'active', enrolledAt: new Date().toISOString() });
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    console.error('[Database] Failed to enroll user:', err);
+    throw err;
+  }
 }
 
-// Certificates queries
 export async function getUserCertificates(userId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(certificates).where(eq(certificates.userId, userId));
+  if (!userId) return [];
+  try {
+    const { data, error } = await supabase.from('certificates').select('*').eq('userId', userId);
+    if (error) {
+      console.warn('[Database] getUserCertificates error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getUserCertificates failed:', err);
+    return [];
+  }
 }
 
-// Activities queries
 export async function getCourseActivities(courseId: number) {
-  const db = await getDb();
-  if (!db) return [];
-  return db.select().from(activities).where(eq(activities.courseId, courseId));
+  if (!courseId) return [];
+  try {
+    const { data, error } = await supabase.from('activities').select('*').eq('courseId', courseId);
+    if (error) {
+      console.warn('[Database] getCourseActivities error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.warn('[Database] getCourseActivities failed:', err);
+    return [];
+  }
 }
