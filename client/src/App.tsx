@@ -11,6 +11,8 @@ import About from "./pages/About";
 import Courses from "./pages/Courses";
 import Materials from "./pages/Materials";
 import Blog from "./pages/Blog";
+import ArticleDetail from "./pages/ArticleDetail";
+import MaterialDetail from "./pages/MaterialDetail";
 import Contact from "./pages/Contact";
 import DashboardCourses from "./pages/DashboardCourses";
 import DashboardActivities from "./pages/DashboardActivities";
@@ -28,7 +30,9 @@ function Router() {
       <Route path={"/courses"} component={Courses} />
       <Route path={"/materials"} component={Materials} />
       <Route path={"/blog"} component={Blog} />
-      <Route path={"/contact"} component={Contact} />
+      <Route path={"/blog/:slug"} component={ArticleDetail} />
+      <Route path={"/materiais/:id"} component={MaterialDetail} />
+      <Route path={"/contato"} component={Contact} />
       <Route path={"/dashboard/courses"} component={DashboardCourses} />
       <Route path={"/dashboard/activities"} component={DashboardActivities} />
       <Route path={"/dashboard/library"} component={DashboardLibrary} />
