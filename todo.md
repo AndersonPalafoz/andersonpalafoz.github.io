@@ -116,6 +116,9 @@
 ## Fase 11: Responsividade e Acessibilidade
 
 - [x] Validar grid responsivo (4 colunas mobile, 8 tablet, 12 desktop)
+- [x] Validar responsividade em mobile (375px) - Screenshots OK
+- [x] Validar responsividade em tablet (768px) - Screenshots OK
+- [x] Validar responsividade em desktop (1280px) - Screenshots OK
 - [ ] Testar navegação por teclado completa
 - [ ] Validar contraste de cores (WCAG AA) - Auditoria completa
 - [ ] Adicionar ARIA labels em componentes interativos
@@ -149,8 +152,8 @@
 
 ## Fase 15: Documentação e Entrega
 
-- [ ] Documentar arquitetura do projeto (Next.js + Supabase + tRPC)
-- [ ] Criar guia de uso para o professor
-- [ ] Documentar procedures tRPC disponíveis
-- [ ] Criar guia de manutenção e atualizações
+- [x] Documentar arquitetura do projeto (PLATAFORMA_GUIA.md criado)
+- [x] Criar guia de uso para o professor (PLATAFORMA_GUIA.md)
+- [x] Documentar procedures tRPC disponíveis (PLATAFORMA_GUIA.md)
+- [x] Criar guia de manutenção e atualizações (PLATAFORMA_GUIA.md)
 - [ ] Preparar relatório final e entregar links
