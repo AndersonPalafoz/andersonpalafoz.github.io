@@ -1,0 +1,200 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-dark: var(--dark);
+  --color-light: var(--light);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  /* Anderson Palafoz Brand Colors - Light Mode */
+  --primary: #d62828;
+  --primary-foreground: #ffffff;
+  --primary-hover: #b91c1c;
+  --dark: #333333;
+  --light: #f3f4f6;
+
+  /* Sidebar Primary */
+  --sidebar-primary: #d62828;
+  --sidebar-primary-foreground: #ffffff;
+
+  /* Chart Colors */
+  --chart-1: #d62828;
+  --chart-2: #b91c1c;
+  --chart-3: #7f1d1d;
+  --chart-4: #991b1b;
+  --chart-5: #dc2626;
+
+  /* Radius */
+  --radius: 0.75rem;
+
+  /* Light Mode Tokens */
+  --background: #ffffff;
+  --foreground: #333333;
+  --card: #f3f4f6;
+  --card-foreground: #333333;
+  --popover: #ffffff;
+  --popover-foreground: #333333;
+  --secondary: #f3f4f6;
+  --secondary-foreground: #333333;
+  --muted: #e5e7eb;
+  --muted-foreground: #6b7280;
+  --accent: #d62828;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: #d62828;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #333333;
+  --sidebar-accent: #f3f4f6;
+  --sidebar-accent-foreground: #d62828;
+  --sidebar-border: #e5e7eb;
+  --sidebar-ring: #d62828;
+}
+
+.dark {
+  --primary: #d62828;
+  --primary-foreground: #ffffff;
+  --sidebar-primary: #d62828;
+  --sidebar-primary-foreground: #ffffff;
+  --chart-1: #d62828;
+  --chart-2: #b91c1c;
+  --chart-3: #7f1d1d;
+  --chart-4: #991b1b;
+  --chart-5: #dc2626;
+
+  --background: #1f2937;
+  --foreground: #f3f4f6;
+  --card: #374151;
+  --card-foreground: #f3f4f6;
+  --popover: #374151;
+  --popover-foreground: #f3f4f6;
+  --secondary: #4b5563;
+  --secondary-foreground: #e5e7eb;
+  --muted: #6b7280;
+  --muted-foreground: #d1d5db;
+  --accent: #d62828;
+  --accent-foreground: #ffffff;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #4b5563;
+  --input: #374151;
+  --ring: #d62828;
+  --sidebar: #111827;
+  --sidebar-foreground: #f3f4f6;
+  --sidebar-accent: #374151;
+  --sidebar-accent-foreground: #d62828;
+  --sidebar-border: #4b5563;
+  --sidebar-ring: #d62828;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-weight: 700;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [type="button"]:not(:disabled),
+  [type="submit"]:not(:disabled),
+  [type="reset"]:not(:disabled),
+  a[href],
+  select:not(:disabled),
+  input[type="checkbox"]:not(:disabled),
+  input[type="radio"]:not(:disabled) {
+    @apply cursor-pointer;
+  }
+}
+
+@layer components {
+  .container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .flex {
+    min-height: 0;
+    min-width: 0;
+  }
+
+  @media (min-width: 640px) {
+    .container {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .container {
+      padding-left: 2rem;
+      padding-right: 2rem;
+      max-width: 1280px;
+    }
+  }
+
+  .navbar-blur {
+    @apply backdrop-blur-md bg-background/80;
+  }
+
+  .skeleton {
+    @apply bg-muted animate-pulse rounded-md;
+  }
+}
