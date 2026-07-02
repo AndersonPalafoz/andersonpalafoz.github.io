@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   typescript: {
     tsconfigPath: "./tsconfig.json",
   },
+  skipTrailingSlashRedirect: true,
 };
 
 export default nextConfig;

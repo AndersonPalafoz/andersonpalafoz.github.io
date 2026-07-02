@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, text, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer } from "drizzle-orm/pg-core";
 
 // Enums
 export const roleEnum = pgEnum("role", ["user", "admin"]);
@@ -39,7 +39,7 @@ export const courses = pgTable("courses", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
-  modules: serial("modules").default(0),
+  modules: integer("modules").default(0),
   instructor: varchar("instructor", { length: 255 }).default("Anderson Palafoz"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
