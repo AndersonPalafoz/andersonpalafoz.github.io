@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
     tsconfigPath: "./tsconfig.json",
   },
   skipTrailingSlashRedirect: true,
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000,
+    pagesBufferLength: 5,
+  },
 };
 
 export default nextConfig;
