@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -16,6 +17,7 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,9 +46,24 @@ export function Navbar() {
 
           {/* Right Section */}
           <div className="flex items-center gap-2">
-            <Link href="/dashboard">
-              <Button size="sm">Minha Área</Button>
-            </Link>
+            {session ? (
+              <>
+                <Link href="/dashboard/cursos">
+                  <Button size="sm">Minha Área</Button>
+                </Link>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                >
+                  Sair
+                </Button>
+              </>
+            ) : (
+              <Link href="/login">
+                <Button size="sm">Login</Button>
+              </Link>
+            )}
 
             {/* Mobile Menu Button */}
             <button
