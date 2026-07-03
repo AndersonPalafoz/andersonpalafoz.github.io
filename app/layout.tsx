@@ -46,7 +46,14 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" />
         <script src="https://cdn.tailwindcss.com"></script>
       </head>
-      <body className={`${poppins.variable} font-sans antialiased`}>
+      <body
+        className={`${poppins.variable} font-sans antialiased`}
+        style={{
+          backgroundColor: "#0a0a0a",
+          color: "#fafafa",
+          fontFamily: "Poppins, system-ui, sans-serif",
+        }}
+      >
         <SessionProviderWrapper>
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <Navbar />
