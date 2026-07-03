@@ -18,17 +18,17 @@
 - [x] Criar página Dashboard/Perfil
 - [x] Implementar sidebar de navegação do dashboard
 
-## Fase 3: Autenticação Google OAuth
-- [ ] Configurar NextAuth.js com Google OAuth
-- [ ] Criar página de login
-- [ ] Implementar proteção de rotas do dashboard
-- [ ] Criar hook useAuth() para verificar autenticação
-- [ ] Implementar logout
+## Fase 3: Autenticação Google OAuth ✅
+- [x] Configurar NextAuth.js com Google OAuth
+- [x] Criar página de login
+- [x] Implementar proteção de rotas do dashboard
+- [x] Criar hook useAuth() para verificar autenticação
+- [x] Implementar logout
 
-## Fase 4: API Routes e CRUD
-- [ ] Criar API route GET /api/courses (listar cursos)
-- [ ] Criar API route GET /api/materials (listar materiais)
-- [ ] Criar API route GET /api/articles (listar artigos)
+## Fase 4: API Routes e CRUD ✅
+- [x] Criar API route GET /api/courses (listar cursos)
+- [x] Criar API route GET /api/materials (listar materiais)
+- [x] Criar API route GET /api/articles (listar artigos)
 - [ ] Criar API route POST /api/enrollments (inscrever em curso)
 - [ ] Criar API route GET /api/user/enrollments (cursos do usuário)
 
