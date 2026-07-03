@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function BlogPage() {
   const params = useParams();
@@ -10,9 +10,12 @@ export default function BlogPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-12">
-        <Link href="/blog" className="text-red-500 hover:underline mb-6 block">
-          ← Voltar para Blog
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: "Blog", href: "/blog" },
+            { label: slug, href: `/blog/${slug}` },
+          ]}
+        />
 
         <article className="max-w-3xl">
           <h1 className="text-4xl font-bold mb-4">Artigo: {slug}</h1>
