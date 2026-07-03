@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function CoursePage() {
   const params = useParams();
@@ -11,9 +11,12 @@ export default function CoursePage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-12">
-        <Link href="/aulas" className="text-red-500 hover:underline mb-6 block">
-          ← Voltar para Aulas
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: "Aulas", href: "/aulas" },
+            { label: `Curso ${id}`, href: `/cursos/${id}` },
+          ]}
+        />
 
         <div className="max-w-3xl">
           <h1 className="text-4xl font-bold mb-4">Detalhes do Curso {id}</h1>

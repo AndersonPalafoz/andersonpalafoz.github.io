@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function MaterialPage() {
   const params = useParams();
@@ -11,12 +11,12 @@ export default function MaterialPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-12">
-        <Link
-          href="/materiais"
-          className="text-red-500 hover:underline mb-6 block"
-        >
-          ← Voltar para Materiais
-        </Link>
+        <Breadcrumbs
+          items={[
+            { label: "Materiais", href: "/materiais" },
+            { label: `Material ${id}`, href: `/materiais/${id}` },
+          ]}
+        />
 
         <div className="max-w-3xl">
           <h1 className="text-4xl font-bold mb-4">Material {id}</h1>
