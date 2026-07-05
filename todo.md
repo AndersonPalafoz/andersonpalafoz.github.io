@@ -44,12 +44,12 @@
 - [x] Criar página /blog/[slug] com artigo completo
 - [x] Implementar breadcrumbs
 
-## Fase 7: Componentes Reutilizáveis
-- [ ] Criar componente CourseCard
-- [ ] Criar componente MaterialCard
-- [ ] Criar componente ArticleCard
-- [ ] Criar componente ProgressBar
-- [ ] Criar componente Modal
+## Fase 7: Componentes Reutilizáveis ✅
+- [x] Criar componente CourseCard
+- [x] Criar componente MaterialCard
+- [x] Criar componente ArticleCard
+- [x] Criar componente ProgressBar
+- [x] Criar componente Modal
 
 ## Fase 8: Testes e Validação
 - [ ] Testar build do Next.js
