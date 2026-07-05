@@ -38,11 +38,11 @@
 - [ ] Implementar queries: getUserEnrollments(), enrollUser()
 - [ ] Testar conexão com Neon
 
-## Fase 6: Páginas de Detalhe
-- [ ] Criar página /cursos/[id] com detalhes do curso
-- [ ] Criar página /materiais/[id] com detalhes do material
-- [ ] Criar página /blog/[slug] com artigo completo
-- [ ] Implementar breadcrumbs
+## Fase 6: Páginas de Detalhe ✅
+- [x] Criar página /cursos/[id] com detalhes do curso
+- [x] Criar página /materiais/[id] com detalhes do material
+- [x] Criar página /blog/[slug] com artigo completo
+- [x] Implementar breadcrumbs
 
 ## Fase 7: Componentes Reutilizáveis
 - [ ] Criar componente CourseCard
