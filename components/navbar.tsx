@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { LogoSVG } from "@/components/logo-svg";
+import Image from "next/image";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -26,7 +26,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <LogoSVG className="h-12 w-auto" />
+            <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-12 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}

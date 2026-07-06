@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Users, Award } from "lucide-react";
-import { PrincipalSVG } from "@/components/principal-svg";
+import Image from "next/image";
 
 export const metadata = {
   title: "Anderson Palafoz | Professor de Inglês",
@@ -37,7 +37,7 @@ export default function HomePage() {
                 </Button>
               </Link>
               <Link href="/sobre">
-                <Button className="border-2 border-gray-300 hover:border-red-600 text-gray-700 hover:text-red-600 px-8 py-6 text-lg rounded-lg font-semibold bg-white">
+                <Button className="border-2 border-gray-400 text-gray-700 px-8 py-6 text-lg rounded-lg font-semibold bg-white hover:bg-gray-50 hover:border-gray-500">
                   Saiba Mais
                 </Button>
               </Link>
@@ -59,7 +59,7 @@ export default function HomePage() {
           {/* Right Image */}
           <div className="flex justify-center">
             <div className="w-full max-w-md aspect-square bg-red-100 rounded-3xl flex items-center justify-center overflow-hidden">
-              <PrincipalSVG className="w-full h-full" />
+              <Image src="/logo-principal.png" alt="Anderson Palafoz" width={400} height={400} className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
