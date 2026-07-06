@@ -2,7 +2,6 @@ export const dynamic = "force-dynamic";
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function Home() {
   return (
@@ -57,13 +56,48 @@ export default function Home() {
           {/* Right Image Placeholder */}
           <div className="hidden lg:flex items-center justify-center">
             <div className="w-full h-96 bg-gradient-to-br from-red-100 to-red-50 rounded-3xl flex items-center justify-center shadow-lg">
-              <Image
-                src="/manus-storage/principal_af851105.png"
-                alt="Anderson Palafoz"
-                width={300}
-                height={300}
-                className="w-64 h-64 object-contain opacity-80"
-              />
+              <svg
+                width="200"
+                height="200"
+                viewBox="0 0 200 200"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="opacity-80"
+              >
+                {/* Book icon */}
+                <path
+                  d="M50 40C40 40 30 50 30 60V160C30 170 40 180 50 180H150C160 180 170 170 170 160V60C170 50 160 40 150 40H50Z"
+                  stroke="#D62828"
+                  strokeWidth="3"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M100 40V180"
+                  stroke="#D62828"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M60 80H140"
+                  stroke="#D62828"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M60 110H140"
+                  stroke="#D62828"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M60 140H140"
+                  stroke="#D62828"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
             </div>
           </div>
         </div>
