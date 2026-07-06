@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { courses } from "@/drizzle/schema";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const courseList = await db.select().from(courses).limit(100);
     return NextResponse.json(courseList);
