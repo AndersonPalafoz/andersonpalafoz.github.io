@@ -25,18 +25,18 @@
 - [x] Criar hook useAuth() para verificar autenticação
 - [x] Implementar logout
 
-## Fase 4: API Routes e CRUD ✅
+## Fase 4: API Routes e CRUD
 - [x] Criar API route GET /api/courses (listar cursos)
 - [x] Criar API route GET /api/materials (listar materiais)
 - [x] Criar API route GET /api/articles (listar artigos)
-- [ ] Criar API route POST /api/enrollments (inscrever em curso)
-- [ ] Criar API route GET /api/user/enrollments (cursos do usuário)
+- [ ] Criar e salvar `app/api/enrollments/route.ts` com POST autenticado
+- [ ] Criar `app/api/user/enrollments/route.ts` com GET autenticado
 
 ## Fase 5: Integração com Banco de Dados
-- [ ] Criar helpers Drizzle em lib/db.ts
-- [ ] Implementar queries: getCourses(), getMaterials(), getArticles()
-- [ ] Implementar queries: getUserEnrollments(), enrollUser()
-- [ ] Testar conexão com Neon
+- [x] Criar helpers Drizzle em lib/db.ts
+- [x] Implementar queries: getCourses(), getMaterials(), getArticles()
+- [x] Implementar queries: getUserEnrollments(), enrollUser()
+- [ ] Validar a conexão com Neon com teste real
 
 ## Fase 6: Páginas de Detalhe ✅
 - [x] Criar página /cursos/[id] com detalhes do curso
@@ -52,7 +52,7 @@
 - [x] Criar componente Modal
 
 ## Fase 8: Testes e Validação
-- [ ] Testar build do Next.js
+- [ ] Corrigir build do Next.js (remover erros de prerender)
 - [ ] Testar deploy no Vercel
 - [ ] Validar responsividade (mobile, tablet, desktop)
 - [ ] Testar autenticação Google

@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
+import Image from "next/image";
 
 const navLinks = [
-  { href: "/", label: "Início" },
+  { href: "/", label: "Home" },
   { href: "/sobre", label: "Sobre" },
   { href: "/aulas", label: "Aulas" },
   { href: "/materiais", label: "Materiais" },
@@ -21,52 +21,55 @@ export function Navbar() {
   const { data: session } = useSession();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/95 backdrop-blur">
+    <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-red-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AP</span>
-            </div>
-            <span className="font-bold text-lg hidden sm:inline text-white">
-              Anderson Palafoz
-            </span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/manus-storage/Horizontal-v1_a92294bc.png"
+              alt="Anderson Palafoz"
+              width={180}
+              height={55}
+              className="h-14 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <Button variant="ghost" size="sm" className="text-gray-300 hover:text-white">
-                  {link.label}
-                </Button>
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-gray-700 hover:text-red-600 font-medium transition"
+              >
+                {link.label}
               </Link>
             ))}
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             {session ? (
               <>
                 <Link href="/dashboard">
-                  <Button size="sm" className="bg-red-600 hover:bg-red-700">
+                  <Button className="bg-red-600 hover:bg-red-700 text-white">
                     Minha Área
                   </Button>
                 </Link>
                 <Button
-                  size="sm"
                   variant="outline"
                   onClick={() => signOut()}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-900"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-100"
                 >
                   Sair
                 </Button>
               </>
             ) : (
               <Link href="/login">
-                <Button size="sm" className="bg-red-600 hover:bg-red-700">
-                  Login
+                <Button className="bg-red-600 hover:bg-red-700 text-white">
+                  Entrar
                 </Button>
               </Link>
             )}
@@ -74,7 +77,7 @@ export function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-gray-300 hover:text-white"
+              className="md:hidden text-gray-700 hover:text-red-600"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -83,12 +86,12 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden pb-4 space-y-2">
+          <div className="md:hidden pb-4 space-y-2 border-t border-gray-200">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start text-gray-300 hover:text-white"
+                  className="w-full justify-start text-gray-700 hover:text-red-600"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.label}

@@ -15,63 +15,52 @@
     --warning: #F59E0B;
     --error: #DC2626;
     --info: #2563EB;
-    --background: 0 0% 100%;
-    --foreground: 0 0% 20%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 20%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --radius: 0.75rem;
-  }
-
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
   }
 }
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200;
   }
 
   body {
-    @apply bg-white text-dark font-sans;
+    @apply bg-white text-gray-900 font-sans;
     font-family: 'Poppins', sans-serif;
   }
 
   h1 {
-    @apply text-5xl font-bold text-dark;
+    @apply text-5xl font-bold;
     font-size: 48px;
     font-weight: 700;
+    color: #333333;
   }
 
   h2 {
-    @apply text-4xl font-bold text-dark;
+    @apply text-4xl font-bold;
     font-size: 36px;
     font-weight: 700;
+    color: #333333;
   }
 
   h3 {
-    @apply text-3xl font-semibold text-dark;
+    @apply text-3xl font-semibold;
     font-size: 28px;
     font-weight: 600;
+    color: #333333;
   }
 
   h4 {
-    @apply text-2xl font-semibold text-dark;
+    @apply text-2xl font-semibold;
     font-size: 24px;
     font-weight: 600;
+    color: #333333;
   }
 
   p {
-    @apply text-base text-dark;
+    @apply text-base;
     font-size: 16px;
     font-weight: 400;
+    color: #555555;
   }
 
   button {
@@ -105,18 +94,35 @@
   }
 
   .card:hover {
-    @apply shadow-md border-primary;
+    @apply shadow-md;
+    border-color: #D62828;
   }
 
   .btn-primary {
-    @apply bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-hover transition-all;
+    @apply text-white px-6 py-3 rounded-lg font-medium transition-all;
+    background-color: #D62828;
+  }
+
+  .btn-primary:hover {
+    background-color: #B91C1C;
   }
 
   .btn-secondary {
-    @apply bg-transparent border border-primary text-primary px-6 py-3 rounded-lg font-medium hover:bg-light-gray transition-all;
+    @apply bg-transparent border px-6 py-3 rounded-lg font-medium transition-all;
+    border-color: #D62828;
+    color: #D62828;
+  }
+
+  .btn-secondary:hover {
+    @apply bg-gray-100;
   }
 
   .btn-ghost {
-    @apply bg-transparent text-primary px-6 py-3 rounded-lg font-medium hover:bg-light-gray transition-all;
+    @apply bg-transparent px-6 py-3 rounded-lg font-medium transition-all;
+    color: #D62828;
+  }
+
+  .btn-ghost:hover {
+    @apply bg-gray-100;
   }
 }
