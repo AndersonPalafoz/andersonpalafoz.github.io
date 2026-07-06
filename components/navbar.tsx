@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image";
+import { Logo } from "@/components/logo";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -26,14 +26,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image
-              src="/manus-storage/Horizontal-v1_a92294bc.png"
-              alt="Anderson Palafoz"
-              width={180}
-              height={55}
-              className="h-14 w-auto"
-              priority
-            />
+            <Logo className="h-12 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
