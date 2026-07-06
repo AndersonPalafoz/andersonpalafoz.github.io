@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 
 export const metadata = {
@@ -126,10 +125,10 @@ export default function ContatoPage() {
 
               {/* Submit */}
               <div className="flex gap-4">
-                <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
+                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
                   <Send size={18} />
                   Enviar Mensagem
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -183,12 +182,12 @@ export default function ContatoPage() {
             Não espere mais! Entre em contato ou inscreva-se em um de nossos cursos agora mesmo.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
+            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
               Enviar Mensagem
-            </Button>
-            <Button className="bg-red-700 hover:bg-red-800 text-white px-8 py-6 text-lg rounded-lg font-semibold">
+            </button>
+            <button className="bg-red-700 hover:bg-red-800 text-white px-8 py-6 text-lg rounded-lg font-semibold">
               Ver Cursos
-            </Button>
+            </button>
           </div>
         </div>
       </section>

@@ -1,6 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react";
-import { Logo } from "@/components/logo";
 
 export function Footer() {
   return (
@@ -11,7 +11,7 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
-              <Logo className="h-10 w-auto" />
+              <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-10 w-auto" />
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed">
               Plataforma educacional completa para ensino de inglês de alta qualidade, com cursos, materiais e conteúdo acadêmico.

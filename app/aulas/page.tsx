@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Clock, Users, Award, BookOpen } from "lucide-react";
 
@@ -177,9 +176,9 @@ export default function AulasPage() {
                       {curso.preco}
                     </div>
                     <Link href="/dashboard">
-                      <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                      <button className="w-full bg-red-600 hover:bg-red-700 text-white">
                         Inscrever-se
-                      </Button>
+                      </button>
                     </Link>
                   </div>
                 </div>
@@ -199,9 +198,9 @@ export default function AulasPage() {
             Escolha seu nível e inicie sua jornada rumo à fluência em inglês.
           </p>
           <Link href="/dashboard">
-            <Button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
+            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
               Explorar Cursos
-            </Button>
+            </button>
           </Link>
         </div>
       </section>

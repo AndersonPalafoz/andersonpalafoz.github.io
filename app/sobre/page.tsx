@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { BookOpen, Award, Users, Lightbulb } from "lucide-react";
 
@@ -194,14 +193,14 @@ export default function SobrePage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/aulas">
-              <Button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
+              <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
                 Ver Aulas
-              </Button>
+              </button>
             </Link>
             <Link href="/materiais">
-              <Button className="bg-red-700 hover:bg-red-800 text-white px-8 py-6 text-lg rounded-lg font-semibold">
+              <button className="bg-red-700 hover:bg-red-800 text-white px-8 py-6 text-lg rounded-lg font-semibold">
                 Explorar Materiais
-              </Button>
+              </button>
             </Link>
           </div>
         </div>
