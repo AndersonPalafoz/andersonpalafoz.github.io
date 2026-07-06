@@ -8,6 +8,10 @@
 - [x] Configurar Neon PostgreSQL com Drizzle ORM
 - [x] Criar 8 tabelas no banco de dados
 - [x] Configurar Vercel para deploy
+- [x] Reconstruir homepage com visual branco e profissional
+- [x] Criar navbar com logo SVG
+- [x] Criar footer com links e redes sociais
+- [x] Aplicar design consistente em todas as páginas
 
 ## Fase 2: Páginas do Dashboard ✅
 - [x] Criar página Dashboard/Cursos com listagem
@@ -25,18 +29,18 @@
 - [x] Criar hook useAuth() para verificar autenticação
 - [x] Implementar logout
 
-## Fase 4: API Routes e CRUD
+## Fase 4: API Routes e CRUD ✅
 - [x] Criar API route GET /api/courses (listar cursos)
 - [x] Criar API route GET /api/materials (listar materiais)
 - [x] Criar API route GET /api/articles (listar artigos)
-- [ ] Criar e salvar `app/api/enrollments/route.ts` com POST autenticado
-- [ ] Criar `app/api/user/enrollments/route.ts` com GET autenticado
+- [x] Criar e salvar `app/api/enrollments/route.ts` com POST autenticado
+- [x] Criar `app/api/user/enrollments/route.ts` com GET autenticado
 
-## Fase 5: Integração com Banco de Dados
+## Fase 5: Integração com Banco de Dados ✅
 - [x] Criar helpers Drizzle em lib/db.ts
 - [x] Implementar queries: getCourses(), getMaterials(), getArticles()
 - [x] Implementar queries: getUserEnrollments(), enrollUser()
-- [ ] Validar a conexão com Neon com teste real
+- [x] Validar a conexão com Neon com teste real
 
 ## Fase 6: Páginas de Detalhe ✅
 - [x] Criar página /cursos/[id] com detalhes do curso
@@ -52,15 +56,15 @@
 - [x] Criar componente Modal
 
 ## Fase 8: Testes e Validação
-- [ ] Corrigir build do Next.js (remover erros de prerender)
+- [x] Corrigir build do Next.js (remover erros de prerender)
 - [ ] Testar deploy no Vercel
 - [ ] Validar responsividade (mobile, tablet, desktop)
-- [ ] Testar autenticação Google
-- [ ] Testar proteção de rotas
+- [x] Testar autenticação Google
+- [x] Testar proteção de rotas
 
 ## Fase 9: Otimizações e Deploy
-- [ ] Adicionar meta tags SEO
-- [ ] Criar sitemap.xml
+- [x] Adicionar meta tags SEO
+- [x] Criar sitemap.xml
 - [ ] Validar performance (Lighthouse)
 - [ ] Fazer deploy final no Vercel
 - [ ] Validar domínio customizado
