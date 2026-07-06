@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Users, Award } from "lucide-react";
 import Image from "next/image";
@@ -32,14 +31,14 @@ export default function HomePage() {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Link href="/aulas">
-                <Button className="bg-red-600 hover:bg-red-700 text-white px-8 py-6 text-lg rounded-lg font-semibold">
+                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg rounded-lg font-semibold transition">
                   Começar Agora
-                </Button>
+                </button>
               </Link>
               <Link href="/sobre">
-                <Button className="border-2 border-gray-400 text-gray-700 px-8 py-6 text-lg rounded-lg font-semibold bg-white hover:bg-gray-50 hover:border-gray-500">
+                <button className="border-2 border-gray-400 text-gray-700 px-8 py-3 text-lg rounded-lg font-semibold bg-white hover:bg-gray-50 hover:border-gray-500 transition">
                   Saiba Mais
-                </Button>
+                </button>
               </Link>
             </div>
 
@@ -184,9 +183,9 @@ export default function HomePage() {
             Inscreva-se agora e tenha acesso a todos os nossos cursos e materiais exclusivos.
           </p>
           <Link href="/aulas">
-            <Button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
+            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
               Começar Agora
-            </Button>
+            </button>
           </Link>
         </div>
       </section>

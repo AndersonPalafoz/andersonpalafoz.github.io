@@ -1,7 +1,6 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { Award, Download } from "lucide-react";
 
 export default function CertificadosPage() {
@@ -62,10 +61,10 @@ export default function CertificadosPage() {
                 </div>
               </div>
 
-              <Button className="w-full gap-2">
+              <button className="w-full gap-2">
                 <Download size={16} />
                 Baixar Certificado
-              </Button>
+              </button>
             </div>
           ))}
         </div>
@@ -75,7 +74,7 @@ export default function CertificadosPage() {
           <p className="text-muted-foreground mb-4">
             Você ainda não tem certificados
           </p>
-          <Button>Começar um curso</Button>
+          <Button>Começar um curso</button>
         </div>
       )}
     </div>

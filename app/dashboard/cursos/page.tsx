@@ -1,7 +1,6 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { BookOpen } from "lucide-react";
 
 export default function CursosPage() {
@@ -78,9 +77,9 @@ export default function CursosPage() {
               </div>
             </div>
 
-            <Button className="w-full">
+            <button className="w-full">
               {curso.progresso > 0 ? "Continuar" : "Começar"}
-            </Button>
+            </button>
           </div>
         ))}
       </div>

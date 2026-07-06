@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Download, FileText, BookOpen, Zap } from "lucide-react";
 
@@ -143,10 +142,10 @@ export default function MateriaisPage() {
                   </span>
                 </div>
                 <p className="text-gray-600 mb-6">{material.descricao}</p>
-                <Button className="w-full bg-red-600 hover:bg-red-700 text-white">
+                <button className="w-full bg-red-600 hover:bg-red-700 text-white">
                   <Download size={18} className="mr-2" />
                   Baixar
-                </Button>
+                </button>
               </div>
             ))}
           </div>
@@ -208,9 +207,9 @@ export default function MateriaisPage() {
             Inscreva-se agora e tenha acesso completo à nossa biblioteca de recursos.
           </p>
           <Link href="/dashboard">
-            <Button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
+            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
               Acessar Biblioteca
-            </Button>
+            </button>
           </Link>
         </div>
       </section>

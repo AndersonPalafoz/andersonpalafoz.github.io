@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Calendar, User, ArrowRight } from "lucide-react";
 
@@ -91,9 +90,9 @@ export default function BlogPage() {
                 placeholder="Buscar artigos..."
                 className="flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600"
               />
-              <Button className="bg-red-600 hover:bg-red-700 text-white px-8">
+              <button className="bg-red-600 hover:bg-red-700 text-white px-8">
                 Buscar
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -178,9 +177,9 @@ export default function BlogPage() {
               placeholder="Seu email"
               className="flex-1 px-6 py-3 rounded-lg focus:outline-none"
             />
-            <Button className="bg-white hover:bg-gray-100 text-red-600 font-semibold">
+            <button className="bg-white hover:bg-gray-100 text-red-600 font-semibold">
               Inscrever
-            </Button>
+            </button>
           </div>
         </div>
       </section>

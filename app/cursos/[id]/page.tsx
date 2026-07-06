@@ -1,7 +1,6 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function CoursePage() {
@@ -43,9 +42,9 @@ export default function CoursePage() {
             </ul>
           </div>
 
-          <Button className="bg-red-600 hover:bg-red-700">
+          <button className="bg-red-600 hover:bg-red-700">
             Inscrever-se no Curso
-          </Button>
+          </button>
         </div>
       </div>
     </div>
