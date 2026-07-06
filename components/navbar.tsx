@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Logo } from "@/components/logo";
+import { LogoSVG } from "@/components/logo-svg";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -26,7 +26,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Logo className="h-12 w-auto" />
+            <LogoSVG className="h-12 w-auto" />
           </Link>
 
           {/* Desktop Navigation */}
@@ -54,7 +54,7 @@ export function Navbar() {
                 <Button
                   variant="outline"
                   onClick={() => signOut()}
-                  className="border-gray-300 text-gray-700 hover:bg-gray-100"
+                  className="border-red-600 text-red-600 hover:bg-red-50"
                 >
                   Sair
                 </Button>
