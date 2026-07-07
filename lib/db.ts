@@ -89,3 +89,54 @@ export async function getCertificates(userId: number) {
     },
   });
 }
+
+// Modules and Lessons helpers
+export async function getModulesByCourse(courseId: number) {
+  return await db.query.modules.findMany({
+    where: eq(schema.modules.courseId, courseId),
+    orderBy: schema.modules.order,
+  });
+}
+
+export async function getModuleById(id: number) {
+  return await db.query.modules.findFirst({
+    where: eq(schema.modules.id, id),
+  });
+}
+
+export async function getLessonsByModule(moduleId: number) {
+  return await db.query.lessons.findMany({
+    where: eq(schema.lessons.moduleId, moduleId),
+    orderBy: schema.lessons.order,
+  });
+}
+
+export async function getLessonById(id: number) {
+  return await db.query.lessons.findFirst({
+    where: eq(schema.lessons.id, id),
+  });
+}
+
+export async function getUserLessonProgress(userId: number, lessonId: number) {
+  return await db.query.lessonProgress.findFirst({
+    where: (table) => {
+      return eq(table.userId, userId) && eq(table.lessonId, lessonId);
+    },
+  });
+}
+
+export async function updateLessonProgress(userId: number, lessonId: number, completed: number) {
+  return await db.insert(schema.lessonProgress).values({
+    userId,
+    lessonId,
+    completed,
+    completedAt: completed ? new Date() : null,
+  }).onConflictDoUpdate({
+    target: [schema.lessonProgress.userId, schema.lessonProgress.lessonId],
+    set: {
+      completed,
+      completedAt: completed ? new Date() : null,
+      updatedAt: new Date(),
+    },
+  });
+}

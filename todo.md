@@ -87,3 +87,46 @@
 - [x] Padronizar tamanhos de fonte e espaçamento
 - [x] Aplicar design consistente em todas as 6 páginas públicas
 - [x] Testar em mobile, tablet e desktop
+
+
+## Fase 11: Sistema de Cursos e Aulas (MVP) ✅
+- [x] Estender schema Drizzle com tabelas: Modules, Lessons, LessonProgress
+- [x] Criar API routes: GET /api/courses/[id]/modules, GET /api/modules/[id]/lessons, POST /api/lessons/[id]/progress
+- [x] Implementar página /cursos/[id]/aulas/[lessonId] com player de vídeo
+- [x] Integrar YouTube Embed para reprodução de vídeos
+- [x] Criar sistema de progresso: marcar aula como completa
+- [ ] Adicionar breadcrumbs e navegação entre aulas
+
+## Fase 12: Sistema de Progresso do Aluno
+- [ ] Criar tabela Progress no banco de dados
+- [ ] Implementar API para salvar progresso de aula
+- [ ] Criar componente ProgressBar para mostrar progresso do curso
+- [ ] Adicionar cálculo de percentual de conclusão
+- [ ] Implementar badge de conclusão de curso
+
+## Fase 13: Painel Admin (MVP)
+- [ ] Criar página /admin/dashboard com estatísticas
+- [ ] Criar CRUD de cursos: /admin/cursos
+- [ ] Criar CRUD de materiais: /admin/materiais
+- [ ] Criar CRUD de artigos: /admin/artigos
+- [ ] Implementar proteção de rotas admin (apenas professor)
+- [ ] Adicionar upload de imagens para cursos
+
+## Fase 14: Integração com YouTube
+- [ ] Criar helper para extrair ID de vídeo do YouTube
+- [ ] Implementar componente YouTubePlayer com embed responsivo
+- [ ] Adicionar controles de reprodução customizados
+- [ ] Testar reprodução em mobile e desktop
+
+## Fase 15: Integração com Google Drive
+- [ ] Configurar Google Drive API
+- [ ] Criar helper para listar arquivos do Google Drive
+- [ ] Implementar download de materiais do Google Drive
+- [ ] Adicionar preview de PDFs
+
+## Fase 16: MVP Final - Testes e Deploy
+- [ ] Testar fluxo completo: login, curso, progresso, admin
+- [ ] Validar responsividade em mobile
+- [ ] Testar performance com Lighthouse
+- [ ] Fazer deploy final no Vercel
+- [ ] Criar documentação de uso para Anderson
