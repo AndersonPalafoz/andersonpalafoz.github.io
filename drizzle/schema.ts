@@ -147,3 +147,55 @@ export const userActivityProgress = pgTable("userActivityProgress", {
 
 export type UserActivityProgress = typeof userActivityProgress.$inferSelect;
 export type InsertUserActivityProgress = typeof userActivityProgress.$inferInsert;
+
+/**
+ * Modules table - Módulos de um curso
+ */
+export const modules = pgTable("modules", {
+  id: serial("id").primaryKey(),
+  courseId: serial("courseId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  order: integer("order").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Module = typeof modules.$inferSelect;
+export type InsertModule = typeof modules.$inferInsert;
+
+/**
+ * Lessons table - Aulas dentro de um módulo
+ */
+export const lessons = pgTable("lessons", {
+  id: serial("id").primaryKey(),
+  moduleId: serial("moduleId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  videoUrl: varchar("videoUrl", { length: 500 }),
+  duration: integer("duration"), // em minutos
+  order: integer("order").notNull(),
+  content: text("content"), // conteúdo em markdown
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Lesson = typeof lessons.$inferSelect;
+export type InsertLesson = typeof lessons.$inferInsert;
+
+/**
+ * Lesson Progress - Progresso do aluno em aulas
+ */
+export const lessonProgress = pgTable("lessonProgress", {
+  id: serial("id").primaryKey(),
+  userId: serial("userId").notNull(),
+  lessonId: serial("lessonId").notNull(),
+  completed: integer("completed").default(0), // 0 ou 1
+  watchedDuration: integer("watchedDuration").default(0), // em segundos
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type LessonProgress = typeof lessonProgress.$inferSelect;
+export type InsertLessonProgress = typeof lessonProgress.$inferInsert;
