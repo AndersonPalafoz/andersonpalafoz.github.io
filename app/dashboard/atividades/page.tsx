@@ -1,6 +1,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
 
 export default function AtividadesPage() {
@@ -101,7 +102,7 @@ export default function AtividadesPage() {
               </div>
               <Button variant="outline" size="sm">
                 {atividade.status === "completa" ? "Ver" : "Fazer"}
-              </button>
+              </Button>
             </div>
           </div>
         ))}

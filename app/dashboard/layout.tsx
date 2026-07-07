@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 import {
   BookOpen,
   CheckSquare,
@@ -54,7 +55,7 @@ export default function DashboardLayout({
                 >
                   <Icon size={20} />
                   {item.label}
-                </button>
+                </Button>
               </Link>
             );
           })}
@@ -78,7 +79,7 @@ export default function DashboardLayout({
               onClick={() => signOut({ callbackUrl: "/" })}
             >
               Sair
-            </button>
+            </Button>
           </div>
         </header>
 

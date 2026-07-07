@@ -2,6 +2,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 
 export default function PerfilPage() {
@@ -23,7 +24,7 @@ export default function PerfilPage() {
               <h2 className="font-bold text-foreground text-lg">Seu Nome</h2>
               <p className="text-sm text-muted-foreground">Aluno</p>
             </div>
-            <button className="w-full" variant="outline">
+            <button className="w-full">
               Alterar Foto
             </button>
           </div>
@@ -93,7 +94,7 @@ export default function PerfilPage() {
 
             <div className="flex gap-3">
               <button className="flex-1">Salvar Alterações</button>
-              <Button variant="outline" className="flex-1">
+              <button className="flex-1 border border-border rounded-lg">
                 Cancelar
               </button>
             </div>
@@ -114,7 +115,7 @@ export default function PerfilPage() {
             </div>
             <Button variant="outline" size="sm">
               Alterar
-            </button>
+            </Button>
           </div>
           <div className="flex items-center justify-between pt-3 border-t border-border">
             <div>
@@ -125,7 +126,7 @@ export default function PerfilPage() {
             </div>
             <Button variant="outline" size="sm" disabled>
               Conectado
-            </button>
+            </Button>
           </div>
         </div>
       </div>

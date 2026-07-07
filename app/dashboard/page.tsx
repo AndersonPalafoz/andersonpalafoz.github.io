@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { BookOpen, FileText, Calendar, Award, User, Activity } from "lucide-react";
 
 export default function DashboardPage() {
@@ -40,7 +41,7 @@ export default function DashboardPage() {
                   </h3>
                   <Button variant="ghost" size="sm">
                     Acessar →
-                  </button>
+                  </Button>
                 </div>
               </Link>
             );

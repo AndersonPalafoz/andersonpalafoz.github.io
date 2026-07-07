@@ -23,10 +23,6 @@ const nextConfig: NextConfig = {
   },
   // Disable static generation for error pages to avoid build issues
   staticPageGenerationTimeout: 120,
-  // Use on-demand ISR for all pages to avoid prerender errors
-  isr: {
-    maxMemoryUsageInMB: 512,
-  },
 };
 
 export default nextConfig;
