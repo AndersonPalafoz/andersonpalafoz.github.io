@@ -1,6 +1,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 
 export default function CalendarioPage() {
@@ -83,7 +84,7 @@ export default function CalendarioPage() {
                 </span>
                 <Button variant="outline" size="sm">
                   Ver
-                </button>
+                </Button>
               </div>
             </div>
           );

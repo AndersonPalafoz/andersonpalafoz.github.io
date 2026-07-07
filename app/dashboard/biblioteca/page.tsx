@@ -1,6 +1,7 @@
 
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Download, FileText } from "lucide-react";
 
 export default function BibliotecaPage() {
@@ -75,7 +76,7 @@ export default function BibliotecaPage() {
               <Button variant="outline" size="sm" className="gap-2">
                 <Download size={16} />
                 Baixar
-              </button>
+              </Button>
             </div>
           </div>
         ))}
