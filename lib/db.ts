@@ -172,3 +172,159 @@ export async function updateCourseProgress(userId: number, courseId: number, les
     },
   });
 }
+
+// Admin CRUD helpers for Courses
+export async function createCourse(data: {
+  title: string;
+  description?: string;
+  level: string;
+  modules?: number;
+}) {
+  return await db.insert(schema.courses).values({
+    title: data.title,
+    description: data.description,
+    level: data.level,
+    modules: data.modules || 0,
+  }).returning();
+}
+
+export async function updateCourse(id: number, data: Partial<{
+  title: string;
+  description: string;
+  level: string;
+  modules: number;
+}>) {
+  return await db.update(schema.courses)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.courses.id, id))
+    .returning();
+}
+
+export async function deleteCourse(id: number) {
+  return await db.delete(schema.courses)
+    .where(eq(schema.courses.id, id))
+    .returning();
+}
+
+// Admin CRUD helpers for Materials
+export async function createMaterial(data: {
+  title: string;
+  description?: string;
+  category: string;
+  level: string;
+  fileUrl?: string;
+}) {
+  return await db.insert(schema.materials).values({
+    title: data.title,
+    description: data.description,
+    category: data.category,
+    level: data.level,
+    fileUrl: data.fileUrl,
+  }).returning();
+}
+
+export async function updateMaterial(id: number, data: Partial<{
+  title: string;
+  description: string;
+  category: string;
+  level: string;
+  fileUrl: string;
+}>) {
+  return await db.update(schema.materials)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.materials.id, id))
+    .returning();
+}
+
+export async function deleteMaterial(id: number) {
+  return await db.delete(schema.materials)
+    .where(eq(schema.materials.id, id))
+    .returning();
+}
+
+export async function incrementMaterialDownloads(id: number) {
+  const material = await getMaterialById(id);
+  if (!material) return null;
+  
+  return await db.update(schema.materials)
+    .set({
+      downloads: material.downloads + 1,
+    })
+    .where(eq(schema.materials.id, id))
+    .returning();
+}
+
+// Admin CRUD helpers for Articles
+export async function createArticle(data: {
+  title: string;
+  slug: string;
+  content?: string;
+  category?: string;
+  readingTime?: number;
+  published?: Date;
+}) {
+  return await db.insert(schema.articles).values({
+    title: data.title,
+    slug: data.slug,
+    content: data.content,
+    category: data.category,
+    readingTime: data.readingTime,
+    published: data.published,
+  }).returning();
+}
+
+export async function updateArticle(id: number, data: Partial<{
+  title: string;
+  slug: string;
+  content: string;
+  category: string;
+  readingTime: number;
+  published: Date;
+}>) {
+  return await db.update(schema.articles)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.articles.id, id))
+    .returning();
+}
+
+export async function deleteArticle(id: number) {
+  return await db.delete(schema.articles)
+    .where(eq(schema.articles.id, id))
+    .returning();
+}
+
+export async function publishArticle(id: number) {
+  return await db.update(schema.articles)
+    .set({
+      published: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(schema.articles.id, id))
+    .returning();
+}
+
+// Admin dashboard statistics
+export async function getAdminStats() {
+  const coursesCount = await db.query.courses.findMany();
+  const materialsCount = await db.query.materials.findMany();
+  const articlesCount = await db.query.articles.findMany();
+  const usersCount = await db.query.users.findMany();
+  const enrollmentsCount = await db.query.enrollments.findMany();
+
+  return {
+    totalCourses: coursesCount.length,
+    totalMaterials: materialsCount.length,
+    totalArticles: articlesCount.length,
+    totalUsers: usersCount.length,
+    totalEnrollments: enrollmentsCount.length,
+  };
+}

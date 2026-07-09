@@ -104,12 +104,15 @@
 - [x] Adicionar cálculo de percentual de conclusão
 - [x] Implementar badge de conclusão de curso
 
-## Fase 13: Painel Admin (MVP)
-- [ ] Criar página /admin/dashboard com estatísticas
-- [ ] Criar CRUD de cursos: /admin/cursos
-- [ ] Criar CRUD de materiais: /admin/materiais
-- [ ] Criar CRUD de artigos: /admin/artigos
-- [ ] Implementar proteção de rotas admin (apenas professor)
+## Fase 13: Painel Admin (MVP) ✅
+- [x] Criar página /admin/dashboard com estatísticas
+- [x] Criar CRUD de cursos: /admin/cursos
+- [x] Criar CRUD de materiais: /admin/materiais
+- [x] Criar CRUD de artigos: /admin/artigos
+- [x] Implementar proteção de rotas admin (apenas professor)
+- [x] Criar API routes para admin (cursos, materiais, artigos, stats)
+- [x] Integrar dashboard com dados reais do banco
+- [x] Criar testes para admin CRUD e validação de dados
 - [ ] Adicionar upload de imagens para cursos
 
 ## Fase 14: Integração com YouTube
