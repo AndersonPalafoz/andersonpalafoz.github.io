@@ -1,0 +1,1 @@
+ALTER TYPE "public"."role" ADD VALUE 'professor' BEFORE 'admin';

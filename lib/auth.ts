@@ -1,7 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "./db";
-import { users } from "@/drizzle/schema";
+import { users, enrollments } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -27,18 +27,40 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!existingUser) {
-          // Create new user with admin role if email matches
-          const isAdmin = user.email === ADMIN_EMAIL;
-          await db.insert(users).values({
-            openId: account?.providerAccountId || "",
-            name: user.name || "User",
-            email: user.email,
-            loginMethod: "google",
-            role: isAdmin ? "admin" : "user",
-          });
+          // Create new user with appropriate role
+          const isAdminUser = user.email === ADMIN_EMAIL;
+          const userRole = isAdminUser ? "admin" : "user";
+
+          const newUser = await db
+            .insert(users)
+            .values({
+              openId: account?.providerAccountId || "",
+              name: user.name || "User",
+              email: user.email,
+              loginMethod: "google",
+              role: userRole,
+            })
+            .returning();
+
+          // If new user is not admin, enroll them in all available courses with 0% progress
+          if (!isAdminUser && newUser.length > 0) {
+            const allCourses = await db.query.courses.findMany();
+
+            for (const course of allCourses) {
+              // Create enrollment with 0% progress
+              await db.insert(enrollments).values({
+                userId: newUser[0].id,
+                courseId: course.id,
+                progress: 0,
+                currentModule: 0,
+                status: "active",
+              });
+            }
+          }
         } else if (existingUser.email === ADMIN_EMAIL && existingUser.role !== "admin") {
           // Ensure admin email always has admin role
-          await db.update(users)
+          await db
+            .update(users)
             .set({ role: "admin" })
             .where(eq(users.email, ADMIN_EMAIL));
         }

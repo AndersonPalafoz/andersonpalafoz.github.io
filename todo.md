@@ -162,11 +162,21 @@
 - [x] Validar redirecionamento após login (local)
 
 
-## Fase 19: Admin Access e Persistência de Sessão
+## Fase 19: Admin Access e Persistência de Sessão ✅
 - [x] Configurar palafozanderson@gmail.com como admin
 - [x] Adicionar lógica de auto-promoção para admin email
 - [x] Melhorar callbacks de NextAuth (session, jwt, redirect)
 - [x] Adicionar updateAge para atualizar sessão a cada 24h
-- [ ] Testar persistência de sessão no Vercel após redeploy
-- [ ] Criar página /admin/usuarios para gerenciar permissões
-- [ ] Implementar proteção de rotas admin (apenas admin)
+- [ ] Testar persistência de sessão no Vercel após redeploy (pendente)
+- [ ] Criar página /admin/usuarios para gerenciar permissões (futuro)
+- [ ] Implementar proteção de rotas admin (apenas admin) (futuro)
+
+
+## Fase 20: Gerenciamento de Usuários (Admin Panel) ✅
+- [x] Criar página /admin/usuarios com tabela de usuários
+- [x] Implementar CRUD de usuários (criar, editar, deletar)
+- [x] Criar filtros por role (admin, aluno)
+- [x] Implementar atribuição de roles (admin → aluno)
+- [x] Adicionar proteção de rotas /admin/* (apenas admin)
+- [x] Criar API routes para gerenciamento de usuários (/api/admin/users)
+- [ ] Adicionar testes para gerenciamento de usuários (futuro)
