@@ -15,6 +15,13 @@
       "when": 1783416991230,
       "tag": "0001_common_sabra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783614774159,
+      "tag": "0002_moaning_johnny_storm",
+      "breakpoints": true
     }
   ]
 }

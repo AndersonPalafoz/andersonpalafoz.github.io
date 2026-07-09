@@ -97,12 +97,12 @@
 - [x] Criar sistema de progresso: marcar aula como completa
 - [ ] Adicionar breadcrumbs e navegação entre aulas
 
-## Fase 12: Sistema de Progresso do Aluno
-- [ ] Criar tabela Progress no banco de dados
-- [ ] Implementar API para salvar progresso de aula
-- [ ] Criar componente ProgressBar para mostrar progresso do curso
-- [ ] Adicionar cálculo de percentual de conclusão
-- [ ] Implementar badge de conclusão de curso
+## Fase 12: Sistema de Progresso do Aluno ✅
+- [x] Criar tabela Progress no banco de dados
+- [x] Implementar API para salvar progresso de aula
+- [x] Criar componente ProgressBar para mostrar progresso do curso
+- [x] Adicionar cálculo de percentual de conclusão
+- [x] Implementar badge de conclusão de curso
 
 ## Fase 13: Painel Admin (MVP)
 - [ ] Criar página /admin/dashboard com estatísticas

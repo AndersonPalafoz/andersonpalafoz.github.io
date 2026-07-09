@@ -140,3 +140,35 @@ export async function updateLessonProgress(userId: number, lessonId: number, com
     },
   });
 }
+
+// Progress helpers
+export async function getUserProgress(userId: number, courseId: number) {
+  return await db.query.progress.findFirst({
+    where: (table) => {
+      return eq(table.userId, userId) && eq(table.courseId, courseId);
+    },
+  });
+}
+
+export async function updateCourseProgress(userId: number, courseId: number, lessonsCompleted: number, totalLessons: number) {
+  const percentageCompleted = totalLessons > 0 ? Math.round((lessonsCompleted / totalLessons) * 100) : 0;
+  const status = percentageCompleted === 100 ? 'completed' : percentageCompleted > 0 ? 'in_progress' : 'pending';
+  
+  return await db.insert(schema.progress).values({
+    userId,
+    courseId,
+    lessonsCompleted,
+    totalLessons,
+    percentageCompleted,
+    status: status as any,
+  }).onConflictDoUpdate({
+    target: [schema.progress.userId, schema.progress.courseId],
+    set: {
+      lessonsCompleted,
+      totalLessons,
+      percentageCompleted,
+      status: status as any,
+      updatedAt: new Date(),
+    },
+  });
+}
