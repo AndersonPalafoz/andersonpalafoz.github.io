@@ -199,3 +199,26 @@ export const lessonProgress = pgTable("lessonProgress", {
 
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type InsertLessonProgress = typeof lessonProgress.$inferInsert;
+
+
+/**
+ * Progress table - Rastreamento de progresso do aluno em cursos
+ */
+export const progress = pgTable("progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  courseId: integer("courseId").notNull().references(() => courses.id),
+  enrollmentId: integer("enrollmentId").references(() => enrollments.id),
+  lessonsCompleted: integer("lessonsCompleted").default(0),
+  totalLessons: integer("totalLessons").default(0),
+  percentageCompleted: integer("percentageCompleted").default(0),
+  status: progressStatusEnum("status").default("pending"),
+  startedAt: timestamp("startedAt").defaultNow(),
+  completedAt: timestamp("completedAt"),
+  lastAccessedAt: timestamp("lastAccessedAt").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Progress = typeof progress.$inferSelect;
+export type InsertProgress = typeof progress.$inferInsert;
