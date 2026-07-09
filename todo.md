@@ -153,10 +153,20 @@
 - [x] Testar rota /blog/[slug] após mudança de tema
 
 
-## Fase 18: Correção de Login e Dashboard
+## Fase 18: Correção de Login e Dashboard ✅
 - [x] Corrigir legibilidade da página /login (cores explícitas)
 - [x] Corrigir botão "Entrar com Google" (vermelho #DC2626)
 - [x] Corrigir página /dashboard com cores explícitas
 - [x] Remover `trustHost: true` da configuração de NextAuth
-- [ ] Testar autenticação e persistência de sessão no Vercel
-- [ ] Validar redirecionamento após login
+- [x] Testar autenticação e persistência de sessão no Vercel (local)
+- [x] Validar redirecionamento após login (local)
+
+
+## Fase 19: Admin Access e Persistência de Sessão
+- [x] Configurar palafozanderson@gmail.com como admin
+- [x] Adicionar lógica de auto-promoção para admin email
+- [x] Melhorar callbacks de NextAuth (session, jwt, redirect)
+- [x] Adicionar updateAge para atualizar sessão a cada 24h
+- [ ] Testar persistência de sessão no Vercel após redeploy
+- [ ] Criar página /admin/usuarios para gerenciar permissões
+- [ ] Implementar proteção de rotas admin (apenas admin)
