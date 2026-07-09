@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ChevronLeft, CheckCircle2, Play } from "lucide-react";
 import { getLessonById } from "@/lib/db";
+import { YouTubePlayer } from "@/components/YouTubePlayer";
 
 async function LessonContent({ lessonId }: { lessonId: number }) {
   const lesson = await getLessonById(lessonId);
@@ -32,25 +33,25 @@ async function LessonContent({ lessonId }: { lessonId: number }) {
       {/* Content */}
       <div className="container max-w-4xl mx-auto px-4 py-8">
         {/* Video Player */}
-        <div className="bg-black rounded-lg overflow-hidden mb-8 aspect-video flex items-center justify-center">
-          {lesson.videoUrl ? (
-            <iframe
-              width="100%"
-              height="100%"
-              src={lesson.videoUrl}
+        {lesson.videoUrl ? (
+          <div className="mb-8">
+            <YouTubePlayer
+              url={lesson.videoUrl}
               title={lesson.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="w-full h-full"
+              width="100%"
+              height="auto"
+              aspectRatio="16:9"
+              allowFullscreen
             />
-          ) : (
+          </div>
+        ) : (
+          <div className="bg-black rounded-lg overflow-hidden mb-8 aspect-video flex items-center justify-center">
             <div className="flex flex-col items-center gap-4 text-white">
               <Play size={48} className="text-muted-foreground" />
               <p className="text-muted-foreground">Vídeo não disponível</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Lesson Info */}
         <div className="space-y-6">

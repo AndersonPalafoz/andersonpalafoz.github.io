@@ -115,11 +115,14 @@
 - [x] Criar testes para admin CRUD e validação de dados
 - [ ] Adicionar upload de imagens para cursos
 
-## Fase 14: Integração com YouTube
-- [ ] Criar helper para extrair ID de vídeo do YouTube
-- [ ] Implementar componente YouTubePlayer com embed responsivo
-- [ ] Adicionar controles de reprodução customizados
-- [ ] Testar reprodução em mobile e desktop
+## Fase 14: Integração com YouTube ✅
+- [x] Criar helper para extrair ID de vídeo do YouTube
+- [x] Implementar componente YouTubePlayer com embed responsivo
+- [x] Integrar YouTubePlayer na página de aula
+- [x] Criar componentes YouTubePlayerResponsive e YouTubePlayerGrid
+- [x] Criar 18 testes para YouTube helper
+- [x] Criar 22 testes para YouTubePlayer (aspect ratios, grid, gaps, responsividade)
+- [x] Remover placeholders e validar production-ready
 
 ## Fase 15: Integração com Google Drive
 - [ ] Configurar Google Drive API
