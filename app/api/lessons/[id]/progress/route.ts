@@ -22,7 +22,17 @@ export async function POST(
     const { completed } = body;
 
     // Get userId from session
-    const userId = 1; // TODO: Extract from session.user
+    // Note: In a real app, userId would be stored in the session
+    // For now, we use a placeholder. This should be updated when user table is linked to auth.
+    const userId = parseInt(session.user.email?.split('@')[0] || '1');
+
+    // Ensure userId is valid
+    if (isNaN(userId) || userId <= 0) {
+      return NextResponse.json(
+        { error: "Invalid user ID" },
+        { status: 400 }
+      );
+    }
 
     const result = await updateLessonProgress(userId, lessonId, completed ? 1 : 0);
     return NextResponse.json({ success: true, result });
