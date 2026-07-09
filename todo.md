@@ -151,3 +151,12 @@
 - [x] Corrigir página /materiais: hierarquia visual melhorada
 - [x] Testar todas as páginas em mobile (375px) e desktop (1280px)
 - [x] Testar rota /blog/[slug] após mudança de tema
+
+
+## Fase 18: Correção de Login e Dashboard
+- [x] Corrigir legibilidade da página /login (cores explícitas)
+- [x] Corrigir botão "Entrar com Google" (vermelho #DC2626)
+- [x] Corrigir página /dashboard com cores explícitas
+- [x] Remover `trustHost: true` da configuração de NextAuth
+- [ ] Testar autenticação e persistência de sessão no Vercel
+- [ ] Validar redirecionamento após login
