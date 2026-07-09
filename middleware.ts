@@ -7,7 +7,19 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // Proteger rotas /dashboard
+  // Proteger rotas /admin - apenas admin
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    if (!token) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    
+    // Verificar se user eh admin
+    if (token.role !== "admin") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+  }
+
+  // Proteger rotas /dashboard - qualquer usuario autenticado
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
     if (!token) {
       return NextResponse.redirect(new URL("/login", request.url));
@@ -18,5 +30,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*"],
 };

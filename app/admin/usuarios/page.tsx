@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import Link from "next/link";
 
 interface User {
@@ -21,6 +21,9 @@ export default function UsuariosPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "admin">("all");
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [formData, setFormData] = useState({ email: "", name: "", role: "user" });
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -32,7 +35,7 @@ export default function UsuariosPage() {
       const response = await fetch("/api/admin/users");
 
       if (!response.ok) {
-        throw new Error("Falha ao carregar usuários");
+        throw new Error("Falha ao carregar usuarios");
       }
 
       const data = await response.json();
@@ -45,13 +48,46 @@ export default function UsuariosPage() {
     }
   };
 
-  const handleDeleteUser = async (userId: number, email: string | null) => {
-    if (email === "palafozanderson@gmail.com") {
-      alert("Não é possível deletar o usuário admin");
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.email || !formData.name) {
+      alert("Preencha email e nome");
       return;
     }
 
-    if (!confirm("Tem certeza que deseja deletar este usuário?")) {
+    try {
+      setCreating(true);
+      const response = await fetch("/api/admin/users/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Falha ao criar usuario");
+      }
+
+      const data = await response.json();
+      setUsers([...users, data.user]);
+      setFormData({ email: "", name: "", role: "user" });
+      setShowCreateForm(false);
+      alert("Usuario criado com sucesso!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao criar usuario");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: number, email: string | null) => {
+    if (email === "palafozanderson@gmail.com") {
+      alert("Nao eh possivel deletar o usuario admin");
+      return;
+    }
+
+    if (!confirm("Tem certeza que deseja deletar este usuario?")) {
       return;
     }
 
@@ -61,12 +97,12 @@ export default function UsuariosPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Falha ao deletar usuário");
+        throw new Error("Falha ao deletar usuario");
       }
 
       setUsers(users.filter((u) => u.id !== userId));
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao deletar usuário");
+      alert(err instanceof Error ? err.message : "Erro ao deletar usuario");
     }
   };
 
@@ -100,12 +136,93 @@ export default function UsuariosPage() {
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Gerenciamento de Usuários
+            Gerenciamento de Usuarios
           </h1>
           <p className="text-gray-600">
             Gerencie professores, alunos e administradores da plataforma
           </p>
         </div>
+
+        {/* Botao Criar Usuario */}
+        <div className="mb-6">
+          <Button
+            onClick={() => setShowCreateForm(!showCreateForm)}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Plus size={16} className="mr-2" />
+            Criar Novo Usuario
+          </Button>
+        </div>
+
+        {/* Formulario de Criacao */}
+        {showCreateForm && (
+          <div className="mb-8 p-6 border border-gray-200 rounded-lg bg-gray-50">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Criar Novo Usuario
+            </h2>
+            <form onSubmit={handleCreateUser} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="usuario@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Nome
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="Nome completo"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={formData.role}
+                  onChange={(e) =>
+                    setFormData({ ...formData, role: e.target.value as "user" | "admin" })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                >
+                  <option value="user">Aluno</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  {creating ? "Criando..." : "Criar Usuario"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowCreateForm(false)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="mb-6 flex gap-2">
@@ -132,11 +249,11 @@ export default function UsuariosPage() {
           </Button>
         </div>
 
-        {/* Tabela de Usuários */}
+        {/* Tabela de Usuarios */}
         <div className="overflow-hidden border border-gray-200 rounded-lg">
           {loading ? (
             <div className="p-8 text-center text-gray-600">
-              Carregando usuários...
+              Carregando usuarios...
             </div>
           ) : error ? (
             <div className="p-8 text-center text-red-600">
@@ -144,7 +261,7 @@ export default function UsuariosPage() {
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-gray-600">
-              Nenhum usuário encontrado
+              Nenhum usuario encontrado
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -164,7 +281,7 @@ export default function UsuariosPage() {
                       Criado em
                     </th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                      Ações
+                      Acoes
                     </th>
                   </tr>
                 </thead>
