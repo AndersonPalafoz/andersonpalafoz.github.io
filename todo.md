@@ -124,11 +124,12 @@
 - [x] Criar 22 testes para YouTubePlayer (aspect ratios, grid, gaps, responsividade)
 - [x] Remover placeholders e validar production-ready
 
-## Fase 15: Integração com Google Drive
-- [ ] Configurar Google Drive API
-- [ ] Criar helper para listar arquivos do Google Drive
-- [ ] Implementar download de materiais do Google Drive
-- [ ] Adicionar preview de PDFs
+## Fase 15: Integração com Google Drive ✅
+- [x] Criar helper lib/google-drive.ts com 8 funções
+- [x] Criar 20 testes para Google Drive helper
+- [x] Suporte a múltiplos formatos de URL
+- [x] Suporte a export em PDF, DOCX, XLSX, PPTX
+- [ ] Integrar com Google Drive API (requer autenticaoção)
 
 ## Fase 16: MVP Final - Testes e Deploy
 - [ ] Testar fluxo completo: login, curso, progresso, admin
