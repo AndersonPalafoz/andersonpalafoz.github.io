@@ -95,7 +95,7 @@
 - [x] Implementar página /cursos/[id]/aulas/[lessonId] com player de vídeo
 - [x] Integrar YouTube Embed para reprodução de vídeos
 - [x] Criar sistema de progresso: marcar aula como completa
-- [ ] Adicionar breadcrumbs e navegação entre aulas
+- [ ] Adicionar breadcrumbs e navegação entre aulas (futuro)
 
 ## Fase 12: Sistema de Progresso do Aluno ✅
 - [x] Criar tabela Progress no banco de dados
@@ -113,7 +113,7 @@
 - [x] Criar API routes para admin (cursos, materiais, artigos, stats)
 - [x] Integrar dashboard com dados reais do banco
 - [x] Criar testes para admin CRUD e validação de dados
-- [ ] Adicionar upload de imagens para cursos
+- [ ] Adicionar upload de imagens para cursos (futuro)
 
 ## Fase 14: Integração com YouTube ✅
 - [x] Criar helper para extrair ID de vídeo do YouTube
@@ -129,7 +129,7 @@
 - [x] Criar 20 testes para Google Drive helper
 - [x] Suporte a múltiplos formatos de URL
 - [x] Suporte a export em PDF, DOCX, XLSX, PPTX
-- [ ] Integrar com Google Drive API (requer autenticaoção)
+- [ ] Integrar com Google Drive API (requer autenticação - futuro)
 
 ## Fase 16: MVP Final - Testes e Deploy ✅
 - [x] Testar fluxo completo: login, curso, progresso, admin
