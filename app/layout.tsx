@@ -48,13 +48,13 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} font-sans antialiased`}
         style={{
-          backgroundColor: "#0a0a0a",
-          color: "#fafafa",
+          backgroundColor: "#ffffff",
+          color: "#333333",
           fontFamily: "Poppins, system-ui, sans-serif",
         }}
       >
         <SessionProviderWrapper>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <Navbar />
             <main className="min-h-screen">{children}</main>
             <Footer />

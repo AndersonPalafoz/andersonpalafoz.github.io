@@ -142,3 +142,12 @@
 - [x] Remover placeholders e validar production-ready
 - [x] Corrigir userId hardcoded em app/api/lessons/[id]/progress/route.ts
 - [x] Criar documentao de MVP com checklist de produção
+
+
+## Fase 17: Correção de Design (Fundo Preto → Branco) ✅
+- [x] Mudar tema padrão de dark para light em app/layout.tsx
+- [x] Corrigir página /blog: fundo branco com cards
+- [x] Corrigir página /blog/[slug]: fundo branco com tipografia profissional
+- [x] Corrigir página /materiais: hierarquia visual melhorada
+- [x] Testar todas as páginas em mobile (375px) e desktop (1280px)
+- [x] Testar rota /blog/[slug] após mudança de tema
