@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateCourseProgress } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(
   request: Request,
@@ -8,7 +9,7 @@ export async function POST(
 ) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -21,10 +22,9 @@ export async function POST(
     const body = await request.json();
     const { lessonsCompleted, totalLessons } = body;
 
-    // Get userId from session
-    // Note: session.user needs to have an id field from your auth provider
-    const userId = parseInt(session.user.id || '1');
-    if (!userId) {
+    // Get userId from session (populated by the session callback in lib/auth.ts)
+    const userId = parseInt(session.user.id ?? "");
+    if (!session.user.id || isNaN(userId) || userId <= 0) {
       return NextResponse.json(
         { error: "User ID not found in session" },
         { status: 400 }

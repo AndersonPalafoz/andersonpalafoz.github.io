@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { updateLessonProgress } from "@/lib/db";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 export async function POST(
   request: Request,
@@ -8,7 +9,7 @@ export async function POST(
 ) {
   try {
     // Verify user is authenticated
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json(
         { error: "Unauthorized" },
@@ -21,13 +22,12 @@ export async function POST(
     const body = await request.json();
     const { completed } = body;
 
-    // Get userId from session
-    // Note: In a real app, userId would be stored in the session
-    // For now, we use a placeholder. This should be updated when user table is linked to auth.
-    const userId = parseInt(session.user.email?.split('@')[0] || '1');
+    // Get userId from session (populated by the session callback in lib/auth.ts,
+    // which looks up the user row by email and sets session.user.id)
+    const userId = parseInt(session.user.id ?? "");
 
     // Ensure userId is valid
-    if (isNaN(userId) || userId <= 0) {
+    if (!session.user.id || isNaN(userId) || userId <= 0) {
       return NextResponse.json(
         { error: "Invalid user ID" },
         { status: 400 }
