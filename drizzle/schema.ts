@@ -1,7 +1,9 @@
 import { pgTable, pgEnum, serial, varchar, text, timestamp, integer } from "drizzle-orm/pg-core";
 
 // Enums
-export const roleEnum = pgEnum("role", ["user", "admin"]);
+// Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
+// Nenhuma rota/UI usa esse valor ainda -- apenas alinhando o schema TS à realidade do banco.
+export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
 export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
 export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
