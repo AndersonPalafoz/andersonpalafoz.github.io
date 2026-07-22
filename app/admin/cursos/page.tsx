@@ -1,67 +1,98 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, ArrowLeft } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, Loader2 } from "lucide-react";
 
 interface Course {
   id: number;
   title: string;
   level: string;
   modules: number;
-  description: string;
+  description: string | null;
 }
 
-const mockCourses: Course[] = [
-  {
-    id: 1,
-    title: "English A1 - Beginner",
-    level: "A1",
-    modules: 5,
-    description: "Curso básico de inglês para iniciantes",
-  },
-  {
-    id: 2,
-    title: "English B1 - Intermediate",
-    level: "B1",
-    modules: 8,
-    description: "Curso intermediário de inglês",
-  },
-  {
-    id: 3,
-    title: "English C1 - Advanced",
-    level: "C1",
-    modules: 10,
-    description: "Curso avançado de inglês",
-  },
-];
-
 export default function AdminCursos() {
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({ title: "", level: "", modules: 0, description: "" });
 
-  const handleDelete = (id: number) => {
-    setCourses(courses.filter((c) => c.id !== id));
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/courses");
+      if (!response.ok) throw new Error("Falha ao carregar cursos");
+      const data = await response.json();
+      setCourses(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Tem certeza que deseja deletar este curso?")) return;
+    try {
+      const response = await fetch(`/api/admin/courses?id=${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao deletar curso");
+      setCourses(courses.filter((c) => c.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao deletar curso");
+    }
   };
 
   const handleEdit = (course: Course) => {
     setEditingId(course.id);
-    setFormData(course);
+    setFormData({
+      title: course.title,
+      level: course.level,
+      modules: course.modules,
+      description: course.description || "",
+    });
     setShowForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setCourses(courses.map((c) => (c.id === editingId ? { ...formData, id: editingId } : c)));
-      setEditingId(null);
-    } else {
-      setCourses([...courses, { ...formData, id: Math.max(...courses.map((c) => c.id), 0) + 1 }]);
+    try {
+      setSaving(true);
+      if (editingId) {
+        const response = await fetch("/api/admin/courses", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...formData }),
+        });
+        if (!response.ok) throw new Error("Falha ao atualizar curso");
+        const [updated] = await response.json();
+        setCourses(courses.map((c) => (c.id === editingId ? updated : c)));
+        setEditingId(null);
+      } else {
+        const response = await fetch("/api/admin/courses", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (!response.ok) throw new Error("Falha ao criar curso");
+        const [created] = await response.json();
+        setCourses([...courses, created]);
+      }
+      setFormData({ title: "", level: "", modules: 0, description: "" });
+      setShowForm(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar curso");
+    } finally {
+      setSaving(false);
     }
-    setFormData({ title: "", level: "", modules: 0, description: "" });
-    setShowForm(false);
   };
 
   return (
@@ -124,7 +155,7 @@ export default function AdminCursos() {
                   <input
                     type="number"
                     value={formData.modules}
-                    onChange={(e) => setFormData({ ...formData, modules: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, modules: parseInt(e.target.value) || 0 })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600"
                     required
                   />
@@ -143,9 +174,10 @@ export default function AdminCursos() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                  disabled={saving}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
                 >
-                  {editingId ? "Atualizar" : "Criar"}
+                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
                 </button>
                 <button
                   type="button"
@@ -161,41 +193,52 @@ export default function AdminCursos() {
 
         {/* Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Módulos</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {courses.map((course) => (
-                <tr key={course.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">{course.title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{course.level}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{course.modules}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(course)}
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(course.id)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-12 flex items-center justify-center text-gray-600 gap-2">
+              <Loader2 className="animate-spin" size={20} />
+              Carregando cursos...
+            </div>
+          ) : error ? (
+            <div className="p-12 text-center text-red-600">Erro: {error}</div>
+          ) : courses.length === 0 ? (
+            <div className="p-12 text-center text-gray-600">Nenhum curso cadastrado ainda.</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Módulos</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {courses.map((course) => (
+                  <tr key={course.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900">{course.title}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{course.level}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{course.modules}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(course)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(course.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

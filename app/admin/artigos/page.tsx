@@ -1,107 +1,131 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, ArrowLeft, Eye } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface Article {
   id: number;
   title: string;
-  category: string;
-  status: "published" | "draft";
-  views: number;
-  date: string;
+  slug: string;
+  content: string | null;
+  category: string | null;
+  readingTime: number | null;
+  published: string | null;
+  createdAt: string;
 }
 
-const mockArticles: Article[] = [
-  {
-    id: 1,
-    title: "5 Dicas para Melhorar sua Pronúncia em Inglês",
-    category: "Dicas",
-    status: "published",
-    views: 234,
-    date: "2024-01-15",
-  },
-  {
-    id: 2,
-    title: "Diferenças entre British e American English",
-    category: "Linguística",
-    status: "published",
-    views: 156,
-    date: "2024-01-10",
-  },
-  {
-    id: 3,
-    title: "Como Usar Phrasal Verbs Corretamente",
-    category: "Gramática",
-    status: "draft",
-    views: 0,
-    date: "2024-01-20",
-  },
-];
-
 export default function AdminArtigos() {
-  const [articles, setArticles] = useState<Article[]>(mockArticles);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [formData, setFormData] = useState<{
-    title: string;
-    category: string;
-    status: "published" | "draft";
-  }>({
+  const [formData, setFormData] = useState({
     title: "",
+    slug: "",
     category: "",
-    status: "draft",
+    readingTime: 5,
+    content: "",
   });
 
-  const handleDelete = (id: number) => {
-    setArticles(articles.filter((a) => a.id !== id));
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/articles");
+      if (!response.ok) throw new Error("Falha ao carregar artigos");
+      const data = await response.json();
+      setArticles(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Tem certeza que deseja deletar este artigo?")) return;
+    try {
+      const response = await fetch(`/api/admin/articles?id=${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao deletar artigo");
+      setArticles(articles.filter((a) => a.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao deletar artigo");
+    }
   };
 
   const handleEdit = (article: Article) => {
     setEditingId(article.id);
     setFormData({
       title: article.title,
-      category: article.category,
-      status: article.status,
+      slug: article.slug,
+      category: article.category || "",
+      readingTime: article.readingTime || 5,
+      content: article.content || "",
     });
     setShowForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingId) {
-      setArticles(
-        articles.map((a) =>
-          a.id === editingId
-            ? {
-                ...a,
-                ...formData,
-              }
-            : a
-        )
-      );
-      setEditingId(null);
-    } else {
-      setArticles([
-        ...articles,
-        {
-          ...formData,
-          id: Math.max(...articles.map((a) => a.id), 0) + 1,
-          views: 0,
-          date: new Date().toISOString().split("T")[0],
-        },
-      ]);
+  const handleTogglePublish = async (article: Article) => {
+    try {
+      const response = await fetch("/api/admin/articles", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          article.published
+            ? { id: article.id, published: null }
+            : { id: article.id, action: "publish" }
+        ),
+      });
+      if (!response.ok) throw new Error("Falha ao atualizar status de publicação");
+      const [updated] = await response.json();
+      setArticles(articles.map((a) => (a.id === article.id ? updated : a)));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao publicar/despublicar artigo");
     }
-    setFormData({ title: "", category: "", status: "draft" });
-    setShowForm(false);
   };
 
-  const getStatusBadge = (status: string) => {
-    return status === "published"
-      ? "bg-green-100 text-green-800"
-      : "bg-yellow-100 text-yellow-800";
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      if (editingId) {
+        const response = await fetch("/api/admin/articles", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...formData }),
+        });
+        if (!response.ok) throw new Error("Falha ao atualizar artigo");
+        const [updated] = await response.json();
+        setArticles(articles.map((a) => (a.id === editingId ? updated : a)));
+        setEditingId(null);
+      } else {
+        const response = await fetch("/api/admin/articles", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (!response.ok) throw new Error("Falha ao criar artigo");
+        const [created] = await response.json();
+        setArticles([...articles, created]);
+      }
+      setFormData({ title: "", slug: "", category: "", readingTime: 5, content: "" });
+      setShowForm(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar artigo");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const getStatusBadge = (published: string | null) =>
+    published ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800";
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,7 +142,7 @@ export default function AdminArtigos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", category: "", status: "draft" });
+              setFormData({ title: "", slug: "", category: "", readingTime: 5, content: "" });
             }}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
           >
@@ -137,15 +161,28 @@ export default function AdminArtigos() {
               {editingId ? "Editar Artigo" : "Novo Artigo"}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Slug (URL)</label>
+                  <input
+                    type="text"
+                    value={formData.slug}
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    placeholder="titulo-do-artigo"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+                    required
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -155,32 +192,41 @@ export default function AdminArtigos() {
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                    required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select
-                    value={formData.status}
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tempo de leitura (min)
+                  </label>
+                  <input
+                    type="number"
+                    value={formData.readingTime}
                     onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status: (e.target.value === "published" ? "published" : "draft") as "published" | "draft",
-                      })
+                      setFormData({ ...formData, readingTime: parseInt(e.target.value) || 5 })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                  >
-                    <option value="draft">Rascunho</option>
-                    <option value="published">Publicado</option>
-                  </select>
+                    min={1}
+                  />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Conteúdo (Markdown)
+                </label>
+                <textarea
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg font-mono text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
+                  rows={8}
+                />
               </div>
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                  disabled={saving}
+                  className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
-                  {editingId ? "Atualizar" : "Criar"}
+                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
                 </button>
                 <button
                   type="button"
@@ -196,52 +242,63 @@ export default function AdminArtigos() {
 
         {/* Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Visualizações</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Data</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {articles.map((article) => (
-                <tr key={article.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">{article.title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{article.category}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(article.status)}`}>
-                      {article.status === "published" ? "Publicado" : "Rascunho"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 flex items-center gap-1">
-                    <Eye size={16} />
-                    {article.views}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{article.date}</td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(article)}
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(article.id)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-12 flex items-center justify-center text-gray-600 gap-2">
+              <Loader2 className="animate-spin" size={20} />
+              Carregando artigos...
+            </div>
+          ) : error ? (
+            <div className="p-12 text-center text-red-600">Erro: {error}</div>
+          ) : articles.length === 0 ? (
+            <div className="p-12 text-center text-gray-600">Nenhum artigo cadastrado ainda.</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {articles.map((article) => (
+                  <tr key={article.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900">{article.title}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{article.category || "-"}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadge(article.published)}`}>
+                        {article.published ? "Publicado" : "Rascunho"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleTogglePublish(article)}
+                          title={article.published ? "Despublicar" : "Publicar"}
+                          className="text-gray-600 hover:text-gray-900 transition-colors"
+                        >
+                          {article.published ? <EyeOff size={18} /> : <Eye size={18} />}
+                        </button>
+                        <button
+                          onClick={() => handleEdit(article)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(article.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
