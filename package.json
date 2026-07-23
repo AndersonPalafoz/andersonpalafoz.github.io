@@ -50,13 +50,13 @@
     "cookie": "^1.0.2",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.2",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.22",
     "input-otp": "^1.4.2",
     "jose": "6.1.0",
     "lucide-react": "^0.453.0",
-    "next": "^15.1.0",
+    "next": "^15.5.21",
     "next-auth": "4.24.14",
     "next-themes": "^0.4.6",
     "postgres": "^3.4.9",
@@ -82,11 +82,22 @@
     "@types/react-dom": "^19.2.1",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.4",
-    "postcss": "^8.5.6",
+    "postcss": "^8.5.10",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.19",
     "typescript": "5.9.3",
-    "vitest": "^2.1.4"
+    "vitest": "^3.2.6"
+  },
+  "pnpm": {
+    "overrides": {
+      "lodash": "^4.18.0",
+      "uuid": "^11.1.1",
+      "vite": "^6.4.3",
+      "rollup": "^4.59.0",
+      "sharp": "^0.35.0",
+      "esbuild": "^0.25.0",
+      "postcss": "^8.5.10"
+    }
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af"
 }
