@@ -1,87 +1,107 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, ArrowLeft, Download } from "lucide-react";
+import { Plus, Edit2, Trash2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 interface Material {
   id: number;
   title: string;
   category: string;
   level: string;
-  type: string;
+  description: string | null;
+  fileUrl: string | null;
   downloads: number;
 }
 
-const mockMaterials: Material[] = [
-  {
-    id: 1,
-    title: "Vocabulary List - A1",
-    category: "Vocabulário",
-    level: "A1",
-    type: "PDF",
-    downloads: 45,
-  },
-  {
-    id: 2,
-    title: "Grammar Exercises - B1",
-    category: "Gramática",
-    level: "B1",
-    type: "PDF",
-    downloads: 78,
-  },
-  {
-    id: 3,
-    title: "Listening Comprehension - B2",
-    category: "Compreensão",
-    level: "B2",
-    type: "MP3",
-    downloads: 32,
-  },
-];
-
 export default function AdminMateriais() {
-  const [materials, setMaterials] = useState<Material[]>(mockMaterials);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     level: "",
-    type: "",
+    description: "",
+    fileUrl: "",
   });
 
-  const handleDelete = (id: number) => {
-    setMaterials(materials.filter((m) => m.id !== id));
+  useEffect(() => {
+    fetchMaterials();
+  }, []);
+
+  const fetchMaterials = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/admin/materials");
+      if (!response.ok) throw new Error("Falha ao carregar materiais");
+      const data = await response.json();
+      setMaterials(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Tem certeza que deseja deletar este material?")) return;
+    try {
+      const response = await fetch(`/api/admin/materials?id=${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao deletar material");
+      setMaterials(materials.filter((m) => m.id !== id));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao deletar material");
+    }
   };
 
   const handleEdit = (material: Material) => {
     setEditingId(material.id);
-    setFormData(material);
+    setFormData({
+      title: material.title,
+      category: material.category,
+      level: material.level,
+      description: material.description || "",
+      fileUrl: material.fileUrl || "",
+    });
     setShowForm(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      setMaterials(
-        materials.map((m) =>
-          m.id === editingId ? { ...m, ...formData } : m
-        )
-      );
-      setEditingId(null);
-    } else {
-      setMaterials([
-        ...materials,
-        {
-          ...formData,
-          id: Math.max(...materials.map((m) => m.id), 0) + 1,
-          downloads: 0,
-        },
-      ]);
+    try {
+      setSaving(true);
+      if (editingId) {
+        const response = await fetch("/api/admin/materials", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...formData }),
+        });
+        if (!response.ok) throw new Error("Falha ao atualizar material");
+        const [updated] = await response.json();
+        setMaterials(materials.map((m) => (m.id === editingId ? updated : m)));
+        setEditingId(null);
+      } else {
+        const response = await fetch("/api/admin/materials", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        });
+        if (!response.ok) throw new Error("Falha ao criar material");
+        const [created] = await response.json();
+        setMaterials([...materials, created]);
+      }
+      setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
+      setShowForm(false);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao salvar material");
+    } finally {
+      setSaving(false);
     }
-    setFormData({ title: "", category: "", level: "", type: "" });
-    setShowForm(false);
   };
 
   return (
@@ -99,7 +119,7 @@ export default function AdminMateriais() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", category: "", level: "", type: "" });
+              setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
             }}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -128,13 +148,14 @@ export default function AdminMateriais() {
                   required
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                   <input
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    placeholder="Worksheets, Slides, Áudios..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                     required
                   />
@@ -145,27 +166,40 @@ export default function AdminMateriais() {
                     type="text"
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
-                  <input
-                    type="text"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    placeholder="A1, B2, C1..."
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
                     required
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Link do arquivo (Google Drive, etc)
+                </label>
+                <input
+                  type="text"
+                  value={formData.fileUrl}
+                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                  placeholder="https://drive.google.com/..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  disabled={saving}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
-                  {editingId ? "Atualizar" : "Criar"}
+                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
                 </button>
                 <button
                   type="button"
@@ -181,48 +215,57 @@ export default function AdminMateriais() {
 
         {/* Table */}
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Tipo</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Downloads</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {materials.map((material) => (
-                <tr key={material.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">{material.title}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{material.category}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{material.level}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{material.type}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 flex items-center gap-1">
-                    <Download size={16} />
-                    {material.downloads}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(material)}
-                        className="text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        <Edit2 size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(material.id)}
-                        className="text-red-600 hover:text-red-800 transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-12 flex items-center justify-center text-gray-600 gap-2">
+              <Loader2 className="animate-spin" size={20} />
+              Carregando materiais...
+            </div>
+          ) : error ? (
+            <div className="p-12 text-center text-red-600">Erro: {error}</div>
+          ) : materials.length === 0 ? (
+            <div className="p-12 text-center text-gray-600">Nenhum material cadastrado ainda.</div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Downloads</th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {materials.map((material) => (
+                  <tr key={material.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm text-gray-900">{material.title}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{material.category}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{material.level}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600 flex items-center gap-1">
+                      <Download size={16} />
+                      {material.downloads}
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(material)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(material.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
