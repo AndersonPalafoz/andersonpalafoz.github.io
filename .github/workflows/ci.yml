@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm run check
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm run build
+        env:
+          # Placeholder: builds precisam de uma string valida no formato de
+          # connection string, mas nao de uma conexao real (o driver postgres.js
+          # so conecta de fato na primeira query em runtime). A build de
+          # producao de verdade usa a DATABASE_URL real configurada no Vercel.
+          DATABASE_URL: "postgres://ci:ci@localhost:5432/ci_placeholder"
+          NEXTAUTH_SECRET: "ci-placeholder-secret-not-used-in-production"
