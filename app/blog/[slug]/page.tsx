@@ -1,11 +1,25 @@
-"use client";
-
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getArticleBySlug } from "@/lib/db";
+import { Calendar, Clock } from "lucide-react";
 
-export default function BlogPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+async function ArticleDetail({ slug }: { slug: string }) {
+  const article = await getArticleBySlug(slug);
+
+  // Rascunhos (published == null) nao ficam visiveis publicamente
+  if (!article || !article.published) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-600">Artigo não encontrado.</p>
+      </div>
+    );
+  }
+
+  const publishedDate = new Date(article.published).toLocaleDateString("pt-BR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -13,51 +27,63 @@ export default function BlogPage() {
         <Breadcrumbs
           items={[
             { label: "Blog", href: "/blog" },
-            { label: slug, href: `/blog/${slug}` },
+            { label: article.title, href: `/blog/${article.slug}` },
           ]}
         />
 
         <article className="max-w-3xl">
-          <h1 className="text-4xl font-bold mb-4 text-gray-900">Artigo: {slug}</h1>
+          {article.category && (
+            <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+              {article.category}
+            </span>
+          )}
 
-          <div className="text-gray-600 mb-8">
-            <p>Publicado em: 3 de julho de 2024</p>
-            <p>Autor: Anderson Palafoz</p>
+          <h1 className="text-4xl font-bold mb-4 text-gray-900">{article.title}</h1>
+
+          <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-8 text-sm">
+            <div className="flex items-center gap-2">
+              <Calendar size={16} className="text-red-600" />
+              <span>{publishedDate}</span>
+            </div>
+            {article.readingTime && (
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-red-600" />
+                <span>{article.readingTime} min de leitura</span>
+              </div>
+            )}
           </div>
 
-          <div className="prose prose-slate max-w-none">
-            <p className="text-lg text-gray-700 mb-6">
-              Este é um artigo completo sobre ensino de inglês. Aqui você
-              encontrará insights, metodologias e dicas práticas para melhorar
-              suas aulas.
-            </p>
-
-            <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900">Introdução</h2>
-            <p className="text-gray-700 mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </p>
-
-            <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900">Desenvolvimento</h2>
-            <p className="text-gray-700 mb-4">
-              Ut enim ad minim veniam, quis nostrud exercitation ullamco
-              laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-
-            <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900">Conclusão</h2>
-            <p className="text-gray-700">
-              Duis aute irure dolor in reprehenderit in voluptate velit esse
-              cillum dolore eu fugiat nulla pariatur.
-            </p>
+          <div className="prose prose-slate max-w-none text-gray-700 whitespace-pre-wrap">
+            {article.content}
           </div>
 
-          <div className="mt-12 pt-8 border-t border-gray-800">
-            <p className="text-gray-400">
+          <div className="mt-12 pt-8 border-t border-gray-200">
+            <p className="text-gray-500">
               Gostou do artigo? Compartilhe com seus colegas!
             </p>
           </div>
         </article>
       </div>
     </div>
+  );
+}
+
+export default async function BlogArticlePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <p className="text-gray-600">Carregando artigo...</p>
+        </div>
+      }
+    >
+      <ArticleDetail slug={slug} />
+    </Suspense>
   );
 }
