@@ -72,19 +72,22 @@ export const authOptions: NextAuthOptions = {
       }
     },
 
-    async session({ session }) {
+    async session({ session, token }) {
+      // Antes, este callback fazia sua PROPRIA consulta ao banco,
+      // ignorando o que o callback jwt() (acima) ja tinha resolvido.
+      // Isso significava duas consultas redundantes por checagem de
+      // sessao, e -- mais grave -- a rede de seguranca do ADMIN_EMAIL
+      // em jwt() nao tinha efeito nenhum aqui, entao app/admin/layout.tsx
+      // (que usa getServerSession, e portanto passa por este callback)
+      // continuava bloqueando o admin mesmo com o middleware corrigido.
+      // Agora so herdamos o que o token ja resolveu, com uma unica
+      // fonte de verdade.
       if (session.user) {
-        try {
-          const dbUser = await db.query.users.findFirst({
-            where: eq(users.email, session.user.email || ""),
-          });
-
-          if (dbUser) {
-            session.user.id = dbUser.id.toString();
-            session.user.role = dbUser.role;
-          }
-        } catch (error) {
-          console.error("Error fetching user in session callback:", error);
+        if (token.id) {
+          session.user.id = token.id as string;
+        }
+        if (token.role) {
+          session.user.role = token.role as "user" | "professor" | "admin";
         }
       }
 
