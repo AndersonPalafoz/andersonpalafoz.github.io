@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Shield } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -46,6 +46,17 @@ export function Navbar() {
           <div className="flex items-center gap-4">
             {session ? (
               <>
+                {session.user?.role === "admin" && (
+                  <Link href="/admin">
+                    <Button
+                      variant="outline"
+                      className="border-gray-400 text-gray-700 hover:bg-gray-50 gap-2"
+                    >
+                      <Shield size={16} />
+                      Painel Admin
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/dashboard">
                   <Button className="bg-red-600 hover:bg-red-700 text-white">
                     Minha Área
@@ -91,6 +102,18 @@ export function Navbar() {
                 </Button>
               </Link>
             ))}
+            {session?.user?.role === "admin" && (
+              <Link href="/admin">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-gray-700 hover:text-red-600 gap-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Shield size={16} />
+                  Painel Admin
+                </Button>
+              </Link>
+            )}
           </div>
         )}
       </div>

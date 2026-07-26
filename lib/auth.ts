@@ -101,6 +101,25 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
       }
 
+      // CRITICO: o middleware (middleware.ts) protege /admin lendo
+      // token.role diretamente via getToken(), sem passar pelo
+      // callback session() abaixo. Sem isso aqui, token.role nunca
+      // era preenchido e NINGUEM conseguia acessar /admin, incluindo
+      // o proprio admin.
+      if (token.email) {
+        try {
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.email, token.email as string),
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser.id.toString();
+          }
+        } catch (error) {
+          console.error("Error resolving user role in jwt callback:", error);
+        }
+      }
+
       return token;
     },
 
