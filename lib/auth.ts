@@ -118,6 +118,15 @@ export const authOptions: NextAuthOptions = {
         } catch (error) {
           console.error("Error resolving user role in jwt callback:", error);
         }
+
+        // Rede de seguranca: a conta definida em ADMIN_EMAIL nunca pode
+        // ficar de fora do painel /admin so porque a consulta acima
+        // falhou (banco fora do ar, credencial errada, etc). Isso nao
+        // resolve um banco quebrado, mas garante que o admin sempre
+        // consiga pelo menos entrar no painel para investigar.
+        if (token.email === ADMIN_EMAIL) {
+          token.role = "admin";
+        }
       }
 
       return token;
