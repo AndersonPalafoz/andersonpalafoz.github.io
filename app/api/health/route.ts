@@ -49,6 +49,22 @@ export async function GET() {
     const { sql } = await import("drizzle-orm");
     await db.execute(sql`select 1`);
     result.banco_de_dados = "conectado";
+
+    // Verifica se as tabelas existem e quantas linhas cada uma tem --
+    // um banco novo/trocado pode estar conectado mas ainda sem o
+    // schema criado (migrations nunca aplicadas nele) ou vazio.
+    const tabelas = ["users", "courses", "materials", "articles", "modules", "lessons", "enrollments"];
+    const contagens: Record<string, string> = {};
+    for (const tabela of tabelas) {
+      try {
+        const linhas = await db.execute(sql.raw(`select count(*) as total from "${tabela}"`));
+        const total = (linhas as unknown as Array<{ total: string }>)[0]?.total ?? "?";
+        contagens[tabela] = total;
+      } catch {
+        contagens[tabela] = "tabela não existe";
+      }
+    }
+    result.tabelas = contagens;
   } catch (error) {
     result.banco_de_dados = "falhou";
     result.erro = error instanceof Error ? error.message : String(error);
