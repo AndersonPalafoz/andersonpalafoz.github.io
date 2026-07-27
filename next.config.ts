@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["@radix-ui/react-icons"],
   },
+  outputFileTracingIncludes: {
+    "/api/admin/migrate": ["./drizzle/migrations/**/*"],
+  },
   typescript: {
     tsconfigPath: "./tsconfig.json",
   },
