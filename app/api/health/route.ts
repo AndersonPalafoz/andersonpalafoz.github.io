@@ -2,9 +2,31 @@ import { NextResponse } from "next/server";
 
 // Endpoint de diagnostico TEMPORARIO -- so reporta se as variaveis de
 // ambiente criticas estao configuradas (true/false, nunca o valor) e
-// se a conexao com o banco funciona. Nao expoe segredos.
+// se a conexao com o banco funciona. Nunca expoe usuario/senha.
 // Remover depois que o problema de acesso ao /admin for resolvido.
+
+function sanitizarConexao(raw: string | undefined) {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return {
+      protocolo: url.protocol.replace(":", ""),
+      host: url.hostname,
+      porta: url.port || "(padrão)",
+      banco: url.pathname.replace("/", "") || "(vazio)",
+      tem_usuario: !!url.username,
+      tem_senha: !!url.password,
+      parametros: url.search || "(nenhum)",
+    };
+  } catch {
+    return { erro: "não foi possível interpretar o formato da string de conexão" };
+  }
+}
+
 export async function GET() {
+  const usadaDatabaseUrl = !!process.env.DATABASE_URL;
+  const connectionStringUsada = process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+
   const result: Record<string, unknown> = {
     timestamp: new Date().toISOString(),
     variaveis_de_ambiente: {
@@ -15,6 +37,8 @@ export async function GET() {
       GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
     },
+    conexao_que_esta_sendo_usada: usadaDatabaseUrl ? "DATABASE_URL" : "NEON_DATABASE_URL",
+    detalhes_da_conexao_sem_senha: sanitizarConexao(connectionStringUsada),
   };
 
   try {
@@ -28,6 +52,9 @@ export async function GET() {
   } catch (error) {
     result.banco_de_dados = "falhou";
     result.erro = error instanceof Error ? error.message : String(error);
+    if (error instanceof Error && "cause" in error && error.cause) {
+      result.erro_causa = String(error.cause);
+    }
   }
 
   return NextResponse.json(result);
