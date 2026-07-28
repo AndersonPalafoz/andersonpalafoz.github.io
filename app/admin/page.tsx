@@ -150,6 +150,22 @@ export default function AdminDashboard() {
               <p className="text-gray-600">Publicar e editar artigos do blog</p>
             </div>
           </Link>
+
+          <Link href="/admin/usuarios">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <Users className="text-purple-600 mb-4" size={40} />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Gerenciar Usuários</h2>
+              <p className="text-gray-600">Ver, promover e remover usuários</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/relatorios">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <BarChart3 className="text-orange-600 mb-4" size={40} />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Relatórios</h2>
+              <p className="text-gray-600">Estatísticas e progresso dos alunos</p>
+            </div>
+          </Link>
         </div>
       </div>
     </div>
