@@ -1,52 +1,82 @@
-"use client";
-
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { getMaterialById } from "@/lib/db";
+import { DownloadMaterialButton } from "@/components/download-material-button";
+import { Download } from "lucide-react";
 
-export default function MaterialPage() {
-  const params = useParams();
-  const id = params.id as string;
+async function MaterialDetail({ materialId }: { materialId: number }) {
+  const material = await getMaterialById(materialId);
+
+  if (!material) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <p className="text-gray-600">Material não encontrado.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-3xl mx-auto px-4 py-12">
         <Breadcrumbs
           items={[
             { label: "Materiais", href: "/materiais" },
-            { label: `Material ${id}`, href: `/materiais/${id}` },
+            { label: material.title, href: `/materiais/${material.id}` },
           ]}
         />
 
-        <div className="max-w-3xl">
-          <h1 className="text-4xl font-bold mb-4">Material {id}</h1>
-          <p className="text-gray-400 mb-8">
-            Este é um material educacional completo. Você pode visualizar,
-            fazer download e utilizar em suas aulas.
-          </p>
-
-          <div className="bg-gray-900 p-8 rounded-lg mb-8">
-            <h2 className="text-2xl font-bold mb-4">Informações do Material</h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-gray-400">Tipo:</p>
-                <p className="font-bold">Worksheet</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Nível:</p>
-                <p className="font-bold">A1 - Iniciante</p>
-              </div>
-              <div>
-                <p className="text-gray-400">Tamanho:</p>
-                <p className="font-bold">2.5 MB</p>
-              </div>
-            </div>
+        <div className="space-y-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+              {material.category}
+            </span>
+            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+              {material.level}
+            </span>
           </div>
 
-          <button className="bg-red-600 hover:bg-red-700">
-            Fazer Download
-          </button>
+          <h1 className="text-4xl font-bold text-gray-900">{material.title}</h1>
+
+          {material.description && (
+            <p className="text-lg text-gray-600 leading-relaxed">{material.description}</p>
+          )}
+
+          <div className="flex items-center gap-2 text-gray-600 text-sm">
+            <Download size={16} className="text-red-600" />
+            <span>{material.downloads} downloads</span>
+          </div>
+
+          <div className="pt-4">
+            {material.fileUrl ? (
+              <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />
+            ) : (
+              <p className="text-gray-500">
+                Arquivo ainda não disponível para este material.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
+  );
+}
+
+export default async function MaterialPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <p className="text-gray-600">Carregando material...</p>
+        </div>
+      }
+    >
+      <MaterialDetail materialId={parseInt(id)} />
+    </Suspense>
   );
 }
