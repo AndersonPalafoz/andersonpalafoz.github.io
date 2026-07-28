@@ -2,69 +2,21 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Calendar, User, ArrowRight } from "lucide-react";
+import { getArticles } from "@/lib/db";
 
 export const metadata = {
   title: "Blog | Anderson Palafoz",
   description: "Artigos, dicas e insights sobre ensino de inglês e educação.",
 };
 
-export default function BlogPage() {
-  const artigos = [
-    {
-      id: 1,
-      titulo: "10 Dicas para Melhorar sua Pronúncia em Inglês",
-      descricao: "Técnicas práticas e eficazes para desenvolver uma pronúncia natural e clara.",
-      autor: "Anderson Palafoz",
-      data: "15 de Junho, 2024",
-      categoria: "Pronúncia",
-      slug: "10-dicas-pronuncia",
-    },
-    {
-      id: 2,
-      titulo: "Phrasal Verbs: Os Vilões do Inglês Intermediário",
-      descricao: "Entenda como os phrasal verbs funcionam e domine-os com estratégias eficazes.",
-      autor: "Anderson Palafoz",
-      data: "12 de Junho, 2024",
-      categoria: "Gramática",
-      slug: "phrasal-verbs-intermediario",
-    },
-    {
-      id: 3,
-      titulo: "Metodologia ESA: O Segredo para Aulas Mais Eficazes",
-      descricao: "Descubra como a metodologia ESA potencializa o aprendizado de inglês.",
-      autor: "Anderson Palafoz",
-      data: "8 de Junho, 2024",
-      categoria: "Educação",
-      slug: "metodologia-esa",
-    },
-    {
-      id: 4,
-      titulo: "Recursos Gratuitos para Praticar Inglês Online",
-      descricao: "Uma lista completa de plataformas e ferramentas para aprimorar seu inglês.",
-      autor: "Anderson Palafoz",
-      data: "5 de Junho, 2024",
-      categoria: "Recursos",
-      slug: "recursos-gratuitos",
-    },
-    {
-      id: 5,
-      titulo: "A Importância da Educação Étnico-Racial no Ensino de Idiomas",
-      descricao: "Como integrar representatividade e inclusão nas aulas de inglês.",
-      autor: "Anderson Palafoz",
-      data: "1 de Junho, 2024",
-      categoria: "Educação",
-      slug: "educacao-etnico-racial",
-    },
-    {
-      id: 6,
-      titulo: "Inteligência Artificial e Ensino de Inglês: O Futuro é Agora",
-      descricao: "Explore como a IA está transformando o aprendizado de idiomas.",
-      autor: "Anderson Palafoz",
-      data: "28 de Maio, 2024",
-      categoria: "Tecnologia",
-      slug: "ia-ensino-ingles",
-    },
-  ];
+export default async function BlogPage() {
+  const todosArtigos = await getArticles();
+  // Rascunhos (published == null) nao aparecem na listagem publica
+  const artigos = todosArtigos.filter((a) => a.published);
+
+  const categorias = Array.from(
+    new Set(artigos.map((a) => a.category).filter((c): c is string => !!c))
+  );
 
   return (
     <div className="w-full">
@@ -99,66 +51,84 @@ export default function BlogPage() {
       </section>
 
       {/* Categorias */}
-      <section className="py-8 px-4 md:px-8 lg:px-16 bg-gray-50 border-b border-gray-200">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap gap-3">
-            {["Todos", "Pronúncia", "Gramática", "Educação", "Recursos", "Tecnologia"].map((cat) => (
-              <button
-                key={cat}
-                className="px-6 py-2 rounded-full border border-gray-300 hover:border-red-600 hover:text-red-600 transition text-gray-700 font-medium"
-              >
-                {cat}
-              </button>
-            ))}
+      {categorias.length > 0 && (
+        <section className="py-8 px-4 md:px-8 lg:px-16 bg-gray-50 border-b border-gray-200">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-wrap gap-3">
+              {["Todos", ...categorias].map((cat) => (
+                <span
+                  key={cat}
+                  className="px-6 py-2 rounded-full border border-gray-300 text-gray-700 font-medium"
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Artigos */}
       <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {artigos.map((artigo) => (
-              <Link key={artigo.id} href={`/blog/${artigo.slug}`}>
-                <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition h-full flex flex-col cursor-pointer">
-                  {/* Header */}
-                  <div className="bg-red-600 text-white p-6 h-24 flex items-center">
-                    <span className="text-sm font-semibold">{artigo.categoria}</span>
-                  </div>
+          {artigos.length === 0 ? (
+            <p className="text-center text-gray-600">
+              Nenhum artigo publicado no momento. Volte em breve!
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {artigos.map((artigo) => (
+                <Link key={artigo.id} href={`/blog/${artigo.slug}`}>
+                  <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition h-full flex flex-col cursor-pointer">
+                    {/* Header */}
+                    <div className="bg-red-600 text-white p-6 h-24 flex items-center">
+                      <span className="text-sm font-semibold">
+                        {artigo.category || "Blog"}
+                      </span>
+                    </div>
 
-                  {/* Content */}
-                  <div className="p-8 flex-1 flex flex-col">
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                      {artigo.titulo}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-6 line-clamp-2 flex-1">
-                      {artigo.descricao}
-                    </p>
+                    {/* Content */}
+                    <div className="p-8 flex-1 flex flex-col">
+                      <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
+                        {artigo.title}
+                      </h3>
+                      {artigo.content && (
+                        <p className="text-gray-600 text-sm mb-6 line-clamp-2 flex-1">
+                          {artigo.content}
+                        </p>
+                      )}
 
-                    {/* Meta */}
-                    <div className="space-y-3 border-t border-gray-200 pt-6">
-                      <div className="flex items-center gap-2 text-gray-600 text-sm">
-                        <User size={16} className="text-red-600" />
-                        <span>{artigo.autor}</span>
+                      {/* Meta */}
+                      <div className="space-y-3 border-t border-gray-200 pt-6">
+                        <div className="flex items-center gap-2 text-gray-600 text-sm">
+                          <User size={16} className="text-red-600" />
+                          <span>Anderson Palafoz</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-600 text-sm">
+                          <Calendar size={16} className="text-red-600" />
+                          <span>
+                            {new Date(artigo.published!).toLocaleDateString("pt-BR", {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-gray-600 text-sm">
-                        <Calendar size={16} className="text-red-600" />
-                        <span>{artigo.data}</span>
+                    </div>
+
+                    {/* CTA */}
+                    <div className="p-8 pt-0">
+                      <div className="flex items-center gap-2 text-red-600 font-semibold">
+                        Ler Mais
+                        <ArrowRight size={18} />
                       </div>
                     </div>
                   </div>
-
-                  {/* CTA */}
-                  <div className="p-8 pt-0">
-                    <div className="flex items-center gap-2 text-red-600 font-semibold">
-                      Ler Mais
-                      <ArrowRight size={18} />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
