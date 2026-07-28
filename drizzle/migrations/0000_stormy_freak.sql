@@ -49,8 +49,8 @@ CREATE TABLE "enrollments" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"userId" serial NOT NULL,
 	"courseId" serial NOT NULL,
-	"progress" serial DEFAULT 0 NOT NULL,
-	"currentModule" serial DEFAULT 0 NOT NULL,
+	"progress" integer DEFAULT 0 NOT NULL,
+	"currentModule" integer DEFAULT 0 NOT NULL,
 	"status" "enrollment_status" DEFAULT 'active' NOT NULL,
 	"enrolledAt" timestamp DEFAULT now() NOT NULL,
 	"completedAt" timestamp
@@ -63,7 +63,7 @@ CREATE TABLE "materials" (
 	"category" varchar(100) NOT NULL,
 	"level" varchar(10) NOT NULL,
 	"fileUrl" varchar(500),
-	"downloads" serial DEFAULT 0 NOT NULL,
+	"downloads" integer DEFAULT 0 NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL
 );
