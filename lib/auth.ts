@@ -72,19 +72,22 @@ export const authOptions: NextAuthOptions = {
       }
     },
 
-    async session({ session }) {
+    async session({ session, token }) {
+      // Antes, este callback fazia sua PROPRIA consulta ao banco,
+      // ignorando o que o callback jwt() (acima) ja tinha resolvido.
+      // Isso significava duas consultas redundantes por checagem de
+      // sessao, e -- mais grave -- a rede de seguranca do ADMIN_EMAIL
+      // em jwt() nao tinha efeito nenhum aqui, entao app/admin/layout.tsx
+      // (que usa getServerSession, e portanto passa por este callback)
+      // continuava bloqueando o admin mesmo com o middleware corrigido.
+      // Agora so herdamos o que o token ja resolveu, com uma unica
+      // fonte de verdade.
       if (session.user) {
-        try {
-          const dbUser = await db.query.users.findFirst({
-            where: eq(users.email, session.user.email || ""),
-          });
-
-          if (dbUser) {
-            session.user.id = dbUser.id.toString();
-            session.user.role = dbUser.role;
-          }
-        } catch (error) {
-          console.error("Error fetching user in session callback:", error);
+        if (token.id) {
+          session.user.id = token.id as string;
+        }
+        if (token.role) {
+          session.user.role = token.role as "user" | "professor" | "admin";
         }
       }
 
@@ -99,6 +102,34 @@ export const authOptions: NextAuthOptions = {
 
       if (account) {
         token.provider = account.provider;
+      }
+
+      // CRITICO: o middleware (middleware.ts) protege /admin lendo
+      // token.role diretamente via getToken(), sem passar pelo
+      // callback session() abaixo. Sem isso aqui, token.role nunca
+      // era preenchido e NINGUEM conseguia acessar /admin, incluindo
+      // o proprio admin.
+      if (token.email) {
+        try {
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.email, token.email as string),
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.id = dbUser.id.toString();
+          }
+        } catch (error) {
+          console.error("Error resolving user role in jwt callback:", error);
+        }
+
+        // Rede de seguranca: a conta definida em ADMIN_EMAIL nunca pode
+        // ficar de fora do painel /admin so porque a consulta acima
+        // falhou (banco fora do ar, credencial errada, etc). Isso nao
+        // resolve um banco quebrado, mas garante que o admin sempre
+        // consiga pelo menos entrar no painel para investigar.
+        if (token.email === ADMIN_EMAIL) {
+          token.role = "admin";
+        }
       }
 
       return token;
