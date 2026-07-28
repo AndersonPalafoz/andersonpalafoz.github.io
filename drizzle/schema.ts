@@ -57,8 +57,8 @@ export const enrollments = pgTable("enrollments", {
   id: serial("id").primaryKey(),
   userId: serial("userId").notNull(),
   courseId: serial("courseId").notNull(),
-  progress: serial("progress").default(0), // 0-100
-  currentModule: serial("currentModule").default(0),
+  progress: integer("progress").default(0).notNull(), // 0-100
+  currentModule: integer("currentModule").default(0).notNull(),
   status: enrollmentStatusEnum("status").notNull().default("active"),
   enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
   completedAt: timestamp("completedAt"),
@@ -77,7 +77,7 @@ export const materials = pgTable("materials", {
   category: varchar("category", { length: 100 }).notNull(), // Worksheets, Slides, Áudios, etc
   level: varchar("level", { length: 10 }).notNull(), // A1-C2
   fileUrl: varchar("fileUrl", { length: 500 }),
-  downloads: serial("downloads").default(0),
+  downloads: integer("downloads").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
