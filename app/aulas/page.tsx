@@ -1,64 +1,22 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Clock, Users, Award, BookOpen } from "lucide-react";
+import { Clock, Users, Award, BookOpen, Layers, ArrowRight } from "lucide-react";
+import { getCourses } from "@/lib/db";
 
 export const metadata = {
   title: "Aulas de Inglês | Anderson Palafoz",
   description: "Explore as aulas de inglês de Anderson Palafoz, com cursos de A1 a C2.",
 };
 
-export default function AulasPage() {
-  const cursos = [
-    {
-      nivel: "A1",
-      titulo: "Iniciante",
-      descricao: "Comece do zero com o essencial do inglês",
-      duracao: "12 semanas",
-      aulas: "24 aulas",
-      preco: "R$ 299",
-    },
-    {
-      nivel: "A2",
-      titulo: "Elementar",
-      descricao: "Desenvolva habilidades básicas de comunicação",
-      duracao: "12 semanas",
-      aulas: "24 aulas",
-      preco: "R$ 349",
-    },
-    {
-      nivel: "B1",
-      titulo: "Intermediário",
-      descricao: "Comunique-se com mais confiança e fluência",
-      duracao: "14 semanas",
-      aulas: "28 aulas",
-      preco: "R$ 399",
-    },
-    {
-      nivel: "B2",
-      titulo: "Intermediário Superior",
-      descricao: "Domine conversas complexas e nuances",
-      duracao: "14 semanas",
-      aulas: "28 aulas",
-      preco: "R$ 449",
-    },
-    {
-      nivel: "C1",
-      titulo: "Avançado",
-      descricao: "Expresse-se com precisão e sofisticação",
-      duracao: "16 semanas",
-      aulas: "32 aulas",
-      preco: "R$ 499",
-    },
-    {
-      nivel: "C2",
-      titulo: "Proficiência",
-      descricao: "Domine o inglês em nível de falante nativo",
-      duracao: "16 semanas",
-      aulas: "32 aulas",
-      preco: "R$ 549",
-    },
-  ];
+const LEVEL_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+export default async function AulasPage() {
+  const cursosDb = await getCourses();
+  const cursos = [...cursosDb].sort(
+    (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level)
+  );
+  const totalModulos = cursos.reduce((sum, c) => sum + (c.modules ?? 0), 0);
 
   return (
     <div className="w-full">
@@ -80,12 +38,12 @@ export default function AulasPage() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 pt-8">
               <div>
-                <p className="text-3xl font-bold text-red-600">6</p>
-                <p className="text-gray-600 text-sm">Níveis CEFR</p>
+                <p className="text-3xl font-bold text-red-600">{cursos.length}</p>
+                <p className="text-gray-600 text-sm">Cursos Disponíveis</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-red-600">24+</p>
-                <p className="text-gray-600 text-sm">Aulas por Nível</p>
+                <p className="text-3xl font-bold text-red-600">{totalModulos}</p>
+                <p className="text-gray-600 text-sm">Módulos ao Todo</p>
               </div>
               <div>
                 <p className="text-3xl font-bold text-red-600">100%</p>
@@ -147,44 +105,43 @@ export default function AulasPage() {
             Nossos Cursos
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cursos.map((curso) => (
-              <div
-                key={curso.nivel}
-                className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition"
-              >
-                <div className="bg-red-600 text-white p-6">
-                  <div className="text-4xl font-bold mb-2">{curso.nivel}</div>
-                  <h3 className="text-2xl font-bold">{curso.titulo}</h3>
-                </div>
-                <div className="p-8 space-y-6">
-                  <p className="text-gray-600">{curso.descricao}</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Clock size={18} className="text-red-600" />
-                      <span>{curso.duracao}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <BookOpen size={18} className="text-red-600" />
-                      <span>{curso.aulas}</span>
-                    </div>
+          {cursos.length === 0 ? (
+            <p className="text-center text-gray-600">
+              Nenhum curso publicado no momento. Volte em breve!
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {cursos.map((curso) => (
+                <div
+                  key={curso.id}
+                  className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition flex flex-col"
+                >
+                  <div className="bg-red-600 text-white p-6">
+                    <div className="text-4xl font-bold mb-2">{curso.level}</div>
+                    <h3 className="text-2xl font-bold">{curso.title}</h3>
                   </div>
+                  <div className="p-8 space-y-6 flex-1 flex flex-col">
+                    <p className="text-gray-600 flex-1">
+                      {curso.description || "Curso estruturado de inglês com metodologia ESA."}
+                    </p>
 
-                  <div className="border-t border-gray-200 pt-6">
-                    <div className="text-3xl font-bold text-red-600 mb-4">
-                      {curso.preco}
+                    <div className="flex items-center gap-3 text-gray-700">
+                      <Layers size={18} className="text-red-600" />
+                      <span>{curso.modules ?? 0} módulos</span>
                     </div>
-                    <Link href="/dashboard">
-                      <button className="w-full bg-red-600 hover:bg-red-700 text-white">
-                        Inscrever-se
-                      </button>
-                    </Link>
+
+                    <div className="border-t border-gray-200 pt-6">
+                      <Link href={`/cursos/${curso.id}`}>
+                        <button className="w-full bg-red-600 hover:bg-red-700 text-white inline-flex items-center justify-center gap-2">
+                          Ver Curso <ArrowRight size={18} />
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
