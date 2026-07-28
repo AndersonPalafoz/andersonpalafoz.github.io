@@ -16,6 +16,12 @@ import { MIGRATION_STATEMENTS } from "@/lib/migration-sql";
 // vez, sem depender de nenhum arquivo em disco em runtime.
 //
 // Remover essa rota depois de usada.
+function extrairDetalhe(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  const causa = "cause" in error && error.cause ? String(error.cause) : "";
+  return `${error.message} | causa: ${causa}`;
+}
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -28,20 +34,34 @@ export async function GET() {
 
     const aplicados: string[] = [];
     const ignorados: string[] = [];
+    const detalhesErro: string[] = [];
 
     for (const statement of MIGRATION_STATEMENTS) {
       try {
         await db.execute(sql.raw(statement));
         aplicados.push(statement.slice(0, 60));
       } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
+        const detalhe = extrairDetalhe(error);
         // "ja existe" cobre re-execucoes seguras (rodar de novo sem quebrar)
-        if (/already exists/i.test(msg)) {
+        if (/already exists/i.test(detalhe)) {
           ignorados.push(statement.slice(0, 60));
         } else {
-          throw error;
+          detalhesErro.push(`${statement.slice(0, 80)} -- ${detalhe}`);
         }
       }
+    }
+
+    if (detalhesErro.length > 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Algumas migrations falharam por um motivo que não é 'já existe'.",
+          detalhes: detalhesErro,
+          aplicados: aplicados.length,
+          ja_existiam: ignorados.length,
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
@@ -56,7 +76,7 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Falha ao aplicar migrations",
+        error: extrairDetalhe(error),
       },
       { status: 500 }
     );
