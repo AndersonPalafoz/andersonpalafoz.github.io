@@ -13,7 +13,14 @@ if (!connectionString) {
 }
 
 // Create the connection
-const client = postgres(connectionString);
+// prepare: false e necessario porque a connection string do Neon usada
+// em producao e do endpoint "-pooler" (PgBouncer em modo transaction
+// pooling). Nesse modo, prepared statements (que o driver `postgres`
+// usa por padrao) nao sao confiaveis -- cada query pode ser roteada
+// para uma conexao fisica diferente do pool, onde o statement nunca
+// foi de fato preparado. Isso causava falhas intermitentes (algumas
+// queries funcionavam, outras nao, sem padrao aparente).
+const client = postgres(connectionString, { prepare: false });
 
 // Create the database instance
 export const db = drizzle(client, { schema });
