@@ -1,3 +1,4 @@
+// Middleware de proteção de rotas (admin e dashboard) usando NextAuth JWT
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 
