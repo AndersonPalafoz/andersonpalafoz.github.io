@@ -116,8 +116,8 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-3">
                 <Phone size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
-                <a href="https://wa.me/5571999999999" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-red-600 transition">
-                  (71) 99999-9999
+                <a href="https://wa.me/5571991222257" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-red-600 transition">
+                  (71) 9 9122-2257
                 </a>
               </li>
               <li className="flex items-start gap-3">
@@ -139,7 +139,7 @@ export function Footer() {
 
           {/* Copyright */}
           <div className="text-center text-gray-500 text-sm">
-            <p>© 2024 Anderson Palafoz. Todos os direitos reservados.</p>
+            <p>© 2026 Anderson Palafoz. Todos os direitos reservados.</p>
           </div>
         </div>
       </div>
