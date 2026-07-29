@@ -45,8 +45,8 @@ export default function ContatoPage() {
                 </div>
                 <div>
                   <h3 className="font-bold text-gray-900 mb-1">WhatsApp</h3>
-                  <a href="https://wa.me/5571999999999" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-red-600 transition">
-                    (71) 99999-9999
+                  <a href="https://wa.me/5571991222257" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-red-600 transition">
+                    (71) 9 9122-2257
                   </a>
                 </div>
               </div>
