@@ -71,7 +71,7 @@ export default function LoginPage() {
             Voltar para Home
           </Link>
           <p className="text-xs text-gray-600">
-            © 2024 Anderson Palafoz. Todos os direitos reservados.
+            © 2026 Anderson Palafoz. Todos os direitos reservados.
           </p>
         </div>
       </div>
