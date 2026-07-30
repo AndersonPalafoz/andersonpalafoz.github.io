@@ -21,6 +21,8 @@ const config: Config = {
         "popover-foreground": "hsl(var(--popover-foreground))",
         muted: "hsl(var(--muted))",
         "muted-foreground": "hsl(var(--muted-foreground))",
+        secondary: "hsl(var(--secondary))",
+        "secondary-foreground": "hsl(var(--secondary-foreground))",
         accent: "hsl(var(--accent))",
         "accent-foreground": "hsl(var(--accent-foreground))",
         destructive: "hsl(var(--destructive))",

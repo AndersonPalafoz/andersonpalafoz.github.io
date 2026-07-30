@@ -1,6 +1,7 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
+import * as relations from "@/drizzle/relations";
 import { eq, desc } from "drizzle-orm";
 
 const connectionString =
@@ -23,7 +24,7 @@ if (!connectionString) {
 const client = postgres(connectionString, { prepare: false });
 
 // Create the database instance
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { schema: { ...schema, ...relations } });
 
 export type Database = typeof db;
 
@@ -90,6 +91,9 @@ export async function getActivities(courseId: number) {
 export async function getUserActivityProgress(userId: number) {
   return await db.query.userActivityProgress.findMany({
     where: eq(schema.userActivityProgress.userId, userId),
+    with: {
+      activity: true,
+    },
   });
 }
 

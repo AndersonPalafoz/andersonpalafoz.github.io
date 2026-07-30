@@ -1,112 +1,81 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { getUserActivityProgress } from "@/lib/db";
+import { CheckCircle2, Clock, AlertCircle, CheckSquare } from "lucide-react";
 
-"use client";
+const STATUS_LABEL: Record<string, string> = {
+  completed: "Completa",
+  in_progress: "Em Progresso",
+  pending: "Pendente",
+};
 
-import { Button } from "@/components/ui/button";
-import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
+function getStatusIcon(status: string) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="text-green-500" size={20} />;
+    case "in_progress":
+      return <Clock className="text-blue-500" size={20} />;
+    default:
+      return <AlertCircle className="text-amber-500" size={20} />;
+  }
+}
 
-export default function AtividadesPage() {
-  const atividades = [
-    {
-      id: 1,
-      titulo: "Quiz: Present Simple",
-      curso: "English Basics - A1",
-      tipo: "quiz",
-      status: "completa",
-      data: "2024-01-15",
-      pontos: 85,
-    },
-    {
-      id: 2,
-      titulo: "Exercício: Vocabulário",
-      curso: "English Basics - A1",
-      tipo: "exercise",
-      status: "pendente",
-      dataVencimento: "2024-01-20",
-    },
-    {
-      id: 3,
-      titulo: "Tarefa: Redação",
-      curso: "Elementary English - A2",
-      tipo: "assignment",
-      status: "em_progresso",
-      dataVencimento: "2024-01-25",
-    },
-  ];
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completa":
-        return <CheckCircle2 className="text-green-500" size={20} />;
-      case "pendente":
-        return <AlertCircle className="text-yellow-500" size={20} />;
-      case "em_progresso":
-        return <Clock className="text-blue-500" size={20} />;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "completa":
-        return "Completa";
-      case "pendente":
-        return "Pendente";
-      case "em_progresso":
-        return "Em Progresso";
-      default:
-        return status;
-    }
-  };
+export default async function AtividadesPage() {
+  const session = await getServerSession(authOptions);
+  const userId = parseInt(session?.user?.id ?? "");
+  const atividades =
+    !isNaN(userId) && userId > 0 ? await getUserActivityProgress(userId) : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Atividades</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Atividades</h1>
+        <p className="text-gray-600">
           Acompanhe suas atividades e tarefas
         </p>
       </div>
 
-      <div className="space-y-3">
-        {atividades.map((atividade) => (
-          <div
-            key={atividade.id}
-            className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4 flex-1">
-              <div>{getStatusIcon(atividade.status)}</div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">
-                  {atividade.titulo}
-                </h3>
-                <p className="text-sm text-muted-foreground">{atividade.curso}</p>
+      {atividades.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+          <CheckSquare className="mx-auto text-gray-400 mb-4" size={48} />
+          <p className="text-gray-600">
+            Nenhuma atividade atribuída no momento.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {atividades.map((item) => (
+            <div
+              key={item.id}
+              className="p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm transition flex items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div>{getStatusIcon(item.status)}</div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {item.activity?.title ?? "Atividade"}
+                  </h3>
+                  {item.activity?.dueDate && (
+                    <p className="text-sm text-gray-500">
+                      Prazo:{" "}
+                      {new Date(item.activity.dueDate).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">
-                  {getStatusLabel(atividade.status)}
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-medium text-gray-900">
+                  {STATUS_LABEL[item.status] ?? item.status}
                 </p>
-                {atividade.status === "completa" && (
-                  <p className="text-xs text-green-500">
-                    {(atividade as any).pontos}%
-                  </p>
-                )}
-                {atividade.status !== "completa" && (
-                  <p className="text-xs text-muted-foreground">
-                    Vence: {(atividade as any).dataVencimento}
-                  </p>
+                {item.status === "completed" && item.score != null && (
+                  <p className="text-xs text-green-600">{item.score}%</p>
                 )}
               </div>
-              <Button variant="outline" size="sm">
-                {atividade.status === "completa" ? "Ver" : "Fazer"}
-              </Button>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
