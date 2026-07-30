@@ -1,86 +1,56 @@
+import { getMaterials } from "@/lib/db";
+import { FileText } from "lucide-react";
+import { DownloadMaterialButton } from "@/components/download-material-button";
 
-"use client";
-
-import { Button } from "@/components/ui/button";
-import { Download, FileText } from "lucide-react";
-
-export default function BibliotecaPage() {
-  const materiais = [
-    {
-      id: 1,
-      titulo: "Grammar Guide: Present Simple",
-      tipo: "PDF",
-      tamanho: "2.4 MB",
-      downloads: 156,
-    },
-    {
-      id: 2,
-      titulo: "Vocabulary List: Food & Drinks",
-      tipo: "PDF",
-      tamanho: "1.8 MB",
-      downloads: 89,
-    },
-    {
-      id: 3,
-      titulo: "Phrasal Verbs Workbook",
-      tipo: "PDF",
-      tamanho: "3.2 MB",
-      downloads: 234,
-    },
-    {
-      id: 4,
-      titulo: "Listening Comprehension Exercises",
-      tipo: "ZIP",
-      tamanho: "45.6 MB",
-      downloads: 45,
-    },
-  ];
+export default async function BibliotecaPage() {
+  const materiais = await getMaterials();
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Minha Biblioteca
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Biblioteca
         </h1>
-        <p className="text-muted-foreground">
-          Acesse seus materiais de estudo
+        <p className="text-gray-600">
+          Acesse todos os materiais de estudo disponíveis
         </p>
       </div>
 
-      <div className="space-y-3">
-        {materiais.map((material) => (
-          <div
-            key={material.id}
-            className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <FileText className="text-primary" size={20} />
+      {materiais.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+          <FileText className="mx-auto text-gray-400 mb-4" size={48} />
+          <p className="text-gray-600">Nenhum material disponível no momento.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {materiais.map((material) => (
+            <div
+              key={material.id}
+              className="p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm transition flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+            >
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <FileText className="text-red-600" size={20} />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {material.title}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {material.category} • Nível {material.level} • {material.downloads} downloads
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">
-                  {material.titulo}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {material.tipo} • {material.tamanho}
-                </p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-4">
-              <div className="text-right text-sm">
-                <p className="text-muted-foreground">
-                  {material.downloads} downloads
-                </p>
-              </div>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Download size={16} />
-                Baixar
-              </Button>
+              {material.fileUrl ? (
+                <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />
+              ) : (
+                <span className="text-sm text-gray-400 flex-shrink-0">Em breve</span>
+              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,88 +1,85 @@
+import Link from "next/link";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { getUserEnrollments } from "@/lib/db";
+import { BookOpen, ArrowRight } from "lucide-react";
 
-"use client";
-
-import { BookOpen } from "lucide-react";
-
-export default function CursosPage() {
-  const cursos = [
-    {
-      id: 1,
-      titulo: "English Basics - A1",
-      descricao: "Fundamentos do inglês para iniciantes",
-      progresso: 45,
-      modulos: 8,
-      modulosCompletos: 3,
-    },
-    {
-      id: 2,
-      titulo: "Elementary English - A2",
-      descricao: "Consolidação de conhecimentos básicos",
-      progresso: 20,
-      modulos: 10,
-      modulosCompletos: 2,
-    },
-    {
-      id: 3,
-      titulo: "Intermediate English - B1",
-      descricao: "Desenvolvimento de conversação e escrita",
-      progresso: 0,
-      modulos: 12,
-      modulosCompletos: 0,
-    },
-  ];
+export default async function CursosPage() {
+  const session = await getServerSession(authOptions);
+  const userId = parseInt(session?.user?.id ?? "");
+  const enrollments =
+    !isNaN(userId) && userId > 0 ? await getUserEnrollments(userId) : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Meus Cursos</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Meus Cursos</h1>
+        <p className="text-gray-600">
           Acompanhe seu progresso nos cursos de inglês
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cursos.map((curso) => (
-          <div
-            key={curso.id}
-            className="p-6 rounded-lg border border-border bg-card hover:bg-muted transition space-y-4"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <BookOpen className="text-primary" size={20} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-foreground">{curso.titulo}</h3>
-                  <p className="text-xs text-muted-foreground">
-                    {curso.modulosCompletos}/{curso.modulos} módulos
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-sm text-muted-foreground">{curso.descricao}</p>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-muted-foreground">Progresso</span>
-                <span className="font-semibold text-foreground">
-                  {curso.progresso}%
-                </span>
-              </div>
-              <div className="w-full bg-muted rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all"
-                  style={{ width: `${curso.progresso}%` }}
-                />
-              </div>
-            </div>
-
-            <button className="w-full">
-              {curso.progresso > 0 ? "Continuar" : "Começar"}
+      {enrollments.length === 0 ? (
+        <div className="p-8 rounded-xl border border-gray-200 bg-white text-center space-y-4">
+          <p className="text-gray-600">
+            Você ainda não está inscrito em nenhum curso.
+          </p>
+          <Link href="/aulas">
+            <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-lg font-semibold inline-flex items-center gap-2">
+              Explorar Cursos
+              <ArrowRight size={18} />
             </button>
-          </div>
-        ))}
-      </div>
+          </Link>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {enrollments.map((enrollment) => (
+            <div
+              key={enrollment.id}
+              className="p-6 rounded-xl border border-gray-200 bg-white hover:shadow-md transition space-y-4"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+                    <BookOpen className="text-red-600" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900">{enrollment.course?.title}</h3>
+                    <p className="text-xs text-gray-500">{enrollment.course?.level}</p>
+                  </div>
+                </div>
+              </div>
+
+              {enrollment.course?.description && (
+                <p className="text-sm text-gray-600">{enrollment.course.description}</p>
+              )}
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-gray-600">Progresso</span>
+                  <span className="font-semibold text-gray-900">
+                    {enrollment.progress}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2">
+                  <div
+                    className="bg-red-600 h-2 rounded-full transition-all"
+                    style={{ width: `${enrollment.progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {enrollment.course && (
+                <Link href={`/cursos/${enrollment.course.id}`}>
+                  <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium text-sm transition-colors">
+                    {enrollment.progress > 0 ? "Continuar" : "Começar"}
+                  </button>
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

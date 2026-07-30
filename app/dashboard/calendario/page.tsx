@@ -1,95 +1,69 @@
-
-"use client";
-
-import { Button } from "@/components/ui/button";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { getUserActivityProgress } from "@/lib/db";
 import { Calendar } from "lucide-react";
 
-export default function CalendarioPage() {
-  const eventos = [
-    {
-      id: 1,
-      titulo: "Quiz: Present Simple",
-      data: "2024-01-20",
-      hora: "14:00",
-      tipo: "avaliacao",
-    },
-    {
-      id: 2,
-      titulo: "Aula ao vivo: Conversation Practice",
-      data: "2024-01-22",
-      hora: "19:00",
-      tipo: "aula",
-    },
-    {
-      id: 3,
-      titulo: "Entrega: Redação sobre viagens",
-      data: "2024-01-25",
-      hora: "23:59",
-      tipo: "entrega",
-    },
-    {
-      id: 4,
-      titulo: "Prova Final: Module 1",
-      data: "2024-02-01",
-      hora: "10:00",
-      tipo: "avaliacao",
-    },
-  ];
+export default async function CalendarioPage() {
+  const session = await getServerSession(authOptions);
+  const userId = parseInt(session?.user?.id ?? "");
+  const atividades =
+    !isNaN(userId) && userId > 0 ? await getUserActivityProgress(userId) : [];
 
-  const getTipoBadge = (tipo: string) => {
-    const badges: Record<string, { bg: string; text: string }> = {
-      avaliacao: { bg: "bg-red-500/10", text: "text-red-500" },
-      aula: { bg: "bg-blue-500/10", text: "text-blue-500" },
-      entrega: { bg: "bg-yellow-500/10", text: "text-yellow-500" },
-    };
-    return badges[tipo] || badges.aula;
-  };
+  const eventos = atividades
+    .filter((a) => a.activity?.dueDate && a.status !== "completed")
+    .sort(
+      (a, b) =>
+        new Date(a.activity!.dueDate!).getTime() - new Date(b.activity!.dueDate!).getTime()
+    );
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Calendário</h1>
-        <p className="text-muted-foreground">
-          Acompanhe datas importantes e eventos
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Calendário</h1>
+        <p className="text-gray-600">
+          Prazos de atividades que ainda faltam concluir
         </p>
       </div>
 
-      <div className="space-y-3">
-        {eventos.map((evento) => {
-          const badge = getTipoBadge(evento.tipo);
-          return (
+      {eventos.length === 0 ? (
+        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
+          <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
+          <p className="text-gray-600">
+            Nenhum prazo pendente no momento.
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {eventos.map((item) => (
             <div
-              key={evento.id}
-              className="p-4 rounded-lg border border-border bg-card hover:bg-muted transition flex items-center justify-between"
+              key={item.id}
+              className="p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm transition flex items-center justify-between gap-4"
             >
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Calendar className="text-primary" size={20} />
+              <div className="flex items-center gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="text-red-600" size={20} />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">
-                    {evento.titulo}
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {item.activity?.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {evento.data} às {evento.hora}
+                  <p className="text-sm text-gray-500">
+                    {new Date(item.activity!.dueDate!).toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${badge.bg} ${badge.text}`}
-                >
-                  {evento.tipo.charAt(0).toUpperCase() + evento.tipo.slice(1)}
-                </span>
-                <Button variant="outline" size="sm">
-                  Ver
-                </Button>
-              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 flex-shrink-0">
+                {item.status === "in_progress" ? "Em Progresso" : "Pendente"}
+              </span>
             </div>
-          );
-        })}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

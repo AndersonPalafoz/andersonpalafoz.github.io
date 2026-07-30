@@ -1,133 +1,91 @@
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { User, Mail, ShieldCheck } from "lucide-react";
 
-"use client";
+const ROLE_LABEL: Record<string, string> = {
+  admin: "Administrador",
+  professor: "Professor",
+  user: "Aluno",
+};
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { User } from "lucide-react";
+export default async function PerfilPage() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
 
-export default function PerfilPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Meu Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Perfil</h1>
+        <p className="text-gray-600">Suas informações de conta</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Avatar e Info Principal */}
         <div className="md:col-span-1">
-          <div className="p-6 rounded-lg border border-border bg-card space-y-4">
-            <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center mx-auto">
-              <User className="text-primary" size={48} />
+          <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4 text-center">
+            {user?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.image}
+                alt={user.name ?? "Foto de perfil"}
+                className="w-24 h-24 rounded-full mx-auto object-cover"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center mx-auto">
+                <User className="text-red-600" size={40} />
+              </div>
+            )}
+            <div>
+              <h2 className="font-bold text-gray-900 text-lg">{user?.name ?? "Aluno"}</h2>
+              <p className="text-sm text-gray-500">
+                {ROLE_LABEL[user?.role ?? "user"] ?? "Aluno"}
+              </p>
             </div>
-            <div className="text-center">
-              <h2 className="font-bold text-foreground text-lg">Seu Nome</h2>
-              <p className="text-sm text-muted-foreground">Aluno</p>
-            </div>
-            <button className="w-full">
-              Alterar Foto
-            </button>
           </div>
         </div>
 
-        {/* Formulário de Edição */}
+        {/* Informações da conta */}
         <div className="md:col-span-2">
-          <div className="p-6 rounded-lg border border-border bg-card space-y-6">
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Nome Completo
-              </label>
-              <Input
-                type="text"
-                placeholder="Seu nome"
-                defaultValue="Seu Nome"
-              />
-            </div>
+          <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-5">
+            <h3 className="font-bold text-gray-900">Informações da Conta</h3>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Email
-              </label>
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                defaultValue="seu@email.com"
-                disabled
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 py-3 border-b border-gray-100">
+              <Mail size={18} className="text-red-600 flex-shrink-0" />
               <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Telefone
-                </label>
-                <Input
-                  type="tel"
-                  placeholder="(11) 99999-9999"
-                  defaultValue="(11) 99999-9999"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Localização
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Cidade, Estado"
-                  defaultValue="Salvador, BA"
-                />
+                <p className="text-xs text-gray-500">E-mail</p>
+                <p className="font-medium text-gray-900">{user?.email}</p>
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-foreground mb-2 block">
-                Bio
-              </label>
-              <textarea
-                className="w-full p-3 rounded-md border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                rows={4}
-                placeholder="Conte um pouco sobre você"
-                defaultValue="Estou aprendendo inglês para melhorar minha carreira"
-              />
+            <div className="flex items-center gap-3 py-3">
+              <ShieldCheck size={18} className="text-red-600 flex-shrink-0" />
+              <div>
+                <p className="text-xs text-gray-500">Tipo de conta</p>
+                <p className="font-medium text-gray-900">
+                  {ROLE_LABEL[user?.role ?? "user"] ?? "Aluno"}
+                </p>
+              </div>
             </div>
 
-            <div className="flex gap-3">
-              <button className="flex-1">Salvar Alterações</button>
-              <button className="flex-1 border border-border rounded-lg">
-                Cancelar
-              </button>
-            </div>
+            <p className="text-sm text-gray-500 pt-2">
+              Sua conta é gerenciada pelo login do Google. Edição de nome, foto
+              e outras informações pessoais estará disponível em breve.
+            </p>
           </div>
         </div>
       </div>
 
       {/* Seção de Segurança */}
-      <div className="p-6 rounded-lg border border-border bg-card space-y-4">
-        <h3 className="font-bold text-foreground text-lg">Segurança</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium text-foreground">Senha</p>
-              <p className="text-sm text-muted-foreground">
-                Altere sua senha regularmente
-              </p>
-            </div>
-            <Button variant="outline" size="sm">
-              Alterar
-            </Button>
+      <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4">
+        <h3 className="font-bold text-gray-900">Segurança</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="font-medium text-gray-900">Autenticação</p>
+            <p className="text-sm text-gray-500">Conectado via Google</p>
           </div>
-          <div className="flex items-center justify-between pt-3 border-t border-border">
-            <div>
-              <p className="font-medium text-foreground">Autenticação</p>
-              <p className="text-sm text-muted-foreground">
-                Conectado via Google
-              </p>
-            </div>
-            <Button variant="outline" size="sm" disabled>
-              Conectado
-            </Button>
-          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            Conectado
+          </span>
         </div>
       </div>
     </div>
