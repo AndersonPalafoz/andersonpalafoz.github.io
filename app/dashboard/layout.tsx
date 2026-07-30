@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   BookOpen,
   CheckSquare,
@@ -13,9 +13,11 @@ import {
   User,
   Menu,
   X,
+  LogOut,
 } from "lucide-react";
 
 const navItems = [
+  { href: "/dashboard", label: "Início", icon: BookOpen, exact: true },
   { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
   { href: "/dashboard/atividades", label: "Atividades", icon: CheckSquare },
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
@@ -24,63 +26,89 @@ const navItems = [
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
 ];
 
+function getInitials(name?: string | null) {
+  if (!name) return "?";
+  const partes = name.trim().split(/\s+/);
+  const primeiras = partes.slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "");
+  return primeiras.join("") || "?";
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const pathname = usePathname();
+  const { data: session } = useSession();
+
+  const isActive = (href: string, exact?: boolean) =>
+    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <aside
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } md:translate-x-0 fixed md:relative w-64 h-screen bg-card border-r border-border transition-transform z-40`}
+        } md:translate-x-0 fixed md:relative w-72 h-screen bg-white border-r border-gray-200 transition-transform z-40 flex flex-col`}
       >
-        <div className="p-6 border-b border-border">
-          <h2 className="text-xl font-bold text-foreground">Dashboard</h2>
+        {/* Usuário */}
+        <div className="p-6 border-b border-gray-200 flex items-center gap-3">
+          <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center font-semibold flex-shrink-0">
+            {getInitials(session?.user?.name)}
+          </div>
+          <div className="min-w-0">
+            <p className="font-semibold text-gray-900 truncate">
+              {session?.user?.name || "Aluno"}
+            </p>
+            <p className="text-xs text-gray-500 truncate">{session?.user?.email}</p>
+          </div>
         </div>
 
-        <nav className="p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
+            const active = isActive(item.href, item.exact);
             return (
-              <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-3"
-                  onClick={() => setSidebarOpen(false)}
+              <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}>
+                <div
+                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
+                    active
+                      ? "bg-red-50 text-red-600"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  }`}
                 >
-                  <Icon size={20} />
+                  <Icon size={19} />
                   {item.label}
-                </Button>
+                </div>
               </Link>
             );
           })}
         </nav>
+
+        <div className="p-4 border-t border-gray-200">
+          <button
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-100 hover:text-red-600 transition-colors"
+          >
+            <LogOut size={19} />
+            Sair
+          </button>
+        </div>
       </aside>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-card border-b border-border p-4 flex items-center justify-between md:justify-end">
+        {/* Header (mobile) */}
+        <header className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
+          <span className="font-bold text-gray-900">Minha Área</span>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden p-2 hover:bg-muted rounded-lg"
+            className="p-2 hover:bg-gray-100 rounded-lg"
           >
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: "/" })}
-            >
-              Sair
-            </Button>
-          </div>
         </header>
 
         {/* Content */}

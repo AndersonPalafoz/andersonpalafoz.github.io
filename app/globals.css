@@ -6,7 +6,8 @@
 
 @layer base {
   :root {
-    --primary: #D62828;
+    /* Paleta da marca (usada fora do sistema shadcn, em classes utilitarias diretas) */
+    --primary-hex: #D62828;
     --primary-hover: #B91C1C;
     --dark: #333333;
     --light-gray: #F3F4F6;
@@ -15,6 +16,55 @@
     --warning: #F59E0B;
     --error: #DC2626;
     --info: #2563EB;
+
+    /* Tokens shadcn/Tailwind, em HSL (formato exigido por hsl(var(--x)) no
+       tailwind.config.ts). Antes nao existiam -- bg-background, text-foreground,
+       border-border, bg-card, bg-muted, bg-primary etc ficavam com CSS invalido
+       ou totalmente ausentes em qualquer componente que os usasse (a maior
+       parte do /dashboard e os componentes shadcn/ui). Valores derivados da
+       mesma paleta vermelho/branco usada no resto do site. */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+    --primary: 0 69% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 85% 96%;
+    --accent-foreground: 0 69% 35%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 69% 50%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 0 0% 12%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 16%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 16%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 0 69% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 22%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 22%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 0 40% 24%;
+    --accent-foreground: 0 85% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 26%;
+    --input: 0 0% 26%;
+    --ring: 0 69% 55%;
   }
 }
 
