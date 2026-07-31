@@ -63,6 +63,22 @@ export async function getArticleBySlug(slug: string) {
   });
 }
 
+export async function getUserByEmail(email: string) {
+  return await db.query.users.findFirst({
+    where: eq(schema.users.email, email),
+  });
+}
+
+export async function updateUserProfile(
+  userId: number,
+  data: Partial<{ name: string; phone: string; location: string; bio: string }>
+) {
+  return await db.update(schema.users)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(schema.users.id, userId))
+    .returning();
+}
+
 export async function getUserEnrollments(userId: number) {
   return await db.query.enrollments.findMany({
     where: eq(schema.enrollments.userId, userId),
