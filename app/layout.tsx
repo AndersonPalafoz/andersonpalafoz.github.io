@@ -3,8 +3,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/session-provider";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { SiteChrome } from "@/components/site-chrome";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -55,9 +54,7 @@ export default function RootLayout({
       >
         <SessionProviderWrapper>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <Navbar />
-            <main className="min-h-screen">{children}</main>
-            <Footer />
+            <SiteChrome>{children}</SiteChrome>
           </ThemeProvider>
         </SessionProviderWrapper>
       </body>
