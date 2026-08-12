@@ -180,3 +180,22 @@
 - [x] Adicionar proteção de rotas /admin/* (apenas admin)
 - [x] Criar API routes para gerenciamento de usuários (/api/admin/users)
 - [ ] Adicionar testes para gerenciamento de usuários (futuro)
+
+
+## Diagnóstico de Estado Atual — 12/08/2026 ✅
+- [x] Unificar rotas de administração de Artigos e Materiais com o banco de dados (removidas UIs estáticas de mock)
+- [x] Executar testes automatizados (80 testes aprovados com Vitest)
+- [x] Validar rotas públicas e administrativas no preview local
+- [x] Consolidar o relatório técnico de diagnóstico e plano de ação em `DIAGNOSTICO_ATUAL.md`
+
+---
+
+## Registro de análise — resultados observados
+- [x] Vitest executado: 5 arquivos e 80 testes aprovados
+- [x] TypeScript e lint concluídos na etapa inicial do build
+- [x] Build de produção falhou durante prerender de `/404` por ausência de `.next/prerender-manifest.json` após a falha de prerender
+- [x] Preview local ficou indisponível depois que o processo de build removeu `.next` enquanto o servidor de desenvolvimento estava ativo
+- [x] Foram capturadas evidências de falha de renderização em algumas rotas no preview local
+- [ ] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
+- [ ] O estado de produção no Vercel ainda precisa ser comparado ao estado local
+- [ ] A análise ainda não deve ser considerada encerrada
