@@ -239,3 +239,9 @@
 - [ ] Implementar barra de progresso visual de tarefas concluídas no painel
 - [ ] Criar modal de confirmação para exclusão de tarefas e imagens
 - [ ] Validar testes automatizados e build de produção
+
+## Funcionalidades Avançadas de Tarefas e Modo Escuro — 15/08/2026
+- [ ] Implementar edição rápida de título, prazo e status diretamente na lista de tarefas
+- [ ] Implementar reordenação manual por drag-and-drop na interface de tarefas
+- [ ] Adicionar botão de alternância para modo escuro (dark mode) no painel de tarefas
+- [ ] Validar testes automatizados e build de produção
