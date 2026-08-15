@@ -43,3 +43,41 @@ export async function sendEmailNotification({ to, subject, htmlContent, textCont
 
   return { success: true, dispatchedTo: to };
 }
+
+export async function notifyStudentAndTeacher({
+  studentEmail,
+  studentName,
+  teacherEmail,
+  teacherName,
+  subject,
+  messageHtml,
+}: {
+  studentEmail?: string | null;
+  studentName?: string | null;
+  teacherEmail?: string | null;
+  teacherName?: string | null;
+  subject: string;
+  messageHtml: string;
+}) {
+  const promises = [];
+  if (studentEmail) {
+    promises.push(
+      sendEmailNotification({
+        to: studentEmail,
+        subject: `[Aluno] ${subject}`,
+        htmlContent: `<div style="font-family:sans-serif;color:#333;line-height:1.6"><h2>Olá, ${studentName || "Aluno(a)"}!</h2>${messageHtml}<hr/><p style="font-size:12px;color:#666">Anderson Palafoz Platform - Ensino de Inglês</p></div>`,
+      })
+    );
+  }
+  if (teacherEmail) {
+    promises.push(
+      sendEmailNotification({
+        to: teacherEmail,
+        subject: `[Professor] ${subject}`,
+        htmlContent: `<div style="font-family:sans-serif;color:#333;line-height:1.6"><h2>Olá, ${teacherName || "Professor(a)"}!</h2>${messageHtml}<hr/><p style="font-size:12px;color:#666">Anderson Palafoz Platform - Painel Docente</p></div>`,
+      })
+    );
+  }
+  await Promise.allSettled(promises);
+}
+
