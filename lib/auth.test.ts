@@ -28,8 +28,8 @@ describe("NextAuth role persistence", () => {
     vi.restoreAllMocks();
   });
 
-  it("persists the database role and user id in the JWT", async () => {
-    mocks.findFirst.mockResolvedValue({ id: 42, role: "admin" });
+  it("persists the database role, approval status, deletion state and user id in the JWT", async () => {
+    mocks.findFirst.mockResolvedValue({ id: 42, role: "admin", approvalStatus: "approved", deletedAt: null, avatarUrl: "https://cdn.example.com/avatar.webp" });
 
     const token = await jwtCallback?.({
       token: { email: "palafozanderson@gmail.com" },
@@ -41,8 +41,29 @@ describe("NextAuth role persistence", () => {
       email: "palafozanderson@gmail.com",
       id: "42",
       role: "admin",
+      approvalStatus: "approved",
+      deletedAt: null,
+      avatarUrl: "https://cdn.example.com/avatar.webp",
+      picture: "https://cdn.example.com/avatar.webp",
     });
     expect(mocks.findFirst).toHaveBeenCalledTimes(1);
+  });
+
+  it("propagates a pending approval status for a regular account", async () => {
+    mocks.findFirst.mockResolvedValue({ id: 77, role: "user", approvalStatus: "pending", deletedAt: null, avatarUrl: null });
+
+    const token = await jwtCallback?.({
+      token: { email: "student@example.com" },
+      user: undefined,
+      account: undefined,
+    } as any);
+
+    expect(token).toMatchObject({
+      id: "77",
+      role: "user",
+      approvalStatus: "pending",
+      deletedAt: null,
+    });
   });
 
   it("keeps the main admin account authorized when the role lookup fails", async () => {
@@ -58,6 +79,7 @@ describe("NextAuth role persistence", () => {
     expect(token).toMatchObject({
       email: "palafozanderson@gmail.com",
       role: "admin",
+      approvalStatus: "approved",
     });
     expect(errorSpy).toHaveBeenCalledOnce();
   });
@@ -70,12 +92,15 @@ describe("NextAuth role persistence", () => {
           email: "palafozanderson@gmail.com",
         },
       },
-      token: { id: "42", role: "admin" },
+      token: { id: "42", role: "admin", approvalStatus: "approved", deletedAt: null, avatarUrl: "https://cdn.example.com/avatar.webp" },
     } as any);
 
     expect(session?.user).toMatchObject({
       id: "42",
       role: "admin",
+      approvalStatus: "approved",
+      avatarUrl: "https://cdn.example.com/avatar.webp",
+      image: "https://cdn.example.com/avatar.webp",
     });
   });
 });

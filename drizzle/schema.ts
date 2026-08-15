@@ -4,6 +4,7 @@ import { pgTable, pgEnum, serial, varchar, text, timestamp, integer } from "driz
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
 // Nenhuma rota/UI usa esse valor ainda -- apenas alinhando o schema TS à realidade do banco.
 export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
+export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
 export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
 export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
@@ -25,12 +26,17 @@ export const users = pgTable("users", {
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").notNull().default("user"), // user, admin
+  approvalStatus: approvalStatusEnum("approvalStatus").notNull().default("pending"), // pending, approved, rejected
   phone: varchar("phone", { length: 32 }),
   location: varchar("location", { length: 120 }),
   bio: text("bio"),
+  /** URL/key do avatar armazenado externamente; nenhum byte de imagem é salvo no banco. */
+  avatarUrl: varchar("avatarUrl", { length: 1000 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  /** Soft delete: mantém o histórico do usuário e permite recuperação pelo super-admin. */
+  deletedAt: timestamp("deletedAt"),
 });
 
 export type User = typeof users.$inferSelect;

@@ -3,148 +3,185 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
-// GET /api/admin/users - Listar todos os usuários
+const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
+const VALID_ROLES = ["user", "professor", "admin"] as const;
+const VALID_APPROVAL_STATUSES = ["pending", "approved", "rejected"] as const;
+
+type Role = (typeof VALID_ROLES)[number];
+type ApprovalStatus = (typeof VALID_APPROVAL_STATUSES)[number];
+
+async function requireSuperAdmin() {
+  const session = await getServerSession(authOptions);
+  const email = session?.user?.email?.toLowerCase();
+
+  if (!session?.user || email !== SUPER_ADMIN_EMAIL) {
+    return null;
+  }
+
+  return session;
+}
+
+function parseUserId(value: unknown) {
+  const userId = typeof value === "number" ? value : Number(value);
+  return Number.isInteger(userId) && userId > 0 ? userId : null;
+}
+
+function serializeUser(user: typeof users.$inferSelect) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    approvalStatus: user.approvalStatus,
+    deletedAt: user.deletedAt,
+    phone: user.phone,
+    location: user.location,
+    bio: user.bio,
+    loginMethod: user.loginMethod,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    lastSignedIn: user.lastSignedIn,
+  };
+}
+
+// GET /api/admin/users - Lista usuários, incluindo contas pendentes e excluídas logicamente.
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await requireSuperAdmin();
 
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
     }
 
-    const allUsers = await db.query.users.findMany();
-
-    return NextResponse.json({
-      users: allUsers.map((user) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        loginMethod: user.loginMethod,
-        createdAt: user.createdAt,
-        lastSignedIn: user.lastSignedIn,
-      })),
+    const allUsers = await db.query.users.findMany({
+      orderBy: [desc(users.createdAt)],
     });
+
+    return NextResponse.json({ users: allUsers.map(serializeUser) });
   } catch (error) {
     console.error("Error fetching users:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Não foi possível carregar os usuários." }, { status: 500 });
   }
 }
 
-// PUT /api/admin/users/:id - Atualizar role de usuário
+// PUT /api/admin/users - Edita papel/status e campos não sensíveis.
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await requireSuperAdmin();
 
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
     }
 
     const body = await request.json();
-    const { userId, role } = body;
+    const userId = parseUserId(body.userId);
 
-    if (!userId || !role) {
-      return NextResponse.json(
-        { error: "Missing userId or role" },
-        { status: 400 }
-      );
+    if (!userId) {
+      return NextResponse.json({ error: "userId inválido." }, { status: 400 });
     }
 
-    if (!["user", "admin"].includes(role)) {
-      return NextResponse.json(
-        { error: "Invalid role" },
-        { status: 400 }
-      );
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
+
+    if (!targetUser) {
+      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+    }
+
+    const isProtectedAccount = targetUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
+
+    if (body.action === "restore") {
+      if (isProtectedAccount) {
+        return NextResponse.json({ error: "A conta principal não precisa de recuperação." }, { status: 400 });
+      }
+
+      const restoredUser = await db
+        .update(users)
+        .set({ deletedAt: null, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning();
+
+      return NextResponse.json({ message: "Usuário recuperado.", user: serializeUser(restoredUser[0]) });
+    }
+
+    const updates: Partial<typeof users.$inferInsert> = { updatedAt: new Date() };
+
+    if (body.role !== undefined) {
+      if (!VALID_ROLES.includes(body.role as Role)) {
+        return NextResponse.json({ error: "Papel inválido." }, { status: 400 });
+      }
+      if (isProtectedAccount && body.role !== "admin") {
+        return NextResponse.json({ error: "O super-admin principal não pode perder esse papel." }, { status: 403 });
+      }
+      updates.role = body.role as Role;
+    }
+
+    if (body.approvalStatus !== undefined) {
+      if (!VALID_APPROVAL_STATUSES.includes(body.approvalStatus as ApprovalStatus)) {
+        return NextResponse.json({ error: "Status de aprovação inválido." }, { status: 400 });
+      }
+      if (isProtectedAccount && body.approvalStatus !== "approved") {
+        return NextResponse.json({ error: "A conta principal deve permanecer aprovada." }, { status: 403 });
+      }
+      updates.approvalStatus = body.approvalStatus as ApprovalStatus;
+    }
+
+    for (const field of ["name", "phone", "location", "bio"] as const) {
+      if (body[field] !== undefined) {
+        if (body[field] !== null && typeof body[field] !== "string") {
+          return NextResponse.json({ error: `Campo ${field} inválido.` }, { status: 400 });
+        }
+        updates[field] = body[field] === null ? null : body[field].trim();
+      }
     }
 
     const updatedUser = await db
       .update(users)
-      .set({ role: role as "user" | "admin" })
+      .set(updates)
       .where(eq(users.id, userId))
       .returning();
 
-    if (!updatedUser.length) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      message: "User updated successfully",
-      user: updatedUser[0],
-    });
+    return NextResponse.json({ message: "Usuário atualizado.", user: serializeUser(updatedUser[0]) });
   } catch (error) {
     console.error("Error updating user:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Não foi possível atualizar o usuário." }, { status: 500 });
   }
 }
 
-// DELETE /api/admin/users/:id - Deletar usuário
+// DELETE /api/admin/users?id=123 - Exclusão lógica, preservando histórico e recuperação.
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await requireSuperAdmin();
 
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("id");
+    const userId = parseUserId(new URL(request.url).searchParams.get("id"));
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "Missing userId" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "userId inválido." }, { status: 400 });
     }
 
-    // Prevent deleting the admin user
-    const userToDelete = await db.query.users.findFirst({
-      where: eq(users.id, parseInt(userId)),
-    });
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, userId) });
 
-    if (!userToDelete) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+    if (!targetUser) {
+      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
-    if (userToDelete.email === "palafozanderson@gmail.com") {
-      return NextResponse.json(
-        { error: "Cannot delete admin user" },
-        { status: 403 }
-      );
+    if (targetUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
+      return NextResponse.json({ error: "A conta principal não pode ser excluída." }, { status: 403 });
     }
 
-    await db.delete(users).where(eq(users.id, parseInt(userId)));
+    const deletedUser = await db
+      .update(users)
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
 
-    return NextResponse.json({
-      message: "User deleted successfully",
-    });
+    return NextResponse.json({ message: "Usuário excluído logicamente.", user: serializeUser(deletedUser[0]) });
   } catch (error) {
     console.error("Error deleting user:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Não foi possível excluir o usuário." }, { status: 500 });
   }
 }

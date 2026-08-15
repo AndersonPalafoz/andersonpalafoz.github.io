@@ -6,7 +6,7 @@ import { getPublicMaterials } from "@/lib/public-content";
 
 export const metadata = {
   title: "Materiais Didáticos | Anderson Palafoz",
-  description: "Acesse uma biblioteca completa de materiais didáticos para ensino de inglês.",
+  description: "Acesse uma biblioteca de materiais didáticos para ensino de inglês, com conteúdos que podem alcançar os níveis C1 e C2.",
 };
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
@@ -48,7 +48,7 @@ export default async function MateriaisPage() {
                 <span className="text-red-600">Didáticos Exclusivos</span>
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Biblioteca completa com worksheets, guias, recursos interativos e templates para potencializar seu aprendizado.
+                Biblioteca com worksheets, guias, recursos interativos e templates para potencializar seu aprendizado, incluindo materiais que podem alcançar os níveis C1 e C2.
               </p>
             </div>
 

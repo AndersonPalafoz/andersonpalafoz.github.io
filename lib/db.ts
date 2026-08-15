@@ -71,7 +71,7 @@ export async function getUserByEmail(email: string) {
 
 export async function updateUserProfile(
   userId: number,
-  data: Partial<{ name: string; phone: string; location: string; bio: string }>
+  data: Partial<{ name: string; phone: string; location: string; bio: string; avatarUrl: string }>
 ) {
   return await db.update(schema.users)
     .set({ ...data, updatedAt: new Date() })

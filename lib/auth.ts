@@ -30,6 +30,7 @@ export const authOptions: NextAuthOptions = {
           // Create new user with appropriate role
           const isAdminUser = user.email === ADMIN_EMAIL;
           const userRole = isAdminUser ? "admin" : "user";
+          const initialApprovalStatus = isAdminUser ? "approved" : "pending";
 
           const newUser = await db
             .insert(users)
@@ -39,6 +40,8 @@ export const authOptions: NextAuthOptions = {
               email: user.email,
               loginMethod: "google",
               role: userRole,
+              approvalStatus: initialApprovalStatus,
+              avatarUrl: user.image || null,
             })
             .returning();
 
@@ -57,12 +60,16 @@ export const authOptions: NextAuthOptions = {
               });
             }
           }
-        } else if (existingUser.email === ADMIN_EMAIL && existingUser.role !== "admin") {
-          // Ensure admin email always has admin role
-          await db
-            .update(users)
-            .set({ role: "admin" })
-            .where(eq(users.email, ADMIN_EMAIL));
+        } else {
+          // Ensure admin email always has admin role and approved status
+          if (existingUser.email === ADMIN_EMAIL) {
+            if (existingUser.role !== "admin" || existingUser.approvalStatus !== "approved" || existingUser.deletedAt !== null) {
+              await db
+                .update(users)
+                .set({ role: "admin", approvalStatus: "approved", deletedAt: null })
+                .where(eq(users.email, ADMIN_EMAIL));
+            }
+          }
         }
 
         return true;
@@ -89,6 +96,15 @@ export const authOptions: NextAuthOptions = {
         if (token.role) {
           session.user.role = token.role as "user" | "professor" | "admin";
         }
+        if (token.approvalStatus) {
+          session.user.approvalStatus = token.approvalStatus as "pending" | "approved" | "rejected";
+        }
+        if (token.avatarUrl) {
+          session.user.avatarUrl = token.avatarUrl as string;
+          session.user.image = token.avatarUrl as string;
+        } else if (token.picture) {
+          session.user.image = token.picture as string;
+        }
       }
 
       return session;
@@ -98,6 +114,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.picture = user.image || token.picture || null;
       }
 
       if (account) {
@@ -116,7 +133,11 @@ export const authOptions: NextAuthOptions = {
           });
           if (dbUser) {
             token.role = dbUser.role;
+            token.approvalStatus = dbUser.approvalStatus;
+            token.deletedAt = dbUser.deletedAt?.toISOString() ?? null;
             token.id = dbUser.id.toString();
+            token.avatarUrl = dbUser.avatarUrl;
+            token.picture = dbUser.avatarUrl || token.picture || null;
           }
         } catch (error) {
           console.error("Error resolving user role in jwt callback:", error);
@@ -129,6 +150,7 @@ export const authOptions: NextAuthOptions = {
         // consiga pelo menos entrar no painel para investigar.
         if (token.email === ADMIN_EMAIL) {
           token.role = "admin";
+          token.approvalStatus = "approved";
         }
       }
 
