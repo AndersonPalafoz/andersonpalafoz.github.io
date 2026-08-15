@@ -26,6 +26,8 @@ export default function AdminCursos() {
     modules: 4,
     instructor: "Anderson Palafoz",
     modality: "individual" as "individual" | "group",
+    isFree: true,
+    price: 0,
     description: "",
     imageUrl: "",
     audioUrl: "",
@@ -71,6 +73,8 @@ export default function AdminCursos() {
       modules: course.modules || 1,
       instructor: course.instructor || "Anderson Palafoz",
       modality: course.modality || "individual",
+      isFree: course.isFree ?? true,
+      price: course.price ?? 0,
       description: course.description || "",
       imageUrl: course.imageUrl || "",
       audioUrl: course.audioUrl || "",
@@ -101,7 +105,7 @@ export default function AdminCursos() {
         setEditingId(null);
         alert("Curso atualizado com sucesso!");
         setShowForm(false);
-        setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+        setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
       } else {
         const response = await fetch("/api/admin/courses", {
           method: "POST",
@@ -145,7 +149,7 @@ export default function AdminCursos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+              setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
           >
@@ -220,15 +224,31 @@ export default function AdminCursos() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL da Imagem de Capa</label>
-                  <input
-                    type="text"
-                    value={formData.imageUrl}
-                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                    placeholder="https://... ou /uploads/..."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Modelo de Acesso / Precificação</label>
+                  <select
+                    value={formData.isFree ? "free" : "paid"}
+                    onChange={(e) => setFormData({ ...formData, isFree: e.target.value === "free" })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-white font-medium text-gray-900"
+                  >
+                    <option value="free">Gratuito (Acesso Livre para Alunos)</option>
+                    <option value="paid">Pago (Requer Assinatura / Pagamento Stripe)</option>
+                  </select>
                 </div>
+
+                {!formData.isFree && (
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Preço do Curso (R$)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      step={0.01}
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      placeholder="Ex: 149.90"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Vídeo / Áudio Introdutório</label>
