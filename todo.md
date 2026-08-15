@@ -251,3 +251,8 @@
 - [ ] Implementar barra de pesquisa no topo da lista para busca rápida por título
 - [ ] Criar sistema de etiquetas (tags) coloridas personalizáveis para as tarefas
 - [ ] Executar testes automatizados e build de produção
+
+## Subtarefas, Checklists e Anexos em Tarefas (15/08/2026)
+- [ ] Adicionar funcionalidade para criar subtarefas e checklists dentro de cada tarefa principal
+- [ ] Implementar suporte para anexar links externos e arquivos de referência nos cards
+- [ ] Executar testes automatizados e build de produção
