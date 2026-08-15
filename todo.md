@@ -308,13 +308,13 @@
 - [x] Executar build de produção e validar que as páginas carregam sem erros
 
 ## Painel do Professor e Auditoria de Erros — 15/08/2026
-- [ ] Realizar auditoria de erros correntes e logs do servidor/navegador
-- [ ] Estender o schema de papéis/middleware para suportar o role `professor` e a rota `/professor/*`
-- [ ] Criar o painel do professor (`/professor`) com resumo de cursos, alunos e materiais
-- [ ] Criar API de gerenciamento de aulas, exercícios e materiais para o professor
-- [ ] Adicionar navegação condicional para o papel de professor no Navbar e layouts
-- [ ] Escrever testes unitários e de integração para o painel do professor
-- [ ] Executar build de produção e validar checkpoint v1.4.0
+- [x] Realizar auditoria de erros correntes e logs do servidor/navegador
+- [x] Estender o schema de papéis/middleware para suportar o role `professor` e a rota `/professor/*`
+- [x] Criar o painel do professor (`/professor`) com resumo de cursos, alunos e materiais
+- [x] Criar API de gerenciamento de aulas, exercícios e materiais para o professor
+- [x] Adicionar navegação condicional para o papel de professor no Navbar e layouts
+- [x] Escrever testes unitários e de integração para o painel do professor
+- [x] Executar build de produção e validar checkpoint v1.4.0
 
 ## Melhorias de Blog e Materiais — 15/08/2026
 - [ ] Auditoria das páginas públicas `/blog`, `/blog/[slug]`, `/materiais` e `/materiais/[id]`
@@ -355,3 +355,10 @@
 - [ ] Criar sistema de Notificações In-App, Lembretes de Prazos (Deadlines) e Links WhatsApp
 - [ ] Criar gerenciador visual de tarefas e progresso individual no Painel do Professor (`/professor/progresso` e `/professor/tarefas`)
 - [ ] Adicionar testes automatizados, validar build de produção e entregar checkpoint v2.0.0
+
+## Aprimoramento de Cursos, Materiais, Blog e Responsividade Geral — 15/08/2026
+- [x] Expandir formulário de Cursos no admin com nível CEFR (A1-C2), instrutor, módulos, descrição detalhada e objetivos
+- [x] Expandir formulário de Materiais com tipos acadêmicos, níveis, tags pedagógicas e links de download/Google Drive
+- [x] Expandir formulário de Blog/Artigos com resumo, slug customizável, autor, categorias e editor Markdown rico
+- [x] Realizar auditoria e refinamento global de responsividade mobile-first, espaçamentos e contrastes em todo o site
+- [x] Executar testes unitários, build de produção e salvar checkpoint v2.1.0

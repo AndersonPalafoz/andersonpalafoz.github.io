@@ -25,6 +25,7 @@ export async function GET() {
         title: post.title,
         slug: post.slug,
         category: post.category,
+        content: post.content,
         published: post.published,
         readingTime: post.readingTime,
         createdAt: post.createdAt,

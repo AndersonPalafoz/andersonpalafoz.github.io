@@ -214,12 +214,14 @@ export async function createCourse(data: {
   description?: string;
   level: string;
   modules?: number;
+  instructor?: string;
 }) {
   return await db.insert(schema.courses).values({
     title: data.title,
     description: data.description,
     level: data.level,
     modules: data.modules || 0,
+    instructor: data.instructor || "Anderson Palafoz",
   }).returning();
 }
 
@@ -228,6 +230,7 @@ export async function updateCourse(id: number, data: Partial<{
   description: string;
   level: string;
   modules: number;
+  instructor: string;
 }>) {
   return await db.update(schema.courses)
     .set({
