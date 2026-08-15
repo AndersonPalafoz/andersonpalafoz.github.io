@@ -284,3 +284,10 @@
 - [ ] Conectar e autenticar o Stripe MCP (`https://mcp.stripe.com`)
 - [ ] Gerar plano de implementação com o `stripe_implementation_planner`
 - [ ] Revisar e aprimorar a integração de pagamentos para cursos digitais e materiais
+
+## Histórico de Compras, Assinaturas, Recibos e Conteúdo Gratuito (15/08/2026)
+- [ ] Criar painel de histórico de compras e gestão de assinaturas ativas para alunos
+- [ ] Adicionar indicador visual nos cards de cursos para diferenciar cursos comprados/gratuitos
+- [ ] Implementar página de recibo detalhado com opção de download / impressão
+- [ ] Permitir a criação de cursos e materiais gratuitos no painel do professor/admin
+- [ ] Executar testes automatizados e build de produção
