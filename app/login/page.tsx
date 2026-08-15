@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Lock, Mail, User, ShieldCheck, Loader2, KeyRound } from "lucide-react";
+import { ArrowLeft, Mail, ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
@@ -28,7 +28,7 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const res = await fetch("/api/auth/callback", {
+      await fetch("/api/auth/callback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -36,7 +36,7 @@ export default function LoginPage() {
       
       toast.success("Login realizado com sucesso!");
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao autenticar. Verifique suas credenciais.");
     } finally {
       setLoading(false);
@@ -52,11 +52,10 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      // Simulação de envio de link de recuperação
       await new Promise((r) => setTimeout(r, 1000));
       toast.success(`Instruções de recuperação enviadas para ${email}! Verifique sua caixa de entrada.`);
       setAuthMode("login");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao solicitar recuperação de senha.");
     } finally {
       setLoading(false);

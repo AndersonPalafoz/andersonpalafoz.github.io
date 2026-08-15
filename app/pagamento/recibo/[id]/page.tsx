@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { CheckCircle2, Download, Printer, ArrowLeft, ShieldCheck, Building2, User } from "lucide-react";
+import { Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ReceiptDetailPage() {

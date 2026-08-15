@@ -47,7 +47,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  const avatarUrl = customAvatar || user?.image || user?.avatarUrl;
+  const avatarUrl = customAvatar || user?.image;
   const userName = user?.name || user?.email || "Usuário";
   const userInitials = userName.slice(0, 2).toUpperCase();
 
