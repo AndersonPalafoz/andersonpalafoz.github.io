@@ -377,3 +377,15 @@
 - [ ] Implementar turmas (individuais e em grupo), chamadas (presença) e auditoria de logins e submissões
 - [ ] Desenvolver relatórios detalhados para professores e super-admin
 - [ ] Validar testes automatizados e build de produção v2.2.0
+
+## Correção da rota FAQ — 15/08/2026
+- [ ] Criar ou corrigir a página pública `/faq` para eliminar o erro 404
+- [ ] Integrar a FAQ à navegação e garantir consistência visual com `/contato`
+- [ ] Adicionar teste de contrato/SSR para `/faq` e validar o build de produção
+- [ ] Salvar checkpoint da correção da FAQ
+
+
+## Correção de Rotas Públicas em Falta (/faq e /politica-privacidade) — 15/08/2026
+- [ ] Criar app/faq/page.tsx para atender à rota pública de Perguntas Frequentes
+- [ ] Criar app/politica-privacidade/page.tsx para atender à rota pública de Política de Privacidade
+- [ ] Validar rotas, testes automatizados e build de produção v2.3.0
