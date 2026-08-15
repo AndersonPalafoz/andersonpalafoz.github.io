@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { users, lessonProgress, userActivityProgress } from "@/drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
+import { analyzeSpeakingAudio } from "@/lib/ai-pronunciation";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -12,7 +13,6 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Buscar alunos vinculados ou todos se for super-admin
     const teacherEmail = session.user.email;
     let assignedStudents: any[] = [];
     if (session.user.role === "admin") {
@@ -32,7 +32,6 @@ export async function GET(_request: NextRequest) {
 
     const studentIds = assignedStudents.map(s => s.id);
 
-    // Buscar progresso de aulas e atividades (speaking)
     const allLessonProgress = studentIds.length > 0 ? await db.query.lessonProgress.findMany({
       where: inArray(lessonProgress.userId, studentIds),
     }) : [];
@@ -69,16 +68,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "activityProgressId é obrigatório" }, { status: 400 });
     }
 
+    const existingProgress = await db.query.userActivityProgress.findFirst({
+      where: eq(userActivityProgress.id, Number(activityProgressId)),
+    });
+
+    let finalScore = score !== undefined ? Number(score) : 90;
     let feedbackToSave = teacherFeedback || "";
+
     if (triggerAIAnalysis) {
-      feedbackToSave = `[IA Feedback de Pronúncia]: Excelente entonação e clareza de articulação! Ritmo adequado e pronúncia correta de consoantes oclusivas. ${teacherFeedback ? `\nNota do Professor: ${teacherFeedback}` : ""}`;
+      const analysis = await analyzeSpeakingAudio(existingProgress?.audioResponseUrl);
+      finalScore = analysis.score;
+      feedbackToSave = `${analysis.feedback}\n\nSugestões de Melhoria:\n${analysis.suggestions.join("\n")}${teacherFeedback ? `\n\nNota Adicional do Professor: ${teacherFeedback}` : ""}`;
     }
 
     const updated = await db
       .update(userActivityProgress)
       .set({
         teacherFeedback: feedbackToSave,
-        score: score !== undefined ? Number(score) : undefined,
+        score: finalScore,
         status: "completed",
         completedAt: new Date(),
       })

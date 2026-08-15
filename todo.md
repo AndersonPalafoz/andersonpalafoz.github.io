@@ -207,7 +207,7 @@
 - [ ] Validar testes automatizados e build de produção
 
 ## Painel Docente, Avaliação de Speaking e Progresso Visual — 15/08/2026
-- [ ] Criar painel do professor para monitorar progresso de aulas dos alunos e avaliar gravações de Speaking (`/professor/progresso-aulas`)
-- [ ] Integrar feedback automático de pronúncia por IA para submissões de Speaking
-- [ ] Adicionar barra de progresso visual de aulas na página do curso (`/cursos/[id]`)
-- [ ] Validar testes e build de produção
+- [x] Criar painel do professor para monitorar progresso de aulas dos alunos e avaliar gravações de Speaking (`/professor/progresso-aulas`)
+- [x] Integrar feedback automático de pronúncia por IA para submissões de Speaking
+- [x] Adicionar barra de progresso visual de aulas na página do curso (`/cursos/[id]`)
+- [x] Validar testes e build de produção
