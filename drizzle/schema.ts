@@ -80,6 +80,7 @@ export const materials = pgTable("materials", {
   category: varchar("category", { length: 100 }).notNull(), // Worksheets, Slides, Áudios, etc
   level: varchar("level", { length: 10 }).notNull(), // A1-C2
   fileUrl: varchar("fileUrl", { length: 500 }),
+  lessonId: integer("lessonId").references(() => lessons.id),
   downloads: integer("downloads").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

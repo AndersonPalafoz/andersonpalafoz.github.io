@@ -199,3 +199,9 @@
 - [ ] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
 - [ ] O estado de produção no Vercel ainda precisa ser comparado ao estado local
 - [ ] A análise ainda não deve ser considerada encerrada
+
+## Experiência Completa de Aulas para Alunos e Professores — 15/08/2026
+- [ ] Criar página de player e consumo de aulas para alunos (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
+- [ ] Implementar componentes interativos de Listening e Speaking nas aulas (reprodução de áudio, gravação de voz no navegador e feedback direto)
+- [ ] Adicionar upload de materiais complementares (PDFs e imagens) vinculados a cada aula por professores
+- [ ] Validar testes automatizados e build de produção

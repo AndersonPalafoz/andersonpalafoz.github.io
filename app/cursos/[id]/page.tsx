@@ -1,8 +1,68 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getCourseById, getModulesByCourse } from "@/lib/db";
+import { getCourseById, getModulesByCourse, getLessonsByModule } from "@/lib/db";
 import { EnrollButton } from "@/components/enroll-button";
-import { BookOpen, Layers } from "lucide-react";
+import { BookOpen, Layers, PlayCircle, Clock } from "lucide-react";
+
+async function CourseModulesList({ courseId }: { courseId: number }) {
+  const modules = await getModulesByCourse(courseId);
+  if (modules.length === 0) {
+    return <p className="text-gray-500 text-sm">Nenhum módulo cadastrado para este curso ainda.</p>;
+  }
+
+  return (
+    <div className="space-y-6">
+      {modules.map(async (mod) => {
+        const lessons = await getLessonsByModule(mod.id);
+        return (
+          <div key={mod.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-red-600">Módulo {mod.order}</span>
+                <h3 className="text-xl font-bold text-gray-900 mt-1">{mod.title}</h3>
+                {mod.description && <p className="text-gray-600 text-sm mt-1">{mod.description}</p>}
+              </div>
+              <span className="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-600">
+                {lessons.length} aulas
+              </span>
+            </div>
+
+            {lessons.length > 0 ? (
+              <div className="divide-y divide-gray-100 border-t border-gray-100 pt-3">
+                {lessons.map((lesson) => (
+                  <Link
+                    key={lesson.id}
+                    href={`/cursos/${courseId}/aulas/${lesson.id}`}
+                    className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-red-50/50 transition group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <PlayCircle className="text-red-600 group-hover:scale-110 transition" size={22} />
+                      <div>
+                        <p className="font-semibold text-gray-900 group-hover:text-red-600 transition">
+                          Aula #{lesson.order}: {lesson.title}
+                        </p>
+                        {lesson.description && (
+                          <p className="text-xs text-gray-500 line-clamp-1">{lesson.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Clock size={14} />
+                      <span>{lesson.duration || 15} min</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 pt-2 border-t border-gray-100">Nenhuma aula cadastrada neste módulo.</p>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 async function CourseDetail({ courseId }: { courseId: number }) {
   const course = await getCourseById(courseId);
@@ -51,27 +111,13 @@ async function CourseDetail({ courseId }: { courseId: number }) {
             )}
           </div>
 
-          {modules.length > 0 && (
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-8 mt-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos do Curso</h2>
-              <ul className="space-y-4">
-                {modules.map((module) => (
-                  <li key={module.id} className="flex items-start gap-3">
-                    <span className="text-red-600 font-bold">{module.order}.</span>
-                    <div>
-                      <p className="font-semibold text-gray-900">{module.title}</p>
-                      {module.description && (
-                        <p className="text-gray-600 text-sm">{module.description}</p>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="pt-4">
+          <div className="pt-4 pb-2">
             <EnrollButton courseId={course.id} />
+          </div>
+
+          <div className="pt-6 border-t border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2>
+            <CourseModulesList courseId={course.id} />
           </div>
         </div>
       </div>
