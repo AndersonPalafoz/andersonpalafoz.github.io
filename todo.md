@@ -306,3 +306,46 @@
 - [x] Inspecionar a rota `/api/admin/stats` e o comportamento do dashboard do aluno
 - [x] Identificar e corrigir falhas de banco ou consultas nulas ao carregar estatísticas e cursos
 - [x] Executar build de produção e validar que as páginas carregam sem erros
+
+## Painel do Professor e Auditoria de Erros — 15/08/2026
+- [ ] Realizar auditoria de erros correntes e logs do servidor/navegador
+- [ ] Estender o schema de papéis/middleware para suportar o role `professor` e a rota `/professor/*`
+- [ ] Criar o painel do professor (`/professor`) com resumo de cursos, alunos e materiais
+- [ ] Criar API de gerenciamento de aulas, exercícios e materiais para o professor
+- [ ] Adicionar navegação condicional para o papel de professor no Navbar e layouts
+- [ ] Escrever testes unitários e de integração para o painel do professor
+- [ ] Executar build de produção e validar checkpoint v1.4.0
+
+## Melhorias de Blog e Materiais — 15/08/2026
+- [ ] Auditoria das páginas públicas `/blog`, `/blog/[slug]`, `/materiais` e `/materiais/[id]`
+- [ ] Implementar busca em tempo real e filtros avançados por categoria e nível CEFR (A1-C2)
+- [ ] Adicionar suporte a seed ou criação automática de conteúdos de exemplo caso o banco esteja vazio
+- [ ] Melhorar o layout dos cards e páginas de detalhe com tipografia limpa e feedback de download
+- [ ] Escrever testes unitários e de integração para Blog e Materiais
+- [ ] Validar build de produção e salvar checkpoint v1.4.0
+
+## Módulo de Mensagens de Contato (Super-Admin) — 15/08/2026
+- [ ] Criar tabela `contact_messages` no schema Drizzle e aplicar migração no Neon
+- [ ] Criar API POST `/api/contact` para receber e persistir mensagens do formulário de contato
+- [ ] Criar API GET/PUT/DELETE `/api/admin/messages` para o super-admin listar, marcar como lida e excluir mensagens
+- [ ] Criar a página de gerenciamento `/admin/mensagens` no painel administrativo com filtros e contador
+- [ ] Adicionar link "Mensagens" na sidebar do painel administrativo
+- [ ] Escrever testes unitários para a API de mensagens de contato
+- [ ] Executar build de produção e validar checkpoint v1.5.0
+
+## Mensagens Diretas Aluno ↔ Professor com Notificação por Email — 15/08/2026
+- [ ] Criar tabela `direct_messages` no Drizzle (senderId, receiverId, subject, body, isRead, createdAt)
+- [ ] Configurar helper de envio de email (suporte a Resend ou fallback para log/mailto estruturado)
+- [ ] Criar API POST e GET `/api/messages` para envio e leitura de mensagens diretas
+- [ ] Criar página de mensagens no Dashboard do Aluno (`/dashboard/mensagens`)
+- [ ] Criar página de mensagens no Painel do Professor (`/professor/mensagens` e `/admin/mensagens`)
+- [ ] Adicionar testes unitários para o sistema de mensagens diretas
+- [ ] Executar build de produção e salvar checkpoint v1.6.0
+
+## Sistema de Lembretes de Prazos (Deadlines) — 15/08/2026
+- [ ] Criar tabela `notifications` no schema Drizzle para alertas in-app (userId, title, message, type, isRead, createdAt)
+- [ ] Criar helper de notificação por WhatsApp e Email em `lib/notifications.ts` com templates em português
+- [ ] Criar API `/api/notifications` para listar e marcar notificações como lidas
+- [ ] Criar componentes de alertas de prazos no Dashboard do Aluno e Painel do Professor
+- [ ] Escrever testes unitários para o sistema de notificações e deadlines
+- [ ] Executar build de produção e salvar checkpoint v1.7.0

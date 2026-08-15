@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 
 // Enums
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
@@ -249,3 +249,38 @@ export const adminAuditLogs = pgTable("admin_audit_logs", {
 
 export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
 export type InsertAdminAuditLog = typeof adminAuditLogs.$inferInsert;
+
+/**
+ * Contact Messages table - mensagens enviadas pelo formulário público de contato.
+ */
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 160 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 160 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ContactMessageRecord = typeof contactMessages.$inferSelect;
+export type InsertContactMessage = typeof contactMessages.$inferInsert;
+
+
+/**
+ * Direct Messages table - mensagens diretas entre alunos e professores.
+ */
+export const directMessages = pgTable("direct_messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("senderId").notNull().references(() => users.id),
+  receiverId: integer("receiverId").notNull().references(() => users.id),
+  subject: varchar("subject", { length: 200 }).notNull(),
+  body: text("body").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DirectMessageRecord = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = typeof directMessages.$inferInsert;

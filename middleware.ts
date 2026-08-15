@@ -11,8 +11,9 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const isAdminRoute = pathname.startsWith("/admin");
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isProfessorRoute = pathname.startsWith("/professor");
 
-  if (!isAdminRoute && !isDashboardRoute) {
+  if (!isAdminRoute && !isDashboardRoute && !isProfessorRoute) {
     return NextResponse.next();
   }
 
@@ -30,6 +31,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // O painel do professor é reservado a professores e administradores aprovados.
+  if (isProfessorRoute) {
+    const canAccessTeacherPanel = token.role === "professor" || token.role === "admin";
+    if (!canAccessTeacherPanel || !isActive || !isApproved) {
+      const destination = token.approvalStatus === "rejected" || !isActive
+        ? "/acesso-negado?reason=blocked"
+        : "/acesso-pendente";
+      return NextResponse.redirect(new URL(destination, request.url));
+    }
+  }
+
   // Cursos, progresso e perfil só ficam disponíveis para contas aprovadas.
   if (isDashboardRoute) {
     if (!isActive || token.approvalStatus !== "approved") {
@@ -44,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/dashboard/:path*"],
+  matcher: ["/admin/:path*", "/dashboard/:path*", "/professor/:path*"],
 };

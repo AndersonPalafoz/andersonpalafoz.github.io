@@ -6,6 +6,7 @@ declare module "next-auth" {
       id?: string;
       role?: "user" | "professor" | "admin";
       approvalStatus?: "pending" | "approved" | "rejected";
+      deletedAt?: string | null;
       image?: string | null;
       avatarUrl?: string | null;
     } & DefaultSession["user"];
