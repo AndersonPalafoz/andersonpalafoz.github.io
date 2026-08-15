@@ -240,19 +240,19 @@
 - [x] Atualizar testes de contrato e SSR da página Sobre e validar o build de produção
 
 ## Correção de Níveis CEFR — 15/08/2026
-- [ ] Auditar menções a níveis CEFR em homepage, página Sobre, aulas, materiais e metadados
-- [ ] Atualizar a comunicação para aulas A1–B2 e materiais até C1/C2
-- [ ] Atualizar testes e validar as páginas afetadas após a correção
+- [x] Auditar menções a níveis CEFR em homepage, página Sobre, aulas, materiais e metadados
+- [x] Atualizar a comunicação para aulas A1–B2 e materiais até C1/C2
+- [x] Atualizar testes e validar as páginas afetadas após a correção
 
 ## Sistema de Aprovação de Contas e Hierarquia de Papéis — 15/08/2026
-- [ ] Revisar schema, autenticação, middleware e matriz de papéis atual
-- [ ] Definir e aplicar status de aprovação para visitantes, alunos e professores
-- [ ] Garantir `palafozanderson@gmail.com` como super-admin imutável
-- [ ] Criar fluxo para visitante solicitar acesso de aluno e professor solicitar aprovação do super-admin
-- [ ] Criar APIs e interface para professores aprovarem alunos e super-admin aprovar/rejeitar professores
-- [ ] Restringir dashboard, cursos e permissões conforme papel e status de aprovação
-- [ ] Adicionar testes de segurança, aprovação, rejeição e proteção do super-admin
-- [ ] Validar TypeScript, suíte completa e build antes do checkpoint
+- [x] Revisar schema, autenticação, middleware e matriz de papéis atual
+- [x] Definir e aplicar status de aprovação para visitantes, alunos e professores
+- [x] Garantir `palafozanderson@gmail.com` como super-admin imutável
+- [x] Criar fluxo para visitante solicitar acesso de aluno e professor solicitar aprovação do super-admin
+- [x] Criar APIs e interface para professores aprovarem alunos e super-admin aprovar/rejeitar professores
+- [x] Restringir dashboard, cursos e permissões conforme papel e status de aprovação
+- [x] Adicionar testes de segurança, aprovação, rejeição e proteção do super-admin
+- [x] Validar TypeScript, suíte completa e build antes do checkpoint
 
 ## Autenticação Robusta com Redes Sociais, Email, Senha, Telefone, CAPTCHA e Aprovação — 15/08/2026
 - [ ] Atualizar schema Drizzle (`users`) com campos de senha criptografada, telefone, status de aprovação, papel pretendido e metadados de moderação
@@ -281,11 +281,11 @@
 - [x] Validar TypeScript, suíte completa e build de produção
 
 ## Fotos de Perfil — 15/08/2026
-- [ ] Auditar avatar atual, formulário de perfil e infraestrutura de armazenamento
-- [ ] Implementar upload seguro de foto com validação de tipo, tamanho e autorização
-- [ ] Atualizar avatar no banco, sessão, Navbar, dashboard e perfil
-- [ ] Permitir ao super-admin editar a foto de outros usuários sem expor dados sensíveis
-- [ ] Adicionar testes de upload, permissões, validações e build
+- [x] Auditar avatar atual, formulário de perfil e infraestrutura de armazenamento
+- [x] Implementar upload seguro de foto com validação de tipo, tamanho e autorização
+- [x] Atualizar avatar no banco, sessão, Navbar, dashboard e perfil
+- [x] Permitir ao super-admin editar a foto de outros usuários sem expor dados sensíveis
+- [x] Adicionar testes de upload, permissões, validações e build
 
 ## Auditoria Final Pós-Implementação — 15/08/2026
 - [ ] Reanalisar todas as páginas públicas, dashboard, admin, autenticação e fluxos de usuário após concluir as funcionalidades pendentes
@@ -362,3 +362,18 @@
 - [x] Expandir formulário de Blog/Artigos com resumo, slug customizável, autor, categorias e editor Markdown rico
 - [x] Realizar auditoria e refinamento global de responsividade mobile-first, espaçamentos e contrastes em todo o site
 - [x] Executar testes unitários, build de produção e salvar checkpoint v2.1.0
+
+## Governança Avançada, Cursos Individuais/Grupo, Chamada e Auditoria de Logins/Submissões — 15/08/2026
+- [ ] Estender schema Drizzle com tabelas para modalidade de curso (individual/grupo), sessões de aula (chamada) e trilha de auditoria de eventos (login, conclusão de atividades, submissão de materiais)
+- [ ] Criar API e interface no painel do professor para registrar chamada (presença) em aulas individuais e em grupo
+- [ ] Criar relatórios detalhados de engajamento de alunos para professores (progresso, frequência, atividades)
+- [ ] Criar relatórios executivos para o super-admin (métricas unificadas de alunos, professores, logins e atividade editorial)
+- [ ] Criar painel de auditoria de logs no super-admin para monitorar logins, submissões de materiais e progresso
+- [ ] Escrever testes unitários e de integração para o novo ecossistema de governança acadêmica
+- [ ] Executar build de produção e salvar checkpoint v2.2.0
+
+## Multimídia (Áudio, Vídeo, Imagens) e Governança Avançada — 15/08/2026
+- [ ] Adicionar suporte a áudio, vídeo e imagens em cursos, materiais e blog (Drizzle schema e formulários administrativos)
+- [ ] Implementar turmas (individuais e em grupo), chamadas (presença) e auditoria de logins e submissões
+- [ ] Desenvolver relatórios detalhados para professores e super-admin
+- [ ] Validar testes automatizados e build de produção v2.2.0

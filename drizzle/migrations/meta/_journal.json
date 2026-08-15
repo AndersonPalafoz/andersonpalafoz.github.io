@@ -64,6 +64,20 @@
       "when": 1786761042473,
       "tag": "0008_round_mad_thinker",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786763732598,
+      "tag": "0009_optimal_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786763981863,
+      "tag": "0010_naive_boomerang",
+      "breakpoints": true
     }
   ]
 }

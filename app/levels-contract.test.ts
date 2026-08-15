@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const homepage = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
 const classesPage = readFileSync(new URL("./aulas/page.tsx", import.meta.url), "utf8");
 const materialsPage = readFileSync(new URL("./materiais/page.tsx", import.meta.url), "utf8");
+const aboutPage = readFileSync(new URL("./sobre/page.tsx", import.meta.url), "utf8");
 
 describe("CEFR communication contract", () => {
   it("communicates that public classes run from A1 to B2", () => {
@@ -20,5 +21,11 @@ describe("CEFR communication contract", () => {
     expect(homepage).toContain("materiais que podem chegar aos níveis C1 e C2");
     expect(materialsPage).toContain("podem alcançar os níveis C1 e C2");
     expect(materialsPage).toContain("A1-C2");
+  });
+
+  it("communicates the same CEFR distinction on the About page and metadata", () => {
+    expect(aboutPage).toContain("A1 ao B2");
+    expect(aboutPage).toContain("C1 e C2");
+    expect(aboutPage).toContain("aulas de inglês do A1 ao B2");
   });
 });
