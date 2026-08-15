@@ -343,3 +343,9 @@
 - [ ] Corrigir o visual, contraste e legibilidade da página pública de login (`/login`) em desktop e mobile
 
 - [x] Criar um curso, um post e um material de teste na plataforma Anderson Palafoz
+
+- [ ] Adicionar barra de pesquisa e filtros por nível de dificuldade nas listagens de cursos e materiais
+- [ ] Melhorar animações de hover e indicadores de carregamento suaves nos cards de cursos e posts do blog
+- [ ] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
+
+- [x] Esclarecer e aprimorar o fluxo de gerenciamento de módulos e aulas por curso no painel administrativo

@@ -355,3 +355,20 @@ export const eventLogs = pgTable("event_logs", {
 
 export type EventLog = typeof eventLogs.$inferSelect;
 export type InsertEventLog = typeof eventLogs.$inferInsert;
+
+
+/**
+ * Article Comments & Ratings table - Comentários e avaliações por estrelas em artigos do blog.
+ */
+export const articleComments = pgTable("article_comments", {
+  id: serial("id").primaryKey(),
+  articleId: integer("articleId").notNull().references(() => articles.id, { onDelete: "cascade" }),
+  userName: varchar("userName", { length: 160 }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }),
+  rating: integer("rating").notNull().default(5), // 1 a 5 estrelas
+  comment: text("comment").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ArticleComment = typeof articleComments.$inferSelect;
+export type InsertArticleComment = typeof articleComments.$inferInsert;
