@@ -361,3 +361,6 @@
 - [x] Permitir upload e vinculação de materiais de apoio (PDFs/exercícios) diretamente na interface de criação de aulas
 
 - [x] Diferenciar materiais públicos de privados e cursos gratuitos de pagos no fluxo de publicação e na interface
+
+- [x] Adicionar funcionalidade de upload e gerenciamento de imagens de capa para cursos no painel administrativo
+- [x] Preparar infraestrutura e conector para integração segura com Google Drive
