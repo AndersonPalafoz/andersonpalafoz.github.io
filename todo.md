@@ -328,3 +328,14 @@
 - [ ] Criar galeria de certificados no painel do usuário com visualização e download
 - [ ] Implementar campo de anotações pessoais persistentes no player de vídeo
 - [ ] Executar testes automatizados e build de produção
+
+## Central de Anotações e Animação de Contador (15/08/2026)
+- [ ] Criar aba de anotações centralizadas no painel do usuário com pesquisa
+- [ ] Adicionar exportação de anotações de aulas em PDF ou texto
+- [ ] Implementar animação de pulso/destaque no ícone da Lista de Desejos ao atualizar contador
+- [ ] Executar testes automatizados e build de produção
+
+## Correção de Deploy Vercel (15/08/2026)
+- [ ] Executar pnpm build e analisar logs de compilação
+- [ ] Corrigir erros de tipagem, dependências ou conflitos de rotas Next.js
+- [ ] Executar testes automatizados e build bem-sucedido

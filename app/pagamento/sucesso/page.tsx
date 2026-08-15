@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, BookOpen, ArrowRight, ShieldCheck, Download, Calendar } from "lucide-react";
+import { CheckCircle2, BookOpen, ArrowRight, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function PaymentSuccessPage() {
