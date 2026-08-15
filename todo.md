@@ -261,3 +261,14 @@
 - [ ] Adicionar barra de progresso visual de subtarefas dentro de cada card de tarefa
 - [ ] Implementar botão para expandir e recolher a seção de subtarefas e anexos
 - [ ] Executar testes automatizados e build de produção
+
+## Duplicação de Tarefas e Alertas Visuais de Prazos (15/08/2026)
+- [ ] Adicionar funcionalidade para duplicar tarefas, copiando subtarefas e etiquetas
+- [ ] Implementar alertas visuais claros para tarefas atrasadas e que vencem hoje
+- [ ] Executar testes automatizados e build de produção
+
+## Perfil na Sidebar, Autenticação Expandida e Pagamentos Stripe (15/08/2026)
+- [ ] Adicionar foto/avatar de perfil na barra lateral do dashboard (/dashboard)
+- [ ] Expandir métodos de login (Email/Senha e OAuth)
+- [ ] Adicionar método de pagamento seguro (Stripe) para cursos pagos
+- [ ] Executar testes automatizados e build de production
