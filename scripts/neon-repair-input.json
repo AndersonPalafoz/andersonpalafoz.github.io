@@ -1,0 +1,16 @@
+{
+  "projectId": "dark-unit-46507184",
+  "databaseName": "neondb",
+  "sqlStatements": [
+    "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type t JOIN pg_namespace n ON n.oid = t.typnamespace WHERE n.nspname = 'public' AND t.typname = 'approval_status') THEN CREATE TYPE public.approval_status AS ENUM ('pending', 'approved', 'rejected'); END IF; END $$",
+    "ALTER TYPE public.role ADD VALUE IF NOT EXISTS 'professor'",
+    "ALTER TABLE public.users ADD COLUMN IF NOT EXISTS \"approvalStatus\" public.approval_status DEFAULT 'pending' NOT NULL",
+    "ALTER TABLE public.users ADD COLUMN IF NOT EXISTS \"avatarUrl\" varchar(1000)",
+    "ALTER TABLE public.users ADD COLUMN IF NOT EXISTS \"deletedAt\" timestamp",
+    "UPDATE public.users SET \"approvalStatus\" = 'approved' WHERE \"approvalStatus\" = 'pending'",
+    "CREATE TABLE IF NOT EXISTS public.admin_audit_logs (\"id\" serial PRIMARY KEY NOT NULL, \"adminEmail\" varchar(320) NOT NULL, \"action\" varchar(64) NOT NULL, \"targetName\" text, \"targetEmail\" varchar(320), \"details\" text, \"createdAt\" timestamp DEFAULT now() NOT NULL)",
+    "CREATE SCHEMA IF NOT EXISTS drizzle",
+    "CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (id serial PRIMARY KEY NOT NULL, hash text NOT NULL, created_at bigint)",
+    "INSERT INTO drizzle.__drizzle_migrations (hash, created_at) SELECT '6acbba21627cfa71aa338386db3c22385fd97e712d2dbf8677883f1867b5e2df', 1786761042473 WHERE NOT EXISTS (SELECT 1 FROM drizzle.__drizzle_migrations)"
+  ]
+}
