@@ -394,3 +394,17 @@
 - [ ] Atualizar LinkedIn, Instagram e Facebook nos componentes de contato, rodapé e perfil
 - [ ] Validar URLs oficiais, testes e build de produção
 - [ ] Salvar checkpoint da atualização de redes sociais
+
+## Visibilidade de Materiais (Público/Privado) e Vínculo com Cursos — 15/08/2026
+- [ ] Adicionar campos `isPublic` (boolean) e `courseId` (integer, opcional) na tabela `materials` no schema Drizzle
+- [ ] Atualizar script de migração e aplicar alterações no banco de dados Neon
+- [ ] Atualizar APIs de materiais para gerenciar e filtrar por visibilidade pública/privada e ID de curso vinculado
+- [ ] Atualizar painel de administração de materiais para permitir escolher visibilidade e curso associado
+- [ ] Ajustar páginas públicas e da área do aluno para respeitar o acesso a materiais públicos vs. privados/vinculados
+- [ ] Adicionar testes automatizados e validar o build de produção
+
+## Autoria e Data de Publicação em Conteúdos — 15/08/2026
+- [ ] Exibir autor e data de publicação nos cards e páginas individuais do blog
+- [ ] Exibir autor e data de publicação nos cards e páginas individuais de materiais
+- [ ] Garantir fallback de autoria e data quando os dados forem antigos ou incompletos
+- [ ] Adicionar testes automatizados e validar o build de produção

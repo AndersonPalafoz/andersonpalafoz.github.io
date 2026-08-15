@@ -53,6 +53,7 @@ export const courses = pgTable("courses", {
   level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
   modules: integer("modules").default(0),
   instructor: varchar("instructor", { length: 255 }).default("Anderson Palafoz"),
+  deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -88,6 +89,8 @@ export const materials = pgTable("materials", {
   level: varchar("level", { length: 10 }).notNull(), // A1-C2
   fileUrl: varchar("fileUrl", { length: 500 }),
   downloads: integer("downloads").default(0).notNull(),
+  isPublic: boolean("isPublic").default(true).notNull(),
+  courseId: integer("courseId").references(() => courses.id),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -262,6 +265,7 @@ export const contactMessages = pgTable("contact_messages", {
   message: text("message").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
   readAt: timestamp("readAt"),
+  deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
