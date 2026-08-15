@@ -228,3 +228,8 @@
 - [ ] Investigar e corrigir Relatórios de Progresso (professor e super-admin)
 - [ ] Investigar e corrigir fluxo de criação e inclusão de imagens (upload e link)
 - [ ] Executar testes automatizados e build de produção
+
+## Feedback Visual em Tarefas e Upload de Imagens — 15/08/2026
+- [ ] Adicionar formulário interativo de criação de tarefas com animação de carregamento e toasts de sucesso/erro
+- [ ] Refinar o componente de upload de imagens com indicador visual de progresso, feedback de sucesso e tratamento de erros
+- [ ] Validar testes automatizados e build de produção
