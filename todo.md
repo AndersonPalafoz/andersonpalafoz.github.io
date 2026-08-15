@@ -256,3 +256,8 @@
 - [ ] Adicionar funcionalidade para criar subtarefas e checklists dentro de cada tarefa principal
 - [ ] Implementar suporte para anexar links externos e arquivos de referência nos cards
 - [ ] Executar testes automatizados e build de produção
+
+## Progresso por Card e Recolhimento de Checklists (15/08/2026)
+- [ ] Adicionar barra de progresso visual de subtarefas dentro de cada card de tarefa
+- [ ] Implementar botão para expandir e recolher a seção de subtarefas e anexos
+- [ ] Executar testes automatizados e build de produção
