@@ -421,3 +421,10 @@
 - [ ] Atualizar formulários administrativos em cursos, materiais e blog para alternar entre URL externa (link) e upload de arquivo com pré-visualização
 - [ ] Renderizar áudios, vídeos e imagens nas páginas públicas e no player de aulas com componentes robustos
 - [ ] Adicionar testes automatizados e validar o build de produção
+
+## Gestão Acadêmica Avançada: Atribuições, Tarefas/Deadlines e Matrículas — 15/08/2026
+- [ ] Adicionar campo `teacherId` na tabela `users` (para vincular aluno a professor) e em `courses`/`enrollments`
+- [ ] Atualizar schema Drizzle e criar script de migração para atribuir professores e cursos com responsável
+- [ ] Criar APIs robustas para o super-admin e professor gerenciarem atribuições de alunos, criação de tarefas/deadlines e matrículas em cursos
+- [ ] Atualizar painéis administrativos (`/admin/usuarios`, `/admin/cursos`, `/professor/tarefas`) para suportar todas as atribuições
+- [ ] Adicionar testes automatizados e validar o build de produção

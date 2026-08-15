@@ -31,6 +31,7 @@ export const users = pgTable("users", {
   phone: varchar("phone", { length: 32 }),
   location: varchar("location", { length: 120 }),
   bio: text("bio"),
+  teacherId: integer("teacherId"),
   /** URL/key do avatar armazenado externamente; nenhum byte de imagem é salvo no banco. */
   avatarUrl: varchar("avatarUrl", { length: 1000 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
