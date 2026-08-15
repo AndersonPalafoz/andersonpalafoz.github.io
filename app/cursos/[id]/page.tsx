@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getCourseById, getModulesByCourse, getLessonsByModule, db } from "@/lib/db";
 import { EnrollButton } from "@/components/enroll-button";
+import { CertificateModal } from "@/components/certificate-modal";
 import { BookOpen, Layers, PlayCircle, Clock, CheckCircle } from "lucide-react";
 import { lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
@@ -186,8 +187,9 @@ async function CourseDetail({ courseId }: { courseId: number }) {
             )}
           </div>
 
-          <div className="pt-4 pb-2">
+          <div className="pt-4 pb-2 flex flex-col sm:flex-row items-center gap-4">
             <EnrollButton courseId={course.id} />
+            <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>
 
           <div className="pt-6 border-t border-gray-200">
