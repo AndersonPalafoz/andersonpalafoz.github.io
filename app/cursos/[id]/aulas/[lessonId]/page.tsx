@@ -1,126 +1,109 @@
-import { Suspense } from "react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Play } from "lucide-react";
-import { getLessonById } from "@/lib/db";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { ChevronLeft, CheckCircle2, Play, FileText, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-async function LessonContent({ lessonId }: { lessonId: number }) {
-  const lesson = await getLessonById(lessonId);
+export default function LessonPageClient() {
+  const params = useParams();
+  const courseId = params.id as string;
+  const lessonId = params.lessonId as string;
 
-  if (!lesson) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Aula não encontrada</p>
-      </div>
-    );
-  }
+  const [completed, setCompleted] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleToggleComplete = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: !completed }),
+      });
+      if (res.ok) {
+        setCompleted(!completed);
+        toast.success(!completed ? "Aula marcada como concluída com sucesso!" : "Aula marcada como pendente.");
+      } else {
+        toast.error("Erro ao atualizar progresso da aula.");
+      }
+    } catch {
+      toast.error("Erro de conexão com o servidor.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="bg-white border-b border-border">
-        <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200 shadow-sm">
+        <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link
-            href="/dashboard/cursos"
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition"
+            href={`/cursos/${courseId}`}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold transition"
           >
-            <ChevronLeft size={20} />
-            Voltar
+            <ChevronLeft size={20} /> Voltar ao Curso
           </Link>
+          <span className="text-xs font-mono font-bold text-gray-400">Aula #{lessonId}</span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="container max-w-4xl mx-auto px-4 py-8">
-        {/* Video Player */}
-        {lesson.videoUrl ? (
-          <div className="mb-8">
-            <YouTubePlayer
-              url={lesson.videoUrl}
-              title={lesson.title}
-              width="100%"
-              height="auto"
-              aspectRatio="16:9"
-              allowFullscreen
-            />
+      <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
+        <div className="bg-black rounded-3xl overflow-hidden aspect-video flex items-center justify-center border border-gray-200 shadow-lg relative">
+          <div className="text-center space-y-2">
+            <Play size={48} className="mx-auto text-red-500 animate-pulse" />
+            <p className="text-sm font-bold text-white">Player de Vídeo Integrado (YouTube / S3)</p>
+            <p className="text-xs text-gray-400">Assista à aula completa e interaja com os materiais</p>
           </div>
-        ) : (
-          <div className="bg-black rounded-lg overflow-hidden mb-8 aspect-video flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4 text-white">
-              <Play size={48} className="text-muted-foreground" />
-              <p className="text-muted-foreground">Vídeo não disponível</p>
-            </div>
-          </div>
-        )}
+        </div>
 
-        {/* Lesson Info */}
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">
-              {lesson.title}
-            </h1>
-            <p className="text-muted-foreground">
-              {lesson.duration && `${lesson.duration} minutos`}
+        <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-6">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-red-600">Módulo Acadêmico</span>
+              <h1 className="text-2xl font-extrabold text-gray-900 mt-1">Aula Exemplo — Estrutura e Prática</h1>
+              <p className="text-sm text-gray-500 mt-1">Duração estimada: 45 minutos</p>
+            </div>
+            <Button
+              onClick={handleToggleComplete}
+              disabled={loading}
+              className={`gap-2 font-bold h-12 px-6 rounded-xl ${
+                completed ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-600 hover:bg-red-700 text-white"
+              }`}
+            >
+              <CheckCircle2 size={18} />
+              {completed ? "Aula Concluída" : "Marcar como Concluída"}
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg text-gray-900">Conteúdo e Orientações da Aula</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Nesta aula, estudaremos os fundamentos essenciais da disciplina, com exercícios práticos orientados pelo método ESA (Engage, Study, Activate). Utilize os materiais complementares abaixo para acompanhar o desenvolvimento.
             </p>
           </div>
 
-          {/* Description */}
-          {lesson.description && (
-            <div className="bg-card p-6 rounded-lg border border-border">
-              <h2 className="text-lg font-semibold text-foreground mb-2">
-                Descrição
-              </h2>
-              <p className="text-muted-foreground">{lesson.description}</p>
-            </div>
-          )}
-
-          {/* Content */}
-          {lesson.content && (
-            <div className="bg-card p-6 rounded-lg border border-border">
-              <h2 className="text-lg font-semibold text-foreground mb-4">
-                Conteúdo da Aula
-              </h2>
-              <div className="text-muted-foreground whitespace-pre-wrap">
-                {lesson.content}
+          <div className="border-t border-gray-100 pt-6 space-y-4">
+            <h3 className="font-bold text-base text-gray-900">Materiais Complementares</h3>
+            <div className="grid gap-3">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
+                <div className="flex items-center gap-3">
+                  <FileText className="text-red-600" size={20} />
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">Worksheet_Pratica_A1.pdf</p>
+                    <p className="text-xs text-gray-500">2.4 MB • PDF Document</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" className="border-gray-300 font-semibold gap-2">
+                  <Download size={14} /> Baixar
+                </Button>
               </div>
             </div>
-          )}
-
-          {/* Mark Complete Button */}
-          <div className="flex gap-4">
-            <form action={`/api/lessons/${lesson.id}/progress`} method="POST">
-              <input type="hidden" name="completed" value="1" />
-              <button
-                type="submit"
-                className="flex items-center gap-2 px-6 py-3 rounded-lg font-medium bg-red-600 text-white hover:bg-red-700 transition"
-              >
-                <CheckCircle2 size={20} />
-                Marcar como Concluída
-              </button>
-            </form>
           </div>
         </div>
       </div>
     </div>
-  );
-}
-
-export default async function LessonPage({
-  params,
-}: {
-  params: Promise<{ id: string; lessonId: string }>;
-}) {
-  const { lessonId } = await params;
-
-  return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <p className="text-muted-foreground">Carregando aula...</p>
-        </div>
-      }
-    >
-      <LessonContent lessonId={parseInt(lessonId)} />
-    </Suspense>
   );
 }
