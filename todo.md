@@ -214,3 +214,14 @@
 - [x] Criar testes unitários para os fallbacks públicos de Blog e Materiais quando o banco estiver indisponível
 - [ ] Comparar o estado de produção no Vercel ao estado local e registrar divergências finais
 - [ ] Executar validação end-to-end da sessão administrativa em produção e então encerrar formalmente a análise
+
+## Correção da Página de Contato — 15/08/2026
+- [x] Auditar a página `/contato` no preview em desktop e mobile
+- [x] Corrigir hierarquia visual, contraste, espaçamento e responsividade da página de contato
+- [x] Validar e melhorar os links de email, WhatsApp e localização na página de contato
+- [x] Garantir labels, foco visível e mensagens acessíveis no formulário de contato
+- [x] Criar ou atualizar testes para a página de contato e validar o build
+- [x] Adicionar testes da página `/contato` e/ou do componente `ContactForm` cobrindo canais, labels, links, mensagens de status e CTA
+- [x] Validar automaticamente que a página `/contato` renderiza com os novos componentes e metadados sem regressões
+- [x] Adicionar teste SSR que importe e renderize `app/contato/page.tsx`, confirmando ContactForm, CTAs e metadados
+- [x] Adicionar teste de renderização real do `ContactForm` para labels, links e estados de formulário
