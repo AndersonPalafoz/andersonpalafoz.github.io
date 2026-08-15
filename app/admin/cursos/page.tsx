@@ -25,8 +25,13 @@ export default function AdminCursos() {
     level: "A1",
     modules: 4,
     instructor: "Anderson Palafoz",
+    modality: "individual" as "individual" | "group",
     description: "",
+    imageUrl: "",
+    audioUrl: "",
+    videoUrl: "",
   });
+
 
   useEffect(() => {
     fetchCourses();
@@ -59,14 +64,18 @@ export default function AdminCursos() {
     }
   };
 
-  const handleEdit = (course: Course) => {
+  const handleEdit = (course: any) => {
     setEditingId(course.id);
     setFormData({
       title: course.title,
       level: course.level || "A1",
       modules: course.modules || 1,
       instructor: course.instructor || "Anderson Palafoz",
+      modality: course.modality || "individual",
       description: course.description || "",
+      imageUrl: course.imageUrl || "",
+      audioUrl: course.audioUrl || "",
+      videoUrl: course.videoUrl || "",
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -101,7 +110,7 @@ export default function AdminCursos() {
         const [created] = await response.json();
         setCourses([...courses, created]);
       }
-      setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", description: "" });
+      setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
       setShowForm(false);
       alert("Curso salvo com sucesso!");
     } catch (err) {
@@ -134,7 +143,7 @@ export default function AdminCursos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", description: "" });
+              setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
           >
@@ -182,18 +191,15 @@ export default function AdminCursos() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Quantidade de Módulos</label>
-                  <div className="relative">
-                    <Layers className="absolute left-3 top-3.5 text-gray-400" size={18} />
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
-                      value={formData.modules}
-                      onChange={(e) => setFormData({ ...formData, modules: parseInt(e.target.value) || 1 })}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
-                    />
-                  </div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Modalidade do Curso</label>
+                  <select
+                    value={formData.modality}
+                    onChange={(e) => setFormData({ ...formData, modality: e.target.value as any })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-white"
+                  >
+                    <option value="individual">Individual (Mentoria / 1-on-1)</option>
+                    <option value="group">Em Grupo (Turmas Abertas)</option>
+                  </select>
                 </div>
 
                 <div>
@@ -208,6 +214,28 @@ export default function AdminCursos() {
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL da Imagem de Capa</label>
+                  <input
+                    type="text"
+                    value={formData.imageUrl}
+                    onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                    placeholder="https://... ou /uploads/..."
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Vídeo / Áudio Introdutório</label>
+                  <input
+                    type="text"
+                    value={formData.videoUrl}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="YouTube URL ou link de áudio"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
+                  />
                 </div>
               </div>
 
