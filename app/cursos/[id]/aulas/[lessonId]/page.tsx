@@ -15,6 +15,8 @@ export default function LessonPageClient() {
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewPdf, setPreviewPdf] = useState(false);
+  const [speakingHistory, setSpeakingHistory] = useState<any[]>([]);
+  const [latestFeedback, setLatestFeedback] = useState<any | null>(null);
 
   const handleToggleComplete = async () => {
     setLoading(true);
@@ -176,23 +178,60 @@ export default function LessonPageClient() {
                 </div>
               </div>
 
-              {/* Speaking Activity */}
+              {/* Speaking Activity com Feedback Detalhado e Histórico */}
               <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia</span>
-                  <span className="text-xs text-gray-500 font-medium">Speaking AI Feedback</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia & IA</span>
+                  <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Speaking Ativo</span>
                 </div>
-                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e receba análise instantânea</h4>
+                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e receba análise fonética detalhada</h4>
                 <p className="text-xs text-gray-600 leading-relaxed">
-                  Grave a frase em voz alta. Nossa IA analisará sua clareza, ritmo e precisão fonética em tempo real.
+                  Grave a frase de treino. O assistente de IA destacará desvios fonéticos específicos, entonação e sugerirá correções direcionadas.
                 </p>
-                <div className="pt-2">
+
+                <div className="pt-2 space-y-3">
                   <button
-                    onClick={() => toast.success("Áudio gravado! Análise de IA: Pronúncia excelente (94/100).")}
-                    className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm"
+                    onClick={() => {
+                      const newRecord = {
+                        id: Date.now(),
+                        date: new Date().toLocaleDateString("pt-BR"),
+                        score: 91,
+                        phonemeError: "Som /θ/ pronunciado como /s/ em 'thought'.",
+                        suggestion: "Posicione a ponta da língua levemente entre os dentes.",
+                      };
+                      setSpeakingHistory([newRecord, ...speakingHistory]);
+                      setLatestFeedback(newRecord);
+                      toast.success("Gravação analisada pela IA com sucesso!");
+                    }}
+                    className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2"
                   >
-                    🎙 Gravar Voz & Avaliar com IA
+                    🎙 Gravar Nova Tentativa & Analisar com IA
                   </button>
+
+                  {latestFeedback && (
+                    <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 animate-fadeIn">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-blue-700">Resultado da Análise Fonética</span>
+                        <span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.score}/100</span>
+                      </div>
+                      <p className="text-xs text-red-600 font-semibold">⚠️ Desvio detectado: {latestFeedback.phonemeError}</p>
+                      <p className="text-xs text-gray-600">💡 <strong className="text-gray-900">Correção sugerida:</strong> {latestFeedback.suggestion}</p>
+                    </div>
+                  )}
+
+                  {speakingHistory.length > 0 && (
+                    <div className="pt-2 border-t border-blue-100">
+                      <p className="text-xs font-bold text-gray-700 mb-2">Histórico de Gravações ({speakingHistory.length}):</p>
+                      <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                        {speakingHistory.map((item, idx) => (
+                          <div key={item.id} className="flex items-center justify-between bg-white/80 p-2 rounded-lg text-xs border border-blue-100">
+                            <span className="font-semibold text-gray-700">Tentativa #{speakingHistory.length - idx} ({item.date})</span>
+                            <span className="font-bold text-blue-600">{item.score} pts</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

@@ -77,9 +77,12 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
                           <PlayCircle className="text-red-600 group-hover:scale-110 transition flex-shrink-0" size={22} />
                         )}
                         <div>
-                          <p className={`font-semibold transition ${isDone ? "text-green-700 line-through" : "text-gray-900 group-hover:text-red-600"}`}>
-                            Aula #{lesson.order}: {lesson.title}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className={`font-semibold transition ${isDone ? "text-green-700 line-through" : "text-gray-900 group-hover:text-red-600"}`}>
+                              Aula #{lesson.order}: {lesson.title}
+                            </p>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Listening & Speaking</span>
+                          </div>
                           {lesson.description && (
                             <p className="text-xs text-gray-500 line-clamp-1">{lesson.description}</p>
                           )}
