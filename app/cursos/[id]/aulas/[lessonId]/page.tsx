@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Play, FileText, Download } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Play, Download, Eye, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ export default function LessonPageClient() {
 
   const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [previewPdf, setPreviewPdf] = useState(false);
 
   const handleToggleComplete = async () => {
     setLoading(true);
@@ -85,21 +86,68 @@ export default function LessonPageClient() {
             </p>
           </div>
 
+          {/* Seção de Materiais de Apoio com Visualizador e Download */}
           <div className="border-t border-gray-100 pt-6 space-y-4">
-            <h3 className="font-bold text-base text-gray-900">Materiais Complementares</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-base text-gray-900">Materiais de Apoio & Worksheet</h3>
+              <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Disponível para Estudo</span>
+            </div>
             <div className="grid gap-3">
-              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
+              <div className="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200 gap-4">
                 <div className="flex items-center gap-3">
-                  <FileText className="text-red-600" size={20} />
+                  <div className="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center font-bold">
+                    PDF
+                  </div>
                   <div>
                     <p className="font-bold text-sm text-gray-900">Worksheet_Pratica_A1.pdf</p>
-                    <p className="text-xs text-gray-500">2.4 MB • PDF Document</p>
+                    <p className="text-xs text-gray-500">2.4 MB • Material Oficial Autorizado</p>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" className="border-gray-300 font-semibold gap-2">
-                  <Download size={14} /> Baixar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setPreviewPdf(!previewPdf)}
+                    className="border-gray-300 font-semibold gap-1.5"
+                  >
+                    <Eye size={14} /> {previewPdf ? "Ocultar Prévio" : "Visualizar"}
+                  </Button>
+                  <a
+                    href="/materiais/everyday-vocabulary-b1.pdf"
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white font-semibold gap-1.5">
+                      <Download size={14} /> Baixar PDF
+                    </Button>
+                  </a>
+                </div>
               </div>
+
+              {/* Visualizador Prévio Integrado */}
+              {previewPdf && (
+                <div className="rounded-2xl border border-gray-200 bg-white p-4 space-y-3 animate-fadeIn">
+                  <div className="flex items-center justify-between border-b pb-2">
+                    <span className="text-xs font-bold text-gray-700 uppercase">Visualizador Integrado de Documento</span>
+                    <a
+                      href="/materiais/everyday-vocabulary-b1.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-red-600 hover:underline flex items-center gap-1"
+                    >
+                      Abrir em nova aba <ExternalLink size={12} />
+                    </a>
+                  </div>
+                  <div className="w-full h-96 rounded-xl border border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <iframe
+                      src="/materiais/everyday-vocabulary-b1.pdf"
+                      className="w-full h-full"
+                      title="Visualizador de PDF"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

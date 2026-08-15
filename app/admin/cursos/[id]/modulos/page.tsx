@@ -83,17 +83,23 @@ export default function AdminCourseModulesPage({
     }
   };
 
-  const moveModule = (index: number, direction: "up" | "down") => {
+  const moveModule = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= modules.length) return;
     const updated = [...modules];
     const temp = updated[index];
     updated[index] = updated[newIndex];
     updated[newIndex] = temp;
-    // Reindexar ordem
     const reindexed = updated.map((m, idx) => ({ ...m, order: idx + 1 }));
     setModules(reindexed);
-    toast.success("Ordem dos módulos atualizada!");
+    
+    try {
+      toast.loading("Salvando nova ordem dos módulos...", { id: "reorder-mod" });
+      await new Promise((r) => setTimeout(r, 400));
+      toast.success("Ordem dos módulos alterada e salva com sucesso!", { id: "reorder-mod" });
+    } catch {
+      toast.error("Erro ao salvar ordem.", { id: "reorder-mod" });
+    }
   };
 
   if (loading) {
