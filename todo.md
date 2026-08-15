@@ -196,6 +196,21 @@
 - [x] Build de produção falhou durante prerender de `/404` por ausência de `.next/prerender-manifest.json` após a falha de prerender
 - [x] Preview local ficou indisponível depois que o processo de build removeu `.next` enquanto o servidor de desenvolvimento estava ativo
 - [x] Foram capturadas evidências de falha de renderização em algumas rotas no preview local
-- [ ] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
+- [x] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
 - [ ] O estado de produção no Vercel ainda precisa ser comparado ao estado local
 - [ ] A análise ainda não deve ser considerada encerrada
+
+
+## Plano de Correção e Conclusão — 12/08/2026
+- [x] Atualizar o callback `jwt` em `lib/auth.ts` para persistir o campo `role` no token JWT
+- [x] Investigar e remover qualquer importação indevida de `<Html>` que impeça o build de produção do Next.js
+- [x] Criar testes unitários e de integração para validar as rotas administrativas `/api/admin/blog` e `/api/admin/materials`
+- [x] Executar `pnpm build` com sucesso para validar a compilação completa sem erros
+- [ ] Salvar um checkpoint atualizado com o status `v1.1.0`
+
+- [x] Adicionar testes unitários para persistência do `role` no JWT, fallback do administrador principal e propagação para `session.user.role`
+- [x] Revisar arquivos legados/mock da área administrativa; manter somente UIs conectadas ao banco e redirecionamentos compatíveis
+- [x] Corrigir o tratamento de indisponibilidade do banco nas páginas públicas `/blog` e `/materiais`, evitando telas de erro do Next.js e exibindo estados de fallback utilizáveis
+- [x] Criar testes unitários para os fallbacks públicos de Blog e Materiais quando o banco estiver indisponível
+- [ ] Comparar o estado de produção no Vercel ao estado local e registrar divergências finais
+- [ ] Executar validação end-to-end da sessão administrativa em produção e então encerrar formalmente a análise
