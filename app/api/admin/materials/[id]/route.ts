@@ -21,7 +21,7 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { title, category, level, description } = body;
+    const { title, category, level, description, fileUrl } = body;
     const { id } = await params;
     const materialId = parseInt(id);
 
@@ -51,6 +51,7 @@ export async function PUT(
         category,
         level: level || null,
         description: description || null,
+        fileUrl: fileUrl || null,
       })
       .where(eq(materials.id, materialId))
       .returning();
