@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ContactForm } from "./contact-form";
 
@@ -16,11 +16,11 @@ describe("ContactForm interaction", () => {
     const form = screen.getByRole("button", { name: "Enviar por email" }).closest("form");
     fireEvent.submit(form!);
 
-    expect(screen.getByRole("alert").textContent).toContain("Revise os campos obrigatórios");
+    expect(screen.getByRole("alert").textContent).toContain("Não foi possível preparar sua mensagem");
     expect(onMailto).not.toHaveBeenCalled();
   });
 
-  it("submits valid data, builds a mailto and shows success feedback", () => {
+  it("shows loading while preparing and then submits valid data with success feedback", async () => {
     const onMailto = vi.fn();
     render(<ContactForm onMailto={onMailto} />);
 
@@ -40,9 +40,13 @@ describe("ContactForm interaction", () => {
     const form = screen.getByRole("button", { name: "Enviar por email" }).closest("form");
     fireEvent.submit(form!);
 
-    expect(onMailto).toHaveBeenCalledTimes(1);
+    const loadingButton = screen.getByRole("button", { name: /Preparando mensagem/ });
+    expect(loadingButton.hasAttribute("disabled")).toBe(true);
+    expect(screen.getByRole("status").textContent).toContain("Preparando sua mensagem");
+
+    await waitFor(() => expect(onMailto).toHaveBeenCalledTimes(1));
     expect(onMailto.mock.calls[0][0]).toContain("mailto:palafozanderson@gmail.com");
     expect(onMailto.mock.calls[0][0]).toContain("Parceria");
-    expect(screen.getByRole("status").textContent).toContain("aplicativo de email");
+    expect(screen.getByRole("status").textContent).toContain("Mensagem preparada com sucesso");
   });
 });

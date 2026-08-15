@@ -32,6 +32,7 @@ describe("ContatoPage server rendering", () => {
     expect(markup).toContain('href="#mensagem"');
     expect(markup).toContain('href="/aulas"');
     expect(markup).toContain("Perguntas frequentes");
+    expect(markup.indexOf("Enviar uma mensagem")).toBeLessThan(markup.indexOf("Perguntas frequentes"));
   });
 
   it("exports the expected metadata at runtime", () => {

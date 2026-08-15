@@ -108,7 +108,8 @@ export default function ContatoPage() {
       </section>
 
       <section id="mensagem" className="scroll-mt-24 bg-white px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-20">
           <div className="lg:sticky lg:top-28">
             <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">
               Encontre o melhor canal
@@ -167,26 +168,28 @@ export default function ContatoPage() {
           </div>
 
           <ContactForm />
-        </div>
-      </section>
-
-      <section className="bg-[#F8F9FA] px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-24">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-10 text-center">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">Dúvidas comuns</p>
-            <h2 className="text-3xl font-bold sm:text-4xl">Perguntas frequentes</h2>
           </div>
-          <div className="space-y-3">
-            {faqItems.map((item) => (
-              <details key={item.pergunta} className="group rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
-                <summary className="cursor-pointer list-none pr-8 font-semibold text-[#1F1F1F] outline-none transition marker:hidden focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
-                  <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">
-                    {item.pergunta}
-                  </span>
-                </summary>
-                <p className="max-w-3xl pt-3 leading-7 text-gray-600">{item.resposta}</p>
-              </details>
-            ))}
+
+          <div id="faq" className="mx-auto mt-16 max-w-4xl scroll-mt-24 lg:mt-20">
+            <div className="mb-10 text-center">
+              <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">Dúvidas comuns</p>
+              <h2 className="text-3xl font-bold sm:text-4xl">Perguntas frequentes</h2>
+              <p className="mx-auto mt-3 max-w-2xl leading-7 text-gray-600">
+                Encontre respostas rápidas antes de enviar sua mensagem.
+              </p>
+            </div>
+            <div className="space-y-3">
+              {faqItems.map((item) => (
+                <details key={item.pergunta} className="group rounded-2xl border border-gray-200 bg-[#F8F9FA] px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
+                  <summary className="cursor-pointer list-none pr-8 font-semibold text-[#1F1F1F] outline-none transition marker:hidden focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
+                    <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">
+                      {item.pergunta}
+                    </span>
+                  </summary>
+                  <p className="max-w-3xl pt-3 leading-7 text-gray-600">{item.resposta}</p>
+                </details>
+              ))}
+            </div>
           </div>
         </div>
       </section>
