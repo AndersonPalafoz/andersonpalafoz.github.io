@@ -317,3 +317,8 @@
 - [ ] Melhorar botão de retomada com miniatura e título da aula
 - [ ] Adicionar botão "Comprar Agora" nos cards da Lista de Desejos
 - [ ] Executar testes automatizados e build de produção
+
+## Remoção em Desejos e Progresso na Retomada (15/08/2026)
+- [ ] Adicionar botão de remoção ao lado de Comprar Agora na Lista de Desejos
+- [ ] Adicionar barra de progresso visual e percentual na seção "Continuar de Onde Parei"
+- [ ] Executar testes automatizados e build de produção
