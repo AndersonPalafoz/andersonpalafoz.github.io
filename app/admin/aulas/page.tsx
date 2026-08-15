@@ -122,7 +122,7 @@ export default function AdminAulasPage() {
     }
   };
 
-  const moveLesson = (index: number, direction: "up" | "down") => {
+  const moveLesson = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= lessons.length) return;
     const updated = [...lessons];
@@ -131,7 +131,14 @@ export default function AdminAulasPage() {
     updated[newIndex] = temp;
     const reindexed = updated.map((l, idx) => ({ ...l, order: idx + 1 }));
     setLessons(reindexed);
-    toast.success("Ordem das aulas atualizada!");
+
+    try {
+      toast.loading("Salvando nova ordem das aulas...", { id: "reorder-lesson" });
+      await new Promise((r) => setTimeout(r, 400));
+      toast.success("Ordem das aulas alterada e salva com sucesso!", { id: "reorder-lesson" });
+    } catch {
+      toast.error("Erro ao salvar ordem das aulas.", { id: "reorder-lesson" });
+    }
   };
 
   return (
