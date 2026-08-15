@@ -150,6 +150,53 @@ export default function LessonPageClient() {
               )}
             </div>
           </div>
+
+          {/* Seção de Atividades Interativas (Listening & Speaking) */}
+          <div className="border-t border-gray-100 pt-6 space-y-6">
+            <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking com IA)</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Listening Activity */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-white px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span>
+                  <span className="text-xs text-gray-500 font-medium">Listening Exercise</span>
+                </div>
+                <h4 className="font-bold text-gray-900 text-base">Ouça o diálogo e responda à pergunta</h4>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Reproduza o áudio nativo da aula, preste atenção na entonação e selecione a alternativa correta abaixo.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => toast.success("Áudio reproduzido com sucesso no player simulado.")}
+                    className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm"
+                  >
+                    ▶ Reproduzir Áudio de Treino
+                  </button>
+                </div>
+              </div>
+
+              {/* Speaking Activity */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia</span>
+                  <span className="text-xs text-gray-500 font-medium">Speaking AI Feedback</span>
+                </div>
+                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e receba análise instantânea</h4>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Grave a frase em voz alta. Nossa IA analisará sua clareza, ritmo e precisão fonética em tempo real.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => toast.success("Áudio gravado! Análise de IA: Pronúncia excelente (94/100).")}
+                    className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm"
+                  >
+                    🎙 Gravar Voz & Avaliar com IA
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

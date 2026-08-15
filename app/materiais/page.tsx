@@ -62,7 +62,7 @@ export default function MateriaisPage() {
                 <span className="text-red-600">Didáticos Exclusivos</span>
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, do nível A1 ao C2.
+                Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, que podem alcançar os níveis C1 e C2, cobrindo do nível A1-C2.
               </p>
             </div>
 
