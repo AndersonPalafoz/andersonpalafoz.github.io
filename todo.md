@@ -211,3 +211,20 @@
 - [x] Integrar feedback automático de pronúncia por IA para submissões de Speaking
 - [x] Adicionar barra de progresso visual de aulas na página do curso (`/cursos/[id]`)
 - [x] Validar testes e build de produção
+
+## Regravação de Speaking, Evolução e Certificados PDF — 15/08/2026
+- [ ] Adicionar opção para o aluno regravar atividade de Speaking e comparar evolução com IA
+- [ ] Implementar emissão automática de certificado PDF simples quando progresso do curso atingir 100%
+- [ ] Permitir que professores adicionem comentários em texto ou áudio nas submissões de Speaking
+- [ ] Validar testes automatizados e build de produção
+
+## Aprovação de Progresso e Atribuição Direta — 15/08/2026
+- [x] Adicionar funcionalidade para o professor/admin aprovar o progresso das aulas dos alunos
+- [x] Permitir atribuir um aluno diretamente a um curso e/ou a um professor no painel de moderação
+- [x] Validar testes automatizados e build de produção
+
+## Investigação e Correção de Tarefas, Deadlines, Relatórios e Imagens — 15/08/2026
+- [ ] Investigar e corrigir painel de Tarefas e Deadlines
+- [ ] Investigar e corrigir Relatórios de Progresso (professor e super-admin)
+- [ ] Investigar e corrigir fluxo de criação e inclusão de imagens (upload e link)
+- [ ] Executar testes automatizados e build de produção

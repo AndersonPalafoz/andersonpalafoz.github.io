@@ -8,6 +8,7 @@ export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approve
 export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
 export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking", "listening"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
+export const lessonProgressApprovalStatusEnum = pgEnum("lesson_progress_approval_status", ["pending", "approved", "rejected"]);
 
 /**
  * Core user table backing auth flow.
@@ -212,6 +213,10 @@ export const lessonProgress = pgTable("lessonProgress", {
   completed: integer("completed").default(0), // 0 ou 1
   watchedDuration: integer("watchedDuration").default(0), // em segundos
   completedAt: timestamp("completedAt"),
+  approvalStatus: lessonProgressApprovalStatusEnum("approvalStatus").notNull().default("pending"),
+  approvedBy: integer("approvedBy").references(() => users.id),
+  approvedAt: timestamp("approvedAt"),
+  approvalNote: text("approvalNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

@@ -78,6 +78,13 @@
       "when": 1786763981863,
       "tag": "0010_naive_boomerang",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786768077819,
+      "tag": "0011_foamy_demogoblin",
+      "breakpoints": true
     }
   ]
 }
