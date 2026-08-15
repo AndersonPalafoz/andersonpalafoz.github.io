@@ -29,6 +29,7 @@ interface User {
   email: string | null;
   role: Role;
   approvalStatus: ApprovalStatus;
+  teacherId: number | null;
   deletedAt: string | null;
   phone: string | null;
   location: string | null;
@@ -60,6 +61,7 @@ function statusClasses(status: ApprovalStatus, deletedAt: string | null) {
 
 export default function UsuariosPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [teachers, setTeachers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +95,20 @@ export default function UsuariosPage() {
   useEffect(() => {
     void fetchUsers();
   }, []);
+
+  useEffect(() => {
+    // Carregar lista de professores para atribuição
+    const loadTeachers = async () => {
+      try {
+        const res = await fetch("/api/admin/users", { cache: "no-store" });
+        const data = await res.json();
+        if (res.ok && data.users) {
+          setTeachers(data.users.filter((u: User) => (u.role === "professor" || u.role === "admin") && !u.deletedAt));
+        }
+      } catch (e) {}
+    };
+    void loadTeachers();
+  }, [users]);
 
   const updateUser = async (userId: number, payload: Record<string, unknown>, successMessage: string) => {
     try {
@@ -252,7 +268,7 @@ export default function UsuariosPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[980px] text-left">
-                <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-4 font-semibold">Usuário</th><th className="px-5 py-4 font-semibold">Papel</th><th className="px-5 py-4 font-semibold">Acesso</th><th className="px-5 py-4 font-semibold">Cadastro</th><th className="px-5 py-4 text-right font-semibold">Ações</th></tr></thead>
+                <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-4 font-semibold">Usuário</th><th className="px-5 py-4 font-semibold">Papel</th><th className="px-5 py-4 font-semibold">Professor Responsável</th><th className="px-5 py-4 font-semibold">Acesso</th><th className="px-5 py-4 text-right font-semibold">Ações</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
                   {filteredUsers.map((user) => {
                     const isPrincipal = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
@@ -260,6 +276,7 @@ export default function UsuariosPage() {
                     return <tr key={user.id} className={user.deletedAt ? "bg-gray-50/80" : "hover:bg-gray-50/70"}>
                       <td className="px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 font-semibold text-red-700">{(user.name || user.email || "?").slice(0, 1).toUpperCase()}</div><div><p className="font-semibold text-gray-900">{user.name || "Sem nome"}{isPrincipal && <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-700">Principal</span>}</p><p className="text-sm text-gray-500">{user.email || "Email não informado"}</p></div></div></td>
                       <td className="px-5 py-4"><select value={user.role} disabled={isPrincipal || isBusy || Boolean(user.deletedAt)} onChange={(event) => void updateUser(user.id, { role: event.target.value }, "Papel atualizado com sucesso.")} className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 outline-none focus:border-red-600 disabled:cursor-not-allowed disabled:bg-gray-100"><option value="user">Aluno</option><option value="professor">Professor</option><option value="admin">Administrador</option></select></td>
+                      <td className="px-5 py-4">{user.role === "user" ? (<select value={user.teacherId ?? ""} disabled={isBusy || Boolean(user.deletedAt)} onChange={(event) => void updateUser(user.id, { teacherId: event.target.value ? Number(event.target.value) : null }, "Professor responsável atualizado.")} className="h-10 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 outline-none focus:border-red-600 disabled:cursor-not-allowed disabled:bg-gray-100"><option value="">Nenhum</option>{teachers.map((t) => (<option key={t.id} value={t.id}>{t.name || t.email}</option>))}</select>) : (<span className="text-xs text-gray-400">—</span>)}</td>
                       <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses(user.approvalStatus, user.deletedAt)}`}>{user.deletedAt ? "Excluído" : statusLabels[user.approvalStatus]}</span></td>
                       <td className="px-5 py-4 text-sm text-gray-600">{formatDate(user.createdAt)}</td>
                       <td className="px-5 py-4"><div className="flex justify-end gap-2">{user.deletedAt ? <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><RefreshCw size={15} />Recuperar</Button> : <>{user.approvalStatus === "pending" && <><Button size="sm" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 bg-green-600 text-white hover:bg-green-700"><Check size={15} />Aprovar</Button><Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "rejected" }, "Solicitação recusada.")} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50"><X size={15} />Recusar</Button></>}{user.approvalStatus === "rejected" && <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><Check size={15} />Liberar</Button>}{!isPrincipal && <Button size="sm" variant="ghost" disabled={isBusy} onClick={() => void handleDelete(user)} className="text-red-600 hover:bg-red-50 hover:text-red-700" aria-label={`Excluir ${user.name || user.email}`}><Trash2 size={16} /></Button>}</>}</div></td>

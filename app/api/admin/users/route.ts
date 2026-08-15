@@ -36,6 +36,7 @@ function serializeUser(user: typeof users.$inferSelect) {
     email: user.email,
     role: user.role,
     approvalStatus: user.approvalStatus,
+    teacherId: user.teacherId,
     deletedAt: user.deletedAt,
     phone: user.phone,
     location: user.location,
@@ -142,6 +143,11 @@ export async function PUT(request: NextRequest) {
         }
         updates[field] = body[field] === null ? null : body[field].trim();
       }
+    }
+
+    if (body.teacherId !== undefined) {
+      const tId = body.teacherId === null || body.teacherId === "" ? null : Number(body.teacherId);
+      updates.teacherId = Number.isInteger(tId) ? tId : null;
     }
 
     const updatedUser = await db

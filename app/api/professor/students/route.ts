@@ -55,11 +55,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Pending student request not found" }, { status: 404 });
     }
 
+    const updateData: any = { approvalStatus: action, updatedAt: new Date() };
+    if (action === "approved" && session?.user?.id) {
+      updateData.teacherId = Number(session.user.id);
+    }
+
     const updated = await db
       .update(users)
-      .set({ approvalStatus: action, updatedAt: new Date() })
+      .set(updateData)
       .where(and(eq(users.id, userId), eq(users.requestedRole, "student")))
-      .returning({ id: users.id, approvalStatus: users.approvalStatus });
+      .returning({ id: users.id, approvalStatus: users.approvalStatus, teacherId: users.teacherId });
 
     return NextResponse.json({ user: updated[0], reviewedBy: session?.user?.email });
   } catch (error) {
