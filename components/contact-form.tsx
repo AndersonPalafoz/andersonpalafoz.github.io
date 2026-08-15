@@ -1,7 +1,7 @@
 "use client";
 
 import React, { FormEvent, useState } from "react";
-import { AlertCircle, CheckCircle2, Send } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
 import {
   buildContactMailto,
   CONTACT_EMAIL,
@@ -16,6 +16,7 @@ const SUBJECT_OPTIONS = [
   "Outro assunto",
 ];
 
+const SUBMIT_DELAY_MS = 350;
 type FormStatus = "idle" | "success" | "error";
 
 type ContactFormProps = {
@@ -24,9 +25,12 @@ type ContactFormProps = {
 
 export function ContactForm({ onMailto }: ContactFormProps) {
   const [status, setStatus] = useState<FormStatus>("idle");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmitting) return;
+
     const form = event.currentTarget;
     const values = new FormData(form);
     const name = String(values.get("name") ?? "").trim();
@@ -34,14 +38,28 @@ export function ContactForm({ onMailto }: ContactFormProps) {
     const subject = String(values.get("subject") ?? "").trim();
     const message = String(values.get("message") ?? "").trim();
 
-    if (!name || !email || !subject || !message) {
-      setStatus("error");
-      return;
-    }
+    setStatus("idle");
+    setIsSubmitting(true);
 
-    const mailto = buildContactMailto({ name, email, subject, message });
-    (onMailto ?? ((url: string) => { window.location.href = url; }))(mailto);
-    setStatus("success");
+    try {
+      if (!name || !email || !subject || message.length < 10) {
+        setStatus("error");
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, SUBMIT_DELAY_MS);
+      });
+
+      const mailto = buildContactMailto({ name, email, subject, message });
+      (onMailto ?? ((url: string) => { window.location.href = url; }))(mailto);
+      form.reset();
+      setStatus("success");
+    } catch {
+      setStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -56,7 +74,7 @@ export function ContactForm({ onMailto }: ContactFormProps) {
         </p>
       </div>
 
-      <form className="space-y-6" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit} aria-busy={isSubmitting}>
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
             <label htmlFor="contact-name" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
@@ -70,7 +88,8 @@ export function ContactForm({ onMailto }: ContactFormProps) {
               placeholder="Seu nome"
               required
               minLength={2}
-              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100"
+              disabled={isSubmitting}
+              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
             />
           </div>
 
@@ -85,7 +104,8 @@ export function ContactForm({ onMailto }: ContactFormProps) {
               autoComplete="email"
               placeholder="seu@email.com"
               required
-              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100"
+              disabled={isSubmitting}
+              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
             />
           </div>
         </div>
@@ -99,7 +119,8 @@ export function ContactForm({ onMailto }: ContactFormProps) {
             name="subject"
             defaultValue=""
             required
-            className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100"
+            disabled={isSubmitting}
+            className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
           >
             <option value="" disabled>Selecione um assunto</option>
             {SUBJECT_OPTIONS.map((option) => (
@@ -119,7 +140,8 @@ export function ContactForm({ onMailto }: ContactFormProps) {
             required
             minLength={10}
             rows={6}
-            className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100"
+            disabled={isSubmitting}
+            className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
           />
           <p className="mt-2 text-xs text-gray-500">Mínimo de 10 caracteres.</p>
         </div>
@@ -127,10 +149,21 @@ export function ContactForm({ onMailto }: ContactFormProps) {
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <button
             type="submit"
-            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#D62828] px-6 py-3 font-semibold text-white transition hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 active:scale-[0.98]"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
+            className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#D62828] px-6 py-3 font-semibold text-white transition hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 active:scale-[0.98] disabled:cursor-wait disabled:opacity-70 disabled:hover:bg-[#D62828]"
           >
-            <Send size={18} aria-hidden="true" />
-            Enviar por email
+            {isSubmitting ? (
+              <>
+                <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+                Preparando mensagem...
+              </>
+            ) : (
+              <>
+                <Send size={18} aria-hidden="true" />
+                Enviar por email
+              </>
+            )}
           </button>
           <a
             href={CONTACT_WHATSAPP_URL}
@@ -142,16 +175,22 @@ export function ContactForm({ onMailto }: ContactFormProps) {
           </a>
         </div>
 
-        {status === "success" && (
-          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800">
-            <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-            Seu aplicativo de email foi acionado. Se ele não abrir, escreva diretamente para {CONTACT_EMAIL}.
+        {isSubmitting && (
+          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+            <Loader2 size={18} className="mt-0.5 shrink-0 animate-spin" aria-hidden="true" />
+            Preparando sua mensagem e abrindo o aplicativo de email...
           </p>
         )}
-        {status === "error" && (
+        {!isSubmitting && status === "success" && (
+          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800">
+            <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
+            Mensagem preparada com sucesso. Se o aplicativo de email não abriu, escreva diretamente para {CONTACT_EMAIL}.
+          </p>
+        )}
+        {!isSubmitting && status === "error" && (
           <p role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800">
             <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-            Revise os campos obrigatórios e tente novamente.
+            Não foi possível preparar sua mensagem. Confira os campos obrigatórios e tente novamente.
           </p>
         )}
       </form>

@@ -13,6 +13,8 @@ describe("contact page contract", () => {
     expect(pageSource).toContain('canonical: "/contato"');
     expect(pageSource).toContain('href="#mensagem"');
     expect(pageSource).toContain('href="/aulas"');
+    expect(pageSource).toContain('id="faq"');
+    expect(pageSource).toContain("Encontre respostas rápidas antes de enviar sua mensagem.");
   });
 
   it("exposes the official contact channels as accessible links", () => {

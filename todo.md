@@ -225,3 +225,16 @@
 - [x] Validar automaticamente que a página `/contato` renderiza com os novos componentes e metadados sem regressões
 - [x] Adicionar teste SSR que importe e renderize `app/contato/page.tsx`, confirmando ContactForm, CTAs e metadados
 - [x] Adicionar teste de renderização real do `ContactForm` para labels, links e estados de formulário
+
+## Aprimoramento do Formulário e FAQ — 15/08/2026
+- [x] Auditar os estados atuais de envio do formulário e a posição visual do FAQ
+- [x] Adicionar animação de carregamento e desabilitar o envio durante a preparação da mensagem
+- [x] Melhorar mensagens acessíveis e claras de sucesso e erro no envio do formulário
+- [x] Reposicionar o FAQ imediatamente abaixo do formulário de contato
+- [x] Atualizar testes de interação, responsividade e build após as alterações
+
+## Melhoria da Página Sobre — 15/08/2026
+- [x] Pesquisar informações públicas sobre "Anderson Bacelar Palafoz" e registrar antecedentes acadêmicos e profissionais
+- [x] Auditar a página `/sobre` atual em relação às diretrizes da marca e dados fornecidos pelo usuário
+- [x] Redesenhar a página `/sobre` com estrutura moderna, biografia acadêmica aprofundada, pilares de ensino e linha do tempo profissional
+- [x] Atualizar testes de contrato e SSR da página Sobre e validar o build de produção
