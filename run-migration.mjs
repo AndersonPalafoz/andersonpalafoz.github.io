@@ -94,6 +94,9 @@ async function main() {
     try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
     try { await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
     try { await sql`ALTER TABLE contact_messages ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
+    try { await sql`ALTER TABLE "userActivityProgress" ADD COLUMN IF NOT EXISTS "audioResponseUrl" VARCHAR(500);`; } catch (e) {}
+    try { await sql`ALTER TABLE "userActivityProgress" ADD COLUMN IF NOT EXISTS "teacherFeedback" TEXT;`; } catch (e) {}
+    try { await sql`ALTER TYPE activity_type ADD VALUE IF NOT EXISTS 'listening';`; } catch (e) {}
 
     console.log("Migration applied successfully!");
   } catch (err) {

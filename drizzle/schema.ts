@@ -6,7 +6,7 @@ import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } f
 export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
 export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
 export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
-export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking"]);
+export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking", "listening"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
 
 /**
@@ -156,6 +156,8 @@ export const userActivityProgress = pgTable("userActivityProgress", {
   activityId: serial("activityId").notNull(),
   status: progressStatusEnum("status").notNull().default("pending"),
   score: serial("score"),
+  audioResponseUrl: varchar("audioResponseUrl", { length: 500 }),
+  teacherFeedback: text("teacherFeedback"),
   submittedAt: timestamp("submittedAt"),
   completedAt: timestamp("completedAt"),
 });
