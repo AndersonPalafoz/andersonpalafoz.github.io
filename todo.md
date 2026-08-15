@@ -415,3 +415,9 @@
 - [ ] Construir componentes de player de áudio para listening e gravador de voz para speaking no dashboard do aluno
 - [ ] Construir painel de revisão e feedback de speaking e listening para o professor
 - [ ] Adicionar testes automatizados e validar o build de produção
+
+## Inclusão de Mídia por Link e Upload (Cursos, Aulas, Materiais, Blog, Atividades) — 15/08/2026
+- [ ] Criar API `/api/upload` para processar uploads de arquivos (imagens, vídeos, áudios) e retornar URLs seguras
+- [ ] Atualizar formulários administrativos em cursos, materiais e blog para alternar entre URL externa (link) e upload de arquivo com pré-visualização
+- [ ] Renderizar áudios, vídeos e imagens nas páginas públicas e no player de aulas com componentes robustos
+- [ ] Adicionar testes automatizados e validar o build de produção
