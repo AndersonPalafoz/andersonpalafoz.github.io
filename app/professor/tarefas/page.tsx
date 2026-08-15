@@ -14,7 +14,6 @@ interface Activity {
   type: string;
   dueDate: string | null;
   tag?: string;
-  tagColor?: string;
   course: {
     id: number;
     title: string;
@@ -33,11 +32,11 @@ interface Student {
 }
 
 const AVAILABLE_TAGS = [
-  { name: "Urgente", color: "bg-red-100 text-red-700 border-red-300" },
-  { name: "Gramática", color: "bg-blue-100 text-blue-700 border-blue-300" },
-  { name: "Conversação", color: "bg-green-100 text-green-700 border-green-300" },
-  { name: "Vocabulário", color: "bg-purple-100 text-purple-700 border-purple-300" },
-  { name: "Avaliação", color: "bg-amber-100 text-amber-700 border-amber-300" },
+  { name: "Urgente", color: "bg-red-100 text-red-700 border-red-300 hover:bg-red-200" },
+  { name: "Gramática", color: "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" },
+  { name: "Conversação", color: "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" },
+  { name: "Vocabulário", color: "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200" },
+  { name: "Avaliação", color: "bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200" },
 ];
 
 export default function TeacherTasksPage() {
@@ -233,23 +232,35 @@ export default function TeacherTasksPage() {
     toast.success("Ordem das tarefas atualizada manualmente!");
   };
 
+  // Função para destacar termos pesquisados
+  const highlightText = (text: string, query: string) => {
+    if (!query.trim()) return text;
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === query.toLowerCase() ? (
+        <mark key={i} className="bg-yellow-200 text-gray-900 px-0.5 rounded font-bold">
+          {part}
+        </mark>
+      ) : (
+        part
+      )
+    );
+  };
+
   const filteredActivities = useMemo(() => {
     let list = [...activitiesList];
 
-    // Filtro por termo de pesquisa
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter((a) => a.title.toLowerCase().includes(q) || (a.description && a.description.toLowerCase().includes(q)));
     }
 
-    // Filtro por status de prazo
     if (filterStatus === "pending") {
       list = list.filter((a) => !a.dueDate || new Date(a.dueDate) >= new Date());
     } else if (filterStatus === "expired") {
       list = list.filter((a) => a.dueDate && new Date(a.dueDate) < new Date());
     }
 
-    // Filtro por Tag
     if (selectedTagFilter !== "all") {
       list = list.filter((a) => a.tag === selectedTagFilter);
     }
@@ -284,7 +295,7 @@ export default function TeacherTasksPage() {
               Gerenciamento de Tarefas e Deadlines
             </h1>
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-              Busca rápida, etiquetas coloridas, edição inline, drag-and-drop, exportação CSV/PDF e modo escuro.
+              Busca com destaque visual, etiquetas clicáveis, edição inline, drag-and-drop e exportação CSV/PDF.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -421,7 +432,7 @@ export default function TeacherTasksPage() {
           </form>
         )}
 
-        {/* Lista de Atividades com Pesquisa, Filtros, Tags e Drag-and-Drop */}
+        {/* Lista de Atividades com Pesquisa, Filtros, Tags Clicáveis e Destaque */}
         <div className={`p-6 rounded-2xl border shadow-sm space-y-6 transition-colors ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -447,7 +458,7 @@ export default function TeacherTasksPage() {
                     onChange={(e) => setSelectedTagFilter(e.target.value)}
                     className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
                   >
-                    <option value="all">Todas as etiquetas</option>
+                    <option value="all">Todas as etiquetas (Clique na tag do card para filtrar)</option>
                     {AVAILABLE_TAGS.map((t) => (
                       <option key={t.name} value={t.name}>{t.name}</option>
                     ))}
@@ -478,7 +489,7 @@ export default function TeacherTasksPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Pesquisar tarefas por título ou descrição..."
+                placeholder="Pesquisar tarefas por título ou descrição (termos encontrados serão destacados)..."
                 className={`w-full h-12 pl-12 pr-4 rounded-xl border outline-none transition text-sm ${darkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-red-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-red-600"}`}
               />
             </div>
@@ -525,9 +536,14 @@ export default function TeacherTasksPage() {
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700">
                             {act.type}
                           </span>
-                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${tagInfo.color}`}>
-                            {act.tag || "Gramática"}
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedTagFilter(act.tag || "Gramática")}
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-bold border cursor-pointer transition ${tagInfo.color}`}
+                            title="Clique para filtrar por esta etiqueta"
+                          >
+                            🏷️ {act.tag || "Gramática"}
+                          </button>
                           <span className="text-xs text-gray-400 font-medium">Curso: {act.course?.title || "Geral"}</span>
                         </div>
 
@@ -567,8 +583,10 @@ export default function TeacherTasksPage() {
                           </div>
                         ) : (
                           <>
-                            <h3 className="font-bold text-lg">{act.title}</h3>
-                            <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{act.description || "Sem descrição informada."}</p>
+                            <h3 className="font-bold text-lg">{highlightText(act.title, searchQuery)}</h3>
+                            <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {highlightText(act.description || "Sem descrição informada.", searchQuery)}
+                            </p>
                             <p className="text-xs text-red-500 font-semibold flex items-center gap-1 pt-1">
                               <Calendar size={14} /> Prazo: {dueDateFormatted}
                             </p>
