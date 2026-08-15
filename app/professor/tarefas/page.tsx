@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckSquare, Calendar, MessageCircle, Plus, Loader2, X, Filter, ArrowUpDown, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Check, Save } from "lucide-react";
+import { ArrowLeft, CheckSquare, Calendar, MessageCircle, Plus, Loader2, X, Filter, ArrowUpDown, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, Tag, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { buildWhatsAppMessageLink, buildDeadlineReminderText } from "@/lib/notifications-helper";
@@ -13,6 +13,8 @@ interface Activity {
   description: string | null;
   type: string;
   dueDate: string | null;
+  tag?: string;
+  tagColor?: string;
   course: {
     id: number;
     title: string;
@@ -30,6 +32,14 @@ interface Student {
   phone: string | null;
 }
 
+const AVAILABLE_TAGS = [
+  { name: "Urgente", color: "bg-red-100 text-red-700 border-red-300" },
+  { name: "Gramática", color: "bg-blue-100 text-blue-700 border-blue-300" },
+  { name: "Conversação", color: "bg-green-100 text-green-700 border-green-300" },
+  { name: "Vocabulário", color: "bg-purple-100 text-purple-700 border-purple-300" },
+  { name: "Avaliação", color: "bg-amber-100 text-amber-700 border-amber-300" },
+];
+
 export default function TeacherTasksPage() {
   const [activitiesList, setActivitiesList] = useState<Activity[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -38,6 +48,8 @@ export default function TeacherTasksPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTagFilter, setSelectedTagFilter] = useState("all");
   const [sortBy, setSortBy] = useState<"dueDate" | "title" | "recent">("dueDate");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
@@ -46,8 +58,9 @@ export default function TeacherTasksPage() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
+  const [editTag, setEditTag] = useState("");
 
-  // Dark mode local para o painel
+  // Dark mode
   const [darkMode, setDarkMode] = useState(false);
 
   // Drag and drop state
@@ -59,6 +72,7 @@ export default function TeacherTasksPage() {
     courseId: "",
     type: "assignment",
     dueDate: "",
+    tag: "Gramática",
   });
 
   const fetchData = async () => {
@@ -79,7 +93,11 @@ export default function TeacherTasksPage() {
       const actRes = await fetch("/api/admin/atividades");
       if (actRes.ok) {
         const actJson = await actRes.json();
-        setActivitiesList(actJson.activities || actJson || []);
+        const list = (actJson.activities || actJson || []).map((a: any) => ({
+          ...a,
+          tag: a.tag || "Gramática",
+        }));
+        setActivitiesList(list);
       }
     } catch (err) {
       console.error(err);
@@ -110,7 +128,7 @@ export default function TeacherTasksPage() {
       if (!res.ok) throw new Error(data.error || "Falha ao criar tarefa.");
 
       toast.success("Tarefa e deadline criados com sucesso!");
-      setFormData({ title: "", description: "", courseId: "", type: "assignment", dueDate: "" });
+      setFormData({ title: "", description: "", courseId: "", type: "assignment", dueDate: "", tag: "Gramática" });
       setShowForm(false);
       void fetchData();
     } catch (err) {
@@ -124,6 +142,7 @@ export default function TeacherTasksPage() {
     setEditingId(act.id);
     setEditTitle(act.title);
     setEditDueDate(act.dueDate ? new Date(act.dueDate).toISOString().slice(0, 16) : "");
+    setEditTag(act.tag || "Gramática");
   };
 
   const saveEdit = async (id: number) => {
@@ -131,7 +150,7 @@ export default function TeacherTasksPage() {
       const res = await fetch("/api/admin/atividades", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, title: editTitle, dueDate: editDueDate }),
+        body: JSON.stringify({ id, title: editTitle, dueDate: editDueDate, tag: editTag }),
       });
       if (!res.ok) throw new Error("Falha ao atualizar");
       toast.success("Tarefa atualizada com sucesso!");
@@ -162,6 +181,38 @@ export default function TeacherTasksPage() {
     }
   };
 
+  // Exportar para CSV
+  const exportToCSV = () => {
+    if (activitiesList.length === 0) {
+      toast.error("Não há tarefas para exportar.");
+      return;
+    }
+    const headers = ["ID", "Titulo", "Tipo", "Curso", "Prazo", "Etiqueta"];
+    const rows = activitiesList.map((a) => [
+      a.id,
+      `"${(a.title || "").replace(/"/g, '""')}"`,
+      a.type,
+      `"${(a.course?.title || "Geral").replace(/"/g, '""')}"`,
+      a.dueDate ? new Date(a.dueDate).toLocaleString("pt-BR") : "Sem prazo",
+      a.tag || "Nenhuma",
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `tarefas_anderson_palafoz_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Lista de tarefas exportada para CSV com sucesso!");
+  };
+
+  // Exportar para PDF (impressão formatada)
+  const exportToPDF = () => {
+    window.print();
+  };
+
   // Drag and Drop handlers
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -184,10 +235,23 @@ export default function TeacherTasksPage() {
 
   const filteredActivities = useMemo(() => {
     let list = [...activitiesList];
+
+    // Filtro por termo de pesquisa
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((a) => a.title.toLowerCase().includes(q) || (a.description && a.description.toLowerCase().includes(q)));
+    }
+
+    // Filtro por status de prazo
     if (filterStatus === "pending") {
       list = list.filter((a) => !a.dueDate || new Date(a.dueDate) >= new Date());
     } else if (filterStatus === "expired") {
       list = list.filter((a) => a.dueDate && new Date(a.dueDate) < new Date());
+    }
+
+    // Filtro por Tag
+    if (selectedTagFilter !== "all") {
+      list = list.filter((a) => a.tag === selectedTagFilter);
     }
 
     if (sortBy === "title") {
@@ -201,7 +265,7 @@ export default function TeacherTasksPage() {
     }
 
     return list;
-  }, [activitiesList, filterStatus, sortBy]);
+  }, [activitiesList, searchQuery, filterStatus, selectedTagFilter, sortBy]);
 
   const totalCount = activitiesList.length;
   const completedCount = activitiesList.filter((a) => a.dueDate && new Date(a.dueDate) < new Date()).length;
@@ -220,10 +284,24 @@ export default function TeacherTasksPage() {
               Gerenciamento de Tarefas e Deadlines
             </h1>
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-              Edição rápida, reordenação por arrastar e soltar (drag-and-drop), filtros e modo escuro integrado.
+              Busca rápida, etiquetas coloridas, edição inline, drag-and-drop, exportação CSV/PDF e modo escuro.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={exportToCSV}
+              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
+              title="Exportar para CSV"
+            >
+              <Download size={14} /> Exportar CSV
+            </button>
+            <button
+              onClick={exportToPDF}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
+              title="Exportar para PDF / Imprimir"
+            >
+              <FileText size={14} /> Exportar PDF
+            </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
               className={`p-3 rounded-xl border transition ${darkMode ? "border-gray-700 bg-gray-700 text-yellow-400 hover:bg-gray-600" : "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
@@ -257,7 +335,7 @@ export default function TeacherTasksPage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <label className="block text-sm font-semibold mb-2">Título da Tarefa</label>
                 <input
@@ -286,6 +364,19 @@ export default function TeacherTasksPage() {
               </div>
 
               <div>
+                <label className="block text-sm font-semibold mb-2">Etiqueta (Tag)</label>
+                <select
+                  value={formData.tag}
+                  onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                  className={`w-full h-12 px-4 rounded-xl border outline-none transition ${darkMode ? "bg-gray-700 border-gray-600 text-white focus:border-red-500" : "bg-white border-gray-300 focus:border-red-600"}`}
+                >
+                  {AVAILABLE_TAGS.map((t) => (
+                    <option key={t.name} value={t.name}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-sm font-semibold mb-2">Tipo de Atividade</label>
                 <select
                   value={formData.type}
@@ -299,7 +390,7 @@ export default function TeacherTasksPage() {
                 </select>
               </div>
 
-              <div>
+              <div className="md:col-span-2">
                 <label className="block text-sm font-semibold mb-2">Data e Hora Limite (Deadline)</label>
                 <input
                   type="datetime-local"
@@ -330,36 +421,66 @@ export default function TeacherTasksPage() {
           </form>
         )}
 
-        {/* Lista de Atividades com Drag and Drop e Edição Rápida */}
+        {/* Lista de Atividades com Pesquisa, Filtros, Tags e Drag-and-Drop */}
         <div className={`p-6 rounded-2xl border shadow-sm space-y-6 transition-colors ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h2 className="text-xl font-bold">Atividades Cadastradas e Prazos (Arraste para reordenar)</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Filter size={16} className="text-gray-400" />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
-                >
-                  <option value="all">Todas as tarefas</option>
-                  <option value="pending">No prazo</option>
-                  <option value="expired">Encerradas</option>
-                </select>
-              </div>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <h2 className="text-xl font-bold">Atividades Cadastradas e Prazos</h2>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Filter size={16} className="text-gray-400" />
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                    className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
+                  >
+                    <option value="all">Todos os status</option>
+                    <option value="pending">No prazo</option>
+                    <option value="expired">Encerradas</option>
+                  </select>
+                </div>
 
-              <div className="flex items-center gap-2">
-                <ArrowUpDown size={16} className="text-gray-400" />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
-                >
-                  <option value="dueDate">Ordenar por Prazo</option>
-                  <option value="title">Ordenar por Título</option>
-                  <option value="recent">Mais Recentes</option>
-                </select>
+                <div className="flex items-center gap-2">
+                  <Tag size={16} className="text-gray-400" />
+                  <select
+                    value={selectedTagFilter}
+                    onChange={(e) => setSelectedTagFilter(e.target.value)}
+                    className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
+                  >
+                    <option value="all">Todas as etiquetas</option>
+                    {AVAILABLE_TAGS.map((t) => (
+                      <option key={t.name} value={t.name}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown size={16} className="text-gray-400" />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className={`h-10 px-3 rounded-xl border text-sm font-medium outline-none ${darkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-700"}`}
+                  >
+                    <option value="dueDate">Ordenar por Prazo</option>
+                    <option value="title">Ordenar por Título</option>
+                    <option value="recent">Mais Recentes</option>
+                  </select>
+                </div>
               </div>
+            </div>
+
+            {/* Barra de Pesquisa */}
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                <Search size={18} />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Pesquisar tarefas por título ou descrição..."
+                className={`w-full h-12 pl-12 pr-4 rounded-xl border outline-none transition text-sm ${darkMode ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-red-500" : "bg-gray-50 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-red-600"}`}
+              />
             </div>
           </div>
 
@@ -368,7 +489,7 @@ export default function TeacherTasksPage() {
           ) : filteredActivities.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
               <CheckSquare className="mx-auto text-gray-500 mb-3" size={36} />
-              <p className="font-semibold">Nenhuma tarefa encontrada com os filtros selecionados.</p>
+              <p className="font-semibold">Nenhuma tarefa encontrada com os filtros e busca informados.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -384,6 +505,7 @@ export default function TeacherTasksPage() {
                   : "Sem prazo definido";
 
                 const isEditing = editingId === act.id;
+                const tagInfo = AVAILABLE_TAGS.find((t) => t.name === act.tag) || AVAILABLE_TAGS[1];
 
                 return (
                   <div
@@ -399,9 +521,12 @@ export default function TeacherTasksPage() {
                         <GripVertical size={20} />
                       </div>
                       <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase bg-red-100 text-red-700">
                             {act.type}
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${tagInfo.color}`}>
+                            {act.tag || "Gramática"}
                           </span>
                           <span className="text-xs text-gray-400 font-medium">Curso: {act.course?.title || "Geral"}</span>
                         </div>
@@ -414,13 +539,24 @@ export default function TeacherTasksPage() {
                               onChange={(e) => setEditTitle(e.target.value)}
                               className={`w-full px-3 py-2 rounded-lg border text-sm outline-none ${darkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
                             />
-                            <input
-                              type="datetime-local"
-                              value={editDueDate}
-                              onChange={(e) => setEditDueDate(e.target.value)}
-                              className={`w-full px-3 py-2 rounded-lg border text-sm outline-none ${darkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
-                            />
-                            <div className="flex gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <input
+                                type="datetime-local"
+                                value={editDueDate}
+                                onChange={(e) => setEditDueDate(e.target.value)}
+                                className={`w-full px-3 py-2 rounded-lg border text-sm outline-none ${darkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
+                              />
+                              <select
+                                value={editTag}
+                                onChange={(e) => setEditTag(e.target.value)}
+                                className={`w-full px-3 py-2 rounded-lg border text-sm outline-none ${darkMode ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300"}`}
+                              >
+                                {AVAILABLE_TAGS.map((t) => (
+                                  <option key={t.name} value={t.name}>{t.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex gap-2 pt-1">
                               <Button size="sm" onClick={() => saveEdit(act.id)} className="bg-green-600 hover:bg-green-700 text-white">
                                 <Save size={14} className="mr-1" /> Salvar
                               </Button>

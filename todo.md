@@ -245,3 +245,9 @@
 - [ ] Implementar reordenação manual por drag-and-drop na interface de tarefas
 - [ ] Adicionar botão de alternância para modo escuro (dark mode) no painel de tarefas
 - [ ] Validar testes automatizados e build de produção
+
+## Exportação, Pesquisa e Etiquetas em Tarefas (15/08/2026)
+- [ ] Adicionar funcionalidade para exportar a lista de tarefas atual para CSV ou PDF
+- [ ] Implementar barra de pesquisa no topo da lista para busca rápida por título
+- [ ] Criar sistema de etiquetas (tags) coloridas personalizáveis para as tarefas
+- [ ] Executar testes automatizados e build de produção
