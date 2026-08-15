@@ -358,12 +358,19 @@ export async function getAdminStats() {
   const usersCount = await db.query.users.findMany();
   const enrollmentsCount = await db.query.enrollments.findMany();
 
+  const completed = enrollmentsCount.filter((e) => e.progress === 100);
+  const avgProgress = enrollmentsCount.length > 0
+    ? Math.round(enrollmentsCount.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollmentsCount.length)
+    : 0;
+
   return {
     totalCourses: coursesCount.length,
     totalMaterials: materialsCount.length,
     totalArticles: articlesCount.length,
     totalUsers: usersCount.length,
     totalEnrollments: enrollmentsCount.length,
+    completedCourses: completed.length,
+    averageProgress: avgProgress,
   };
 }
 
