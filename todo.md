@@ -339,3 +339,7 @@
 - [ ] Executar pnpm build e analisar logs de compilação
 - [ ] Corrigir erros de tipagem, dependências ou conflitos de rotas Next.js
 - [ ] Executar testes automatizados e build bem-sucedido
+
+- [ ] Corrigir o visual, contraste e legibilidade da página pública de login (`/login`) em desktop e mobile
+
+- [x] Criar um curso, um post e um material de teste na plataforma Anderson Palafoz
