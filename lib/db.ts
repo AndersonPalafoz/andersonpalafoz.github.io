@@ -4,13 +4,16 @@ import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
 import { eq, desc } from "drizzle-orm";
 
-const connectionString =
-  process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+// O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
+// usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
+const connectionString = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL (or NEON_DATABASE_URL) environment variable is not set"
-  );
+  throw new Error("NEON_DATABASE_URL (or DATABASE_URL) environment variable is not set");
+}
+
+if (!connectionString.startsWith("postgres://") && !connectionString.startsWith("postgresql://")) {
+  throw new Error("The database connection must use a PostgreSQL URL (postgres:// or postgresql://)");
 }
 
 // Create the connection
@@ -71,7 +74,7 @@ export async function getUserByEmail(email: string) {
 
 export async function updateUserProfile(
   userId: number,
-  data: Partial<{ name: string; phone: string; location: string; bio: string }>
+  data: Partial<{ name: string; phone: string; location: string; bio: string; avatarUrl: string }>
 ) {
   return await db.update(schema.users)
     .set({ ...data, updatedAt: new Date() })
@@ -211,12 +214,14 @@ export async function createCourse(data: {
   description?: string;
   level: string;
   modules?: number;
+  instructor?: string;
 }) {
   return await db.insert(schema.courses).values({
     title: data.title,
     description: data.description,
     level: data.level,
     modules: data.modules || 0,
+    instructor: data.instructor || "Anderson Palafoz",
   }).returning();
 }
 
@@ -225,6 +230,7 @@ export async function updateCourse(id: number, data: Partial<{
   description: string;
   level: string;
   modules: number;
+  instructor: string;
 }>) {
   return await db.update(schema.courses)
     .set({

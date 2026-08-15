@@ -49,8 +49,8 @@ export default function HomePage() {
                 <p className="text-gray-600">Aulas Disponíveis</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-red-600">A1-C2</p>
-                <p className="text-gray-600">Todos os Níveis CEFR</p>
+                <p className="text-3xl font-bold text-red-600">A1–B2</p>
+                <p className="text-gray-600">Níveis das aulas</p>
               </div>
             </div>
           </div>
@@ -75,7 +75,7 @@ export default function HomePage() {
                 <BookOpen className="text-red-600" size={32} />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Conteúdo Estruturado</h3>
-              <p className="text-gray-600">Aulas organizadas por nível CEFR com metodologia ESA (Engage, Study, Activate)</p>
+              <p className="text-gray-600">Aulas organizadas do A1 ao B2 com metodologia ESA (Engage, Study, Activate)</p>
             </div>
 
             <div className="bg-white p-8 rounded-2xl border border-gray-200 text-center">
@@ -105,7 +105,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Cursos Online</h3>
-              <p className="text-gray-600 mb-6">Cursos estruturados de A1 a C2 com vídeos, exercícios e materiais complementares.</p>
+              <p className="text-gray-600 mb-6">Cursos estruturados do A1 ao B2 com vídeos, exercícios e materiais complementares.</p>
               <Link href="/aulas" className="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700">
                 Explorar Cursos <ArrowRight size={18} />
               </Link>
@@ -113,7 +113,7 @@ export default function HomePage() {
 
             <div className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
               <h3 className="text-2xl font-bold text-gray-900 mb-4">Materiais Educacionais</h3>
-              <p className="text-gray-600 mb-6">Worksheets, slides, áudios e recursos para potencializar seu aprendizado.</p>
+              <p className="text-gray-600 mb-6">Worksheets, slides, áudios e recursos para potencializar seu aprendizado, com materiais que podem chegar aos níveis C1 e C2.</p>
               <Link href="/materiais" className="inline-flex items-center gap-2 text-red-600 font-semibold hover:text-red-700">
                 Ver Materiais <ArrowRight size={18} />
               </Link>

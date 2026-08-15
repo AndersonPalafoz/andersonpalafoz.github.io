@@ -2,11 +2,11 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Download, FileText, BookOpen, Zap, Headphones, PenTool } from "lucide-react";
-import { getMaterials } from "@/lib/db";
+import { getPublicMaterials } from "@/lib/public-content";
 
 export const metadata = {
   title: "Materiais Didáticos | Anderson Palafoz",
-  description: "Acesse uma biblioteca completa de materiais didáticos para ensino de inglês.",
+  description: "Acesse uma biblioteca de materiais didáticos para ensino de inglês, com conteúdos que podem alcançar os níveis C1 e C2.",
 };
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
@@ -18,7 +18,8 @@ const CATEGORY_ICONS: Record<string, typeof FileText> = {
 };
 
 export default async function MateriaisPage() {
-  const materiais = await getMaterials();
+  const { materials: materiais, available: materiaisDisponiveis } =
+    await getPublicMaterials();
 
   const niveis = Array.from(new Set(materiais.map((m) => m.level))).sort();
   const nivelRange = niveis.length > 0 ? `${niveis[0]}-${niveis[niveis.length - 1]}` : "A1-C2";
@@ -47,7 +48,7 @@ export default async function MateriaisPage() {
                 <span className="text-red-600">Didáticos Exclusivos</span>
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Biblioteca completa com worksheets, guias, recursos interativos e templates para potencializar seu aprendizado.
+                Biblioteca com worksheets, guias, recursos interativos e templates para potencializar seu aprendizado, incluindo materiais que podem alcançar os níveis C1 e C2.
               </p>
             </div>
 
@@ -106,7 +107,14 @@ export default async function MateriaisPage() {
             Materiais em Destaque
           </h2>
 
-          {destaques.length === 0 ? (
+          {!materiaisDisponiveis ? (
+            <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
+              <h2 className="text-xl font-bold text-gray-900">Biblioteca temporariamente indisponível</h2>
+              <p className="mt-3 text-gray-600">
+                Estamos atualizando os materiais. Tente novamente em alguns instantes.
+              </p>
+            </div>
+          ) : destaques.length === 0 ? (
             <p className="text-center text-gray-600">
               Nenhum material publicado no momento. Volte em breve!
             </p>

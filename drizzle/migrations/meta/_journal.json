@@ -36,6 +36,48 @@
       "when": 1785421180436,
       "tag": "0004_great_gideon",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786758758861,
+      "tag": "0005_flowery_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786758874441,
+      "tag": "0006_slim_scorpion",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786760320231,
+      "tag": "0007_white_scalphunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786761042473,
+      "tag": "0008_round_mad_thinker",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786763732598,
+      "tag": "0009_optimal_maelstrom",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786763981863,
+      "tag": "0010_naive_boomerang",
+      "breakpoints": true
     }
   ]
 }

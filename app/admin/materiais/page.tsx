@@ -1,33 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Trash2, Edit2, Plus, Download, ArrowLeft, Loader2, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 interface Material {
   id: number;
   title: string;
   category: string;
   level: string;
-  description: string | null;
   fileUrl: string | null;
-  downloads: number;
+  description?: string | null;
+  createdAt: string;
 }
 
-export default function AdminMateriais() {
+export default function AdminMateriaisReal() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
-    level: "",
-    description: "",
+    category: "Worksheets",
+    level: "A1",
     fileUrl: "",
+    description: "",
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchMaterials();
@@ -36,10 +36,10 @@ export default function AdminMateriais() {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/materials");
-      if (!response.ok) throw new Error("Falha ao carregar materiais");
-      const data = await response.json();
-      setMaterials(data);
+      const res = await fetch("/api/admin/materials");
+      if (!res.ok) throw new Error("Falha ao carregar materiais");
+      const data = await res.json();
+      setMaterials(data.materials || data);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -48,223 +48,265 @@ export default function AdminMateriais() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja deletar este material?")) return;
-    try {
-      const response = await fetch(`/api/admin/materials?id=${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Falha ao deletar material");
-      setMaterials(materials.filter((m) => m.id !== id));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao deletar material");
-    }
-  };
-
-  const handleEdit = (material: Material) => {
-    setEditingId(material.id);
-    setFormData({
-      title: material.title,
-      category: material.category,
-      level: material.level,
-      description: material.description || "",
-      fileUrl: material.fileUrl || "",
-    });
-    setShowForm(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.category) {
+      alert("Preencha título e categoria");
+      return;
+    }
+
     try {
       setSaving(true);
-      if (editingId) {
-        const response = await fetch("/api/admin/materials", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingId, ...formData }),
-        });
-        if (!response.ok) throw new Error("Falha ao atualizar material");
-        const [updated] = await response.json();
-        setMaterials(materials.map((m) => (m.id === editingId ? updated : m)));
-        setEditingId(null);
-      } else {
-        const response = await fetch("/api/admin/materials", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-        if (!response.ok) throw new Error("Falha ao criar material");
-        const [created] = await response.json();
-        setMaterials([...materials, created]);
+      const method = editingId ? "PUT" : "POST";
+      const url = editingId
+        ? `/api/admin/materials/${editingId}`
+        : "/api/admin/materials";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingId ? { id: editingId, ...formData } : formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Falha ao salvar material");
       }
-      setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
+
+      await fetchMaterials();
+      setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
+      setEditingId(null);
       setShowForm(false);
+      alert("Material salvo com sucesso!");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar material");
+      alert(err instanceof Error ? err.message : "Erro ao salvar");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleEdit = (material: Material) => {
+    setFormData({
+      title: material.title,
+      category: material.category || "Worksheets",
+      level: material.level || "A1",
+      fileUrl: material.fileUrl || "",
+      description: material.description || "",
+    });
+    setEditingId(material.id);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Deseja realmente excluir este material?")) return;
+    try {
+      const res = await fetch(`/api/admin/materials/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Falha ao excluir material");
+      setMaterials(materials.filter((m) => m.id !== id));
+      alert("Material excluído com sucesso!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft size={20} />
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Materiais</h1>
+    <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Link href="/admin" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
+                <ArrowLeft size={16} /> Voltar ao Painel Admin
+              </Link>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <FileText className="text-blue-600" size={32} />
+              Gerenciamento Completo de Materiais
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Adicione e organize recursos didáticos (Worksheets, Slides, Handouts, Áudios) classificados por nível CEFR.
+            </p>
           </div>
           <button
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
+              setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-600/20"
           >
             <Plus size={20} />
-            Novo Material
+            {showForm ? "Fechar Formulário" : "Novo Material Acadêmico"}
           </button>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Form */}
+        {/* Formulário Completo de Material */}
         {showForm && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {editingId ? "Editar Material" : "Novo Material"}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 transition-all animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <FileText size={20} className="text-blue-600" />
+              {editingId ? "Editar Material Acadêmico" : "Cadastrar Novo Material Acadêmico"}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+
+            <form onSubmit={handleSave} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título do Material *</label>
                   <input
                     type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="Ex: Worksheet - Simple Present & Routine"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Categoria Pedagógica *</label>
+                  <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="Worksheets, Slides, Áudios..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition bg-white"
+                  >
+                    <option value="Worksheets">Worksheets (Atividades)</option>
+                    <option value="Slides">Slides de Aula</option>
+                    <option value="Handouts">Handouts & Resumos</option>
+                    <option value="Audio">Áudio & Pronúncia</option>
+                    <option value="Comics">Comics na Educação</option>
+                  </select>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nível</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Nível CEFR</label>
+                  <select
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    placeholder="A1, B2, C1..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition bg-white"
+                  >
+                    <option value="A1">A1 - Iniciante</option>
+                    <option value="A2">A2 - Básico</option>
+                    <option value="B1">B1 - Intermediário</option>
+                    <option value="B2">B2 - Intermediário Superior</option>
+                    <option value="C1">C1 - Avançado</option>
+                    <option value="C2">C2 - Profissional</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Link do Arquivo (Google Drive / S3)</label>
+                  <div className="relative">
+                    <ExternalLink className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <input
+                      type="url"
+                      value={formData.fileUrl}
+                      onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
+                      placeholder="https://drive.google.com/file/d/..."
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
+                    />
+                  </div>
                 </div>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Instruções de Uso ou Descrição</label>
                 <textarea
+                  rows={4}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  rows={3}
+                  placeholder="Instruções para o professor ou aluno sobre como utilizar este material em sala de aula ou estudo autônomo."
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Link do arquivo (Google Drive, etc)
-                </label>
-                <input
-                  type="text"
-                  value={formData.fileUrl}
-                  onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                  placeholder="https://drive.google.com/..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
-                </button>
+
+              <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="bg-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                  className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
                 >
                   Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition flex items-center gap-2 shadow-md shadow-blue-600/20 disabled:opacity-50"
+                >
+                  {saving && <Loader2 className="animate-spin" size={18} />}
+                  {editingId ? "Salvar Alterações" : "Cadastrar Material"}
                 </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        {/* Listagem de Materiais */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Biblioteca de Materiais</h2>
+            <span className="text-sm text-gray-500 font-medium">{materials.length} itens cadastrados</span>
+          </div>
+
           {loading ? (
-            <div className="p-12 flex items-center justify-center text-gray-600 gap-2">
-              <Loader2 className="animate-spin" size={20} />
-              Carregando materiais...
+            <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+              <Loader2 className="animate-spin text-blue-600" size={32} />
+              <p className="text-gray-600 font-medium">Carregando materiais...</p>
             </div>
           ) : error ? (
-            <div className="p-12 text-center text-red-600">Erro: {error}</div>
+            <div className="p-12 text-center text-red-600 font-medium">{error}</div>
           ) : materials.length === 0 ? (
-            <div className="p-12 text-center text-gray-600">Nenhum material cadastrado ainda.</div>
+            <div className="p-12 text-center space-y-3">
+              <FileText size={48} className="mx-auto text-gray-300" />
+              <p className="text-gray-600 font-medium">Nenhum material cadastrado ainda.</p>
+            </div>
           ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Downloads</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {materials.map((material) => (
-                  <tr key={material.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">{material.title}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{material.category}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{material.level}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 flex items-center gap-1">
-                      <Download size={16} />
-                      {material.downloads}
-                    </td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(material)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          <Edit2 size={18} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(material.id)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="divide-y divide-gray-100">
+              {materials.map((mat) => (
+                <div key={mat.id} className="p-6 hover:bg-gray-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-blue-100 text-blue-700">
+                        {mat.category}
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-700">
+                        {mat.level}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-gray-900">{mat.title}</h3>
+                    {mat.description && <p className="text-sm text-gray-600 line-clamp-2">{mat.description}</p>}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {mat.fileUrl && (
+                      <a
+                        href={mat.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition flex items-center gap-1.5"
+                      >
+                        <Download size={14} /> Acessar Link
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleEdit(mat)}
+                      className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition flex items-center gap-1.5"
+                    >
+                      <Edit2 size={14} /> Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(mat.id)}
+                      className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs transition flex items-center gap-1.5"
+                    >
+                      <Trash2 size={14} /> Excluir
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
