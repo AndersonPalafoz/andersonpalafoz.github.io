@@ -10,6 +10,7 @@ import {
   Library,
   Calendar,
   Award,
+  FileText,
   User,
   Menu,
   X,
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
   { href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
   { href: "/dashboard/certificados", label: "Certificados", icon: Award },
+  { href: "/dashboard/historico", label: "Histórico", icon: FileText },
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
 ];
 
