@@ -43,7 +43,9 @@ export default function DashboardLayout({
   const { data: session } = useSession();
 
   const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+    exact
+      ? pathname === href
+      : pathname === href || Boolean(pathname?.startsWith(href + "/"));
 
   return (
     <div className="flex h-screen bg-gray-50">

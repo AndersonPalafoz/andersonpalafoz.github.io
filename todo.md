@@ -238,3 +238,57 @@
 - [x] Auditar a página `/sobre` atual em relação às diretrizes da marca e dados fornecidos pelo usuário
 - [x] Redesenhar a página `/sobre` com estrutura moderna, biografia acadêmica aprofundada, pilares de ensino e linha do tempo profissional
 - [x] Atualizar testes de contrato e SSR da página Sobre e validar o build de produção
+
+## Correção de Níveis CEFR — 15/08/2026
+- [ ] Auditar menções a níveis CEFR em homepage, página Sobre, aulas, materiais e metadados
+- [ ] Atualizar a comunicação para aulas A1–B2 e materiais até C1/C2
+- [ ] Atualizar testes e validar as páginas afetadas após a correção
+
+## Sistema de Aprovação de Contas e Hierarquia de Papéis — 15/08/2026
+- [ ] Revisar schema, autenticação, middleware e matriz de papéis atual
+- [ ] Definir e aplicar status de aprovação para visitantes, alunos e professores
+- [ ] Garantir `palafozanderson@gmail.com` como super-admin imutável
+- [ ] Criar fluxo para visitante solicitar acesso de aluno e professor solicitar aprovação do super-admin
+- [ ] Criar APIs e interface para professores aprovarem alunos e super-admin aprovar/rejeitar professores
+- [ ] Restringir dashboard, cursos e permissões conforme papel e status de aprovação
+- [ ] Adicionar testes de segurança, aprovação, rejeição e proteção do super-admin
+- [ ] Validar TypeScript, suíte completa e build antes do checkpoint
+
+## Autenticação Robusta com Redes Sociais, Email, Senha, Telefone, CAPTCHA e Aprovação — 15/08/2026
+- [ ] Atualizar schema Drizzle (`users`) com campos de senha criptografada, telefone, status de aprovação, papel pretendido e metadados de moderação
+- [ ] Configurar provedores OAuth adicionais (Google e suporte a GitHub/Microsoft estruturado) e Credenciais (Email/Senha) no NextAuth
+- [ ] Implementar verificação de CAPTCHA matemático/lógico nativo na tela de cadastro por email
+- [ ] Criar endpoints de registro e login com validação de celular e verificação de status de aprovação
+- [ ] Atualizar a tela `/login` e criar uma tela dedicada `/cadastro` com abas para redes sociais e formulário com email, telefone, senha e CAPTCHA
+- [ ] Criar painel de moderação para professores aprovarem alunos e super-admin (`palafozanderson@gmail.com`) aprovar professores
+- [ ] Adicionar testes automatizados para o novo fluxo de autenticação e validações
+- [ ] Executar build de produção e salvar checkpoint final
+
+## Redesign Visual Completo — 15/08/2026
+- [ ] Auditar e refinar tokens globais de cor, tipografia, espaçamento, raios, sombras e foco
+- [ ] Melhorar navegação, rodapé e componentes globais em desktop e mobile
+- [ ] Refinar visual das páginas públicas: Home, Aulas, Materiais, Blog, Sobre, Contato e Login
+- [ ] Refinar visual do Dashboard do Aluno e do Painel Administrativo sem alterar suas regras de acesso
+- [ ] Adicionar ou atualizar testes visuais/estruturais e validar o build de produção
+
+## Gestão Avançada de Usuários pelo Super-admin — 15/08/2026
+- [ ] Auditar schema, APIs e interface atuais de usuários
+- [ ] Adicionar exclusão lógica e recuperação de usuários, preservando histórico e integridade
+- [ ] Permitir edição apenas de campos não sensíveis e validação de papel/função
+- [ ] Proteger a conta principal `palafozanderson@gmail.com` contra exclusão e perda de super-admin
+- [ ] Atualizar painel, filtros, confirmação e estados de usuários excluídos
+- [ ] Adicionar testes de autorização, edição, exclusão, recuperação e proteção do super-admin
+- [ ] Validar TypeScript, suíte completa e build de produção
+
+## Fotos de Perfil — 15/08/2026
+- [ ] Auditar avatar atual, formulário de perfil e infraestrutura de armazenamento
+- [ ] Implementar upload seguro de foto com validação de tipo, tamanho e autorização
+- [ ] Atualizar avatar no banco, sessão, Navbar, dashboard e perfil
+- [ ] Permitir ao super-admin editar a foto de outros usuários sem expor dados sensíveis
+- [ ] Adicionar testes de upload, permissões, validações e build
+
+## Auditoria Final Pós-Implementação — 15/08/2026
+- [ ] Reanalisar todas as páginas públicas, dashboard, admin, autenticação e fluxos de usuário após concluir as funcionalidades pendentes
+- [ ] Registrar sugestões priorizadas por impacto em segurança, acessibilidade, UX, performance, SEO e manutenção
+- [ ] Separar claramente problemas críticos, melhorias recomendadas e ideias futuras no relatório final
+- [ ] Remover o import legado de `<Html>` que ainda quebra o build da rota 404

@@ -8,22 +8,35 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  // Proteger rotas /admin - apenas admin
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    
-    // Verificar se user eh admin
-    if (token.role !== "admin") {
+  const pathname = request.nextUrl.pathname;
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isDashboardRoute = pathname.startsWith("/dashboard");
+
+  if (!isAdminRoute && !isDashboardRoute) {
+    return NextResponse.next();
+  }
+
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+
+  const isApproved = token.approvalStatus === "approved";
+  const isActive = !token.deletedAt;
+
+  // O painel é reservado ao papel admin e ao acesso aprovado.
+  if (isAdminRoute) {
+    if (token.role !== "admin" || !isApproved || !isActive) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
-  // Proteger rotas /dashboard - qualquer usuario autenticado
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    if (!token) {
-      return NextResponse.redirect(new URL("/login", request.url));
+  // Cursos, progresso e perfil só ficam disponíveis para contas aprovadas.
+  if (isDashboardRoute) {
+    if (!isActive || token.approvalStatus !== "approved") {
+      const destination = token.approvalStatus === "rejected" || !isActive
+        ? "/acesso-negado?reason=blocked"
+        : "/acesso-pendente";
+      return NextResponse.redirect(new URL(destination, request.url));
     }
   }
 
