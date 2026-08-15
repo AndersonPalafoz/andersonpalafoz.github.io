@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, ChevronLeft, GraduationCap, Loader2, Search, UserPlus, UserRound, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronLeft, GraduationCap, Loader2, Search, UserPlus, UserRound, XCircle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -61,6 +61,9 @@ export default function AdminEnrollmentsPage() {
   const [courseId, setCourseId] = useState("");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | Enrollment["status"]>("active");
+
+  // Estado para o Modal de Confirmação de Desvinculação
+  const [confirmingEnrollment, setConfirmingEnrollment] = useState<Enrollment | null>(null);
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin") {
@@ -123,9 +126,9 @@ export default function AdminEnrollmentsPage() {
     }
   };
 
-  const handleUnenroll = async (enrollment: Enrollment) => {
-    const studentName = enrollment.student.name || enrollment.student.email || "este aluno";
-    if (!window.confirm(`Desvincular ${studentName} do curso "${enrollment.course.title}"? O histórico será preservado.`)) return;
+  const confirmUnenroll = async () => {
+    if (!confirmingEnrollment) return;
+    const enrollment = confirmingEnrollment;
 
     try {
       setBusyEnrollmentId(enrollment.id);
@@ -137,6 +140,7 @@ export default function AdminEnrollmentsPage() {
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Não foi possível desvincular a matrícula.");
       toast.success(payload.message || "Aluno desvinculado do curso.");
+      setConfirmingEnrollment(null);
       await loadData();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível desvincular a matrícula.");
@@ -167,6 +171,44 @@ export default function AdminEnrollmentsPage() {
       </header>
 
       <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
+        {/* Modal de Confirmação de Desvinculação com Progresso Atual */}
+        {confirmingEnrollment && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fadeIn">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+              <div className="flex items-center gap-3 text-red-600">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50"><AlertTriangle size={24} /></div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">Confirmar Desvinculação</h3>
+                  <p className="text-xs text-gray-500">Esta ação suspenderá o acesso do aluno ao curso selecionado.</p>
+                </div>
+              </div>
+
+              <div className="rounded-xl bg-gray-50 p-4 border border-gray-200 space-y-2 text-sm">
+                <p><strong className="text-gray-900">Aluno:</strong> {confirmingEnrollment.student.name || confirmingEnrollment.student.email}</p>
+                <p><strong className="text-gray-900">Curso:</strong> {confirmingEnrollment.course.title}</p>
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="flex justify-between text-xs font-semibold mb-1">
+                    <span className="text-gray-600">Progresso atual do aluno:</span>
+                    <span className="text-red-600 font-bold">{confirmingEnrollment.progress}% concluído</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+                    <div className="h-full bg-red-600 rounded-full" style={{ width: `${Math.min(100, Math.max(0, confirmingEnrollment.progress))}%` }} />
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-xs text-gray-500">O histórico acadêmico e as notas serão mantidos no banco de dados, mas o aluno perderá o acesso ativo ao curso.</p>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button type="button" variant="outline" onClick={() => setConfirmingEnrollment(null)}>Cancelar</Button>
+                <Button type="button" onClick={() => void confirmUnenroll()} disabled={busyEnrollmentId === confirmingEnrollment.id} className="bg-red-600 hover:bg-red-700 text-white font-bold">
+                  {busyEnrollmentId === confirmingEnrollment.id ? <Loader2 size={16} className="animate-spin mr-2" /> : null} Sim, Desvincular Aluno
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600"><UserPlus size={20} /></div>
@@ -245,7 +287,7 @@ export default function AdminEnrollmentsPage() {
                         <p className="text-[11px] text-gray-400">Desde {formatDate(enrollment.enrolledAt)}</p>
                       </div>
                       {!isCancelled ? (
-                        <Button type="button" variant="outline" onClick={() => void handleUnenroll(enrollment)} disabled={busyEnrollmentId === enrollment.id} className="h-10 rounded-xl border-red-200 px-3 text-red-600 hover:bg-red-50 hover:text-red-700">
+                        <Button type="button" variant="outline" onClick={() => setConfirmingEnrollment(enrollment)} disabled={busyEnrollmentId === enrollment.id} className="h-10 rounded-xl border-red-200 px-3 text-red-600 hover:bg-red-50 hover:text-red-700">
                           {busyEnrollmentId === enrollment.id ? <Loader2 size={16} className="animate-spin" /> : <XCircle size={16} />}
                           <span className="hidden sm:inline">Desvincular</span>
                         </Button>
