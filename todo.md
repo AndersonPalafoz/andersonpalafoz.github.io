@@ -349,3 +349,7 @@
 - [ ] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
 
 - [x] Esclarecer e aprimorar o fluxo de gerenciamento de módulos e aulas por curso no painel administrativo
+
+- [ ] Adicionar visualizador de PDF integrado na página de detalhes do material (`/materiais/[id]`)
+- [ ] Aprimorar a interface de criação de módulos com botão de destaque e modal intuitivo no painel
+- [ ] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
