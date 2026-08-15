@@ -205,3 +205,9 @@
 - [ ] Implementar componentes interativos de Listening e Speaking nas aulas (reprodução de áudio, gravação de voz no navegador e feedback direto)
 - [ ] Adicionar upload de materiais complementares (PDFs e imagens) vinculados a cada aula por professores
 - [ ] Validar testes automatizados e build de produção
+
+## Painel Docente, Avaliação de Speaking e Progresso Visual — 15/08/2026
+- [ ] Criar painel do professor para monitorar progresso de aulas dos alunos e avaliar gravações de Speaking (`/professor/progresso-aulas`)
+- [ ] Integrar feedback automático de pronúncia por IA para submissões de Speaking
+- [ ] Adicionar barra de progresso visual de aulas na página do curso (`/cursos/[id]`)
+- [ ] Validar testes e build de produção

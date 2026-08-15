@@ -29,10 +29,10 @@ export default async function TeacherDashboardPage() {
           </div>
           <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 text-sm whitespace-nowrap">
             <Link
-              href="/professor/progresso"
-              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
+              href="/professor/progresso-aulas"
+              className="px-5 py-2.5 rounded-xl border border-red-300 bg-red-50 text-red-700 font-semibold hover:bg-red-100 transition"
             >
-              Progresso dos Alunos
+              Aulas & Speaking (IA)
             </Link>
             <Link
               href="/professor/tarefas"

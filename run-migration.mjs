@@ -90,6 +90,7 @@ async function main() {
     try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "mediaType" VARCHAR(32) DEFAULT 'document';`; } catch (e) {}
     try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "isPublic" BOOLEAN DEFAULT TRUE NOT NULL;`; } catch (e) {}
     try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "courseId" INTEGER;`; } catch (e) {}
+    try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "lessonId" INTEGER;`; } catch (e) {}
     try { await sql`ALTER TABLE courses ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
     try { await sql`ALTER TABLE materials ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
     try { await sql`ALTER TABLE articles ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP;`; } catch (e) {}
