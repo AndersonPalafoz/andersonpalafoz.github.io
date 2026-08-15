@@ -27,7 +27,7 @@ export default async function TeacherDashboardPage() {
               Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 text-sm whitespace-nowrap">
             <Link
               href="/professor/progresso"
               className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
@@ -39,6 +39,12 @@ export default async function TeacherDashboardPage() {
               className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
             >
               Tarefas e Deadlines
+            </Link>
+            <Link
+              href="/professor/alunos"
+              className="px-5 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-700 font-semibold hover:bg-red-100 transition"
+            >
+              Aprovar Alunos
             </Link>
             <Link
               href="/admin/cursos"

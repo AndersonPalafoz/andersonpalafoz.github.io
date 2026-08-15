@@ -25,7 +25,8 @@ export const users = pgTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: roleEnum("role").notNull().default("user"), // user, admin
+  role: roleEnum("role").notNull().default("user"), // user, professor, admin
+  requestedRole: varchar("requestedRole", { length: 32 }).default("student"), // student, professor
   approvalStatus: approvalStatusEnum("approvalStatus").notNull().default("pending"), // pending, approved, rejected
   phone: varchar("phone", { length: 32 }),
   location: varchar("location", { length: 120 }),
@@ -284,3 +285,60 @@ export const directMessages = pgTable("direct_messages", {
 
 export type DirectMessageRecord = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = typeof directMessages.$inferInsert;
+
+
+// Novos Enums para Multimídia, Modalidade e Trilha de Eventos
+export const modalityEnum = pgEnum("modality", ["individual", "group", "hybrid"]);
+export const sessionStatusEnum = pgEnum("session_status", ["scheduled", "completed", "cancelled"]);
+export const eventTypeEnum = pgEnum("event_type", ["login", "material_submission", "activity_complete", "course_enroll", "role_change"]);
+
+/**
+ * Class Sessions table - Aulas/Sessões (individuais ou em grupo) para controle de chamada
+ */
+export const classSessions = pgTable("class_sessions", {
+  id: serial("id").primaryKey(),
+  courseId: integer("courseId").references(() => courses.id),
+  teacherId: integer("teacherId").notNull().references(() => users.id),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  modality: modalityEnum("modality").notNull().default("individual"),
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  durationMinutes: integer("durationMinutes").default(60),
+  status: sessionStatusEnum("status").notNull().default("scheduled"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ClassSession = typeof classSessions.$inferSelect;
+export type InsertClassSession = typeof classSessions.$inferInsert;
+
+/**
+ * Attendances table - Chamada e presença dos alunos nas sessões
+ */
+export const attendances = pgTable("attendances", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("sessionId").notNull().references(() => classSessions.id, { onDelete: "cascade" }),
+  studentId: integer("studentId").notNull().references(() => users.id),
+  present: boolean("present").default(true).notNull(),
+  notes: text("notes"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+});
+
+export type Attendance = typeof attendances.$inferSelect;
+export type InsertAttendance = typeof attendances.$inferInsert;
+
+/**
+ * Event Logs table - Trilha de auditoria para logins, submissões e atividades
+ */
+export const eventLogs = pgTable("event_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id),
+  userEmail: varchar("userEmail", { length: 320 }),
+  eventType: eventTypeEnum("eventType").notNull(),
+  details: text("details"),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EventLog = typeof eventLogs.$inferSelect;
+export type InsertEventLog = typeof eventLogs.$inferInsert;
