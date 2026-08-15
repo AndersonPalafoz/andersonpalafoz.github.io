@@ -27,12 +27,18 @@ export default async function TeacherDashboardPage() {
               Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub.
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/admin"
+              href="/professor/progresso"
               className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
             >
-              Painel Admin
+              Progresso dos Alunos
+            </Link>
+            <Link
+              href="/professor/tarefas"
+              className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
+            >
+              Tarefas e Deadlines
             </Link>
             <Link
               href="/admin/cursos"

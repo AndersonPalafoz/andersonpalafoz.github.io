@@ -349,3 +349,9 @@
 - [ ] Criar componentes de alertas de prazos no Dashboard do Aluno e Painel do Professor
 - [ ] Escrever testes unitários para o sistema de notificações e deadlines
 - [ ] Executar build de produção e salvar checkpoint v1.7.0
+
+## Evolução Completa: Mensagens Diretas, Deadlines e Painel Visual do Professor — 15/08/2026
+- [ ] Criar tabelas e rotas para Direct Messages (Aluno ↔ Professor) com simulação/envio de email
+- [ ] Criar sistema de Notificações In-App, Lembretes de Prazos (Deadlines) e Links WhatsApp
+- [ ] Criar gerenciador visual de tarefas e progresso individual no Painel do Professor (`/professor/progresso` e `/professor/tarefas`)
+- [ ] Adicionar testes automatizados, validar build de produção e entregar checkpoint v2.0.0
