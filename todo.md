@@ -233,3 +233,9 @@
 - [ ] Adicionar formulário interativo de criação de tarefas com animação de carregamento e toasts de sucesso/erro
 - [ ] Refinar o componente de upload de imagens com indicador visual de progresso, feedback de sucesso e tratamento de erros
 - [ ] Validar testes automatizados e build de produção
+
+## Gestão Avançada de Tarefas e Exclusões Seguras — 15/08/2026
+- [ ] Adicionar opções de filtro e ordenação por prazo e status na lista de tarefas
+- [ ] Implementar barra de progresso visual de tarefas concluídas no painel
+- [ ] Criar modal de confirmação para exclusão de tarefas e imagens
+- [ ] Validar testes automatizados e build de produção
