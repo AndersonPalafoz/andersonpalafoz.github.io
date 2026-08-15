@@ -305,3 +305,9 @@
 - [ ] Criar alertas de notificação para respostas nas avaliações de cursos
 - [ ] Concluir página de player e consumo de aulas (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
 - [ ] Executar testes automatizados e build de produção
+
+## Retomada de Aula, Certificado Automático e Lista de Desejos (15/08/2026)
+- [ ] Adicionar botão "Continuar de Onde Parei" no painel principal
+- [ ] Implementar liberação automática de certificado PDF de conclusão ao atingir 100%
+- [ ] Criar página dedicada `/dashboard/desejos` com pesquisa e filtros por categoria
+- [ ] Executar testes automatizados e build de produção
