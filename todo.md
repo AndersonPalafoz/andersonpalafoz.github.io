@@ -364,3 +364,7 @@
 
 - [x] Adicionar funcionalidade de upload e gerenciamento de imagens de capa para cursos no painel administrativo
 - [x] Preparar infraestrutura e conector para integração segura com Google Drive
+
+- [x] Adicionar breadcrumbs e navegação fluida entre aulas no player
+- [x] Criar página /admin/usuarios para gerenciar papéis e permissões de acesso
+- [x] Implementar proteção de rotas admin para garantir acesso exclusivo a administradores

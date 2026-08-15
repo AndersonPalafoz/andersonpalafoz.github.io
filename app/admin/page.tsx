@@ -74,6 +74,16 @@ export default function AdminDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-12">
+        {/* Atalhos e Gerenciamento */}
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Atalhos Operacionais</h2>
+          <Link href="/admin/usuarios">
+            <button className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm flex items-center gap-2">
+              <Users size={16} /> Gerenciar Usuários & Permissões (/admin/usuarios)
+            </button>
+          </Link>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
