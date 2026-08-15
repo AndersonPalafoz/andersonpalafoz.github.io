@@ -5,7 +5,7 @@ import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } f
 // Nenhuma rota/UI usa esse valor ainda -- apenas alinhando o schema TS à realidade do banco.
 export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
 export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
-export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
+export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused", "cancelled"]);
 export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking", "listening"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
 export const lessonProgressApprovalStatusEnum = pgEnum("lesson_progress_approval_status", ["pending", "approved", "rejected"]);
@@ -304,6 +304,7 @@ export type InsertDirectMessage = typeof directMessages.$inferInsert;
 export const modalityEnum = pgEnum("modality", ["individual", "group", "hybrid"]);
 export const sessionStatusEnum = pgEnum("session_status", ["scheduled", "completed", "cancelled"]);
 export const eventTypeEnum = pgEnum("event_type", ["login", "material_submission", "activity_complete", "course_enroll", "role_change"]);
+export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "absent", "justified"]);
 
 /**
  * Class Sessions table - Aulas/Sessões (individuais ou em grupo) para controle de chamada
@@ -333,6 +334,7 @@ export const attendances = pgTable("attendances", {
   sessionId: integer("sessionId").notNull().references(() => classSessions.id, { onDelete: "cascade" }),
   studentId: integer("studentId").notNull().references(() => users.id),
   present: boolean("present").default(true).notNull(),
+  status: attendanceStatusEnum("status").notNull().default("present"),
   notes: text("notes"),
   recordedAt: timestamp("recordedAt").defaultNow().notNull(),
 });

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Play, Download, Eye, ExternalLink } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Play, Download, Eye, ExternalLink, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -192,20 +192,24 @@ export default function LessonPageClient() {
                 <div className="pt-2 space-y-3">
                   <button
                     onClick={() => {
+                      const previousRecord = speakingHistory[0];
+                      const score = previousRecord ? Math.min(100, previousRecord.score + 3) : 91;
                       const newRecord = {
                         id: Date.now(),
                         date: new Date().toLocaleDateString("pt-BR"),
-                        score: 91,
-                        phonemeError: "Som /θ/ pronunciado como /s/ em 'thought'.",
-                        suggestion: "Posicione a ponta da língua levemente entre os dentes.",
+                        score,
+                        previousScore: previousRecord?.score ?? null,
+                        improvement: previousRecord ? score - previousRecord.score : null,
+                        phonemeError: score >= 97 ? "Nenhum desvio fonético relevante identificado." : "Som /θ/ pronunciado como /s/ em 'thought'.",
+                        suggestion: score >= 97 ? "Mantenha a posição da língua e o ritmo apresentados nesta tentativa." : "Posicione a ponta da língua levemente entre os dentes.",
                       };
-                      setSpeakingHistory([newRecord, ...speakingHistory]);
+                      setSpeakingHistory((current) => [newRecord, ...current]);
                       setLatestFeedback(newRecord);
-                      toast.success("Gravação analisada pela IA com sucesso!");
+                      toast.success(previousRecord ? "Regravação analisada: evolução atualizada!" : "Gravação analisada pela IA com sucesso!");
                     }}
                     className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-2"
                   >
-                    🎙 Gravar Nova Tentativa & Analisar com IA
+                    <Play size={14} /> {speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa e analisar com IA"}
                   </button>
 
                   {latestFeedback && (
@@ -214,8 +218,16 @@ export default function LessonPageClient() {
                         <span className="text-xs font-bold text-blue-700">Resultado da Análise Fonética</span>
                         <span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.score}/100</span>
                       </div>
-                      <p className="text-xs text-red-600 font-semibold">⚠️ Desvio detectado: {latestFeedback.phonemeError}</p>
-                      <p className="text-xs text-gray-600">💡 <strong className="text-gray-900">Correção sugerida:</strong> {latestFeedback.suggestion}</p>
+                      <p className={`text-xs font-semibold ${latestFeedback.score >= 97 ? "text-emerald-600" : "text-red-600"}`}>
+                        {latestFeedback.score >= 97 ? "Desempenho consistente:" : "Desvio detectado:"} {latestFeedback.phonemeError}
+                      </p>
+                      <p className="text-xs text-gray-600"><strong className="text-gray-900">Correção sugerida:</strong> {latestFeedback.suggestion}</p>
+                      {latestFeedback.improvement !== null && (
+                        <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+                          <TrendingUp size={14} />
+                          <span>+{latestFeedback.improvement} pontos em relação à tentativa anterior ({latestFeedback.previousScore}/100).</span>
+                        </div>
+                      )}
                     </div>
                   )}
 

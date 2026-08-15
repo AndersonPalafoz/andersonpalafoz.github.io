@@ -365,19 +365,60 @@ export async function getAdminStats() {
   const usersCount = await db.query.users.findMany();
   const enrollmentsCount = await db.query.enrollments.findMany();
 
+  const activeUsers = usersCount.filter((user) => !user.deletedAt);
   const completed = enrollmentsCount.filter((e) => e.progress === 100);
   const avgProgress = enrollmentsCount.length > 0
     ? Math.round(enrollmentsCount.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollmentsCount.length)
     : 0;
 
+  const roleCounts = activeUsers.reduce(
+    (counts, user) => {
+      if (user.role === "admin") counts.admin += 1;
+      else if (user.role === "professor") counts.professor += 1;
+      else counts.student += 1;
+      return counts;
+    },
+    { admin: 0, professor: 0, student: 0 },
+  );
+
+  const monthFormatter = new Intl.DateTimeFormat("pt-BR", { month: "short" });
+  const currentMonth = new Date();
+  currentMonth.setDate(1);
+  currentMonth.setHours(0, 0, 0, 0);
+  const monthlyActivity = Array.from({ length: 6 }, (_, index) => {
+    const monthStart = new Date(currentMonth);
+    monthStart.setMonth(currentMonth.getMonth() - (5 - index));
+    const nextMonth = new Date(monthStart);
+    nextMonth.setMonth(monthStart.getMonth() + 1);
+
+    const enrollments = enrollmentsCount.filter((enrollment) => {
+      const date = new Date(enrollment.enrolledAt);
+      return date >= monthStart && date < nextMonth;
+    }).length;
+
+    const activeUsers = usersCount.filter((user) => {
+      if (user.deletedAt) return false;
+      const date = new Date(user.lastSignedIn);
+      return date >= monthStart && date < nextMonth;
+    }).length;
+
+    return {
+      month: monthFormatter.format(monthStart).replace(".", ""),
+      enrollments,
+      activeUsers,
+    };
+  });
+
   return {
-    totalCourses: coursesCount.length,
+    totalCourses: coursesCount.filter((course) => !course.deletedAt).length,
     totalMaterials: materialsCount.length,
     totalArticles: articlesCount.length,
-    totalUsers: usersCount.length,
+    totalUsers: activeUsers.length,
     totalEnrollments: enrollmentsCount.length,
     completedCourses: completed.length,
     averageProgress: avgProgress,
+    roleCounts,
+    monthlyActivity,
   };
 }
 

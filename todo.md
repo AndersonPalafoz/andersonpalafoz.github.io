@@ -368,3 +368,9 @@
 - [x] Adicionar breadcrumbs e navegação fluida entre aulas no player
 - [x] Criar página /admin/usuarios para gerenciar papéis e permissões de acesso
 - [x] Implementar proteção de rotas admin para garantir acesso exclusivo a administradores
+- [x] Implementar indicador visual de conclusão (check verde) ao lado de cada aula na lista do curso
+- [x] Incluir gráfico simples no painel de estatísticas do administrador para mostrar a evolução de matrículas/usuários
+- [x] Criar página e API administrativa para matricular alunos em cursos específicos (`/admin/matriculas`)
+- [x] Adicionar opção de desvincular aluno de curso no painel administrativo para casos de desistência ou matrícula acidental
+- [x] Criar sistema de provas, atribuição de atividades avaliativas e lançamento de notas com pontuação máxima e feedback docente (`/admin/avaliacoes`)
+- [ ] Implementar sistema de chamada online por curso, com criação de sessões, registro de presença e histórico de frequência

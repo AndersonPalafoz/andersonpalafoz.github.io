@@ -70,17 +70,27 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
                       href={`/cursos/${courseId}/aulas/${lesson.id}`}
                       className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-red-50/50 transition group"
                     >
-                      <div className="flex items-center gap-3">
-                        {isDone ? (
-                          <CheckCircle className="text-green-600 flex-shrink-0" size={22} />
-                        ) : (
-                          <PlayCircle className="text-red-600 group-hover:scale-110 transition flex-shrink-0" size={22} />
-                        )}
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className={`font-semibold transition ${isDone ? "text-green-700 line-through" : "text-gray-900 group-hover:text-red-600"}`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <span
+                          className={`flex h-8 w-8 items-center justify-center rounded-full border transition ${isDone
+                            ? "border-green-200 bg-green-50 text-green-600"
+                            : "border-red-100 bg-red-50 text-red-600 group-hover:scale-110"
+                            }`}
+                          aria-label={isDone ? "Aula concluída" : "Aula não concluída"}
+                          title={isDone ? "Aula concluída" : "Aula não concluída"}
+                        >
+                          {isDone ? <CheckCircle size={20} aria-hidden="true" /> : <PlayCircle size={20} aria-hidden="true" />}
+                        </span>
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className={`font-semibold transition ${isDone ? "text-green-700" : "text-gray-900 group-hover:text-red-600"}`}>
                               Aula #{lesson.order}: {lesson.title}
                             </p>
+                            {isDone && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-700">
+                                <CheckCircle size={12} aria-hidden="true" /> Concluída
+                              </span>
+                            )}
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Listening & Speaking</span>
                           </div>
                           {lesson.description && (
@@ -88,7 +98,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 flex-shrink-0">
                         <Clock size={14} />
                         <span>{lesson.duration || 15} min</span>
                       </div>
