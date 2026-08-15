@@ -298,3 +298,10 @@
 - [ ] Criar sistema de avaliações e comentários para cursos concluídos
 - [ ] Adicionar fluxo de cadastro com e-mail/senha sem depender de conta Gmail
 - [ ] Executar testes automatizados e build de produção
+
+## Exportação, Favoritos, Notificações e Player de Aulas (15/08/2026)
+- [ ] Adicionar exportação do histórico de compras em CSV e PDF no painel do usuário
+- [ ] Implementar botão de favoritos/lista de desejos nos cards de cursos
+- [ ] Criar alertas de notificação para respostas nas avaliações de cursos
+- [ ] Concluir página de player e consumo de aulas (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
+- [ ] Executar testes automatizados e build de produção
