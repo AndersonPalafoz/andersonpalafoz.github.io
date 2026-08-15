@@ -278,3 +278,9 @@
 - [ ] Implementar fluxo de 'esqueci minha senha' na tela de login
 - [ ] Criar página de confirmação visual pós-pagamento via Stripe
 - [ ] Executar testes automatizados e build de produção
+
+## Plano de Integração Stripe (Payments, Billing e Invoicing) — 15/08/2026
+- [ ] Instalar o plugin Stripe e configurar conectores MCP
+- [ ] Conectar e autenticar o Stripe MCP (`https://mcp.stripe.com`)
+- [ ] Gerar plano de implementação com o `stripe_implementation_planner`
+- [ ] Revisar e aprimorar a integração de pagamentos para cursos digitais e materiais
