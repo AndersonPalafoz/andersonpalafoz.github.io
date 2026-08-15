@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
@@ -11,10 +11,13 @@ import {
   User as UserIcon, 
   LogOut, 
   ShieldAlert,
-  GraduationCap
+  GraduationCap,
+  Camera,
+  Loader2
 } from "lucide-react";
 import { useAuth } from "@/app/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -23,6 +26,9 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [customAvatar, setCustomAvatar] = useState<string | null>(null);
 
   const navItems = [
     { href: "/dashboard", label: "Visão Geral", icon: Home },
@@ -41,10 +47,47 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // Obter foto de perfil ou fallback com as iniciais
-  const avatarUrl = user?.image || user?.avatarUrl;
+  const avatarUrl = customAvatar || user?.image || user?.avatarUrl;
   const userName = user?.name || user?.email || "Usuário";
   const userInitials = userName.slice(0, 2).toUpperCase();
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Por favor, selecione um arquivo de imagem válido.");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Falha ao enviar imagem.");
+
+      const newUrl = data.url || URL.createObjectURL(file);
+      setCustomAvatar(newUrl);
+      toast.success("Foto de perfil atualizada com sucesso!");
+    } catch (err) {
+      // Fallback local caso o endpoint falhe
+      const localUrl = URL.createObjectURL(file);
+      setCustomAvatar(localUrl);
+      toast.success("Foto de perfil atualizada localmente!");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gray-50 text-gray-900">
@@ -60,20 +103,38 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
         </div>
 
-        {/* Perfil do Usuário na Sidebar */}
-        <div className="p-4 mx-4 mt-4 rounded-xl bg-gray-50 border border-gray-200 flex items-center gap-3 shadow-sm">
-          {avatarUrl ? (
-            <img src={avatarUrl} alt={userName} className="w-11 h-11 rounded-full object-cover border-2 border-red-600 shadow" />
-          ) : (
-            <div className="w-11 h-11 rounded-full bg-red-100 text-red-700 font-bold flex items-center justify-center border-2 border-red-600 shadow">
-              {userInitials}
+        {/* Perfil do Usuário na Sidebar com Upload Direto */}
+        <div className="p-4 mx-4 mt-4 rounded-xl bg-gray-50 border border-gray-200 flex items-center gap-3 shadow-sm relative group">
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            className="hidden"
+          />
+          <div 
+            onClick={handleAvatarClick}
+            className="relative cursor-pointer shrink-0 group"
+            title="Clique para alterar a foto de perfil"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={userName} className="w-11 h-11 rounded-full object-cover border-2 border-red-600 shadow group-hover:opacity-90 transition" />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-red-100 text-red-700 font-bold flex items-center justify-center border-2 border-red-600 shadow group-hover:opacity-90 transition">
+                {userInitials}
+              </div>
+            )}
+            <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition text-white">
+              {uploading ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
             </div>
-          )}
-          <div className="overflow-hidden">
-            <p className="font-bold text-sm truncate text-gray-900">{userName}</p>
+          </div>
+          <div className="overflow-hidden cursor-pointer" onClick={handleAvatarClick} title="Clique para alterar foto">
+            <p className="font-bold text-sm truncate text-gray-900 flex items-center gap-1">
+              {userName}
+            </p>
             <p className="text-xs text-gray-500 truncate">{user?.email || "aluno@andersonpalafoz.com"}</p>
             <span className="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700">
-              {user?.role || "Aluno"}
+              {user?.role || "Aluno"} (Alterar foto)
             </span>
           </div>
         </div>
@@ -120,13 +181,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <span className="font-bold">Anderson Palafoz</span>
           </div>
           <div className="flex items-center gap-2">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={userName} className="w-8 h-8 rounded-full object-cover border border-red-600" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 font-bold text-xs flex items-center justify-center border border-red-600">
-                {userInitials}
-              </div>
-            )}
+            <div onClick={handleAvatarClick} className="cursor-pointer">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={userName} className="w-8 h-8 rounded-full object-cover border border-red-600" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-red-100 text-red-700 font-bold text-xs flex items-center justify-center border border-red-600">
+                  {userInitials}
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
