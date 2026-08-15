@@ -272,13 +272,13 @@
 - [ ] Adicionar ou atualizar testes visuais/estruturais e validar o build de produção
 
 ## Gestão Avançada de Usuários pelo Super-admin — 15/08/2026
-- [ ] Auditar schema, APIs e interface atuais de usuários
-- [ ] Adicionar exclusão lógica e recuperação de usuários, preservando histórico e integridade
-- [ ] Permitir edição apenas de campos não sensíveis e validação de papel/função
-- [ ] Proteger a conta principal `palafozanderson@gmail.com` contra exclusão e perda de super-admin
-- [ ] Atualizar painel, filtros, confirmação e estados de usuários excluídos
-- [ ] Adicionar testes de autorização, edição, exclusão, recuperação e proteção do super-admin
-- [ ] Validar TypeScript, suíte completa e build de produção
+- [x] Auditar schema, APIs e interface atuais de usuários
+- [x] Adicionar exclusão lógica e recuperação de usuários, preservando histórico e integridade
+- [x] Permitir edição apenas de campos não sensíveis e validação de papel/função
+- [x] Proteger a conta principal `palafozanderson@gmail.com` contra exclusão e perda de super-admin
+- [x] Atualizar painel, filtros, confirmação e estados de usuários excluídos
+- [x] Adicionar testes de autorização, edição, exclusão, recuperação e proteção do super-admin
+- [x] Validar TypeScript, suíte completa e build de produção
 
 ## Fotos de Perfil — 15/08/2026
 - [ ] Auditar avatar atual, formulário de perfil e infraestrutura de armazenamento
@@ -291,4 +291,18 @@
 - [ ] Reanalisar todas as páginas públicas, dashboard, admin, autenticação e fluxos de usuário após concluir as funcionalidades pendentes
 - [ ] Registrar sugestões priorizadas por impacto em segurança, acessibilidade, UX, performance, SEO e manutenção
 - [ ] Separar claramente problemas críticos, melhorias recomendadas e ideias futuras no relatório final
-- [ ] Remover o import legado de `<Html>` que ainda quebra o build da rota 404
+- [x] Remover o import legado de `<Html>` que ainda quebra o build da rota 404
+
+## Histórico de Atividades, Toasts e Filtros Avançados — 15/08/2026
+- [x] Criar tabela no schema Drizzle para armazenar o histórico de atividades do super-admin
+- [x] Implementar API e persistência para registrar aprovações, edições de papel, exclusões e recuperações
+- [x] Adicionar notificações visuais (toasts) de sucesso e confirmação nas operações do painel admin
+- [x] Aprimorar os filtros de busca no painel de administração por status de exclusão e tipo de papel
+- [x] Executar testes unitários e build de produção sem erros
+- [x] Adicionar teste Vitest para recuperação via `action: restore`
+- [x] Adicionar teste Vitest para edição de `name`, `phone`, `location` e `bio`
+
+## Diagnóstico e Correção de Erros no Dashboard e Painel Admin — 15/08/2026
+- [x] Inspecionar a rota `/api/admin/stats` e o comportamento do dashboard do aluno
+- [x] Identificar e corrigir falhas de banco ou consultas nulas ao carregar estatísticas e cursos
+- [x] Executar build de produção e validar que as páginas carregam sem erros

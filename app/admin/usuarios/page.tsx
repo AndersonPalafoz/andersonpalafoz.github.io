@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -106,8 +107,11 @@ export default function UsuariosPage() {
       if (!response.ok) throw new Error(data.error || "Não foi possível atualizar o usuário.");
       setUsers((current) => current.map((user) => (user.id === userId ? data.user : user)));
       setFeedback(successMessage);
+      toast.success(successMessage);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível atualizar o usuário.");
+      const message = err instanceof Error ? err.message : "Não foi possível atualizar o usuário.";
+      setError(message);
+      toast.error(message);
     } finally {
       setBusyId(null);
     }
@@ -133,9 +137,12 @@ export default function UsuariosPage() {
       setFormData({ email: "", name: "", role: "user" });
       setShowCreateForm(false);
       setFeedback("Usuário criado com acesso aprovado e progresso inicial zerado.");
+      toast.success("Usuário criado com acesso aprovado.");
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível criar o usuário.");
+      const message = err instanceof Error ? err.message : "Não foi possível criar o usuário.";
+      setError(message);
+      toast.error(message);
     } finally {
       setCreating(false);
     }
@@ -153,8 +160,11 @@ export default function UsuariosPage() {
       if (!response.ok) throw new Error(data.error || "Não foi possível excluir o usuário.");
       setUsers((current) => current.map((item) => (item.id === user.id ? data.user : item)));
       setFeedback("Usuário excluído logicamente. O histórico foi preservado.");
+      toast.success("Conta excluída logicamente. O histórico foi preservado.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível excluir o usuário.");
+      const message = err instanceof Error ? err.message : "Não foi possível excluir o usuário.";
+      setError(message);
+      toast.error(message);
     } finally {
       setBusyId(null);
     }

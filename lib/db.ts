@@ -4,13 +4,16 @@ import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
 import { eq, desc } from "drizzle-orm";
 
-const connectionString =
-  process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+// O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
+// usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
+const connectionString = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL (or NEON_DATABASE_URL) environment variable is not set"
-  );
+  throw new Error("NEON_DATABASE_URL (or DATABASE_URL) environment variable is not set");
+}
+
+if (!connectionString.startsWith("postgres://") && !connectionString.startsWith("postgresql://")) {
+  throw new Error("The database connection must use a PostgreSQL URL (postgres:// or postgresql://)");
 }
 
 // Create the connection

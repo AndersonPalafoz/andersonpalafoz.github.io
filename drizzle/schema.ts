@@ -233,3 +233,19 @@ export const progress = pgTable("progress", {
 
 export type Progress = typeof progress.$inferSelect;
 export type InsertProgress = typeof progress.$inferInsert;
+
+/**
+ * Admin Audit Logs table - Histórico de atividades administrativas do super-admin
+ */
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+  id: serial("id").primaryKey(),
+  adminEmail: varchar("adminEmail", { length: 320 }).notNull(),
+  action: varchar("action", { length: 64 }).notNull(), // approve, reject, role_change, soft_delete, restore, create
+  targetName: text("targetName"),
+  targetEmail: varchar("targetEmail", { length: 320 }),
+  details: text("details"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
+export type InsertAdminAuditLog = typeof adminAuditLogs.$inferInsert;

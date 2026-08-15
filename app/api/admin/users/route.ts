@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { desc, eq } from "drizzle-orm";
+import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 const VALID_ROLES = ["user", "professor", "admin"] as const;
@@ -101,6 +102,14 @@ export async function PUT(request: NextRequest) {
         .where(eq(users.id, userId))
         .returning();
 
+      await logAdminActivity({
+        adminEmail: session.user?.email ?? SUPER_ADMIN_EMAIL,
+        action: ADMIN_AUDIT_ACTIONS.RESTORE,
+        targetName: targetUser.name,
+        targetEmail: targetUser.email,
+        details: "Conta recuperada pelo super-admin.",
+      });
+
       return NextResponse.json({ message: "Usuário recuperado.", user: serializeUser(restoredUser[0]) });
     }
 
@@ -141,6 +150,26 @@ export async function PUT(request: NextRequest) {
       .where(eq(users.id, userId))
       .returning();
 
+    const auditEmail = session.user?.email ?? SUPER_ADMIN_EMAIL;
+    if (body.role !== undefined && body.role !== targetUser.role) {
+      await logAdminActivity({
+        adminEmail: auditEmail,
+        action: ADMIN_AUDIT_ACTIONS.ROLE_CHANGE,
+        targetName: targetUser.name,
+        targetEmail: targetUser.email,
+        details: `Papel alterado de ${targetUser.role} para ${body.role}.`,
+      });
+    }
+    if (body.approvalStatus !== undefined && body.approvalStatus !== targetUser.approvalStatus) {
+      await logAdminActivity({
+        adminEmail: auditEmail,
+        action: body.approvalStatus === "approved" ? ADMIN_AUDIT_ACTIONS.APPROVE : ADMIN_AUDIT_ACTIONS.REJECT,
+        targetName: targetUser.name,
+        targetEmail: targetUser.email,
+        details: `Status alterado de ${targetUser.approvalStatus} para ${body.approvalStatus}.`,
+      });
+    }
+
     return NextResponse.json({ message: "Usuário atualizado.", user: serializeUser(updatedUser[0]) });
   } catch (error) {
     console.error("Error updating user:", error);
@@ -178,6 +207,14 @@ export async function DELETE(request: NextRequest) {
       .set({ deletedAt: new Date(), updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
+
+    await logAdminActivity({
+      adminEmail: session.user?.email ?? SUPER_ADMIN_EMAIL,
+      action: ADMIN_AUDIT_ACTIONS.SOFT_DELETE,
+      targetName: targetUser.name,
+      targetEmail: targetUser.email,
+      details: "Conta excluída logicamente pelo super-admin.",
+    });
 
     return NextResponse.json({ message: "Usuário excluído logicamente.", user: serializeUser(deletedUser[0]) });
   } catch (error) {
