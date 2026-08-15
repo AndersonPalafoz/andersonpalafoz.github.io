@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, BookOpen, FileText, Users, Loader } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Users, Loader, Mail } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Stats {
@@ -164,6 +164,14 @@ export default function AdminDashboard() {
               <BarChart3 className="text-orange-600 mb-4" size={40} />
               <h2 className="text-xl font-bold text-gray-900 mb-2">Relatórios</h2>
               <p className="text-gray-600">Estatísticas e progresso dos alunos</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/mensagens">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <Mail className="text-red-600 mb-4" size={40} />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Mensagens de Contato</h2>
+              <p className="text-gray-600">Visualizar mensagens enviadas pelo site</p>
             </div>
           </Link>
         </div>
