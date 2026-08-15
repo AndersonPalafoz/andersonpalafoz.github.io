@@ -215,6 +215,8 @@ export async function createCourse(data: {
   level: string;
   modules?: number;
   instructor?: string;
+  isFree?: boolean;
+  price?: number;
 }) {
   return await db.insert(schema.courses).values({
     title: data.title,
@@ -231,6 +233,8 @@ export async function updateCourse(id: number, data: Partial<{
   level: string;
   modules: number;
   instructor: string;
+  isFree: boolean;
+  price: number;
 }>) {
   return await db.update(schema.courses)
     .set({
@@ -254,6 +258,7 @@ export async function createMaterial(data: {
   category: string;
   level: string;
   fileUrl?: string;
+  isPublic?: boolean;
 }) {
   return await db.insert(schema.materials).values({
     title: data.title,
@@ -261,6 +266,7 @@ export async function createMaterial(data: {
     category: data.category,
     level: data.level,
     fileUrl: data.fileUrl,
+    isPublic: data.isPublic ?? true,
   }).returning();
 }
 
@@ -270,6 +276,7 @@ export async function updateMaterial(id: number, data: Partial<{
   category: string;
   level: string;
   fileUrl: string;
+  isPublic: boolean;
 }>) {
   return await db.update(schema.materials)
     .set({
