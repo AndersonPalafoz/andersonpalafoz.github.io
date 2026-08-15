@@ -1,63 +1,105 @@
-export const dynamic = "force-dynamic";
-
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import React from "react";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Clock3,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+} from "lucide-react";
+import { ContactForm } from "@/components/contact-form";
+import {
+  CONTACT_EMAIL,
+  CONTACT_LOCATION,
+  CONTACT_LOCATION_URL,
+  CONTACT_PHONE_DISPLAY,
+  CONTACT_WHATSAPP_URL,
+} from "@/lib/contact";
 
 export const metadata = {
   title: "Contato | Anderson Palafoz",
-  description: "Entre em contato com Anderson Palafoz para dúvidas, sugestões ou parcerias.",
+  description:
+    "Entre em contato com Anderson Palafoz para dúvidas, sugestões, aulas e parcerias educacionais.",
+  alternates: {
+    canonical: "/contato",
+  },
 };
+
+const faqItems = [
+  {
+    pergunta: "Qual é o tempo de resposta?",
+    resposta: "Normalmente respondemos em até 24 horas úteis.",
+  },
+  {
+    pergunta: "Vocês oferecem aulas particulares?",
+    resposta:
+      "Sim. Envie uma mensagem contando seu objetivo, nível de inglês e disponibilidade para receber orientações sobre as aulas.",
+  },
+  {
+    pergunta: "Como posso conhecer os cursos?",
+    resposta:
+      "Acesse a página de aulas para conhecer as modalidades, o público-alvo e a proposta pedagógica da plataforma.",
+  },
+  {
+    pergunta: "Há possibilidade de parcerias?",
+    resposta:
+      "Sim. Parcerias educacionais, projetos e propostas de conteúdo podem ser enviados pelo formulário ou por email.",
+  },
+];
 
 export default function ContatoPage() {
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <section className="min-h-screen flex items-center py-20 px-4 md:px-8 lg:px-16 bg-white">
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="space-y-8 max-w-3xl">
-            <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                Entre em
-                <br />
-                <span className="text-red-600">Contato</span>
-              </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Tem dúvidas, sugestões ou quer propor uma parceria? Adoraríamos ouvir de você!
+    <main className="w-full bg-white text-[#1F1F1F]">
+      <section className="relative overflow-hidden bg-[#F8F9FA] px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-20">
+            <div>
+              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-red-600">
+                Vamos conversar
               </p>
+              <h1 className="max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
+                Fale com o
+                <span className="block text-[#D62828]">Anderson Palafoz</span>
+              </h1>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
+                Tem uma dúvida sobre cursos, uma sugestão ou uma proposta de parceria? Escolha o canal mais conveniente e envie sua mensagem.
+              </p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#D62828] px-5 py-3 font-semibold text-white transition hover:bg-[#B91C1C] focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 active:scale-[0.98]"
+                >
+                  <Mail size={18} aria-hidden="true" />
+                  Enviar email
+                </a>
+                <a
+                  href={CONTACT_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-red-600 px-5 py-3 font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 active:scale-[0.98]"
+                >
+                  <MessageCircle size={18} aria-hidden="true" />
+                  Falar no WhatsApp
+                </a>
+              </div>
             </div>
 
-            {/* Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-8">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Mail className="text-red-600" size={24} />
-                </div>
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] sm:p-8">
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-red-600">
+                Atendimento
+              </p>
+              <h2 className="mt-3 text-2xl font-bold text-[#1F1F1F]">
+                Um canal aberto para sua jornada
+              </h2>
+              <p className="mt-3 leading-7 text-gray-600">
+                Seja para começar a estudar inglês ou desenvolver um projeto educacional, sua mensagem será recebida com atenção.
+              </p>
+              <div className="mt-6 flex items-start gap-3 border-t border-gray-100 pt-6">
+                <Clock3 className="mt-0.5 shrink-0 text-red-600" size={20} aria-hidden="true" />
                 <div>
-                  <h3 className="font-bold text-gray-900 mb-1">Email</h3>
-                  <a href="mailto:palafozanderson@gmail.com" className="text-gray-600 hover:text-red-600 transition">
-                    palafozanderson@gmail.com
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Phone className="text-red-600" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-1">WhatsApp</h3>
-                  <a href="https://wa.me/5571991222257" target="_blank" rel="noopener noreferrer" className="text-gray-600 hover:text-red-600 transition">
-                    (71) 9 9122-2257
-                  </a>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <MapPin className="text-red-600" size={24} />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-1">Localização</h3>
-                  <p className="text-gray-600">Salvador, Bahia - Brasil</p>
+                  <p className="font-semibold text-[#1F1F1F]">Tempo de resposta</p>
+                  <p className="mt-1 text-sm leading-6 text-gray-600">Até 24 horas úteis, normalmente.</p>
                 </div>
               </div>
             </div>
@@ -65,132 +107,116 @@ export default function ContatoPage() {
         </div>
       </section>
 
-      {/* Contact Form Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-gray-50">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-lg p-12 border border-gray-200">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Envie uma Mensagem</h2>
+      <section id="mensagem" className="scroll-mt-24 bg-white px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:gap-20">
+          <div className="lg:sticky lg:top-28">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">
+              Encontre o melhor canal
+            </p>
+            <h2 className="text-3xl font-bold leading-tight sm:text-4xl">
+              Escolha como prefere falar
+            </h2>
+            <p className="mt-4 max-w-md leading-7 text-gray-600">
+              Para assuntos mais detalhados, use o formulário. Se preferir uma conversa rápida, o WhatsApp é o caminho mais direto.
+            </p>
 
-            <form className="space-y-6">
-              {/* Nome */}
-              <div>
-                <label className="block text-gray-900 font-semibold mb-2">
-                  Nome Completo
-                </label>
-                <input
-                  type="text"
-                  placeholder="Seu nome"
-                  className="w-full px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600"
-                />
-              </div>
+            <div className="mt-8 space-y-4">
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 bg-[#F8F9FA] p-5 transition hover:border-red-200 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                  <Mail size={20} aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-[#1F1F1F]">Email</span>
+                  <span className="mt-1 block break-all text-sm text-gray-600 group-hover:text-red-600">{CONTACT_EMAIL}</span>
+                </span>
+              </a>
 
-              {/* Email */}
-              <div>
-                <label className="block text-gray-900 font-semibold mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  placeholder="seu@email.com"
-                  className="w-full px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600"
-                />
-              </div>
+              <a
+                href={CONTACT_WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 bg-[#F8F9FA] p-5 transition hover:border-red-200 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                  <Phone size={20} aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-[#1F1F1F]">WhatsApp</span>
+                  <span className="mt-1 block text-sm text-gray-600 group-hover:text-red-600">{CONTACT_PHONE_DISPLAY}</span>
+                </span>
+              </a>
 
-              {/* Assunto */}
-              <div>
-                <label className="block text-gray-900 font-semibold mb-2">
-                  Assunto
-                </label>
-                <select className="w-full px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600">
-                  <option>Selecione um assunto</option>
-                  <option>Dúvida sobre Cursos</option>
-                  <option>Sugestão de Conteúdo</option>
-                  <option>Parceria</option>
-                  <option>Feedback</option>
-                  <option>Outro</option>
-                </select>
-              </div>
-
-              {/* Mensagem */}
-              <div>
-                <label className="block text-gray-900 font-semibold mb-2">
-                  Mensagem
-                </label>
-                <textarea
-                  placeholder="Sua mensagem aqui..."
-                  rows={6}
-                  className="w-full px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600 resize-none"
-                />
-              </div>
-
-              {/* Submit */}
-              <div className="flex gap-4">
-                <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
-                  <Send size={18} />
-                  Enviar Mensagem
-                </button>
-              </div>
-            </form>
+              <a
+                href={CONTACT_LOCATION_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 bg-[#F8F9FA] p-5 transition hover:border-red-200 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-200"
+              >
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
+                  <MapPin size={20} aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-[#1F1F1F]">Localização</span>
+                  <span className="mt-1 block text-sm text-gray-600 group-hover:text-red-600">{CONTACT_LOCATION}</span>
+                </span>
+              </a>
+            </div>
           </div>
+
+          <ContactForm />
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Perguntas Frequentes
-          </h2>
-
-          <div className="space-y-6">
-            {[
-              {
-                pergunta: "Qual é o tempo de resposta?",
-                resposta: "Respondemos a todas as mensagens dentro de 24 horas úteis.",
-              },
-              {
-                pergunta: "Vocês oferecem aulas particulares?",
-                resposta: "Sim! Oferecemos aulas particulares personalizadas. Entre em contato para mais informações.",
-              },
-              {
-                pergunta: "Como posso me inscrever em um curso?",
-                resposta: "Você pode se inscrever diretamente na página de Aulas ou acessando sua Minha Área.",
-              },
-              {
-                pergunta: "Há possibilidade de parcerias?",
-                resposta: "Sim! Estamos abertos a parcerias educacionais. Envie um email com sua proposta.",
-              },
-            ].map((item, index) => (
-              <div key={index} className="bg-gray-50 p-8 rounded-2xl border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-3">
-                  {item.pergunta}
-                </h3>
-                <p className="text-gray-600">{item.resposta}</p>
-              </div>
+      <section className="bg-[#F8F9FA] px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-24">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-10 text-center">
+            <p className="mb-3 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">Dúvidas comuns</p>
+            <h2 className="text-3xl font-bold sm:text-4xl">Perguntas frequentes</h2>
+          </div>
+          <div className="space-y-3">
+            {faqItems.map((item) => (
+              <details key={item.pergunta} className="group rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
+                <summary className="cursor-pointer list-none pr-8 font-semibold text-[#1F1F1F] outline-none transition marker:hidden focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
+                  <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">
+                    {item.pergunta}
+                  </span>
+                </summary>
+                <p className="max-w-3xl pt-3 leading-7 text-gray-600">{item.resposta}</p>
+              </details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-red-600">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Pronto para Começar?
-          </h2>
-          <p className="text-lg text-red-100">
-            Não espere mais! Entre em contato ou inscreva-se em um de nossos cursos agora mesmo.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
-              Enviar Mensagem
-            </button>
-            <button className="bg-red-700 hover:bg-red-800 text-white px-8 py-6 text-lg rounded-lg font-semibold">
-              Ver Cursos
-            </button>
+      <section className="bg-[#D62828] px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-20">
+        <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
+          <div>
+            <h2 className="text-3xl font-bold text-white sm:text-4xl">Pronto para começar?</h2>
+            <p className="mt-3 max-w-2xl text-lg leading-7 text-red-100">
+              Conheça as aulas ou envie uma mensagem para conversar sobre seu próximo passo.
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <a
+              href="#mensagem"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600 active:scale-[0.98]"
+            >
+              Enviar mensagem
+              <ArrowRight size={18} aria-hidden="true" />
+            </a>
+            <Link
+              href="/aulas"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-white/80 px-5 py-3 font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-red-600 active:scale-[0.98]"
+            >
+              Ver aulas
+              <ArrowRight size={18} aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
