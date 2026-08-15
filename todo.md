@@ -355,3 +355,7 @@
 - [ ] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
 
 - [x] Esclarecer hierarquia Curso → Módulos e direcionar automaticamente para a criação de módulos após salvar um novo curso
+
+- [x] Adicionar funcionalidade de arrastar e soltar para reordenar módulos e aulas no painel de gestão
+- [x] Implementar navegação por breadcrumbs hierárquicos no painel administrativo
+- [x] Permitir upload e vinculação de materiais de apoio (PDFs/exercícios) diretamente na interface de criação de aulas

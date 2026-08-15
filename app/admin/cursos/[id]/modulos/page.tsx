@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Layers, BookOpen, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Layers, BookOpen, Loader2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 interface Module {
@@ -83,6 +83,19 @@ export default function AdminCourseModulesPage({
     }
   };
 
+  const moveModule = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= modules.length) return;
+    const updated = [...modules];
+    const temp = updated[index];
+    updated[index] = updated[newIndex];
+    updated[newIndex] = temp;
+    // Reindexar ordem
+    const reindexed = updated.map((m, idx) => ({ ...m, order: idx + 1 }));
+    setModules(reindexed);
+    toast.success("Ordem dos módulos atualizada!");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -97,6 +110,15 @@ export default function AdminCourseModulesPage({
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* Breadcrumbs Hierárquicos */}
+        <nav className="flex items-center gap-2 text-sm text-gray-500 bg-white px-6 py-3 rounded-2xl border border-gray-200 shadow-sm">
+          <Link href="/admin" className="hover:text-red-600 font-medium">Painel Admin</Link>
+          <span>/</span>
+          <Link href="/admin/cursos" className="hover:text-red-600 font-medium">Cursos</Link>
+          <span>/</span>
+          <span className="text-gray-900 font-bold">Módulos do Curso</span>
+        </nav>
+
         <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
           <div>
             <Link href="/admin/cursos" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
@@ -109,7 +131,7 @@ export default function AdminCourseModulesPage({
               {course ? course.title : `Curso #${courseId}`}
             </h1>
             <p className="text-gray-600 text-sm mt-1">
-              Gerencie os módulos pedagógicos deste curso. Cada módulo agrupa aulas, worksheets e atividades.
+              Gerencie e reordene os módulos pedagógicos deste curso. Use as setas para mover rapidamente.
             </p>
           </div>
           <Link href="/admin/cursos">
@@ -125,10 +147,6 @@ export default function AdminCourseModulesPage({
             <Layers className="text-red-600" size={22} />
             Adicionar Novo Módulo ao Curso
           </h2>
-          <p className="text-sm text-gray-600">
-            Defina o título do módulo (ex: <i>Módulo 1: Foundations & Daily Routines</i>).
-          </p>
-
           <form onSubmit={handleCreateModule} className="flex flex-col md:flex-row gap-3">
             <input
               type="text"
@@ -149,24 +167,26 @@ export default function AdminCourseModulesPage({
           </form>
         </div>
 
-        {/* Lista de Módulos */}
+        {/* Lista de Módulos com Reordenação */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-200 flex items-center justify-between">
             <h3 className="text-lg font-bold text-gray-900">Módulos Estruturados ({modules.length})</h3>
-            <span className="text-xs font-semibold text-gray-400 uppercase">Hierarquia Ativa</span>
+            <span className="text-xs font-semibold text-gray-400 uppercase">Arraste ou Reordene</span>
           </div>
 
           {modules.length === 0 ? (
             <div className="p-12 text-center space-y-3">
               <BookOpen size={48} className="mx-auto text-gray-300" />
               <p className="text-gray-600 font-medium">Nenhum módulo criado para este curso ainda.</p>
-              <p className="text-xs text-gray-400">Utilize o formulário acima para criar o primeiro módulo.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
               {modules.map((mod, index) => (
                 <div key={mod.id || index} className="p-6 flex items-center justify-between hover:bg-gray-50 transition">
                   <div className="flex items-center gap-4">
+                    <div className="cursor-grab text-gray-400 hover:text-gray-600">
+                      <GripVertical size={20} />
+                    </div>
                     <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-sm">
                       {index + 1}
                     </div>
@@ -175,7 +195,25 @@ export default function AdminCourseModulesPage({
                       <p className="text-xs text-gray-500">Módulo #{index + 1} • Pronto para adição de aulas</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => moveModule(index, "up")}
+                        disabled={index === 0}
+                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                        title="Mover para cima"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <button
+                        onClick={() => moveModule(index, "down")}
+                        disabled={index === modules.length - 1}
+                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                        title="Mover para baixo"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
                     <Link href={`/admin/aulas?courseId=${courseId}`}>
                       <button className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs rounded-xl transition">
                         Gerenciar Aulas
