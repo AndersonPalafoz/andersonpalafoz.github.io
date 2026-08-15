@@ -311,3 +311,9 @@
 - [ ] Implementar liberação automática de certificado PDF de conclusão ao atingir 100%
 - [ ] Criar página dedicada `/dashboard/desejos` com pesquisa e filtros por categoria
 - [ ] Executar testes automatizados e build de produção
+
+## LinkedIn, Miniatura de Retomada e Compra Rápida (15/08/2026)
+- [ ] Adicionar compartilhamento de certificado no LinkedIn
+- [ ] Melhorar botão de retomada com miniatura e título da aula
+- [ ] Adicionar botão "Comprar Agora" nos cards da Lista de Desejos
+- [ ] Executar testes automatizados e build de produção
