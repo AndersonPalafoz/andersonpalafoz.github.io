@@ -11,6 +11,7 @@ interface Material {
   level: string;
   fileUrl: string | null;
   description?: string | null;
+  isPublic?: boolean;
   createdAt: string;
 }
 
@@ -26,6 +27,7 @@ export default function AdminMateriaisReal() {
     level: "A1",
     fileUrl: "",
     description: "",
+    isPublic: true,
   });
   const [saving, setSaving] = useState(false);
 
@@ -74,7 +76,7 @@ export default function AdminMateriaisReal() {
       }
 
       await fetchMaterials();
-      setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
+      setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "", isPublic: true });
       setEditingId(null);
       setShowForm(false);
       alert("Material salvo com sucesso!");
@@ -85,13 +87,14 @@ export default function AdminMateriaisReal() {
     }
   };
 
-  const handleEdit = (material: Material) => {
+  const handleEdit = (material: any) => {
     setFormData({
       title: material.title,
       category: material.category || "Worksheets",
       level: material.level || "A1",
       fileUrl: material.fileUrl || "",
       description: material.description || "",
+      isPublic: material.isPublic ?? true,
     });
     setEditingId(material.id);
     setShowForm(true);
@@ -135,7 +138,7 @@ export default function AdminMateriaisReal() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
+              setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "", isPublic: true });
             }}
             className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-600/20"
           >
@@ -210,6 +213,18 @@ export default function AdminMateriaisReal() {
                     />
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Visibilidade de Publicação</label>
+                  <select
+                    value={formData.isPublic ? "true" : "false"}
+                    onChange={(e) => setFormData({ ...formData, isPublic: e.target.value === "true" })}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition bg-white font-medium text-gray-900"
+                  >
+                    <option value="true">Público (Disponível na Biblioteca para todos)</option>
+                    <option value="false">Privado (Exclusivo para Alunos Matriculados)</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -274,6 +289,9 @@ export default function AdminMateriaisReal() {
                       </span>
                       <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-gray-100 text-gray-700">
                         {mat.level}
+                      </span>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${mat.isPublic !== false ? "bg-emerald-100 text-emerald-700" : "bg-purple-100 text-purple-700"}`}>
+                        {mat.isPublic !== false ? "Público" : "Privado (Alunos)"}
                       </span>
                     </div>
                     <h3 className="text-lg font-bold text-gray-900">{mat.title}</h3>
