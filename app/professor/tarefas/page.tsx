@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckSquare, Calendar, MessageCircle, Plus, Loader2, X, Filter, ArrowUpDown, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, Tag, FileText, CheckCircle2, Circle, Link2, Paperclip } from "lucide-react";
+import { ArrowLeft, CheckSquare, Calendar, MessageCircle, Plus, Loader2, X, Filter, ArrowUpDown, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, Tag, FileText, CheckCircle2, Circle, Link2, Paperclip, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { buildWhatsAppMessageLink, buildDeadlineReminderText } from "@/lib/notifications-helper";
@@ -67,6 +67,9 @@ export default function TeacherTasksPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
   
+  // Controle de cards expandidos/recolhidos (por ID)
+  const [expandedCards, setExpandedCards] = useState<Record<number, boolean>>({});
+
   // Edição rápida
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -125,6 +128,10 @@ export default function TeacherTasksPage() {
           ],
         }));
         setActivitiesList(list);
+        // Expandir por padrão todos os cards
+        const initialExpanded: Record<number, boolean> = {};
+        list.forEach((a: Activity) => { initialExpanded[a.id] = true; });
+        setExpandedCards(initialExpanded);
       }
     } catch (err) {
       console.error(err);
@@ -136,6 +143,10 @@ export default function TeacherTasksPage() {
   useEffect(() => {
     void fetchData();
   }, []);
+
+  const toggleCardExpand = (id: number) => {
+    setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   const handleAddFormSubtask = () => {
     if (!newSubtaskText.trim()) return;
@@ -363,7 +374,7 @@ export default function TeacherTasksPage() {
               Gerenciamento de Tarefas, Checklists e Anexos
             </h1>
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-              Subtarefas interativas, links de referência, busca destacada, etiquetas e exportação CSV/PDF.
+              Barra de progresso por card, subtarefas recolhíveis, busca destacada, etiquetas e exportação CSV/PDF.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -560,7 +571,7 @@ export default function TeacherTasksPage() {
           </form>
         )}
 
-        {/* Lista de Atividades com Checklists Interativos e Anexos */}
+        {/* Lista de Atividades com Cards Recolhíveis e Barra de Progresso Interna */}
         <div className={`p-6 rounded-2xl border shadow-sm space-y-6 transition-colors ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -645,6 +656,12 @@ export default function TeacherTasksPage() {
 
                 const isEditing = editingId === act.id;
                 const tagInfo = AVAILABLE_TAGS.find((t) => t.name === act.tag) || AVAILABLE_TAGS[1];
+                const isExpanded = expandedCards[act.id] ?? true;
+
+                // Cálculo de progresso das subtarefas do card
+                const totalSub = act.subtasks?.length || 0;
+                const completedSub = act.subtasks?.filter(s => s.completed).length || 0;
+                const subProgress = totalSub > 0 ? Math.round((completedSub / totalSub) * 100) : 0;
 
                 return (
                   <div
@@ -716,74 +733,100 @@ export default function TeacherTasksPage() {
                               <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
                                 {highlightText(act.description || "Sem descrição informada.", searchQuery)}
                               </p>
-                              <p className="text-xs text-red-500 font-semibold flex items-center gap-1 pt-1">
-                                <Calendar size={14} /> Prazo: {dueDateFormatted}
-                              </p>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                                <p className="text-xs text-red-500 font-semibold flex items-center gap-1">
+                                  <Calendar size={14} /> Prazo: {dueDateFormatted}
+                                </p>
+                                {totalSub > 0 && (
+                                  <div className="flex items-center gap-2 text-xs">
+                                    <span className="font-medium text-gray-500">Checklist: {completedSub}/{totalSub}</span>
+                                    <div className="w-24 bg-gray-200 dark:bg-gray-600 h-2 rounded-full overflow-hidden">
+                                      <div className="bg-green-500 h-2 rounded-full transition-all" style={{ width: `${subProgress}%` }} />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </>
                           )}
                         </div>
                       </div>
 
-                      {!isEditing && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => startEdit(act)}
-                            className="text-xs gap-1"
-                          >
-                            <Edit3 size={14} /> Editar
-                          </Button>
-                          <button
-                            onClick={() => confirmDelete(act)}
-                            className="p-2 rounded-xl border border-red-200 bg-white text-red-600 hover:bg-red-50 transition"
-                            title="Excluir tarefa"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {!isEditing && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => toggleCardExpand(act.id)}
+                              className="text-xs gap-1"
+                              title={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
+                            >
+                              {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />} {isExpanded ? "Recolher" : "Detalhes"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => startEdit(act)}
+                              className="text-xs gap-1"
+                            >
+                              <Edit3 size={14} /> Editar
+                            </Button>
+                            <button
+                              onClick={() => confirmDelete(act)}
+                              className="p-2 rounded-xl border border-red-200 bg-white text-red-600 hover:bg-red-50 transition"
+                              title="Excluir tarefa"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
-                    {/* Exibição de Subtarefas / Checklist */}
-                    {act.subtasks && act.subtasks.length > 0 && (
-                      <div className={`mt-2 p-3 rounded-lg border text-sm space-y-2 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
-                        <span className="font-bold text-xs uppercase tracking-wider text-gray-400">Checklist da Atividade:</span>
-                        <div className="space-y-1.5">
-                          {act.subtasks.map((st) => (
-                            <button
-                              key={st.id}
-                              type="button"
-                              onClick={() => toggleSubtask(act.id, st.id)}
-                              className="flex items-center gap-2 text-left w-full hover:opacity-80 transition"
-                            >
-                              {st.completed ? (
-                                <CheckCircle2 size={16} className="text-green-500 shrink-0" />
-                              ) : (
-                                <Circle size={16} className="text-gray-400 shrink-0" />
-                              )}
-                              <span className={`text-sm ${st.completed ? "line-through text-gray-400" : ""}`}>{st.title}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                    {/* Seção Expansível de Subtarefas e Anexos */}
+                    {isExpanded && !isEditing && (
+                      <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-700 animate-in fade-in duration-200">
+                        {/* Subtarefas / Checklist */}
+                        {act.subtasks && act.subtasks.length > 0 && (
+                          <div className={`p-3 rounded-lg border text-sm space-y-2 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                            <span className="font-bold text-xs uppercase tracking-wider text-gray-400">Checklist da Atividade:</span>
+                            <div className="space-y-1.5">
+                              {act.subtasks.map((st) => (
+                                <button
+                                  key={st.id}
+                                  type="button"
+                                  onClick={() => toggleSubtask(act.id, st.id)}
+                                  className="flex items-center gap-2 text-left w-full hover:opacity-80 transition"
+                                >
+                                  {st.completed ? (
+                                    <CheckCircle2 size={16} className="text-green-500 shrink-0" />
+                                  ) : (
+                                    <Circle size={16} className="text-gray-400 shrink-0" />
+                                  )}
+                                  <span className={`text-sm ${st.completed ? "line-through text-gray-400" : ""}`}>{st.title}</span>
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
-                    {/* Exibição de Anexos / Links de Referência */}
-                    {act.attachments && act.attachments.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <span className="text-xs font-bold text-gray-400 flex items-center gap-1"><Paperclip size={12} /> Anexos:</span>
-                        {act.attachments.map((att) => (
-                          <a
-                            key={att.id}
-                            href={att.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-2.5 py-1 rounded-lg border text-xs font-medium bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 transition inline-flex items-center gap-1"
-                          >
-                            <Link2 size={12} /> {att.name}
-                          </a>
-                        ))}
+                        {/* Anexos / Links de Referência */}
+                        {act.attachments && act.attachments.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <span className="text-xs font-bold text-gray-400 flex items-center gap-1"><Paperclip size={12} /> Anexos:</span>
+                            {act.attachments.map((att) => (
+                              <a
+                                key={att.id}
+                                href={att.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-2.5 py-1 rounded-lg border text-xs font-medium bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100 transition inline-flex items-center gap-1"
+                              >
+                                <Link2 size={12} /> {att.name}
+                              </a>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
