@@ -291,3 +291,10 @@
 - [ ] Implementar página de recibo detalhado com opção de download / impressão
 - [ ] Permitir a criação de cursos e materiais gratuitos no painel do professor/admin
 - [ ] Executar testes automatizados e build de produção
+
+## Aprimoramentos de Experiência do Aluno e Autenticação (15/08/2026)
+- [ ] Adicionar filtros e ordenação do histórico de compras por data e valor
+- [ ] Implementar barra de progresso em cada card de curso comprado
+- [ ] Criar sistema de avaliações e comentários para cursos concluídos
+- [ ] Adicionar fluxo de cadastro com e-mail/senha sem depender de conta Gmail
+- [ ] Executar testes automatizados e build de produção
