@@ -435,3 +435,9 @@
 - [ ] Integrar o disparo de e-mails nas rotas de matrícula em cursos (`/api/enrollments`)
 - [ ] Integrar o disparo de e-mails nas rotas de criação de atividades/deadlines
 - [ ] Adicionar testes automatizados e validar o build de produção
+
+## Construtor Completo de Cursos no Admin — 15/08/2026
+- [ ] Reformular `/admin/cursos` para permitir cadastrar título, descrição, nível CEFR, modalidade (individual/grupo), instrutor, imagem de capa, áudio e vídeo introdutório
+- [ ] Adicionar suporte a gerenciamento de módulos e aulas diretamente na criação/edição do curso
+- [ ] Atualizar API `/api/admin/courses` para salvar estrutura completa de módulos e aulas
+- [ ] Validar testes automatizados e build de produção
