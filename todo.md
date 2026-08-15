@@ -428,3 +428,10 @@
 - [ ] Criar APIs robustas para o super-admin e professor gerenciarem atribuições de alunos, criação de tarefas/deadlines e matrículas em cursos
 - [ ] Atualizar painéis administrativos (`/admin/usuarios`, `/admin/cursos`, `/professor/tarefas`) para suportar todas as atribuições
 - [ ] Adicionar testes automatizados e validar o build de produção
+
+## Notificações por E-mail em Interações Acadêmicas — 15/08/2026
+- [ ] Atualizar `lib/email.ts` com funções específicas para notificar aluno e professor sobre atribuição, matrícula e tarefas/deadlines
+- [ ] Integrar o disparo de e-mails nas rotas de aprovação/atribuição de alunos (`/api/professor/students` e `/api/admin/users`)
+- [ ] Integrar o disparo de e-mails nas rotas de matrícula em cursos (`/api/enrollments`)
+- [ ] Integrar o disparo de e-mails nas rotas de criação de atividades/deadlines
+- [ ] Adicionar testes automatizados e validar o build de produção
