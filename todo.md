@@ -322,3 +322,9 @@
 - [ ] Adicionar botão de remoção ao lado de Comprar Agora na Lista de Desejos
 - [ ] Adicionar barra de progresso visual e percentual na seção "Continuar de Onde Parei"
 - [ ] Executar testes automatizados e build de produção
+
+## Contador, Galeria de Certificados e Anotações (15/08/2026)
+- [ ] Adicionar contador visual de cursos salvos no ícone da Lista de Desejos
+- [ ] Criar galeria de certificados no painel do usuário com visualização e download
+- [ ] Implementar campo de anotações pessoais persistentes no player de vídeo
+- [ ] Executar testes automatizados e build de produção
