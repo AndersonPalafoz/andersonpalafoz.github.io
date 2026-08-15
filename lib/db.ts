@@ -366,3 +366,32 @@ export async function getAdminStats() {
     totalEnrollments: enrollmentsCount.length,
   };
 }
+
+// Article Comments & Ratings helpers
+export async function getArticleComments(articleId: number) {
+  try {
+    return await db.select()
+      .from(schema.articleComments)
+      .where(eq(schema.articleComments.articleId, articleId))
+      .orderBy(desc(schema.articleComments.createdAt));
+  } catch (err) {
+    console.error("Error fetching article comments:", err);
+    return [];
+  }
+}
+
+export async function createArticleComment(data: {
+  articleId: number;
+  userName: string;
+  userEmail?: string;
+  rating: number;
+  comment: string;
+}) {
+  return await db.insert(schema.articleComments).values({
+    articleId: data.articleId,
+    userName: data.userName,
+    userEmail: data.userEmail,
+    rating: data.rating,
+    comment: data.comment,
+  }).returning();
+}
