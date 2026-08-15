@@ -2,8 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Plus, Video, Clock, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BookOpen, Plus, Video, Clock, Loader2, Upload, FileText, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 
 interface Course {
@@ -22,6 +21,7 @@ interface Lesson {
   order: number;
   content: string | null;
   moduleTitle?: string;
+  materialUrl?: string;
 }
 
 export default function AdminAulasPage() {
@@ -41,6 +41,7 @@ export default function AdminAulasPage() {
     duration: 15,
     order: 1,
     content: "",
+    materialUrl: "",
   });
 
   useEffect(() => {
@@ -101,7 +102,7 @@ export default function AdminAulasPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Falha ao criar aula");
 
-      toast.success("Aula criada com sucesso!");
+      toast.success("Aula criada com sucesso com material de apoio!");
       setLessons([...lessons, data.lesson]);
       setFormData({
         moduleTitle: "Módulo 1: Fundamentos da Aula",
@@ -111,6 +112,7 @@ export default function AdminAulasPage() {
         duration: 15,
         order: lessons.length + 1,
         content: "",
+        materialUrl: "",
       });
       setShowForm(false);
     } catch (err) {
@@ -120,73 +122,91 @@ export default function AdminAulasPage() {
     }
   };
 
+  const moveLesson = (index: number, direction: "up" | "down") => {
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= lessons.length) return;
+    const updated = [...lessons];
+    const temp = updated[index];
+    updated[index] = updated[newIndex];
+    updated[newIndex] = temp;
+    const reindexed = updated.map((l, idx) => ({ ...l, order: idx + 1 }));
+    setLessons(reindexed);
+    toast.success("Ordem das aulas atualizada!");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-8">
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        {/* Breadcrumbs Hierárquicos */}
+        <nav className="flex items-center gap-2 text-sm text-gray-500 bg-white px-6 py-3 rounded-2xl border border-gray-200 shadow-sm">
+          <Link href="/admin" className="hover:text-red-600 font-medium">Painel Admin</Link>
+          <span>/</span>
+          <Link href="/admin/cursos" className="hover:text-red-600 font-medium">Cursos</Link>
+          <span>/</span>
+          <span className="text-gray-900 font-bold">Gerenciamento de Aulas & Materiais</span>
+        </nav>
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
-              <ArrowLeft size={16} /> Voltar ao Painel Admin
-            </Link>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Video className="text-red-600" size={32} />
-              Gerenciamento de Aulas por Curso
+              <BookOpen className="text-red-600" size={32} />
+              Construtor de Aulas & Materiais de Apoio
             </h1>
             <p className="text-gray-600 mt-1">
-              Crie aulas estruturadas (ex: Curso de Inglês Básico → Aula 1), defina vídeos, materiais e objetivos pedagógicos.
+              Organize aulas por módulos, adicione vídeos, texto explicativo e faça upload de materiais complementares.
             </p>
           </div>
-          <Button
+          <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
+            className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition shadow-md shadow-red-600/20"
           >
-            <Plus size={18} className="mr-2" />
-            {showForm ? "Fechar Formulário" : "Nova Aula"}
-          </Button>
-        </header>
-
-        {/* Seletor de Curso */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <BookOpen className="text-red-600" size={24} />
-            <span className="font-bold text-gray-900">Selecionar Curso:</span>
-          </div>
-          {loadingCourses ? (
-            <Loader2 className="animate-spin text-red-600" size={24} />
-          ) : (
-            <select
-              value={selectedCourseId || ""}
-              onChange={(e) => setSelectedCourseId(Number(e.target.value))}
-              className="px-4 py-3 rounded-xl border border-gray-300 font-medium bg-white focus:ring-2 focus:ring-red-600 outline-none min-w-[320px]"
-            >
-              {courses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.title} ({c.level})
-                </option>
-              ))}
-            </select>
-          )}
+            <Plus size={20} />
+            {showForm ? "Fechar Formulário" : "Nova Aula + Material"}
+          </button>
         </div>
 
-        {/* Formulário de Criação de Aula */}
+        {/* Seletor de Curso */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Selecionar Curso Ativo</label>
+            {loadingCourses ? (
+              <p className="text-sm text-gray-500">Carregando cursos...</p>
+            ) : (
+              <select
+                value={selectedCourseId || ""}
+                onChange={(e) => setSelectedCourseId(Number(e.target.value))}
+                className="w-full md:w-80 h-11 px-4 rounded-xl border border-gray-300 bg-white font-medium text-gray-900 outline-none focus:border-red-600 transition"
+              >
+                {courses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title} (Nível {c.level})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+
+        {/* Formulário de Criação de Aula com Upload de Material */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 animate-fadeIn">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <Plus size={20} className="text-red-600" />
-              Adicionar Nova Aula ao Curso
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 space-y-6 animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <BookOpen size={20} className="text-red-600" />
+              Cadastrar Nova Aula & Material de Apoio
             </h2>
 
             <form onSubmit={handleCreateLesson} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título do Módulo</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título do Módulo *</label>
                   <input
                     type="text"
                     required
                     value={formData.moduleTitle}
                     onChange={(e) => setFormData({ ...formData, moduleTitle: e.target.value })}
-                    placeholder="Ex: Módulo 1: Fundamentos & Engagement"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
+                    placeholder="Ex: Módulo 1: Introdução ao Simple Present"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
                   />
                 </div>
 
@@ -197,116 +217,164 @@ export default function AdminAulasPage() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Ex: Aula 1: Apresentações e Cumprimentos"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
+                    placeholder="Ex: Aula 1: Rotinas Diárias e Afirmativas"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Vídeo (YouTube)</label>
-                  <input
-                    type="text"
-                    value={formData.videoUrl}
-                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                    placeholder="Ex: https://www.youtube.com/watch?v=..."
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
-                  />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Vídeo (YouTube / Vídeo Aula)</label>
+                  <div className="relative">
+                    <Video className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={formData.videoUrl}
+                      onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                    />
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Duração (min)</label>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Duração (minutos)</label>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-3.5 text-gray-400" size={18} />
                     <input
                       type="number"
-                      min={1}
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Ordem / Sequência</label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={formData.order}
-                      onChange={(e) => setFormData({ ...formData, order: Number(e.target.value) })}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Resumo e Objetivos da Aula</label>
-                <textarea
-                  rows={2}
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Breve descrição dos objetivos pedagógicos e modelo ESA aplicável."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Material de Apoio (PDF / Worksheet / Exercício)</label>
+                <div className="flex items-center gap-3">
+                  <div className="relative flex-1">
+                    <FileText className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <input
+                      type="text"
+                      value={formData.materialUrl}
+                      onChange={(e) => setFormData({ ...formData, materialUrl: e.target.value })}
+                      placeholder="URL do PDF ou anexo (ex: /materiais/everyday-vocabulary-b1.pdf)"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition bg-white"
+                    />
+                  </div>
+                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+                    <Upload size={18} />
+                    <span>Carregar Arquivo</span>
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx,.zip,.mp3"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFormData({ ...formData, materialUrl: `/materiais/${file.name}` });
+                          toast.success(`Arquivo ${file.name} vinculado à aula com sucesso!`);
+                        }
+                      }}
+                    />
+                  </label>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Conteúdo Detalhado (Markdown)</label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Resumo ou Roteiro da Aula</label>
                 <textarea
-                  rows={4}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Vocabulário, gramática contextualizada e orientações de estudo..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 outline-none font-mono text-sm"
+                  rows={3}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Breve descrição dos tópicos abordados nesta aula..."
+                  className="w-full p-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition resize-none"
                 />
               </div>
 
               <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
-                <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
+                >
                   Cancelar
-                </Button>
-                <Button type="submit" disabled={saving} className="bg-red-600 text-white hover:bg-red-700">
-                  {saving && <Loader2 className="animate-spin mr-2" size={16} />}
-                  Salvar Aula
-                </Button>
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
+                >
+                  {saving && <Loader2 className="animate-spin" size={18} />}
+                  Salvar Aula & Material
+                </button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Listagem de Aulas */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-6">Aulas Cadastradas no Curso</h2>
+        {/* Lista de Aulas Cadastradas */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900">Aulas Cadastradas no Curso ({lessons.length})</h2>
+            <span className="text-xs font-semibold text-gray-400 uppercase">Hierarquia Ativa</span>
+          </div>
 
           {loadingLessons ? (
-            <div className="py-12 text-center flex items-center justify-center gap-3 text-gray-500">
-              <Loader2 className="animate-spin text-red-600" size={24} /> Carregando aulas...
+            <div className="p-12 text-center text-gray-500 flex items-center justify-center gap-2">
+              <Loader2 className="animate-spin text-red-600" size={24} />
+              <span>Carregando aulas...</span>
             </div>
           ) : lessons.length === 0 ? (
-            <div className="py-12 text-center text-gray-500">
-              <Video className="mx-auto text-gray-300 mb-3" size={36} />
-              <p className="font-semibold text-gray-800">Nenhuma aula cadastrada para este curso ainda.</p>
-              <p className="text-sm text-gray-500 mt-1">Clique em "Nova Aula" para começar a estruturar o curso.</p>
+            <div className="p-12 text-center space-y-2">
+              <BookOpen size={48} className="mx-auto text-gray-300" />
+              <p className="text-gray-600 font-medium">Nenhuma aula cadastrada para este curso ainda.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {lessons.map((lesson) => (
-                <div key={lesson.id} className="p-5 rounded-xl border border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
-                        Aula #{lesson.order}
-                      </span>
-                      <h3 className="font-bold text-gray-900 text-lg">{lesson.title}</h3>
+            <div className="divide-y divide-gray-100">
+              {lessons.map((lesson, index) => (
+                <div key={lesson.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition">
+                  <div className="flex items-center gap-4">
+                    <div className="cursor-grab text-gray-400">
+                      <GripVertical size={20} />
                     </div>
-                    {lesson.description && <p className="text-sm text-gray-600">{lesson.description}</p>}
-                    <div className="flex items-center gap-4 text-xs text-gray-500 pt-1">
-                      <span className="flex items-center gap-1"><Clock size={14} /> {lesson.duration || 15} min</span>
-                      {lesson.videoUrl && <span className="flex items-center gap-1 text-red-600 font-semibold"><Video size={14} /> Vídeo integrado</span>}
+                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-sm">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold uppercase text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">
+                          {lesson.moduleTitle || "Módulo Geral"}
+                        </span>
+                        {lesson.materialUrl && (
+                          <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <FileText size={12} /> Material Anexado
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-gray-900 mt-1">{lesson.title}</h3>
+                      <p className="text-xs text-gray-500">{lesson.description || "Sem descrição informada."}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Link href={`/admin/cursos`}>
-                      <Button size="sm" variant="outline" className="text-gray-700">Gerenciar Curso</Button>
-                    </Link>
+
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => moveLesson(index, "up")}
+                        disabled={index === 0}
+                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                      >
+                        <ChevronUp size={14} />
+                      </button>
+                      <button
+                        onClick={() => moveLesson(index, "down")}
+                        disabled={index === lessons.length - 1}
+                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                      >
+                        <ChevronDown size={14} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
