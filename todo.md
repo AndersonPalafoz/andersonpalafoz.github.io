@@ -272,3 +272,9 @@
 - [ ] Expandir métodos de login (Email/Senha e OAuth)
 - [ ] Adicionar método de pagamento seguro (Stripe) para cursos pagos
 - [ ] Executar testes automatizados e build de production
+
+## Upload de Avatar, Recuperação de Senha e Confirmação Stripe (15/08/2026)
+- [ ] Permitir upload e alteração de foto de perfil clicando no avatar da sidebar
+- [ ] Implementar fluxo de 'esqueci minha senha' na tela de login
+- [ ] Criar página de confirmação visual pós-pagamento via Stripe
+- [ ] Executar testes automatizados e build de produção
