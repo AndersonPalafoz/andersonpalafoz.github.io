@@ -7,7 +7,7 @@ import { getCourseById, getModulesByCourse, getLessonsByModule, db } from "@/lib
 import { EnrollButton } from "@/components/enroll-button";
 import { BookOpen, Layers, PlayCircle, Clock, CheckCircle } from "lucide-react";
 import { lessonProgress } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
   const modules = await getModulesByCourse(courseId);
@@ -126,7 +126,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
       totalLessonsCount += lessonsInMod.length;
       for (const l of lessonsInMod) {
         const lp = await db.query.lessonProgress.findFirst({
-          where: (table) => eq(table.userId, Number(user.id)) && eq(table.lessonId, l.id),
+          where: (table) => and(eq(table.userId, Number(user.id)), eq(table.lessonId, l.id)),
         });
         if (lp && lp.completed === 1) completedLessonsCount++;
       }
