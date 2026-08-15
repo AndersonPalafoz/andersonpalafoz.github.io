@@ -389,3 +389,8 @@
 - [ ] Criar app/faq/page.tsx para atender à rota pública de Perguntas Frequentes
 - [ ] Criar app/politica-privacidade/page.tsx para atender à rota pública de Política de Privacidade
 - [ ] Validar rotas, testes automatizados e build de produção v2.3.0
+
+## Atualização de Redes Sociais Oficiais — 15/08/2026
+- [ ] Atualizar LinkedIn, Instagram e Facebook nos componentes de contato, rodapé e perfil
+- [ ] Validar URLs oficiais, testes e build de produção
+- [ ] Salvar checkpoint da atualização de redes sociais
