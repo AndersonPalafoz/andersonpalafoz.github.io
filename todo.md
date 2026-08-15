@@ -408,3 +408,10 @@
 - [ ] Exibir autor e data de publicação nos cards e páginas individuais de materiais
 - [ ] Garantir fallback de autoria e data quando os dados forem antigos ou incompletos
 - [ ] Adicionar testes automatizados e validar o build de produção
+
+## Atividades de Listening e Speaking com Áudio e Feedback — 15/08/2026
+- [ ] Atualizar schema Drizzle para suportar atividades de listening e speaking com áudio do exercício e gravação do aluno
+- [ ] Criar API routes para submissão de gravações de voz e feedback direto do professor
+- [ ] Construir componentes de player de áudio para listening e gravador de voz para speaking no dashboard do aluno
+- [ ] Construir painel de revisão e feedback de speaking e listening para o professor
+- [ ] Adicionar testes automatizados e validar o build de produção
