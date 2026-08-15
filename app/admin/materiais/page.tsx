@@ -1,33 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Trash2, Edit2, Plus, Download, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Plus, Edit2, Trash2, ArrowLeft, Download, Loader2 } from "lucide-react";
 
 interface Material {
   id: number;
   title: string;
   category: string;
   level: string;
-  description: string | null;
   fileUrl: string | null;
-  downloads: number;
+  createdAt: string;
 }
 
-export default function AdminMateriais() {
+export default function AdminMateriaisReal() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: "",
-    category: "",
-    level: "",
-    description: "",
+    category: "Worksheets",
+    level: "A1",
     fileUrl: "",
+    description: "",
   });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchMaterials();
@@ -36,10 +36,10 @@ export default function AdminMateriais() {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/materials");
-      if (!response.ok) throw new Error("Falha ao carregar materiais");
-      const data = await response.json();
-      setMaterials(data);
+      const res = await fetch("/api/admin/materials");
+      if (!res.ok) throw new Error("Falha ao carregar materiais");
+      const data = await res.json();
+      setMaterials(data.materials || data);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
@@ -48,182 +48,174 @@ export default function AdminMateriais() {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja deletar este material?")) return;
-    try {
-      const response = await fetch(`/api/admin/materials?id=${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Falha ao deletar material");
-      setMaterials(materials.filter((m) => m.id !== id));
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao deletar material");
-    }
-  };
-
-  const handleEdit = (material: Material) => {
-    setEditingId(material.id);
-    setFormData({
-      title: material.title,
-      category: material.category,
-      level: material.level,
-      description: material.description || "",
-      fileUrl: material.fileUrl || "",
-    });
-    setShowForm(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.category) {
+      alert("Preencha título e categoria");
+      return;
+    }
+
     try {
       setSaving(true);
-      if (editingId) {
-        const response = await fetch("/api/admin/materials", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingId, ...formData }),
-        });
-        if (!response.ok) throw new Error("Falha ao atualizar material");
-        const [updated] = await response.json();
-        setMaterials(materials.map((m) => (m.id === editingId ? updated : m)));
-        setEditingId(null);
-      } else {
-        const response = await fetch("/api/admin/materials", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-        if (!response.ok) throw new Error("Falha ao criar material");
-        const [created] = await response.json();
-        setMaterials([...materials, created]);
+      const method = editingId ? "PUT" : "POST";
+      const url = editingId
+        ? `/api/admin/materials/${editingId}`
+        : "/api/admin/materials";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingId ? { id: editingId, ...formData } : formData),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Falha ao salvar material");
       }
-      setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
+
+      await fetchMaterials();
+      setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
+      setEditingId(null);
       setShowForm(false);
+      alert("Material salvo com sucesso!");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar material");
+      alert(err instanceof Error ? err.message : "Erro ao salvar");
     } finally {
       setSaving(false);
     }
   };
 
+  const handleEdit = (material: Material) => {
+    setFormData({
+      title: material.title,
+      category: material.category || "Worksheets",
+      level: material.level || "A1",
+      fileUrl: material.fileUrl || "",
+      description: "",
+    });
+    setEditingId(material.id);
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Deseja realmente excluir este material?")) return;
+    try {
+      const res = await fetch(`/api/admin/materials/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Falha ao excluir material");
+      setMaterials(materials.filter((m) => m.id !== id));
+      alert("Material excluído com sucesso!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Erro ao excluir");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link href="/admin" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft size={20} />
+              <ArrowLeft size={24} />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Gerenciar Materiais</h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Gerenciamento de Materiais</h1>
+              <p className="text-gray-600">Crie, edite e gerencie materiais didáticos conectados ao banco</p>
+            </div>
           </div>
-          <button
+          <Button
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", category: "", level: "", description: "", fileUrl: "" });
+              setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "" });
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="bg-red-600 hover:bg-red-700 text-white"
           >
-            <Plus size={20} />
+            <Plus size={16} className="mr-2" />
             Novo Material
-          </button>
+          </Button>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        {/* Form */}
         {showForm && (
-          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <div className="mb-8 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+            <h2 className="text-xl font-semibold mb-4 text-gray-900">
               {editingId ? "Editar Material" : "Novo Material"}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
                   <input
                     type="text"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    placeholder="Worksheets, Slides, Áudios..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nível</label>
-                  <input
-                    type="text"
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Nível CEFR</label>
+                  <select
                     value={formData.level}
                     onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                    placeholder="A1, B2, C1..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                    required
-                  />
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  >
+                    <option value="A1">A1</option>
+                    <option value="A2">A2</option>
+                    <option value="B1">B1</option>
+                    <option value="B2">B2</option>
+                    <option value="C1">C1</option>
+                    <option value="C2">C2</option>
+                  </select>
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Link do arquivo (Google Drive, etc)
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">URL do Arquivo (PDF/Áudio)</label>
                 <input
                   type="text"
                   value={formData.fileUrl}
                   onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                  placeholder="https://drive.google.com/..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+                  placeholder="https://..."
                 />
               </div>
               <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {saving ? "Salvando..." : editingId ? "Atualizar" : "Criar"}
-                </button>
-                <button
+                <Button type="submit" disabled={saving} className="bg-red-600 hover:bg-red-700 text-white">
+                  {saving ? "Salvando..." : "Salvar Material"}
+                </Button>
+                <Button
                   type="button"
-                  onClick={() => setShowForm(false)}
-                  className="bg-gray-300 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                  variant="outline"
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditingId(null);
+                  }}
                 >
                   Cancelar
-                </button>
+                </Button>
               </div>
             </form>
           </div>
         )}
 
-        {/* Table */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {loading ? (
-            <div className="p-12 flex items-center justify-center text-gray-600 gap-2">
-              <Loader2 className="animate-spin" size={20} />
-              Carregando materiais...
-            </div>
+            <div className="p-8 text-center text-gray-500">Carregando materiais...</div>
           ) : error ? (
-            <div className="p-12 text-center text-red-600">Erro: {error}</div>
+            <div className="p-8 text-center text-red-600">Erro: {error}</div>
           ) : materials.length === 0 ? (
-            <div className="p-12 text-center text-gray-600">Nenhum material cadastrado ainda.</div>
+            <div className="p-8 text-center text-gray-500">Nenhum material encontrado no banco.</div>
           ) : (
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
@@ -231,33 +223,27 @@ export default function AdminMateriais() {
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Título</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Categoria</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Nível</th>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Downloads</th>
                   <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {materials.map((material) => (
-                  <tr key={material.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">{material.title}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{material.category}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{material.level}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600 flex items-center gap-1">
-                      <Download size={16} />
-                      {material.downloads}
-                    </td>
+                {materials.map((m) => (
+                  <tr key={m.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.title}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{m.category}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{m.level}</td>
                     <td className="px-6 py-4 text-sm">
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(material)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors"
-                        >
-                          <Edit2 size={18} />
+                        {m.fileUrl && (
+                          <a href={m.fileUrl} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-800 p-1">
+                            <Download size={16} />
+                          </a>
+                        )}
+                        <button onClick={() => handleEdit(m)} className="text-yellow-600 hover:text-yellow-800 p-1">
+                          <Edit2 size={16} />
                         </button>
-                        <button
-                          onClick={() => handleDelete(material.id)}
-                          className="text-red-600 hover:text-red-800 transition-colors"
-                        >
-                          <Trash2 size={18} />
+                        <button onClick={() => handleDelete(m.id)} className="text-red-600 hover:text-red-800 p-1">
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
