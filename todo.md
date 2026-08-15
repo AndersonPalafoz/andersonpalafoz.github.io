@@ -353,3 +353,5 @@
 - [ ] Adicionar visualizador de PDF integrado na página de detalhes do material (`/materiais/[id]`)
 - [ ] Aprimorar a interface de criação de módulos com botão de destaque e modal intuitivo no painel
 - [ ] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
+
+- [x] Esclarecer hierarquia Curso → Módulos e direcionar automaticamente para a criação de módulos após salvar um novo curso
