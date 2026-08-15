@@ -377,3 +377,4 @@
 - [x] Criar painel do aluno para visualização consolidada de histórico de notas e frequência (/dashboard/historico)
 - [x] Adicionar visualizador integrado no player de aulas para materiais do Google Drive sem sair do site (/cursos/[id]/aulas/[lessonId])
 - [x] Implementar modal de confirmação ao desvincular aluno com exibição do progresso atual para evitar exclusões acidentais (/admin/matriculas)
+- [x] Aprimorar a interface de chamada online (/admin/chamada) com KPIs de frequência, busca por título, filtros por modalidade/curso, modais otimizados e design system aprimorado
