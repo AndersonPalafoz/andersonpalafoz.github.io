@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit2, Trash2, ArrowLeft, Loader2, BookOpen, Layers, User, FileText } from "lucide-react";
+import { toast } from "sonner";
 
 interface Course {
   id: number;
@@ -259,6 +260,31 @@ export default function AdminCursos() {
                     placeholder="YouTube URL ou link de áudio"
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Imagem de Capa (URL ou Upload)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={formData.imageUrl}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      placeholder="https://... ou cole o link da imagem"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition text-sm"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sampleUrl = "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=800";
+                        setFormData({ ...formData, imageUrl: sampleUrl });
+                        toast.success("Imagem de capa padrão anexada com sucesso!");
+                      }}
+                      className="px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs whitespace-nowrap transition"
+                    >
+                      Usar Exemplo
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Cole um link direto de imagem ou utilize um modelo de capa otimizado para a plataforma.</p>
                 </div>
               </div>
 
