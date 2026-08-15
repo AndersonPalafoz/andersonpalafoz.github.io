@@ -32,7 +32,6 @@ export default function AdminCursos() {
     videoUrl: "",
   });
 
-
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -100,6 +99,9 @@ export default function AdminCursos() {
         const [updated] = await response.json();
         setCourses(courses.map((c) => (c.id === editingId ? updated : c)));
         setEditingId(null);
+        alert("Curso atualizado com sucesso!");
+        setShowForm(false);
+        setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
       } else {
         const response = await fetch("/api/admin/courses", {
           method: "POST",
@@ -108,11 +110,11 @@ export default function AdminCursos() {
         });
         if (!response.ok) throw new Error("Falha ao criar curso");
         const [created] = await response.json();
+        const newCourseId = created.id;
         setCourses([...courses, created]);
+        alert("Curso criado com sucesso! Redirecionando para estruturar os módulos...");
+        window.location.href = `/admin/cursos/${newCourseId}/modulos`;
       }
-      setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
-      setShowForm(false);
-      alert("Curso salvo com sucesso!");
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erro ao salvar curso");
     } finally {
@@ -157,7 +159,7 @@ export default function AdminCursos() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 transition-all animate-fadeIn">
             <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
               <BookOpen size={20} className="text-red-600" />
-              {editingId ? "Editar Curso" : "Cadastrar Novo Curso"}
+              {editingId ? "Editar Curso" : "Cadastrar Novo Curso & Estruturar Módulos"}
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -191,15 +193,16 @@ export default function AdminCursos() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Modalidade do Curso</label>
-                  <select
-                    value={formData.modality}
-                    onChange={(e) => setFormData({ ...formData, modality: e.target.value as any })}
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Quantidade Inicial de Módulos</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={formData.modules}
+                    onChange={(e) => setFormData({ ...formData, modules: parseInt(e.target.value) || 4 })}
                     className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-white"
-                  >
-                    <option value="individual">Individual (Mentoria / 1-on-1)</option>
-                    <option value="group">Em Grupo (Turmas Abertas)</option>
-                  </select>
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Ao salvar, você será direcionado para gerenciar os módulos e aulas deste curso.</p>
                 </div>
 
                 <div>
@@ -267,7 +270,7 @@ export default function AdminCursos() {
                   className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
                 >
                   {saving && <Loader2 className="animate-spin" size={18} />}
-                  {editingId ? "Salvar Alterações" : "Criar Curso"}
+                  {editingId ? "Salvar Alterações" : "Criar Curso & Ir para Módulos →"}
                 </button>
               </div>
             </form>
@@ -316,6 +319,11 @@ export default function AdminCursos() {
                   </div>
 
                   <div className="flex items-center gap-3">
+                    <Link href={`/admin/cursos/${course.id}/modulos`}>
+                      <button className="px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+                        <Layers size={14} /> Gerenciar Módulos
+                      </button>
+                    </Link>
                     <button
                       onClick={() => handleEdit(course)}
                       className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition flex items-center gap-1.5"
