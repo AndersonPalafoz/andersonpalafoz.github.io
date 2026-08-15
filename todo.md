@@ -374,3 +374,6 @@
 - [x] Adicionar opção de desvincular aluno de curso no painel administrativo para casos de desistência ou matrícula acidental
 - [x] Criar sistema de provas, atribuição de atividades avaliativas e lançamento de notas com pontuação máxima e feedback docente (`/admin/avaliacoes`)
 - [ ] Implementar sistema de chamada online por curso, com criação de sessões, registro de presença e histórico de frequência
+- [x] Criar painel do aluno para visualização consolidada de histórico de notas e frequência (/dashboard/historico)
+- [x] Adicionar visualizador integrado no player de aulas para materiais do Google Drive sem sair do site (/cursos/[id]/aulas/[lessonId])
+- [x] Implementar modal de confirmação ao desvincular aluno com exibição do progresso atual para evitar exclusões acidentais (/admin/matriculas)
