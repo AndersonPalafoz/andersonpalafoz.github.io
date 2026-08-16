@@ -1,13 +1,8 @@
-export const dynamic = "force-dynamic";
+"use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Download, FileText, BookOpen, Zap, Headphones, PenTool } from "lucide-react";
-import { getMaterials } from "@/lib/db";
-
-export const metadata = {
-  title: "Materiais Didáticos | Anderson Palafoz",
-  description: "Acesse uma biblioteca completa de materiais didáticos para ensino de inglês.",
-};
+import { Download, FileText, BookOpen, Zap, Headphones, PenTool, Search, Filter, Loader2 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
   Worksheets: FileText,
@@ -17,189 +12,190 @@ const CATEGORY_ICONS: Record<string, typeof FileText> = {
   Artigos: BookOpen,
 };
 
-export default async function MateriaisPage() {
-  const materiais = await getMaterials();
+export default function MateriaisPage() {
+  const [materiais, setMateriais] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLevel, setSelectedLevel] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  useEffect(() => {
+    async function fetchMaterials() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/materials");
+        const data = await res.json();
+        setMateriais(data.materials || []);
+      } catch (err) {
+        console.error("Erro ao carregar materiais:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchMaterials();
+  }, []);
 
   const niveis = Array.from(new Set(materiais.map((m) => m.level))).sort();
-  const nivelRange = niveis.length > 0 ? `${niveis[0]}-${niveis[niveis.length - 1]}` : "A1-C2";
+  const categorias = Array.from(new Set(materiais.map((m) => m.category))).sort();
 
-  const categorias = Object.entries(
-    materiais.reduce<Record<string, number>>((acc, m) => {
-      acc[m.category] = (acc[m.category] ?? 0) + 1;
-      return acc;
-    }, {})
-  );
-
-  const destaques = [...materiais]
-    .sort((a, b) => b.downloads - a.downloads)
-    .slice(0, 4);
+  const filteredMaterials = materiais.filter((m) => {
+    const matchesSearch = m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (m.description && m.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesLevel = selectedLevel === "all" || m.level === selectedLevel;
+    const matchesCategory = selectedCategory === "all" || m.category === selectedCategory;
+    return matchesSearch && matchesLevel && matchesCategory;
+  });
 
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center py-20 px-4 md:px-8 lg:px-16 bg-white">
+      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+                Biblioteca Acadêmica
+              </span>
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900">
                 Materiais
                 <br />
                 <span className="text-red-600">Didáticos Exclusivos</span>
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Biblioteca completa com worksheets, guias, recursos interativos e templates para potencializar seu aprendizado.
+                Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, que podem alcançar os níveis C1 e C2, cobrindo do nível A1-C2.
               </p>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8">
-              <div>
-                <p className="text-3xl font-bold text-red-600">{materiais.length}</p>
-                <p className="text-gray-600 text-sm">Recursos</p>
+            {/* Barra de Busca e Filtros */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+              <div className="relative">
+                <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Pesquisar material por título ou tema..."
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 text-sm transition bg-gray-50/50"
+                />
               </div>
-              <div>
-                <p className="text-3xl font-bold text-red-600">{nivelRange}</p>
-                <p className="text-gray-600 text-sm">Todos os Níveis</p>
-              </div>
-              <div>
-                <p className="text-3xl font-bold text-red-600">100%</p>
-                <p className="text-gray-600 text-sm">Atualizado</p>
+
+              <div className="flex flex-wrap gap-4 items-center justify-between pt-2">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  <span className="text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                    <Filter size={14} /> Nível:
+                  </span>
+                  <button
+                    onClick={() => setSelectedLevel("all")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      selectedLevel === "all" ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  {niveis.map((niv) => (
+                    <button
+                      key={niv}
+                      onClick={() => setSelectedLevel(niv)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        selectedLevel === niv ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {niv}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                  <span className="text-xs font-bold uppercase text-gray-500">Categoria:</span>
+                  <button
+                    onClick={() => setSelectedCategory("all")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                      selectedCategory === "all" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    Todas
+                  </button>
+                  {categorias.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                        selectedCategory === cat ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Categorias */}
-      {categorias.length > 0 && (
-        <section className="py-20 px-4 md:px-8 lg:px-16 bg-gray-50">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-              Categorias de Materiais
+      {/* Lista de Materiais com Animação e Hover Refinados */}
+      <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900">
+              {filteredMaterials.length} Materiais Disponíveis
             </h2>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {categorias.map(([categoria, quantidade]) => {
-                const Icon = CATEGORY_ICONS[categoria] || FileText;
+          {loading ? (
+            <div className="flex items-center justify-center py-20 text-red-600">
+              <Loader2 className="animate-spin mr-2" size={32} />
+              <span className="text-lg font-medium">Carregando biblioteca de recursos...</span>
+            </div>
+          ) : filteredMaterials.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
+              <FileText size={48} className="mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-600 font-medium text-lg">Nenhum material encontrado para esta busca.</p>
+              <button
+                onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); }}
+                className="mt-4 text-xs font-bold uppercase text-red-600 hover:underline"
+              >
+                Limpar filtros de pesquisa
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredMaterials.map((material) => {
+                const Icon = CATEGORY_ICONS[material.category] || FileText;
                 return (
                   <div
-                    key={categoria}
-                    className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 hover:border-red-600 hover:shadow-lg transition"
+                    key={material.id}
+                    className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-red-600 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
                   >
-                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
-                      <Icon className="text-red-600" size={24} />
+                    <div>
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
+                          <Icon size={24} />
+                        </div>
+                        <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                          {material.level}
+                        </span>
+                      </div>
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{material.category}</span>
+                      <h3 className="text-xl font-bold text-gray-900 mt-1 mb-2 group-hover:text-red-600 transition-colors">
+                        {material.title}
+                      </h3>
+                      <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-3">
+                        {material.description || "Recurso didático autoral desenvolvido para prática em sala e estudo autônomo."}
+                      </p>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{categoria}</h3>
-                    <p className="text-2xl font-bold text-red-600">{quantidade}</p>
+
+                    <Link href={`/materiais/${material.id}`} className="w-full">
+                      <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow">
+                        <Download size={18} />
+                        <span>Visualizar Material</span>
+                      </button>
+                    </Link>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </section>
-      )}
-
-      {/* Destaques */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Materiais em Destaque
-          </h2>
-
-          {destaques.length === 0 ? (
-            <p className="text-center text-gray-600">
-              Nenhum material publicado no momento. Volte em breve!
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {destaques.map((material) => (
-                <div
-                  key={material.id}
-                  className="bg-gray-50 p-8 rounded-2xl border border-gray-200 hover:border-red-600 hover:shadow-lg transition"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-900 flex-1">
-                      {material.title}
-                    </h3>
-                    <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold ml-4 flex-shrink-0">
-                      {material.level}
-                    </span>
-                  </div>
-                  <p className="text-gray-600 mb-6">
-                    {material.description || material.category}
-                  </p>
-                  <Link href={`/materiais/${material.id}`}>
-                    <button className="w-full bg-red-600 hover:bg-red-700 text-white inline-flex items-center justify-center gap-2">
-                      <Download size={18} />
-                      Ver Material
-                    </button>
-                  </Link>
-                </div>
-              ))}
-            </div>
           )}
-        </div>
-      </section>
-
-      {/* Benefícios */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Por que usar nossos materiais?
-          </h2>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                titulo: "Estruturados",
-                descricao: "Organizados por nível e tema para facilitar o aprendizado progressivo",
-              },
-              {
-                titulo: "Atualizados",
-                descricao: "Conteúdo constantemente revisado e melhorado com base em feedback",
-              },
-              {
-                titulo: "Práticos",
-                descricao: "Foco em aplicação real com exemplos autênticos do inglês moderno",
-              },
-              {
-                titulo: "Diversificados",
-                descricao: "Diferentes formatos e tipos de atividades para todos os estilos de aprendizado",
-              },
-              {
-                titulo: "Acessíveis",
-                descricao: "Disponíveis em múltiplos formatos para facilitar o acesso",
-              },
-              {
-                titulo: "Completos",
-                descricao: "Cobertura abrangente de todos os aspectos do idioma",
-              },
-            ].map((beneficio, index) => (
-              <div key={index} className="bg-white p-8 rounded-2xl border border-gray-200">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {beneficio.titulo}
-                </h3>
-                <p className="text-gray-600">{beneficio.descricao}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-red-600">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Acesse Todos os Materiais
-          </h2>
-          <p className="text-lg text-red-100">
-            Inscreva-se agora e tenha acesso completo à nossa biblioteca de recursos.
-          </p>
-          <Link href="/dashboard">
-            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
-              Acessar Biblioteca
-            </button>
-          </Link>
         </div>
       </section>
     </div>

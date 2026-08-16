@@ -6,7 +6,7 @@ import { getCourses } from "@/lib/db";
 
 export const metadata = {
   title: "Aulas de Inglês | Anderson Palafoz",
-  description: "Explore as aulas de inglês de Anderson Palafoz, com cursos de A1 a C2.",
+  description: "Explore as aulas de inglês de Anderson Palafoz, com cursos do A1 ao B2.",
 };
 
 const LEVEL_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
@@ -31,7 +31,7 @@ export default async function AulasPage() {
                 <span className="text-red-600">Inglês Completas</span>
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Cursos estruturados de A1 a C2, com metodologia ESA (Engage, Study, Activate) e foco em comunicação prática.
+                Cursos estruturados do A1 ao B2, com metodologia ESA (Engage, Study, Activate) e foco em comunicação prática.
               </p>
             </div>
 
