@@ -459,3 +459,8 @@
 - Todos os itens aplicáveis e verificáveis do roadmap foram integralmente implementados, testados com 189 testes automatizados (100% de aprovação) e validados em build de produção do Next.js 15.
 - Tokens, tipografia Poppins/Inter, superfícies semânticas e responsividade foram padronizados em todas as rotas públicas e privadas.
 - O projeto encontra-se pronto para publicação e uso contínuo na plataforma Anderson Palafoz.
+
+## Novas Solicitações e Correções Recentes — 16/08/2026
+- [x] Investigar e corrigir os Relatórios de Progresso para professor e super-admin, garantindo dados consistentes e rotas seguras.
+- [x] Adicionar estado de carregamento visual e mensagens de erro amigáveis com botão de re-tentativa na página `/admin/chamada`.
+- [x] Iniciar a configuração e documentação dos conectores Stripe e MCP conforme as diretrizes da plataforma.
