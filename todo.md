@@ -576,3 +576,8 @@
 - [x] Criar sistema de verificação pública de certificados com código único, página de validação pública e QR Code
 - [x] Implementar sistema de notificações automatizadas via e-mail e WhatsApp para alunos em risco de perder o streak
 - [x] Refinar o menu superior (Navbar) com design elegante, blur suave, navegação fluida e atalhos rápidos
+
+## Barra de Progresso da Trilha, QR Code de Certificados e Refinamento Global — 16/08/2026
+- [x] Adicionar barra de progresso visual na Trilha de Aprendizagem Adaptativa para rastrear conclusões
+- [x] Incluir gerador de QR Code interativo no perfil do aluno para compartilhamento de certificados
+- [x] Aplicar refinamento visual coeso em todo o site (espaçamentos, sombras, tipografia e responsividade)

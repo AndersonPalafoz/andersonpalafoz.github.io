@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Flame, Award, Zap, TrendingUp, ShieldCheck, CheckCircle2, Gift, Mic, Sparkles } from "lucide-react";
+import { Flame, Award, Zap, TrendingUp, ShieldCheck, CheckCircle2, Gift, Mic, Sparkles, QrCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface Badge {
@@ -202,6 +203,28 @@ export function StudentGamificationProfile() {
 
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <QrCode className="text-red-600" size={20} /> QR Code de Certificado Verificado
+            </h3>
+            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-center space-y-3">
+              <div className="h-36 w-36 bg-white dark:bg-slate-900 mx-auto rounded-2xl border border-slate-300 dark:border-slate-700 p-3 flex flex-col items-center justify-center shadow-xs">
+                <div className="w-full h-full border-2 border-dashed border-red-500 rounded-xl flex flex-col items-center justify-center text-red-600 dark:text-red-400 font-mono text-[10px] font-black">
+                  <span>[ QR CODE ]</span>
+                  <span className="text-[9px] text-slate-500 mt-1">AP-2026-B2</span>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400">Escaneie para validar o certificado nível B2 na página pública oficial.</p>
+              <Button
+                onClick={() => {
+                  navigator.clipboard.writeText("https://andersonpalafoz.com.br/certificado/verificar?code=AP-2026-B2");
+                  toast.success("Link de verificação pública copiado!");
+                }}
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-9 rounded-xl"
+              >
+                Copiar Link de Validação
+              </Button>
+            </div>
+
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 pt-3">
               <TrendingUp className="text-red-600" size={20} /> Desempenho Acadêmico
             </h3>
 

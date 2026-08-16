@@ -50,6 +50,9 @@ export function AdaptiveLearningTrail() {
     toast.success("Missão da trilha adaptativa concluída! +XP bônus adicionado.");
   };
 
+  const completedCount = recommendations.filter((r) => r.completed).length;
+  const progressPercent = Math.round((completedCount / recommendations.length) * 100);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto my-8">
       <div className="bg-gradient-to-r from-red-950 via-slate-900 to-slate-900 p-6 sm:p-8 rounded-3xl text-white shadow-2xl border border-red-900/40 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -60,14 +63,32 @@ export function AdaptiveLearningTrail() {
           <h2 className="text-2xl sm:text-3xl font-black mt-1">Trilha de Aprendizagem Adaptativa</h2>
           <p className="text-xs text-slate-300 mt-1">Recomendações customizadas em tempo real baseadas nas suas lacunas de gramática e speaking.</p>
         </div>
-        <Button
-          onClick={handleRunAnalysis}
-          disabled={analyzing}
-          className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-11 px-6 rounded-2xl shadow-md gap-2 shrink-0"
-        >
-          <RefreshCw size={15} className={analyzing ? "animate-spin" : ""} />
-          {analyzing ? "Analisando Desempenho..." : "Reanalisar Lacunas"}
-        </Button>
+        <div className="flex flex-col sm:items-end gap-3 shrink-0">
+          <Button
+            onClick={handleRunAnalysis}
+            disabled={analyzing}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-11 px-6 rounded-2xl shadow-md gap-2"
+          >
+            <RefreshCw size={15} className={analyzing ? "animate-spin" : ""} />
+            {analyzing ? "Analisando..." : "Reanalisar Lacunas"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Barra de Progresso Visual da Trilha */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-3">
+        <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+          <span className="flex items-center gap-1.5">
+            <CheckCircle2 size={16} className="text-emerald-600" /> Progresso da Trilha Adaptativa
+          </span>
+          <span className="font-black text-red-600 dark:text-red-400">{completedCount} de {recommendations.length} focos concluídos ({progressPercent}%)</span>
+        </div>
+        <div className="h-3 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-700">
+          <div
+            className="h-full bg-gradient-to-r from-red-600 to-amber-500 rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
       </div>
 
       <div className="space-y-4">
