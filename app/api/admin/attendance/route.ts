@@ -7,12 +7,15 @@ import { attendances, classSessions, courses, users } from "@/drizzle/schema";
 
 async function canManageAttendance() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.email) return false;
-  return session.user.role === "admin" || session.user.role === "professor";
+  if (!session?.user?.email) return null;
+  const user = await db.query.users.findFirst({ where: eq(users.email, session.user.email) });
+  if (!user || (user.role !== "admin" && user.role !== "professor")) return null;
+  return user;
 }
 
 export async function GET() {
-  if (!(await canManageAttendance())) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+  const user = await canManageAttendance();
+  if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
 
   const rows = await db.select({
     sessionId: classSessions.id,
@@ -33,20 +36,23 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!(await canManageAttendance())) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+  const user = await canManageAttendance();
+  if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+
   try {
     const body = await request.json() as {
       title?: string;
       courseId?: number | null;
       scheduledAt?: string;
-      modality?: string;
-      attendance?: Array<{ studentId: number; status: string; notes?: string }>;
+      modality?: "individual" | "group" | "hybrid";
+      attendance?: Array<{ studentId: number; status: "present" | "absent" | "justified"; notes?: string }>;
     };
     if (!body.title?.trim() || !body.scheduledAt) return NextResponse.json({ error: "Título e data da sessão são obrigatórios." }, { status: 400 });
 
     const [session] = await db.insert(classSessions).values({
       title: body.title.trim(),
       courseId: body.courseId || null,
+      teacherId: user.id,
       scheduledAt: new Date(body.scheduledAt),
       modality: body.modality || "group",
       status: "completed",
