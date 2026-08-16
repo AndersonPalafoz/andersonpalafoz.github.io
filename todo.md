@@ -567,9 +567,9 @@
 - [x] Desenvolver o "Diário de Aprendizagem" (Learning Journal) como novo recurso interativo para os alunos registrarem reflexões semanais em inglês
 
 ## Histórico Pesquisável, Busca de Mídia e Pré-visualização de Missões — 16/08/2026
-- [ ] Adicionar barra de pesquisa e visualização avançada de histórico no Diário de Aprendizagem
-- [ ] Aprimorar a barra de pesquisa rápida por nome na biblioteca de mídia do CMS
-- [ ] Criar modal de pré-visualização interativa para missões diárias no CMS antes da publicação
+- [x] Adicionar barra de pesquisa e visualização avançada de histórico no Diário de Aprendizagem
+- [x] Aprimorar a barra de pesquisa rápida por nome na biblioteca de mídia do CMS
+- [x] Criar modal de pré-visualização interativa para missões diárias no CMS antes da publicação
 
 ## Trilha Adaptativa, Validação de Certificados, Alertas de Streak e Menu Global — 16/08/2026
 - [x] Implementar trilha de aprendizagem adaptativa por IA para sugerir conteúdos com base nas lacunas dos alunos
@@ -587,3 +587,9 @@
 - [x] Implementar sistema de feedback rápido (curtir / não curtir) nas sugestões da Trilha de Aprendizagem Adaptativa
 - [x] Criar animação de celebração visual e confete quando a barra de progresso da Trilha Adaptativa atingir 100%
 - [x] Conduzir auditoria e análise profunda de toda a plataforma (UX, acessibilidade, segurança, SEO, arquitetura e fluxos)
+
+## Correção do Histórico Acadêmico, Dashboard Aprimorado, UX/UI e Histórico de Feedbacks — 16/08/2026
+- [x] Investigar e corrigir a rota e API de carregamento em `/dashboard/historico` para evitar erros
+- [x] Melhorar o dashboard do aluno com widgets interativos, resumo de XP, ofensiva e atalhos rápidos
+- [x] Implementar as principais melhorias de UX/UI sugeridas na análise profunda para navegação intuitiva
+- [x] Criar histórico de feedbacks na Trilha Adaptativa para revisão dos conteúdos curtidos pelos alunos
