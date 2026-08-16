@@ -12,7 +12,10 @@ export interface AcademicTimelinePoint {
   month: string;
   monthKey: string;
   averageGrade: number | null;
+  gradeCount: number;
   attendanceRate: number | null;
+  attendancePresent: number;
+  attendanceTotal: number;
 }
 
 function monthKey(date: Date | string | null) {
@@ -52,6 +55,9 @@ export function buildAcademicTimeline(grades: AcademicGradePoint[], attendance: 
     month: monthLabel(key),
     monthKey: key,
     averageGrade: value.grades.length ? Math.round((value.grades.reduce((sum, score) => sum + score, 0) / value.grades.length) * 10) / 10 : null,
+    gradeCount: value.grades.length,
     attendanceRate: value.total ? Math.round((value.present / value.total) * 100) : null,
+    attendancePresent: value.present,
+    attendanceTotal: value.total,
   }));
 }

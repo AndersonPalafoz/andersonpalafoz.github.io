@@ -3,13 +3,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { Award, BarChart3, CalendarCheck, Loader2, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
-import { Line, LineChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Line, LineChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from "recharts";
 
 interface TimelinePoint {
   month: string;
   monthKey: string;
   averageGrade: number | null;
+  gradeCount: number;
   attendanceRate: number | null;
+  attendancePresent: number;
+  attendanceTotal: number;
 }
 
 interface GradeRecord {
@@ -23,6 +26,33 @@ interface AttendanceRecord {
   status: string;
   recordedAt: string;
   sessionTitle: string;
+}
+
+type AcademicTooltipProps = TooltipProps<number | string, string> & {
+  metric: "grade" | "attendance";
+};
+
+function AcademicTooltip({ active, payload, metric }: AcademicTooltipProps) {
+  if (!active || !payload?.length) return null;
+  const point = payload[0]?.payload as TimelinePoint | undefined;
+  if (!point) return null;
+
+  return (
+    <div className="min-w-[190px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
+      <p className="text-xs font-black uppercase tracking-wide text-gray-500">{point.month} · {point.monthKey}</p>
+      {metric === "grade" ? (
+        <>
+          <p className="mt-2 text-lg font-black text-red-600">{point.averageGrade === null ? "Sem nota" : `${point.averageGrade.toFixed(1)} pts`}</p>
+          <p className="mt-1 text-xs text-gray-600">Média de {point.gradeCount} avaliação(ões) com nota.</p>
+        </>
+      ) : (
+        <>
+          <p className="mt-2 text-lg font-black text-emerald-700">{point.attendanceRate === null ? "Sem chamada" : `${point.attendanceRate}%`}</p>
+          <p className="mt-1 text-xs text-gray-600">{point.attendancePresent} presença(s) em {point.attendanceTotal} registro(s).</p>
+        </>
+      )}
+    </div>
+  );
 }
 
 export default function HistoricoAcademicoPage() {
@@ -69,7 +99,7 @@ export default function HistoricoAcademicoPage() {
       <header>
         <p className="text-sm font-bold uppercase tracking-widest text-red-600">Acompanhamento</p>
         <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">Histórico acadêmico</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Veja como suas notas e sua frequência evoluíram ao longo do tempo. Os gráficos exibem somente registros acadêmicos salvos na plataforma.</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Veja como suas notas e sua frequência evoluíram ao longo do tempo. Passe o cursor sobre cada ponto para consultar os valores exatos e a base usada no cálculo.</p>
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -81,12 +111,12 @@ export default function HistoricoAcademicoPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950">Evolução das notas</h2><p className="mt-1 text-xs text-gray-500">Média das pontuações por mês.</p></div><BarChart3 size={20} className="text-red-600" /></div>
-          {timeline.some((point) => point.averageGrade !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={timeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip formatter={(value) => [`${value} pts`, "Média"]} /><Legend /><Line type="monotone" dataKey="averageGrade" name="Média das notas" stroke="#D62828" strokeWidth={3} dot={{ r: 4, fill: "#D62828" }} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há notas registradas em períodos suficientes para formar um gráfico.</div>}
+          {timeline.some((point) => point.averageGrade !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={timeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip content={<AcademicTooltip metric="grade" />} /><Legend /><Line type="monotone" dataKey="averageGrade" name="Média das notas" stroke="#D62828" strokeWidth={3} dot={{ r: 4, fill: "#D62828" }} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há notas registradas em períodos suficientes para formar um gráfico.</div>}
         </div>
 
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950">Evolução da frequência</h2><p className="mt-1 text-xs text-gray-500">Percentual de presença por mês.</p></div><CalendarCheck size={20} className="text-emerald-600" /></div>
-          {timeline.some((point) => point.attendanceRate !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={timeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip formatter={(value) => [`${value}%`, "Presença"]} /><Legend /><Line type="monotone" dataKey="attendanceRate" name="Frequência" stroke="#16A34A" strokeWidth={3} dot={{ r: 4, fill: "#16A34A" }} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há registros de chamada suficientes para formar um gráfico.</div>}
+          {timeline.some((point) => point.attendanceRate !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={timeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip content={<AcademicTooltip metric="attendance" />} /><Legend /><Line type="monotone" dataKey="attendanceRate" name="Frequência" stroke="#16A34A" strokeWidth={3} dot={{ r: 4, fill: "#16A34A" }} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há registros de chamada suficientes para formar um gráfico.</div>}
         </div>
       </section>
 
