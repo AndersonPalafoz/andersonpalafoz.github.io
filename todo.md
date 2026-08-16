@@ -554,3 +554,8 @@
 - [x] Implementar visualizador de comparação (Diff Viewer) para revisões anteriores do CMS
 - [x] Adicionar suporte a ações em lote (Bulk Actions) para publicar ou remover múltiplos blocos de conteúdo
 - [x] Criar ferramenta de exportação e importação de blocos do CMS em formato JSON para backup e migração
+
+## Biblioteca de Mídia, Estatísticas do CMS e Refinamento Visual Global — 16/08/2026
+- [x] Criar aba de biblioteca de mídia especializada no CMS para gestão de medalhas e áudios do assistente
+- [x] Desenvolver painel de estatísticas de engajamento no CMS (média de XP, missões mais populares, precisão)
+- [x] Aplicar refinamento visual global em todas as páginas para máxima consistência, responsividade e sofisticação
