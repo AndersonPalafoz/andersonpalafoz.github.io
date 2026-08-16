@@ -1,5 +1,5 @@
 import React from "react";
-import { TrendingUp, Zap, Target, ShieldCheck, Sparkles } from "lucide-react";
+import { TrendingUp, Zap, Target, ShieldCheck, Sparkles, Lightbulb } from "lucide-react";
 
 export function PredictiveAnalyticsWidget() {
   return (
@@ -13,7 +13,7 @@ export function PredictiveAnalyticsWidget() {
           </div>
           <div>
             <div className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-red-400">
-              <Sparkles size={12} /> Inteligência Preditiva
+              <Sparkles size={12} /> Inteligência Preditiva & IA
             </div>
             <h3 className="text-lg font-black text-white">Previsão de Desempenho & Ritmo</h3>
           </div>
@@ -49,6 +49,21 @@ export function PredictiveAnalyticsWidget() {
           </div>
           <p className="text-2xl font-black text-white">96.4%</p>
           <p className="text-[11px] text-slate-400">Alta fixação nos quizzes e speaking.</p>
+        </div>
+      </div>
+
+      {/* Dica Acionável Gerada por IA */}
+      <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3.5">
+        <div className="h-8 w-8 rounded-xl bg-red-600/30 text-red-400 flex items-center justify-center shrink-0 mt-0.5">
+          <Lightbulb size={18} />
+        </div>
+        <div className="space-y-1">
+          <h4 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+            Dica de Otimização da IA
+          </h4>
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Notei que suas gravações de <strong className="text-red-400">Speaking</strong> têm excelente fluência, mas podem melhorar a entonação em perguntas interrogativas. Experimente revisar a Aula 4 do Módulo 2 para ganhar +50 XP bônus hoje!
+          </p>
         </div>
       </div>
     </div>

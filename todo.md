@@ -609,3 +609,9 @@
 - [x] Adicionar modal de pré-visualização do PDF do histórico de feedbacks antes de confirmar o download
 - [x] Configurar salvamento da preferência de dark mode por usuário para sincronização entre dispositivos
 - [x] Refinar elementos visuais com gradientes modernos, cartões dinâmicos e estilo envolvente para adolescentes sem perder o rigor acadêmico
+
+## Dicas de IA, Conquistas no Dashboard, Seleção no PDF e Múltiplas Plataformas de Vídeo — 16/08/2026
+- [x] Adicionar dicas acionáveis geradas por IA no painel de analytics preditivo para aprimorar a retenção
+- [x] Incluir sistema de conquistas e medalhes em destaque no dashboard do aluno
+- [x] Adicionar opções de filtragem por categoria no modal de pré-visualização do PDF de feedbacks
+- [x] Criar componente de suporte a múltiplos players de vídeo (YouTube, Vimeo, Vidsrc/Embed seguro) para videoaulas
