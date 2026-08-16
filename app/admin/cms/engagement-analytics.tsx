@@ -1,5 +1,7 @@
 import React from "react";
-import { TrendingUp, Users, Trophy, Award, Activity, BarChart3, CheckCircle2 } from "lucide-react";
+import { TrendingUp, Users, Trophy, Award, Activity, BarChart3, CheckCircle2, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export function CMSEngagementAnalytics() {
   const stats = {
@@ -19,6 +21,27 @@ export function CMSEngagementAnalytics() {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Métricas Gerais de Engajamento</h3>
+        <Button
+          onClick={() => {
+            const csvContent = "data:text/csv;charset=utf-8," + 
+              ["Aluno,Ação,XP,Horário", ...recentActivity.map(a => `"${a.student}","${a.action}","${a.xp}","${a.time}"`)].join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `relatorio_engajamento_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            toast.success("Relatório CSV de engajamento exportado com sucesso!");
+          }}
+          className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm gap-1.5"
+        >
+          <Download size={14} /> Exportar Relatório CSV
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-2">
           <div className="flex items-center justify-between text-slate-500">
