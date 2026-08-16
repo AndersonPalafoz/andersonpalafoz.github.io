@@ -533,3 +533,9 @@
 - [x] Implementar feed de notificações em tempo real com alertas de prazos, novas mensagens e conquistas
 - [x] Criar assistente virtual de conversação por voz para prática interativa de speaking com feedback por IA
 - [x] Adicionar medalhas e conquistas visuais (Badges) no perfil do aluno ao completar desafios e aulas
+
+## Perfil Gamificado, Onda Sonora e Ofensiva Diária — 16/08/2026
+- [x] Criar página de perfil gamificado do aluno com XP total, medalhas de quizzes e histórico de progresso
+- [x] Adicionar animação visual de onda sonora ao assistente de conversação por voz durante a gravação
+- [x] Implementar recurso de ofensiva diária (streak) com ícone de chama ao lado do nome do aluno na barra de navegação/perfil
+- [x] Aplicar identidade visual urbana/adolescente de alto padrão e profissionalismo nas áreas de engajamento e quizzes

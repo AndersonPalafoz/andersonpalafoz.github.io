@@ -104,6 +104,11 @@ export function Navbar() {
               {session.user?.role === "admin" && <Link href="/admin" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-gray-200 px-3 text-xs font-bold text-gray-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"><Shield size={15} /> Admin</Link>}
               <Link href="/dashboard" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-600 px-4 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><LayoutDashboard size={15} /> Minha área</Link>
               
+              {/* Indicador de Ofensiva Diária (Streak) */}
+              <div className="hidden sm:flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-3 py-1.5 rounded-full text-xs font-black text-amber-700 dark:text-amber-400" title="14 dias de ofensiva contínua!">
+                <span>🔥</span> 14d
+              </div>
+
               {/* Menu de Avatar com Dropdown */}
               <div className="relative ml-1" ref={dropdownRef}>
                 <button
