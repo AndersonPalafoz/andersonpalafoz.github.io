@@ -11,24 +11,27 @@ interface MediaAsset {
   url: string;
   size: string;
   uploadedAt: string;
+  tag: string;
 }
 
 const initialAssets: MediaAsset[] = [
-  { id: "1", name: "badge-grammar-master.png", type: "medal", url: "/manus-storage/badge-grammar.png", size: "120 KB", uploadedAt: "15 Ago 2026" },
-  { id: "2", name: "badge-speaking-pro.png", type: "medal", url: "/manus-storage/badge-speaking.png", size: "145 KB", uploadedAt: "14 Ago 2026" },
-  { id: "3", name: "speaking-prompt-b1-audio.mp3", type: "audio", url: "/manus-storage/speaking-b1.mp3", size: "1.2 MB", uploadedAt: "12 Ago 2026" },
-  { id: "4", name: "listening-exercise-unit2.mp3", type: "audio", url: "/manus-storage/listening-unit2.mp3", size: "2.4 MB", uploadedAt: "10 Ago 2026" },
+  { id: "1", name: "badge-grammar-master.png", type: "medal", url: "/manus-storage/badge-grammar.png", size: "120 KB", uploadedAt: "15 Ago 2026", tag: "Gramática" },
+  { id: "2", name: "badge-speaking-pro.png", type: "medal", url: "/manus-storage/badge-speaking.png", size: "145 KB", uploadedAt: "14 Ago 2026", tag: "Speaking" },
+  { id: "3", name: "speaking-prompt-b1-audio.mp3", type: "audio", url: "/manus-storage/speaking-b1.mp3", size: "1.2 MB", uploadedAt: "12 Ago 2026", tag: "Áudio B1" },
+  { id: "4", name: "listening-exercise-unit2.mp3", type: "audio", url: "/manus-storage/listening-unit2.mp3", size: "2.4 MB", uploadedAt: "10 Ago 2026", tag: "Listening" },
 ];
 
 export function MediaAssetLibrary() {
   const [assets, setAssets] = useState<MediaAsset[]>(initialAssets);
   const [filterType, setFilterType] = useState<string>("all");
+  const [filterTag, setFilterTag] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const filteredAssets = assets.filter((asset) => {
     if (filterType !== "all" && asset.type !== filterType) return false;
-    if (searchTerm && !asset.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (filterTag !== "all" && asset.tag !== filterTag) return false;
+    if (searchTerm && !asset.name.toLowerCase().includes(searchTerm.toLowerCase()) && !asset.tag.toLowerCase().includes(searchTerm.toLowerCase())) return false;
     return true;
   });
 
@@ -54,6 +57,7 @@ export function MediaAssetLibrary() {
       url: `/manus-storage/${name}`,
       size: "850 KB",
       uploadedAt: "Agora mesmo",
+      tag: type === "medal" ? "Conquista" : "Geral",
     };
     setAssets([newAsset, ...assets]);
     toast.success(`Novo arquivo (${type}) enviado e indexado na biblioteca!`);
@@ -95,7 +99,7 @@ export function MediaAssetLibrary() {
               className="pl-10 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 rounded-xl text-xs font-semibold h-10"
             />
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex gap-2 w-full sm:w-auto flex-wrap">
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
@@ -105,6 +109,18 @@ export function MediaAssetLibrary() {
               <option value="medal">Medalhas & Badges</option>
               <option value="audio">Áudios (Speaking)</option>
               <option value="image">Imagens Gerais</option>
+            </select>
+            <select
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="bg-slate-50 border border-slate-200 dark:bg-slate-800 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 dark:text-slate-200 h-10"
+            >
+              <option value="all">Todas as Tags</option>
+              <option value="Gramática">Gramática</option>
+              <option value="Speaking">Speaking</option>
+              <option value="Áudio B1">Áudio B1</option>
+              <option value="Listening">Listening</option>
+              <option value="Conquista">Conquista</option>
             </select>
           </div>
         </div>
@@ -126,8 +142,13 @@ export function MediaAssetLibrary() {
                   </span>
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-xs text-slate-900 dark:text-white truncate" title={asset.name}>{asset.name}</h4>
-                  <p className="text-[11px] text-slate-400">{asset.size} • {asset.uploadedAt}</p>
+                  <div className="flex items-center justify-between gap-1">
+                    <h4 className="font-extrabold text-xs text-slate-900 dark:text-white truncate" title={asset.name}>{asset.name}</h4>
+                    <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full shrink-0">
+                      {asset.tag}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5">{asset.size} • {asset.uploadedAt}</p>
                 </div>
               </div>
 
