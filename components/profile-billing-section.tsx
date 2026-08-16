@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { ExternalLink, Loader2, Receipt } from "lucide-react";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface PurchaseItem {
   id: number;
@@ -15,6 +16,9 @@ interface PurchaseItem {
 export function ProfileBillingSection() {
   const [purchases, setPurchases] = useState<PurchaseItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetch("/api/stripe/purchases")
@@ -27,6 +31,16 @@ export function ProfileBillingSection() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredPurchases = useMemo(() => {
+    return purchases.filter((p) => {
+      if (statusFilter !== "all" && (p.payment.paymentStatus || "completed") !== statusFilter) return false;
+      const purchaseDateStr = new Date(p.purchasedAt).toISOString().slice(0, 10);
+      if (startDate && purchaseDateStr < startDate) return false;
+      if (endDate && purchaseDateStr > endDate) return false;
+      return true;
+    });
+  }, [purchases, statusFilter, startDate, endDate]);
+
   if (loading) {
     return (
       <div className="p-6 rounded-xl border border-border bg-card flex items-center justify-center py-12">
@@ -36,20 +50,40 @@ export function ProfileBillingSection() {
   }
 
   return (
-    <div className="p-6 rounded-xl border border-border bg-card space-y-4">
-      <div className="flex items-center justify-between border-b border-border pb-4">
+    <div className="p-6 rounded-xl border border-border bg-card space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border pb-4">
         <div className="flex items-center gap-2">
           <Receipt className="text-red-600" size={20} />
           <h3 className="font-bold text-foreground text-base">Histórico de Faturamento e Recibos Stripe</h3>
         </div>
-        <span className="text-xs font-bold bg-muted px-2.5 py-1 rounded-full text-muted-foreground">{purchases.length} pagamento(s)</span>
+        <span className="text-xs font-bold bg-muted px-3 py-1 rounded-full text-muted-foreground">{filteredPurchases.length} de {purchases.length} pagamento(s)</span>
       </div>
 
-      {purchases.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-6 text-center">Nenhum pagamento ou compra registrada no Stripe ainda.</p>
+      {/* Filtros por Data e Status */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-muted/40 p-4 rounded-xl border border-border/60">
+        <div>
+          <label className="block text-[11px] font-bold text-muted-foreground uppercase mb-1">Status</label>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-semibold text-foreground">
+            <option value="all">Todos os status</option>
+            <option value="paid">Pago (Paid)</option>
+            <option value="completed">Concluído</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-muted-foreground uppercase mb-1">Data Inicial</label>
+          <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs bg-background" />
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-muted-foreground uppercase mb-1">Data Final</label>
+          <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 text-xs bg-background" />
+        </div>
+      </div>
+
+      {filteredPurchases.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">Nenhum recibo encontrado para os filtros selecionados.</p>
       ) : (
         <div className="space-y-3">
-          {purchases.map((p) => {
+          {filteredPurchases.map((p) => {
             const amount = p.payment.amountTotal ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency || "BRL" }) : "Gratuito/Outro";
             return (
               <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/70 bg-muted/30">
@@ -64,7 +98,7 @@ export function ProfileBillingSection() {
                       Recibo <ExternalLink size={13} />
                     </a>
                   ) : (
-                    <span className="text-xs text-muted-foreground italic">Recibo não disponível</span>
+                    <span className="text-xs text-muted-foreground italic">Recibo indisponível</span>
                   )}
                 </div>
               </div>
