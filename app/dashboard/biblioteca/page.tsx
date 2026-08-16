@@ -1,18 +1,11 @@
 export const dynamic = "force-dynamic";
 
 import { getMaterials } from "@/lib/db";
-export const dynamic = "force-dynamic";
-
 import { FileText } from "lucide-react";
 import { DownloadMaterialButton } from "@/components/download-material-button";
 
 export default async function BibliotecaPage() {
-  let materiais: any[] = [];
-  try {
-    materiais = await getMaterials();
-  } catch (e) {
-    console.error("Failed to load materials in build:", e);
-  }
+  const materiais = await getMaterials();
 
   return (
     <div className="space-y-6">
