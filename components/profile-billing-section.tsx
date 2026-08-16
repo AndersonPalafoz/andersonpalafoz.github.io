@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { ExternalLink, Loader2, Receipt } from "lucide-react";
+import { ExternalLink, Loader2, Receipt, Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { createTablePdf, downloadPdf } from "@/lib/pdf-export";
 
 interface PurchaseItem {
   id: number;
@@ -41,6 +43,45 @@ export function ProfileBillingSection() {
     });
   }, [purchases, statusFilter, startDate, endDate]);
 
+  const handleExportCSV = () => {
+    if (filteredPurchases.length === 0) {
+      toast.error("Nenhum recibo filtrado para exportar.");
+      return;
+    }
+    const headers = "Curso,Data,Status,Valor,Sessão Stripe\n";
+    const rows = filteredPurchases.map((p) => {
+      const amount = p.payment.amountTotal ? (p.payment.amountTotal / 100).toFixed(2) : "0.00";
+      return [`"${p.course.title}"`, `"${new Date(p.purchasedAt).toLocaleDateString("pt-BR")}"`, `"${p.payment.paymentStatus || "completed"}"`, amount, `"${p.checkoutSessionId}"`].join(",");
+    }).join("\n");
+
+    const url = URL.createObjectURL(new Blob([headers + rows], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `faturamento-recibos-${Date.now()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Recibos exportados em CSV com sucesso!");
+  };
+
+  const handleExportPDF = async () => {
+    if (filteredPurchases.length === 0) {
+      toast.error("Nenhum recibo filtrado para exportar.");
+      return;
+    }
+    try {
+      const bytes = await createTablePdf("Faturamento e Recibos — Anderson Palafoz", ["Curso", "Data", "Status", "Valor"], filteredPurchases.map((p) => [
+        p.course.title,
+        new Date(p.purchasedAt).toLocaleDateString("pt-BR"),
+        p.payment.paymentStatus || "completed",
+        p.payment.amountTotal ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency || "BRL" }) : "R$ 0,00",
+      ]));
+      downloadPdf(bytes, `faturamento-recibos-${Date.now()}.pdf`);
+      toast.success("Recibos exportados em PDF com sucesso!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao gerar PDF de recibos.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="p-6 rounded-xl border border-border bg-card flex items-center justify-center py-12">
@@ -56,7 +97,15 @@ export function ProfileBillingSection() {
           <Receipt className="text-red-600" size={20} />
           <h3 className="font-bold text-foreground text-base">Histórico de Faturamento e Recibos Stripe</h3>
         </div>
-        <span className="text-xs font-bold bg-muted px-3 py-1 rounded-full text-muted-foreground">{filteredPurchases.length} de {purchases.length} pagamento(s)</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-bold border-border">
+            <Download size={13} /> Exportar CSV
+          </Button>
+          <Button onClick={() => void handleExportPDF()} variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-bold border-border">
+            <Printer size={13} /> Exportar PDF
+          </Button>
+          <span className="text-xs font-bold bg-muted px-3 py-1 rounded-full text-muted-foreground">{filteredPurchases.length} de {purchases.length}</span>
+        </div>
       </div>
 
       {/* Filtros por Data e Status */}
