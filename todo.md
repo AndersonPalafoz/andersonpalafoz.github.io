@@ -499,3 +499,9 @@
 - [x] Implementar funcionalidade de arrastar e soltar (drag-and-drop) com barra de progresso em tempo real no gerenciador de mídia do CMS.
 - [x] Incluir botões de desfazer e refazer (undo/redo) no editor de conteúdo do CMS para reversão instantânea de alterações.
 - [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
+
+## Atualização Final de Recursos — 16/08/2026
+- [x] Adicionar assistente de inteligência artificial no editor de texto do CMS (`/admin/cms`) para sugerir melhorias e correções automáticas de conteúdo.
+- [x] Implementar ferramenta de corte e redimensionamento de imagens diretamente no gerenciador de mídia do CMS.
+- [x] Criar a aba "Compartilhado comigo" no perfil do aluno para organizar e visualizar anotações recebidas de outros colegas, com exportação em PDF.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
