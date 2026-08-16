@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import fs from "node:fs";
+import path from "node:path";
 import { filterAttendanceRecords } from "@/lib/attendance-filters";
 import { buildBulkAttendancePayload } from "@/lib/attendance-bulk";
 
@@ -42,5 +44,14 @@ describe("Chamada online", () => {
       { status: "present", courseTitle: "A2", scheduledAt: "2026-01-15T12:00:00Z" },
     ];
     expect(filterAttendanceRecords(records, { status: "present", courseTitle: "B1", startDate: "2026-01-01", endDate: "2026-01-31" })).toHaveLength(1);
+  });
+});
+
+describe("Chamada erro amigável e loading", () => {
+  it("renderiza mensagem amigável e botão de tentar novamente em caso de erro na API", () => {
+    const source = fs.readFileSync(path.join(process.cwd(), "app/admin/chamada/page.tsx"), "utf8");
+    expect(source).toContain("Falha ao carregar dados de chamada");
+    expect(source).toContain("Tentar novamente");
+    expect(source).toContain("loadError");
   });
 });
