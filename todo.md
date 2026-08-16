@@ -615,3 +615,12 @@
 - [x] Incluir sistema de conquistas e medalhes em destaque no dashboard do aluno
 - [x] Adicionar opções de filtragem por categoria no modal de pré-visualização do PDF de feedbacks
 - [x] Criar componente de suporte a múltiplos players de vídeo (YouTube, Vimeo, Vidsrc/Embed seguro) para videoaulas
+
+## Player Aprimorado, Medalhas Interativas e Exportação CSV — 16/08/2026
+- [x] Adicionar controles de velocidade de reprodução e marcadores de tempo no player universal de vídeo
+- [x] Implementar animações de hover e tooltips explicativos nas medalhas de conquistas do dashboard
+- [x] Incluir opção de exportação para CSV no painel de relatórios
+- [x] Reforçar compatibilidade otimizada com vídeos do YouTube no player
+
+## Proteção de Downloads de Conteúdo Pago — 16/08/2026
+- [x] Restringir download de materiais e conteúdos pagos apenas a administradores, professores aprovados ou alunos com compra/matrícula confirmada
