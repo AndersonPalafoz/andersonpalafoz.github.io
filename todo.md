@@ -653,3 +653,7 @@
 - [x] Incluir tooltips interativos no gráfico de barras dos relatórios para exibir valores exatos ao passar o mouse
 - [x] Inserir botão de checkout direto (Stripe) no modal de upgrade para assinatura imediata do plano Pro
 - [x] Simplificar o menu superior para evitar poluição visual
+
+## Auditoria Completa da Plataforma Anderson Palafoz — 16/08/2026
+- [x] Executar auditoria técnica e visual abrangente de rotas, segurança, testes, UX/UI, modo escuro e performance
+- [x] Consolidar achados e recomendações em documento estruturado para o professor Anderson Palafoz
