@@ -482,3 +482,14 @@
 - [x] Criar sistema de CMS global (`site_content_blocks`) persistido no banco Neon PostgreSQL.
 - [x] Desenvolver painel administrativo intuitivo em `/admin/cms` com suporte a filtros por página/área, busca em tempo real e CRUD completo de blocos de conteúdo para qualquer seção do site.
 - [x] Executar testes automatizados (190 testes aprovados) e validar build de produção Next.js 15.
+
+## Seletor Visual de Marca e Logotipo — 16/08/2026
+- [x] Adicionar o seletor visual de logotipo e identidade de marca (`BrandEditor`) no painel administrativo `/admin/cms`.
+- [x] Permitir a troca instantânea da logo do site (entre as opções oficiais do projeto ou URL personalizada) com salvamento no banco e sincronização global.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
+
+## Novas Funcionalidades Avançadas — 16/08/2026
+- [x] Adicionar recurso de pré-visualização em tempo real no CMS (`/admin/cms`) para conferir blocos de conteúdo antes de salvar.
+- [x] Implementar gerenciador de mídia no CMS com upload direto de arquivos e imagens do computador via `/api/upload`.
+- [x] Incluir sistema de anotações temporais no `MediaPlayer` permitindo salvar notas vinculadas a minutos/segundos específicos da reprodução.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
