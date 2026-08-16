@@ -519,3 +519,10 @@
 ## Novas Solicitações — Dark Mode Global e Versão em Inglês (Multilíngue) — 16/08/2026
 - [x] Implementar alternador global de Modo Escuro (Dark Mode) em toda a plataforma com persistência e persistência visual coesa
 - [x] Implementar seletor de idioma (Português / English) para alternar a interface e os conteúdos entre PT e EN
+
+## Próximas Sugestões Estratégicas de Evolução (Fase Futura)
+- [ ] Implementar feed de notificações em tempo real via WebSockets para alertas de novas mensagens de professores e prazos de tarefas
+- [ ] Adicionar suporte a questionários gamificados com placar (leaderboard) para turmas de inglês
+- [ ] Desenvolver aplicativo mobile nativo (Expo / React Native) integrado à API da plataforma
+- [ ] Implementar análise preditiva de evasão escolar baseada na frequência e no histórico de notas
+- [ ] Integrar assistente virtual de conversação em inglês via API de voz para prática de speaking interativa fora das aulas
