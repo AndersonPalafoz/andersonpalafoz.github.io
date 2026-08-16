@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ArticleCardProps {
@@ -9,27 +10,19 @@ interface ArticleCardProps {
   author: string;
 }
 
-export function ArticleCard({
-  slug,
-  title,
-  excerpt,
-  publishedAt,
-  author,
-}: ArticleCardProps) {
+export function ArticleCard({ slug, title, excerpt, publishedAt, author }: ArticleCardProps) {
   return (
-    <Link href={`/blog/${slug}`}>
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-red-500 transition cursor-pointer h-full">
-        <div className="text-gray-400 text-sm mb-3">
-          <p>
-            {publishedAt} • Por {author}
-          </p>
-        </div>
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-400 mb-4">{excerpt}</p>
-        <Button variant="outline" className="w-full">
-          Ler Artigo
-        </Button>
+    <article className="surface-card interactive-card flex h-full flex-col p-5 sm:p-6">
+      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-muted-foreground">
+        <span className="inline-flex items-center gap-2"><FileText size={15} className="text-primary" /> Artigo</span>
+        <time>{publishedAt}</time>
       </div>
-    </Link>
+      <h3 className="mt-5 text-xl font-black tracking-tight text-foreground">{title}</h3>
+      <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{excerpt}</p>
+      <p className="mt-5 text-xs font-semibold text-muted-foreground">Por {author}</p>
+      <Button asChild variant="outline" className="mt-5 w-full">
+        <Link href={`/blog/${slug}`}>Ler artigo <ArrowRight size={16} /></Link>
+      </Button>
+    </article>
   );
 }

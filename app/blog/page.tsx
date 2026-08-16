@@ -22,10 +22,11 @@ export default async function BlogPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center py-20 px-4 md:px-8 lg:px-16 bg-white">
+      <section className="relative flex min-h-[62vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16"><div className="pointer-events-none absolute -right-36 top-12 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
+              <span className="eyebrow">Knowledge Hub</span>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                 Blog de
                 <br />
@@ -59,7 +60,7 @@ export default async function BlogPage() {
               {["Todos", ...categorias].map((cat) => (
                 <span
                   key={cat}
-                  className="px-6 py-2 rounded-full border border-gray-300 text-gray-700 font-medium"
+                  className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-bold text-slate-600 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
                 >
                   {cat}
                 </span>
@@ -87,9 +88,9 @@ export default async function BlogPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {artigos.map((artigo) => (
                 <Link key={artigo.id} href={`/blog/${artigo.slug}`}>
-                  <div className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition h-full flex flex-col cursor-pointer">
+                  <div className="interactive-card flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
                     {/* Header */}
-                    <div className="bg-red-600 text-white p-6 h-24 flex items-center">
+                    <div className="flex h-24 items-center bg-gradient-to-br from-red-600 to-red-700 p-6 text-white">
                       <span className="text-sm font-semibold">
                         {artigo.category || "Blog"}
                       </span>
@@ -144,10 +145,10 @@ export default async function BlogPage() {
       <section className="py-20 px-4 md:px-8 lg:px-16 bg-red-600">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Receba Novos Artigos
+            Receba novos conteúdos para estudar melhor
           </h2>
           <p className="text-lg text-red-100">
-            Inscreva-se em nossa newsletter e receba dicas e insights sobre inglês e educação diretamente no seu email.
+            Uma seleção de artigos sobre inglês, linguística e educação diretamente no seu e-mail.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <input
