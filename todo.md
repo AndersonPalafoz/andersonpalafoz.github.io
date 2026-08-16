@@ -515,3 +515,7 @@
 - [x] Garantir suporte a edição precisa por ID, histórico de revisões, editor WYSIWYG e integração dinâmica nas páginas públicas.
 - [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
 - [x] Corrigir erro de carregamento em /admin/cms e garantir robustez na API de blocos e autenticação
+
+## Novas Solicitações — Dark Mode Global e Versão em Inglês (Multilíngue) — 16/08/2026
+- [x] Implementar alternador global de Modo Escuro (Dark Mode) em toda a plataforma com persistência e persistência visual coesa
+- [x] Implementar seletor de idioma (Português / English) para alternar a interface e os conteúdos entre PT e EN
