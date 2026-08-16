@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { attendances, classSessions, courses, users } from "@/drizzle/schema";
@@ -18,6 +18,8 @@ export async function GET() {
   if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
 
   const rows = await db.select({
+    attendanceId: attendances.id,
+    studentId: users.id,
     sessionId: classSessions.id,
     sessionTitle: classSessions.title,
     scheduledAt: classSessions.scheduledAt,
@@ -41,12 +43,22 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as {
+      action?: "createSession" | "bulkUpdate";
+      records?: Array<{ attendanceId: number; sessionId: number; status: "present" | "absent" | "justified" }>;
       title?: string;
       courseId?: number | null;
       scheduledAt?: string;
       modality?: "individual" | "group" | "hybrid";
       attendance?: Array<{ studentId: number; status: "present" | "absent" | "justified"; notes?: string }>;
     };
+    if (body.action === "bulkUpdate") {
+      if (!body.records?.length) return NextResponse.json({ error: "Nenhum registro foi selecionado." }, { status: 400 });
+      for (const record of body.records) {
+        await db.update(attendances).set({ status: record.status, present: record.status === "present" }).where(and(eq(attendances.id, record.attendanceId), eq(attendances.sessionId, record.sessionId)));
+      }
+      return NextResponse.json({ updated: body.records.length });
+    }
+
     if (!body.title?.trim() || !body.scheduledAt) return NextResponse.json({ error: "Título e data da sessão são obrigatórios." }, { status: 400 });
 
     const [session] = await db.insert(classSessions).values({
