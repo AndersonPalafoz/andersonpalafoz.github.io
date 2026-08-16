@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Brain, CheckCircle2, ArrowRight, BookOpen, AlertCircle, RefreshCw } from "lucide-react";
+import { Sparkles, Brain, CheckCircle2, ArrowRight, BookOpen, AlertCircle, RefreshCw, ThumbsUp, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -43,11 +43,24 @@ export function AdaptiveLearningTrail() {
     }, 1500);
   };
 
+  const [feedbacks, setFeedbacks] = useState<Record<string, "up" | "down">>({});
+
   const handleComplete = (id: string) => {
-    setRecommendations((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, completed: true } : r))
-    );
-    toast.success("Missão da trilha adaptativa concluída! +XP bônus adicionado.");
+    setRecommendations((prev) => {
+      const updated = prev.map((r) => (r.id === id ? { ...r, completed: true } : r));
+      const newCompletedCount = updated.filter((r) => r.completed).length;
+      if (newCompletedCount === updated.length) {
+        toast.success("🎉 Trilha 100% concluída! Parabéns pela dedicação exemplar!");
+      } else {
+        toast.success("Missão da trilha adaptativa concluída! +XP bônus adicionado.");
+      }
+      return updated;
+    });
+  };
+
+  const handleFeedback = (id: string, type: "up" | "down") => {
+    setFeedbacks((prev) => ({ ...prev, [id]: type }));
+    toast.success(type === "up" ? "Obrigado! A IA usará este feedback para refinar futuras recomendações." : "Feedback registrado. A IA ajustará o nível de dificuldade.");
   };
 
   const completedCount = recommendations.filter((r) => r.completed).length;
@@ -127,19 +140,41 @@ export function AdaptiveLearningTrail() {
               </p>
             </div>
 
-            <div className="flex justify-end pt-2">
-              {rec.completed ? (
-                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-1.5 py-2">
-                  <CheckCircle2 size={16} /> Foco Concluído com Sucesso!
-                </span>
-              ) : (
-                <Button
-                  onClick={() => handleComplete(rec.id)}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-6 rounded-xl gap-1.5"
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-slate-400">Esta sugestão foi útil?</span>
+                <button
+                  type="button"
+                  onClick={() => handleFeedback(rec.id, "up")}
+                  className={`p-1.5 rounded-lg border transition ${feedbacks[rec.id] === "up" ? "bg-emerald-50 border-emerald-300 text-emerald-600" : "border-slate-200 text-slate-400 hover:bg-slate-50"}`}
+                  title="Curtir recomendação"
                 >
-                  Estudar e Concluir Foco <ArrowRight size={14} />
-                </Button>
-              )}
+                  <ThumbsUp size={14} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleFeedback(rec.id, "down")}
+                  className={`p-1.5 rounded-lg border transition ${feedbacks[rec.id] === "down" ? "bg-red-50 border-red-300 text-red-600" : "border-slate-200 text-slate-400 hover:bg-slate-50"}`}
+                  title="Não curtir recomendação"
+                >
+                  <ThumbsDown size={14} />
+                </button>
+              </div>
+
+              <div>
+                {rec.completed ? (
+                  <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-1.5 py-2">
+                    <CheckCircle2 size={16} /> Foco Concluído com Sucesso!
+                  </span>
+                ) : (
+                  <Button
+                    onClick={() => handleComplete(rec.id)}
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 px-6 rounded-xl gap-1.5"
+                  >
+                    Estudar e Concluir Foco <ArrowRight size={14} />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ))}
