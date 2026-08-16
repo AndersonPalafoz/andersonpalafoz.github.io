@@ -509,3 +509,8 @@
 ## Integração de Conteúdo Dinâmico CMS — 16/08/2026
 - [x] Integrar o CMS dinâmico às páginas públicas do site (`lib/public-cms.ts`), permitindo refletir blocos editados em tempo real na Home e demais seções.
 - [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
+
+## Correção e Estabilização do CMS — 16/08/2026
+- [x] Investigar e corrigir erros na página administrativa `/admin/cms` e nas rotas de API correspondentes.
+- [x] Garantir suporte a edição precisa por ID, histórico de revisões, editor WYSIWYG e integração dinâmica nas páginas públicas.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
