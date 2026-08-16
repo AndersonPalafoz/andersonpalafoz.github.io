@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { filterAttendanceRecords } from "@/lib/attendance-filters";
+import { buildBulkAttendancePayload } from "@/lib/attendance-bulk";
 
 describe("Chamada online", () => {
   const attendances = [
@@ -25,6 +26,13 @@ describe("Chamada online", () => {
   it("mantém os filtros de modalidade dentro dos valores suportados", () => {
     expect(["all", "individual", "group", "hybrid"]).toContain("group");
     expect(["all", "individual", "group", "hybrid"]).not.toContain("online-only");
+  });
+
+  it("monta a seleção em massa sem perder a sessão de cada registro", () => {
+    expect(buildBulkAttendancePayload([{ attendanceId: 4, sessionId: 2 }, { attendanceId: 5, sessionId: 2 }], "absent")).toEqual([
+      { attendanceId: 4, sessionId: 2, status: "absent" },
+      { attendanceId: 5, sessionId: 2, status: "absent" },
+    ]);
   });
 
   it("combina turma, status e intervalo de datas no mesmo recorte", () => {
