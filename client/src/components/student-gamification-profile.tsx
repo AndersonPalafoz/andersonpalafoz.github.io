@@ -222,6 +222,39 @@ export function StudentGamificationProfile() {
               >
                 Copiar Link de Validação
               </Button>
+
+              <div className="grid grid-cols-3 gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.open("https://www.linkedin.com/sharing/share-offsite/?url=https://andersonpalafoz.com.br/certificado/verificar?code=AP-2026-B2", "_blank");
+                  }}
+                  className="text-[11px] font-bold border-slate-200 dark:border-slate-700 h-9"
+                >
+                  LinkedIn
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.open("https://api.whatsapp.com/send?text=Acabei%20de%20conquistar%20meu%20certificado%20B2%20na%20plataforma%20Anderson%20Palafoz!%20Valide%20aqui:%20https://andersonpalafoz.com.br/certificado/verificar?code=AP-2026-B2", "_blank");
+                  }}
+                  className="text-[11px] font-bold border-slate-200 dark:border-slate-700 h-9"
+                >
+                  WhatsApp
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.open("https://twitter.com/intent/tweet?text=Conquistei%20meu%20certificado%20de%20Ingl%C3%AAs%20na%20plataforma%20Anderson%20Palafoz!&url=https://andersonpalafoz.com.br/certificado/verificar?code=AP-2026-B2", "_blank");
+                  }}
+                  className="text-[11px] font-bold border-slate-200 dark:border-slate-700 h-9"
+                >
+                  Twitter
+                </Button>
+              </div>
             </div>
 
             <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2 pt-3">
