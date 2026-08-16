@@ -521,11 +521,11 @@
 - [x] Implementar seletor de idioma (Português / English) para alternar a interface e os conteúdos entre PT e EN
 
 ## Próximas Sugestões Estratégicas de Evolução (Fase Futura)
-- [ ] Implementar feed de notificações em tempo real via WebSockets para alertas de novas mensagens de professores e prazos de tarefas
-- [ ] Adicionar suporte a questionários gamificados com placar (leaderboard) para turmas de inglês
-- [ ] Desenvolver aplicativo mobile nativo (Expo / React Native) integrado à API da plataforma
-- [ ] Implementar análise preditiva de evasão escolar baseada na frequência e no histórico de notas
-- [ ] Integrar assistente virtual de conversação em inglês via API de voz para prática de speaking interativa fora das aulas
+- [x] Implementar feed de notificações em tempo real via WebSockets para alertas de novas mensagens de professores e prazos de tarefas
+- [x] Adicionar suporte a questionários gamificados com placar (leaderboard) para turmas de inglês
+- [x] Desenvolver aplicativo mobile nativo (Expo / React Native) integrado à API da plataforma
+- [x] Implementar análise preditiva de evasão escolar baseada na frequência e no histórico de notas
+- [x] Integrar assistente virtual de conversação em inglês via API de voz para prática de speaking interativa fora das aulas
 
 ## Gamificação Avançada, Notificações em Tempo Real e Assistente de Voz — 16/08/2026
 - [x] Criar sistema de questionários gamificados (Quizzes com timer, XP, pontuação e feedback imediato)
@@ -626,10 +626,10 @@
 - [x] Restringir download de materiais e conteúdos pagos apenas a administradores, professores aprovados ou alunos com compra/matrícula confirmada
 
 ## Refinamento de UX, Player com Notas, Relatórios Filtrados, Modal de Upgrade e Menu Clean — 16/08/2026
-- [ ] Adicionar notas pessoais vinculadas a marcadores de tempo no player universal de vídeo
-- [ ] Implementar filtros de data e categoria no painel de relatórios para exportação CSV
-- [ ] Criar modal de aviso amigável com botão de 'Fazer Upgrade' para downloads pagos sem autorização
-- [ ] Simplificar o menu superior (header) reduzindo a poluição visual com dropdowns organizados
+- [x] Adicionar notas pessoais vinculadas a marcadores de tempo no player universal de vídeo
+- [x] Implementar filtros de data e categoria no painel de relatórios para exportação CSV
+- [x] Criar modal de aviso amigável com botão de 'Fazer Upgrade' para downloads pagos sem autorização
+- [x] Simplificar o menu superior (header) reduzindo a poluição visual com dropdowns organizados
 
 ## Aprimoramentos de Dark Mode e Simplificação do Header — 16/08/2026
 - [x] Refinar suporte a modo escuro em todas as páginas públicas e privadas com variáveis de contraste otimizadas
