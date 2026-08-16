@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getMaterialById } from "@/lib/db";
 import { DownloadMaterialButton } from "@/components/download-material-button";
+import { MaterialProgressButton } from "@/components/material-progress-button";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
@@ -67,11 +68,14 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
                 <img src={material.fileUrl} alt={`Pré-visualização de ${material.title}`} className="mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain" />
               </section>
             )}
-            {material.fileUrl ? (
-              <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />
-            ) : (
-              <p className="text-gray-500">Arquivo ainda não disponível para este material.</p>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              <MaterialProgressButton materialId={material.id} />
+              {material.fileUrl ? (
+                <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />
+              ) : (
+                <p className="text-gray-500">Arquivo ainda não disponível para este material.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
