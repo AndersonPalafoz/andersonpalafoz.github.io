@@ -526,3 +526,10 @@
 - [ ] Desenvolver aplicativo mobile nativo (Expo / React Native) integrado à API da plataforma
 - [ ] Implementar análise preditiva de evasão escolar baseada na frequência e no histórico de notas
 - [ ] Integrar assistente virtual de conversação em inglês via API de voz para prática de speaking interativa fora das aulas
+
+## Gamificação Avançada, Notificações em Tempo Real e Assistente de Voz — 16/08/2026
+- [x] Criar sistema de questionários gamificados (Quizzes com timer, XP, pontuação e feedback imediato)
+- [x] Desenvolver placar de líderes (Leaderboard) por turma para engajamento dos alunos
+- [x] Implementar feed de notificações em tempo real com alertas de prazos, novas mensagens e conquistas
+- [x] Criar assistente virtual de conversação por voz para prática interativa de speaking com feedback por IA
+- [x] Adicionar medalhas e conquistas visuais (Badges) no perfil do aluno ao completar desafios e aulas

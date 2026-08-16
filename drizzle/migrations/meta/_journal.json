@@ -211,6 +211,13 @@
       "when": 1786863950070,
       "tag": "0029_young_leader",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1786882491995,
+      "tag": "0030_heavy_serpent_society",
+      "breakpoints": true
     }
   ]
 }
