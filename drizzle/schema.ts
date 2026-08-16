@@ -227,3 +227,34 @@ export const progress = pgTable("progress", {
 
 export type Progress = typeof progress.$inferSelect;
 export type InsertProgress = typeof progress.$inferInsert;
+
+/**
+ * Class sessions - Sessões de aula usadas pela chamada online.
+ */
+export const classSessions = pgTable("class_sessions", {
+  id: serial("id").primaryKey(),
+  courseId: integer("courseId"),
+  title: varchar("title", { length: 255 }).notNull(),
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  modality: varchar("modality", { length: 32 }).notNull().default("group"),
+  status: varchar("status", { length: 32 }).notNull().default("scheduled"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ClassSession = typeof classSessions.$inferSelect;
+export type InsertClassSession = typeof classSessions.$inferInsert;
+
+/**
+ * Attendances - Registro individual de presença por sessão e aluno.
+ */
+export const attendances = pgTable("attendances", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("sessionId").notNull(),
+  studentId: integer("studentId").notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("present"),
+  notes: text("notes"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+});
+
+export type Attendance = typeof attendances.$inferSelect;
+export type InsertAttendance = typeof attendances.$inferInsert;

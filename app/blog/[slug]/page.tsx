@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getArticleBySlug } from "@/lib/db";
