@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,10 @@ export default function AdminCmsPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (authStatus !== "loading") {
@@ -88,6 +92,30 @@ export default function AdminCmsPage() {
       return true;
     });
   }, [blocks, selectedPageFilter, searchTerm]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      setUploadingMedia(true);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar imagem.");
+      
+      const fileUrl = data.url;
+      setContent((prev) => (prev ? `${prev}\n${fileUrl}` : fileUrl));
+      toast.success("Mídia enviada e inserida com sucesso!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar arquivo.");
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +186,8 @@ export default function AdminCmsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
+      <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*,.pdf" className="sr-only" onChange={handleFileUpload} />
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 py-8 px-4 sm:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -169,7 +199,7 @@ export default function AdminCmsPage() {
               <Globe className="text-red-600" size={32} /> CMS Global — Editor de Todo o Site
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Gerencie textos, títulos, chamadas, banners e informações de qualquer página ou área da plataforma Anderson Palafoz.
+              Gerencie textos, títulos, chamadas, banners, mídias e informações de qualquer página ou área da plataforma.
             </p>
           </div>
         </div>
@@ -185,7 +215,7 @@ export default function AdminCmsPage() {
               </h2>
               {editingId && (
                 <Button variant="ghost" size="sm" onClick={handleResetForm} className="text-xs text-gray-500 hover:text-red-600">
-                  Cancelar edição
+                  Cancelar
                 </Button>
               )}
             </div>
@@ -215,7 +245,6 @@ export default function AdminCmsPage() {
                   disabled={Boolean(editingId)}
                   className="bg-gray-50 border-gray-300 rounded-xl text-xs font-semibold"
                 />
-                <p className="text-[11px] text-gray-500 mt-1">Identificador técnico usado no código para carregar o conteúdo.</p>
               </div>
 
               <div>
@@ -229,20 +258,40 @@ export default function AdminCmsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Conteúdo (Texto / HTML / Markdown)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-gray-700 uppercase">Conteúdo</label>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingMedia}
+                    className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1"
+                  >
+                    <UploadCloud size={14} /> {uploadingMedia ? "Enviando..." : "Inserir Mídia do PC"}
+                  </button>
+                </div>
                 <Textarea
-                  placeholder="Digite aqui o texto ou conteúdo que aparecerá na página..."
+                  placeholder="Digite aqui o texto ou conteúdo..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  rows={6}
+                  rows={5}
                   className="bg-gray-50 border-gray-300 rounded-xl text-xs font-normal"
                 />
               </div>
 
-              <Button type="submit" disabled={saving} className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-sm h-11 rounded-xl shadow-md shadow-red-600/20 gap-2">
-                {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-                {editingId ? "Salvar Alterações" : "Criar Bloco de Conteúdo"}
-              </Button>
+              <div className="grid grid-cols-2 gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setPreviewOpen(true)}
+                  className="w-full border-gray-300 font-bold text-xs h-11 rounded-xl gap-1.5"
+                >
+                  <Eye size={15} className="text-red-600" /> Pré-visualizar
+                </Button>
+                <Button type="submit" disabled={saving} className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs h-11 rounded-xl shadow-md shadow-red-600/20 gap-1.5">
+                  {saving ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
+                  Salvar
+                </Button>
+              </div>
             </form>
           </div>
         </div>
@@ -250,6 +299,7 @@ export default function AdminCmsPage() {
         {/* Lista de Blocos Cadastrados */}
         <div className="lg:col-span-2 space-y-6">
           {selectedPageFilter === "brand" && <BrandEditor />}
+          
           <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -318,6 +368,46 @@ export default function AdminCmsPage() {
           )}
         </div>
       </div>
+
+      {/* Modal de Pré-visualização em Tempo Real */}
+      {previewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-5 border border-gray-200 overflow-hidden">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+              <div className="flex items-center gap-2">
+                <Eye className="text-red-600" size={20} />
+                <h3 className="font-extrabold text-gray-900 text-base">Pré-visualização em Tempo Real</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(false)} className="h-8 w-8 p-0 rounded-full">
+                <X size={18} />
+              </Button>
+            </div>
+
+            <div className="space-y-4 bg-gray-50 p-5 rounded-xl border border-gray-200">
+              <div>
+                <span className="text-[10px] font-black uppercase text-gray-400">Página / Seção</span>
+                <p className="text-xs font-bold text-red-600">{pageKey} → {sectionKey || "sem-chave"}</p>
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase text-gray-400">Título do Bloco</span>
+                <h4 className="text-lg font-black text-gray-900">{title || "Sem título"}</h4>
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase text-gray-400">Renderização do Conteúdo</span>
+                <div className="mt-2 p-4 bg-white rounded-xl border border-gray-200 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+                  {content || "Nenhum conteúdo digitado ainda."}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setPreviewOpen(false)} className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-2.5 rounded-xl">
+                Fechar Pré-visualização
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
