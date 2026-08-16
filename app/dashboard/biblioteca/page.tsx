@@ -1,11 +1,19 @@
 export const dynamic = "force-dynamic";
 
-import { getMaterials } from "@/lib/db";
-import { FileText } from "lucide-react";
+import { getMaterials, getUserByEmail, db } from "@/lib/db";
+import { materialProgress } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { CheckCircle2, FileText } from "lucide-react";
 import { DownloadMaterialButton } from "@/components/download-material-button";
 
 export default async function BibliotecaPage() {
   const materiais = await getMaterials();
+  const session = await getServerSession(authOptions);
+  const user = session?.user?.email ? await getUserByEmail(session.user.email) : null;
+  const completedRows = user ? await db.select({ materialId: materialProgress.materialId }).from(materialProgress).where(eq(materialProgress.userId, user.id)) : [];
+  const completedMaterialIds = new Set(completedRows.map((row) => row.materialId));
 
   return (
     <div className="space-y-6">
@@ -41,6 +49,7 @@ export default async function BibliotecaPage() {
                   <p className="text-sm text-gray-500">
                     {material.category} • Nível {material.level} • {material.downloads} downloads
                   </p>
+                  {completedMaterialIds.has(material.id) && <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={14} /> Material concluído</span>}
                 </div>
               </div>
 

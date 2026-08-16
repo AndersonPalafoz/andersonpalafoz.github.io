@@ -140,6 +140,20 @@ export const materials = pgTable("materials", {
 export type Material = typeof materials.$inferSelect;
 export type InsertMaterial = typeof materials.$inferInsert;
 
+export const materialProgress = pgTable("material_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  materialId: integer("materialId").notNull().references(() => materials.id, { onDelete: "cascade" }),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => ({
+  userMaterialIdentity: uniqueIndex("material_progress_user_material_idx").on(table.userId, table.materialId),
+}));
+export type MaterialProgress = typeof materialProgress.$inferSelect;
+export type InsertMaterialProgress = typeof materialProgress.$inferInsert;
+
 /**
  * Articles table - Blog e Knowledge Hub
  */
@@ -448,6 +462,29 @@ export const articleComments = pgTable("article_comments", {
 
 export type ArticleComment = typeof articleComments.$inferSelect;
 export type InsertArticleComment = typeof articleComments.$inferInsert;
+
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: varchar("type", { length: 64 }).notNull(),
+  title: varchar("title", { length: 180 }).notNull(),
+  message: text("message").notNull(),
+  metadata: text("metadata"),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = typeof notifications.$inferInsert;
+
+export const courseReviewReplies = pgTable("course_review_replies", {
+  id: serial("id").primaryKey(),
+  reviewId: integer("reviewId").notNull().references(() => courseReviews.id, { onDelete: "cascade" }),
+  authorId: integer("authorId").notNull().references(() => users.id),
+  message: text("message").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CourseReviewReply = typeof courseReviewReplies.$inferSelect;
+export type InsertCourseReviewReply = typeof courseReviewReplies.$inferInsert;
 
 
 export const wishlistItems = pgTable("wishlist_items", {

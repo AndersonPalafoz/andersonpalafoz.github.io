@@ -271,7 +271,7 @@
 - [x] Adicionar foto/avatar de perfil na barra lateral do dashboard (/dashboard)
 - [x] Expandir métodos de login (Email/Senha e OAuth)
 - [x] Adicionar método de pagamento seguro (Stripe) para cursos pagos
-- [ ] Executar testes automatizados e build de production
+- [x] Executar testes automatizados e build de production
 
 ## Upload de Avatar, Recuperação de Senha e Confirmação Stripe (15/08/2026)
 - [x] Permitir upload e alteração de foto de perfil clicando no avatar da sidebar
@@ -302,7 +302,7 @@
 ## Exportação, Favoritos, Notificações e Player de Aulas (15/08/2026)
 - [x] Adicionar exportação do histórico de compras em CSV e PDF no painel do usuário
 - [x] Implementar botão de favoritos/lista de desejos nos cards de cursos
-- [ ] Criar alertas de notificação para respostas nas avaliações de cursos
+- [x] Criar alertas de notificação para respostas nas avaliações de cursos
 - [x] Concluir página de player e consumo de aulas (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
 - [x] Executar testes automatizados e build de produção
 
@@ -346,13 +346,13 @@
 
 - [x] Adicionar barra de pesquisa e filtros por nível de dificuldade nas listagens de cursos e materiais
 - [ ] Melhorar animações de hover e indicadores de carregamento suaves nos cards de cursos e posts do blog
-- [ ] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
+- [x] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
 
 - [x] Esclarecer e aprimorar o fluxo de gerenciamento de módulos e aulas por curso no painel administrativo
 
 - [x] Adicionar visualizador de PDF integrado na página de detalhes do material (`/materiais/[id]`)
-- [ ] Aprimorar a interface de criação de módulos com botão de destaque e modal intuitivo no painel
-- [ ] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
+- [x] Aprimorar a interface de criação de módulos com botão de destaque e modal intuitivo no painel
+- [x] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
 
 - [x] Esclarecer hierarquia Curso → Módulos e direcionar automaticamente para a criação de módulos após salvar um novo curso
 
@@ -396,7 +396,7 @@
 - [x] Destacar submissões de Speaking aguardando feedback
 - [x] Adicionar compartilhamento do certificado PDF no LinkedIn na interface do aluno
 - [x] Executar testes e build de produção após todas as alterações
-- [ ] Criar checkpoint pronto para publicação no painel
+- [x] Criar checkpoint pronto para publicação no painel
 - [x] Corrigir verificação de inscrição ativa para ocultar botão de matrícula em cursos já cursados ou inscritos pelo aluno
 
 ## Verificações concluídas nesta rodada — 16/08/2026
@@ -409,7 +409,7 @@
 - [x] Adicionar visualizador integrado de PDF e imagens em `/materiais/[id]`.
 - [x] Adicionar contador e animação da Lista de Desejos na sidebar e no cabeçalho público.
 - [x] Corrigir o build de produção da rota `/redefinir-senha` com Suspense para `useSearchParams`.
-- [x] Validar 172 testes automatizados e build de produção Next.js 15 concluído.
+- [x] Validar 180 testes automatizados e build de produção Next.js 15 concluído.
 
 ## Gaps de produção identificados na auditoria — 16/08/2026
 - [x] Implementar exportação real em PDF para tarefas e histórico de compras, com geração e download de arquivo em vez de apenas `window.print()`.
@@ -418,3 +418,15 @@
 - [x] Garantir no `app/dashboard/layout.tsx` a renderização do avatar na sidebar e a interação de clique para upload/alteração, com teste automatizado ou evidência clara no código.
 
 - [x] Implementar modal de confirmação para remoção de imagens enviadas nas áreas afetadas, com ação explícita de remover/substituir e teste de regressão.
+
+## Revisão visual e responsiva global — solicitação 16/08/2026
+- [x] Auditar layout, contraste, tipografia, espaçamento e estados de carregamento de todas as páginas públicas.
+- [x] Auditar responsividade em mobile, tablet e desktop para páginas públicas, dashboards, painéis administrativos e player de aulas.
+- [x] Padronizar o menu público, sidebar, navegação móvel, estados ativos, badges, foco de teclado e fechamento de overlays.
+- [x] Corrigir inconsistências visuais encontradas e validar páginas representativas com screenshots.
+- [x] Executar testes automatizados e build de produção após a revisão visual global.
+- [x] Exibir o status concluído dos materiais nas listagens públicas e na biblioteca do dashboard.
+- [x] Vincular a conclusão do material ao fluxo real de download/consumo e adicionar cobertura de teste.
+- [x] Separar e evidenciar na interface o estado de cursos concluídos, sem confundir com o progresso de materiais.
+- [x] Executar `pnpm build` após as mudanças finais de notificações de reviews, progresso de materiais e modal de módulos.
+- [x] Diferenciar no roadmap os itens validados apenas com testes/TypeScript daqueles validados também com build de produção.
