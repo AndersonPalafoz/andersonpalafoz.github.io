@@ -38,24 +38,30 @@ export default function AdminChamadaPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [batchSaving, setBatchSaving] = useState<"present" | "absent" | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin" && user.role !== "professor") router.replace("/");
   }, [authLoading, router, user]);
 
+  const loadRecords = async () => {
+    try {
+      setLoading(true);
+      setLoadError(null);
+      const response = await fetch("/api/admin/attendance", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Não foi possível carregar a frequência.");
+      setRecords(payload.records || []);
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : "Não foi possível carregar a frequência.";
+      setLoadError(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadRecords = async () => {
-      try {
-        const response = await fetch("/api/admin/attendance", { cache: "no-store" });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar a frequência.");
-        setRecords(payload.records || []);
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Não foi possível carregar a frequência.");
-      } finally {
-        setLoading(false);
-      }
-    };
     if (!authLoading && user) void loadRecords();
   }, [authLoading, user]);
 
@@ -114,7 +120,7 @@ export default function AdminChamadaPage() {
     toast.success("Relatório preparado para impressão ou salvamento em PDF.");
   };
 
-  if (authLoading || loading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>;
+  if (authLoading || (loading && records.length === 0 && !loadError)) return <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3"><Loader2 className="animate-spin text-red-600" size={36} /><p className="text-sm font-semibold text-muted-foreground">Carregando registros de chamada...</p></div>;
   if (!user || (user.role !== "admin" && user.role !== "professor")) return null;
 
   return (
@@ -156,7 +162,15 @@ export default function AdminChamadaPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Registros de presença filtrados</h2><p className="text-xs text-gray-500">Ações em massa aplicam-se aos alunos do recorte atual.</p></div></div><div className="flex flex-wrap gap-2"><Button onClick={() => void handleBulkStatus("present")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"><CheckCheck size={16} /> {batchSaving === "present" ? "Salvando..." : "Selecionar Todos: Presentes"}</Button><Button onClick={() => void handleBulkStatus("absent")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-red-200 text-red-700 hover:bg-red-50"><UserX size={16} /> {batchSaving === "absent" ? "Salvando..." : "Selecionar Todos: Ausentes"}</Button><Button onClick={exportCSV} variant="outline" className="h-10 gap-2"><Download size={16} className="text-red-600" /> Exportar CSV</Button><Button onClick={exportPDF} className="h-10 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> Exportar PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro encontrado para os filtros selecionados.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
+        {loadError ? (
+          <section className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center space-y-4">
+            <p className="text-base font-bold text-red-900">Falha ao carregar dados de chamada</p>
+            <p className="text-sm text-red-700 max-w-md mx-auto">{loadError}</p>
+            <Button onClick={() => void loadRecords()} className="bg-red-600 text-white hover:bg-red-700">Tentar novamente</Button>
+          </section>
+        ) : (
+          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Registros de presença filtrados</h2><p className="text-xs text-gray-500">Ações em massa aplicam-se aos alunos do recorte atual.</p></div></div><div className="flex flex-wrap gap-2"><Button onClick={() => void handleBulkStatus("present")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"><CheckCheck size={16} /> {batchSaving === "present" ? "Salvando..." : "Selecionar Todos: Presentes"}</Button><Button onClick={() => void handleBulkStatus("absent")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-red-200 text-red-700 hover:bg-red-50"><UserX size={16} /> {batchSaving === "absent" ? "Salvando..." : "Selecionar Todos: Ausentes"}</Button><Button onClick={exportCSV} variant="outline" className="h-10 gap-2"><Download size={16} className="text-red-600" /> Exportar CSV</Button><Button onClick={exportPDF} className="h-10 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> Exportar PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro encontrado para os filtros selecionados.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
+        )}
       </main>
     </div>
   );
