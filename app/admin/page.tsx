@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, BookOpen, FileText, Users, Loader, Mail, UserPlus, Calendar, MessageCircle } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Users, Loader, Mail, UserPlus, Calendar, MessageCircle, Globe } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Stats {
@@ -279,6 +279,14 @@ export default function AdminDashboard() {
               <BarChart3 className="text-orange-600 mb-4" size={40} />
               <h2 className="text-xl font-bold text-foreground mb-2">Relatórios</h2>
               <p className="text-muted-foreground">Estatísticas e progresso dos alunos</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/cms">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8 border-2 border-red-200 bg-red-50/40">
+              <Globe className="text-red-600 mb-4" size={40} />
+              <h2 className="text-xl font-bold text-foreground mb-2">CMS Global Inteligente</h2>
+              <p className="text-muted-foreground">Editar textos, mídias e logotipos de qualquer página</p>
             </div>
           </Link>
 
