@@ -9,6 +9,7 @@ interface Course {
   id: number;
   title: string;
   level: string;
+  category?: string | null;
   modules: number;
   instructor?: string | null;
   description: string | null;
@@ -19,11 +20,14 @@ export default function AdminCursos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverRemovalPending, setCoverRemovalPending] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     level: "A1",
+    category: "",
     modules: 4,
     instructor: "Anderson Palafoz",
     modality: "individual" as "individual" | "group",
@@ -71,6 +75,7 @@ export default function AdminCursos() {
     setFormData({
       title: course.title,
       level: course.level || "A1",
+      category: course.category || "",
       modules: course.modules || 1,
       instructor: course.instructor || "Anderson Palafoz",
       modality: course.modality || "individual",
@@ -83,6 +88,33 @@ export default function AdminCursos() {
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCoverUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const payload = new FormData();
+    payload.append("file", file);
+    payload.append("context", "course-cover");
+    try {
+      setUploadingCover(true);
+      const response = await fetch("/api/upload", { method: "POST", body: payload });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Falha ao enviar capa");
+      setFormData((current) => ({ ...current, imageUrl: data.url }));
+      toast.success("Capa enviada com sucesso.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar a capa.");
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
+  const confirmCoverRemoval = () => {
+    setFormData((current) => ({ ...current, imageUrl: "" }));
+    setCoverRemovalPending(false);
+    toast.success("Capa removida do formulário. Salve o curso para confirmar.");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,7 +138,7 @@ export default function AdminCursos() {
         setEditingId(null);
         alert("Curso atualizado com sucesso!");
         setShowForm(false);
-        setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+        setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
       } else {
         const response = await fetch("/api/admin/courses", {
           method: "POST",
@@ -150,7 +182,7 @@ export default function AdminCursos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", level: "A1", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+              setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
           >
@@ -195,6 +227,11 @@ export default function AdminCursos() {
                     <option value="C1">C1 - Avançado / Advanced</option>
                     <option value="C2">C2 - Profissional / Mastery</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Categoria pedagógica</label>
+                  <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="Ex: Inglês Geral, Gramática, Conversação" className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition" />
                 </div>
 
                 <div>
@@ -272,19 +309,13 @@ export default function AdminCursos() {
                       placeholder="https://... ou cole o link da imagem"
                       className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition text-sm"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const sampleUrl = "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&q=80&w=800";
-                        setFormData({ ...formData, imageUrl: sampleUrl });
-                        toast.success("Imagem de capa padrão anexada com sucesso!");
-                      }}
-                      className="px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs whitespace-nowrap transition"
-                    >
-                      Usar Exemplo
-                    </button>
+                    <label htmlFor="course-cover-upload" className={`inline-flex cursor-pointer items-center justify-center rounded-xl bg-red-50 px-4 py-3 text-xs font-bold text-red-700 transition hover:bg-red-100 whitespace-nowrap ${uploadingCover ? "pointer-events-none opacity-60" : ""}`}>
+                      {uploadingCover ? "Enviando..." : "Enviar imagem"}
+                    </label>
+                    <input id="course-cover-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleCoverUpload} className="sr-only" disabled={uploadingCover} />
+                    {formData.imageUrl && <button type="button" onClick={() => setCoverRemovalPending(true)} className="inline-flex items-center justify-center rounded-xl bg-gray-100 px-4 py-3 text-xs font-bold text-gray-700 transition hover:bg-gray-200 whitespace-nowrap">Remover capa</button>}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Cole um link direto de imagem ou utilize um modelo de capa otimizado para a plataforma.</p>
+                  <p className="text-xs text-gray-500 mt-1">Cole um link direto ou envie JPG, PNG, WebP ou GIF. A imagem enviada fica armazenada de forma persistente.</p>
                 </div>
               </div>
 
@@ -389,6 +420,15 @@ export default function AdminCursos() {
           )}
         </div>
       </div>
+      {coverRemovalPending && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="remove-cover-title">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 id="remove-cover-title" className="text-xl font-black text-gray-900">Remover imagem de capa?</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600">A capa será retirada deste formulário. Para persistir a remoção, confirme salvando o curso.</p>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setCoverRemovalPending(false)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Cancelar</button><button type="button" onClick={confirmCoverRemoval} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">Remover imagem</button></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

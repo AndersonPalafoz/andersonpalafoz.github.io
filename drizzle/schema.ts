@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean, uniqueIndex, jsonb, numeric } from "drizzle-orm/pg-core";
 
 // Enums
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
@@ -25,6 +25,8 @@ export const users = pgTable("users", {
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  passwordHash: text("passwordHash"),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").notNull().default("user"), // user, professor, admin
   requestedRole: varchar("requestedRole", { length: 32 }).default("student"), // student, professor
@@ -45,6 +47,17 @@ export const users = pgTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  usedAt: timestamp("usedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+
 /**
  * Courses table - Cursos disponíveis na plataforma
  */
@@ -53,8 +66,17 @@ export const courses = pgTable("courses", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
+  category: varchar("category", { length: 120 }),
   modules: integer("modules").default(0),
   instructor: varchar("instructor", { length: 255 }).default("Anderson Palafoz"),
+  modality: varchar("modality", { length: 32 }).default("individual"),
+  isFree: boolean("isFree").default(true).notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).default("0"),
+  imageUrl: varchar("imageUrl", { length: 1000 }),
+  audioUrl: varchar("audioUrl", { length: 1000 }),
+  videoUrl: varchar("videoUrl", { length: 1000 }),
+  stripeProductId: varchar("stripeProductId", { length: 255 }),
+  stripePriceId: varchar("stripePriceId", { length: 255 }),
   deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -62,6 +84,23 @@ export const courses = pgTable("courses", {
 
 export type Course = typeof courses.$inferSelect;
 export type InsertCourse = typeof courses.$inferInsert;
+
+/**
+ * Purchases are local fulfillment references; payment state and receipt details remain in Stripe.
+ */
+export const coursePurchases = pgTable("course_purchases", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  courseId: integer("courseId").notNull().references(() => courses.id),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }).notNull().unique(),
+  stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  fulfilledAt: timestamp("fulfilledAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CoursePurchase = typeof coursePurchases.$inferSelect;
+export type InsertCoursePurchase = typeof coursePurchases.$inferInsert;
 
 /**
  * Enrollments table - Inscrições de alunos em cursos
@@ -145,6 +184,13 @@ export const activities = pgTable("activities", {
   description: text("description"),
   type: activityTypeEnum("type").notNull(),
   dueDate: timestamp("dueDate"),
+  metadata: jsonb("metadata").$type<{
+    tag?: string;
+    status?: "pending" | "completed";
+    subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+    attachments?: Array<{ id: string; name: string; url: string }>;
+    order?: number;
+  }>().default({}),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -245,7 +291,9 @@ export const lessonProgress = pgTable("lessonProgress", {
   approvalNote: text("approvalNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+}, (table) => ({
+  userLessonIdentity: uniqueIndex("lesson_progress_user_lesson_idx").on(table.userId, table.lessonId),
+}));
 
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type InsertLessonProgress = typeof lessonProgress.$inferInsert;
@@ -400,3 +448,39 @@ export const articleComments = pgTable("article_comments", {
 
 export type ArticleComment = typeof articleComments.$inferSelect;
 export type InsertArticleComment = typeof articleComments.$inferInsert;
+
+
+export const wishlistItems = pgTable("wishlist_items", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  courseId: integer("courseId").notNull().references(() => courses.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userCourseIdentity: uniqueIndex("wishlist_user_course_idx").on(table.userId, table.courseId),
+}));
+export type WishlistItem = typeof wishlistItems.$inferSelect;
+
+export const lessonNotes = pgTable("lesson_notes", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  lessonId: integer("lessonId").notNull().references(() => lessons.id),
+  note: text("note").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => ({
+  userLessonIdentity: uniqueIndex("lesson_notes_user_lesson_idx").on(table.userId, table.lessonId),
+}));
+export type LessonNote = typeof lessonNotes.$inferSelect;
+
+export const courseReviews = pgTable("course_reviews", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id),
+  courseId: integer("courseId").notNull().references(() => courses.id),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => ({
+  userCourseIdentity: uniqueIndex("course_reviews_user_course_idx").on(table.userId, table.courseId),
+}));
+export type CourseReview = typeof courseReviews.$inferSelect;

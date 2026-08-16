@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getMaterialById } from "@/lib/db";
 import { DownloadMaterialButton } from "@/components/download-material-button";
-import { Download } from "lucide-react";
+import { Download, FileText, Image as ImageIcon } from "lucide-react";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
   const material = await getMaterialById(materialId);
@@ -46,13 +46,31 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
             <span>{material.downloads} downloads</span>
           </div>
 
-          <div className="pt-4">
+          <div className="space-y-5 pt-4">
+            {material.fileUrl && /\.pdf(?:$|[?#])/i.test(material.fileUrl) && (
+              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm" aria-label="Visualizador do PDF">
+                <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-800">
+                  <FileText size={18} className="text-red-600" />
+                  Leitura prévia do PDF
+                </div>
+                <iframe
+                  src={material.fileUrl}
+                  title={`Visualização de ${material.title}`}
+                  className="h-[min(70vh,720px)] w-full bg-white"
+                  loading="lazy"
+                />
+              </section>
+            )}
+            {material.fileUrl && /\.(?:png|jpe?g|webp|gif)(?:$|[?#])/i.test(material.fileUrl) && (
+              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-4 shadow-sm" aria-label="Visualizador da imagem">
+                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800"><ImageIcon size={18} className="text-red-600" />Pré-visualização da imagem</div>
+                <img src={material.fileUrl} alt={`Pré-visualização de ${material.title}`} className="mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain" />
+              </section>
+            )}
             {material.fileUrl ? (
               <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />
             ) : (
-              <p className="text-gray-500">
-                Arquivo ainda não disponível para este material.
-              </p>
+              <p className="text-gray-500">Arquivo ainda não disponível para este material.</p>
             )}
           </div>
         </div>

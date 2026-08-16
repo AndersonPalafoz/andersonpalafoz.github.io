@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { getUserEnrollments, getCertificates, getUserActivityProgress } from "@/lib/db";
+import { getUserEnrollments, getCertificates, getUserActivityProgress, getResumeLesson } from "@/lib/db";
 import { BookOpen, Award, CheckSquare, ArrowRight } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -22,7 +22,8 @@ export default async function DashboardPage() {
     ]);
   }
 
-  const cursosAtivos = enrollments.filter((e) => e.status === "active");
+  const cursosAtivos = await Promise.all(enrollments.filter((e) => e.status === "active").map(async (enrollment) => ({ ...enrollment, resume: enrollment.course ? await getResumeLesson(userId, enrollment.course.id) : null })));
+
   const atividadesPendentes = atividades.filter((a) => a.status !== "completed");
   const primeiroNome = session?.user?.name?.split(" ")[0] || "aluno(a)";
 
@@ -93,30 +94,19 @@ export default async function DashboardPage() {
                 key={enrollment.id}
                 className="p-6 rounded-xl border border-gray-200 bg-white space-y-4"
               >
-                <div>
-                  <span className="inline-block bg-red-100 text-red-600 px-2.5 py-0.5 rounded-full text-xs font-semibold mb-2">
-                    {enrollment.course?.level}
-                  </span>
-                  <h3 className="font-bold text-gray-900">{enrollment.course?.title}</h3>
-                </div>
+                  <div className="flex items-start gap-3">
+                    {enrollment.course?.imageUrl ? <img src={enrollment.course.imageUrl} alt="" className="h-14 w-20 rounded-xl object-cover" /> : <div className="h-14 w-20 rounded-xl bg-red-50" />}
+                    <div><span className="inline-block bg-red-100 text-red-600 px-2.5 py-0.5 rounded-full text-xs font-semibold mb-2">{enrollment.course?.level}</span><h3 className="font-bold text-gray-900">{enrollment.course?.title}</h3></div>
+                  </div>
 
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <span>Progresso</span>
-                    <span className="font-semibold">{enrollment.progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-100 rounded-full h-2">
-                    <div
-                      className="bg-red-600 h-2 rounded-full transition-all"
-                      style={{ width: `${enrollment.progress}%` }}
-                    />
-                  </div>
-                </div>
+                <div className="space-y-1.5"><div className="flex justify-between text-xs text-gray-600"><span>Progresso</span><span className="font-semibold">{enrollment.resume?.percentage ?? enrollment.progress}%</span></div><div className="w-full bg-gray-100 rounded-full h-2"><div className="bg-red-600 h-2 rounded-full transition-all" style={{ width: `${enrollment.resume?.percentage ?? enrollment.progress}%` }} /></div></div>
+                {enrollment.resume?.lesson && <p className="rounded-xl bg-red-50 px-3 py-2 text-xs text-red-800"><span className="font-black">Próxima aula:</span> {enrollment.resume.lesson.title}</p>}
+
 
                 {enrollment.course && (
-                  <Link href={`/cursos/${enrollment.course.id}`}>
+                  <Link href={enrollment.resume?.lesson ? `/cursos/${enrollment.course.id}/aulas/${enrollment.resume.lesson.id}` : `/cursos/${enrollment.course.id}`} className="block">
                     <button className="w-full border border-gray-300 hover:border-red-600 hover:text-red-600 text-gray-700 py-2 rounded-lg font-medium text-sm transition-colors">
-                      Continuar
+                      {enrollment.resume?.lesson ? "Continuar da última aula" : "Abrir curso"}
                     </button>
                   </Link>
                 )}

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Shield, GraduationCap, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { Heart, Shield, GraduationCap, Menu, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 const navLinks = [
@@ -18,7 +18,39 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [wishlistPulse, setWishlistPulse] = useState(false);
   const { data: session } = useSession();
+
+  useEffect(() => {
+    let mounted = true;
+    let timer: number | undefined;
+    const load = async () => {
+      if (!session) return;
+      try {
+        const response = await fetch("/api/wishlist", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = await response.json();
+        if (mounted) setWishlistCount(Array.isArray(data.items) ? data.items.length : 0);
+      } catch {
+        // O cabeçalho continua disponível mesmo sem a API de desejos.
+      }
+    };
+    const handleChange = (event: Event) => {
+      const detail = (event as CustomEvent<{ saved?: boolean }>).detail;
+      setWishlistCount((current) => Math.max(0, current + (detail?.saved ? 1 : -1)));
+      setWishlistPulse(true);
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => setWishlistPulse(false), 700);
+    };
+    void load();
+    window.addEventListener("wishlist:changed", handleChange);
+    return () => {
+      mounted = false;
+      if (timer) window.clearTimeout(timer);
+      window.removeEventListener("wishlist:changed", handleChange);
+    };
+  }, [session]);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white shadow-sm">
@@ -46,6 +78,12 @@ export function Navbar() {
           <div className="hidden lg:flex items-center gap-2.5 whitespace-nowrap">
             {session ? (
               <>
+                <Link href="/dashboard/desejos" aria-label="Abrir Lista de Desejos">
+                  <Button variant="outline" className={`relative border-gray-300 text-gray-700 hover:border-red-600 hover:text-red-600 ${wishlistPulse ? "animate-pulse" : ""}`}>
+                    <Heart size={16} className={wishlistPulse ? "fill-red-500 text-red-500" : ""} />
+                    {wishlistCount > 0 && <span className="absolute -right-2 -top-2 min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-[10px] font-black text-white">{wishlistCount > 99 ? "99+" : wishlistCount}</span>}
+                  </Button>
+                </Link>
                 {(session.user?.role === "admin" || session.user?.role === "professor") && (
                   <Link href="/professor">
                     <Button
@@ -113,6 +151,14 @@ export function Navbar() {
                 </Button>
               </Link>
             ))}
+            {session && (
+              <Link href="/dashboard/desejos" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" className={`w-full justify-start text-gray-700 hover:text-red-600 gap-2 ${wishlistPulse ? "animate-pulse" : ""}`}>
+                  <Heart size={16} className={wishlistCount > 0 ? "fill-red-500 text-red-500" : ""} />
+                  Lista de Desejos {wishlistCount > 0 && <span className="ml-auto rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black text-white">{wishlistCount}</span>}
+                </Button>
+              </Link>
+            )}
             {(session?.user?.role === "admin" || session?.user?.role === "professor") && (
               <Link href="/professor">
                 <Button

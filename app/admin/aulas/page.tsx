@@ -31,6 +31,7 @@ export default function AdminAulasPage() {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingMaterial, setUploadingMaterial] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -272,16 +273,29 @@ export default function AdminAulasPage() {
                   </div>
                   <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
                     <Upload size={18} />
-                    <span>Carregar Arquivo</span>
+                    <span>{uploadingMaterial ? "Carregando..." : "Carregar Arquivo"}</span>
                     <input
                       type="file"
                       accept=".pdf,.doc,.docx,.zip,.mp3"
                       className="hidden"
-                      onChange={(e) => {
+                      onChange={async (e) => {
                         const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData({ ...formData, materialUrl: `/materiais/${file.name}` });
-                          toast.success(`Arquivo ${file.name} vinculado à aula com sucesso!`);
+                        e.currentTarget.value = "";
+                        if (!file) return;
+                        try {
+                          setUploadingMaterial(true);
+                          const payload = new FormData();
+                          payload.append("file", file);
+                          payload.append("context", "lesson-material");
+                          const response = await fetch("/api/upload", { method: "POST", body: payload });
+                          const result = await response.json();
+                          if (!response.ok) throw new Error(result.error || "Falha ao carregar o material");
+                          setFormData((current) => ({ ...current, materialUrl: result.url }));
+                          toast.success(`Arquivo ${file.name} carregado e pronto para vinculação.`);
+                        } catch (error) {
+                          toast.error(error instanceof Error ? error.message : "Erro ao carregar material.");
+                        } finally {
+                          setUploadingMaterial(false);
                         }
                       }}
                     />

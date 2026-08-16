@@ -34,7 +34,8 @@ export default function AdminCourseModulesPage({
         const found = (coursesData || []).find((c: any) => c.id === courseId);
         setCourse(found);
 
-        const resMods = await fetch(`/api/courses/${courseId}/modules`);
+        const resMods = await fetch(`/api/admin/courses/${courseId}/modules`);
+        if (!resMods.ok) throw new Error("Não foi possível carregar os módulos");
         const modsData = await resMods.json();
         setModules(modsData.modules || []);
       } catch (err) {
@@ -66,14 +67,13 @@ export default function AdminCourseModulesPage({
 
       if (res.ok) {
         const data = await res.json();
+        if (!data.module?.id) throw new Error("Resposta inválida ao criar módulo");
         toast.success("Módulo criado com sucesso!");
-        setModules([...modules, data.module || { id: Date.now(), title: newModuleTitle, order: modules.length + 1 }]);
+        setModules((current) => [...current, data.module]);
         setNewModuleTitle("");
       } else {
-        const newMod = { id: Date.now(), title: newModuleTitle, order: modules.length + 1 };
-        setModules([...modules, newMod]);
-        toast.success("Módulo adicionado à estrutura do curso!");
-        setNewModuleTitle("");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Não foi possível criar o módulo");
       }
     } catch (err) {
       console.error("Erro ao criar módulo:", err);
@@ -85,20 +85,30 @@ export default function AdminCourseModulesPage({
 
   const moveModule = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= modules.length) return;
+    if (newIndex < 0 || newIndex >= modules.length || saving) return;
+    const previous = modules;
     const updated = [...modules];
-    const temp = updated[index];
-    updated[index] = updated[newIndex];
-    updated[newIndex] = temp;
-    const reindexed = updated.map((m, idx) => ({ ...m, order: idx + 1 }));
+    [updated[index], updated[newIndex]] = [updated[newIndex], updated[index]];
+    const reindexed = updated.map((module, moduleIndex) => ({ ...module, order: moduleIndex + 1 }));
     setModules(reindexed);
-    
+    setSaving(true);
+
     try {
       toast.loading("Salvando nova ordem dos módulos...", { id: "reorder-mod" });
-      await new Promise((r) => setTimeout(r, 400));
+      const response = await fetch(`/api/admin/courses/${courseId}/modules`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ moduleIds: reindexed.map((module) => module.id) }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível salvar a ordem");
+      setModules(data.modules || reindexed);
       toast.success("Ordem dos módulos alterada e salva com sucesso!", { id: "reorder-mod" });
-    } catch {
-      toast.error("Erro ao salvar ordem.", { id: "reorder-mod" });
+    } catch (error) {
+      setModules(previous);
+      toast.error(error instanceof Error ? error.message : "Erro ao salvar ordem.", { id: "reorder-mod" });
+    } finally {
+      setSaving(false);
     }
   };
 
