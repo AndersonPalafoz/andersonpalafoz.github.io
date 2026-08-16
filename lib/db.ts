@@ -4,13 +4,16 @@ import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
 import { eq, desc } from "drizzle-orm";
 
-const connectionString =
-  process.env.DATABASE_URL || process.env.NEON_DATABASE_URL;
+// O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
+// usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
+const connectionString = process.env.NEON_DATABASE_URL || process.env.DATABASE_URL;
 
 if (!connectionString) {
-  throw new Error(
-    "DATABASE_URL (or NEON_DATABASE_URL) environment variable is not set"
-  );
+  throw new Error("NEON_DATABASE_URL (or DATABASE_URL) environment variable is not set");
+}
+
+if (!connectionString.startsWith("postgres://") && !connectionString.startsWith("postgresql://")) {
+  throw new Error("The database connection must use a PostgreSQL URL (postgres:// or postgresql://)");
 }
 
 // Create the connection
@@ -71,7 +74,7 @@ export async function getUserByEmail(email: string) {
 
 export async function updateUserProfile(
   userId: number,
-  data: Partial<{ name: string; phone: string; location: string; bio: string }>
+  data: Partial<{ name: string; phone: string; location: string; bio: string; avatarUrl: string }>
 ) {
   return await db.update(schema.users)
     .set({ ...data, updatedAt: new Date() })
@@ -211,12 +214,16 @@ export async function createCourse(data: {
   description?: string;
   level: string;
   modules?: number;
+  instructor?: string;
+  isFree?: boolean;
+  price?: number;
 }) {
   return await db.insert(schema.courses).values({
     title: data.title,
     description: data.description,
     level: data.level,
     modules: data.modules || 0,
+    instructor: data.instructor || "Anderson Palafoz",
   }).returning();
 }
 
@@ -225,6 +232,9 @@ export async function updateCourse(id: number, data: Partial<{
   description: string;
   level: string;
   modules: number;
+  instructor: string;
+  isFree: boolean;
+  price: number;
 }>) {
   return await db.update(schema.courses)
     .set({
@@ -248,6 +258,7 @@ export async function createMaterial(data: {
   category: string;
   level: string;
   fileUrl?: string;
+  isPublic?: boolean;
 }) {
   return await db.insert(schema.materials).values({
     title: data.title,
@@ -255,6 +266,7 @@ export async function createMaterial(data: {
     category: data.category,
     level: data.level,
     fileUrl: data.fileUrl,
+    isPublic: data.isPublic ?? true,
   }).returning();
 }
 
@@ -264,6 +276,7 @@ export async function updateMaterial(id: number, data: Partial<{
   category: string;
   level: string;
   fileUrl: string;
+  isPublic: boolean;
 }>) {
   return await db.update(schema.materials)
     .set({
@@ -352,11 +365,88 @@ export async function getAdminStats() {
   const usersCount = await db.query.users.findMany();
   const enrollmentsCount = await db.query.enrollments.findMany();
 
+  const activeUsers = usersCount.filter((user) => !user.deletedAt);
+  const completed = enrollmentsCount.filter((e) => e.progress === 100);
+  const avgProgress = enrollmentsCount.length > 0
+    ? Math.round(enrollmentsCount.reduce((acc, e) => acc + (e.progress || 0), 0) / enrollmentsCount.length)
+    : 0;
+
+  const roleCounts = activeUsers.reduce(
+    (counts, user) => {
+      if (user.role === "admin") counts.admin += 1;
+      else if (user.role === "professor") counts.professor += 1;
+      else counts.student += 1;
+      return counts;
+    },
+    { admin: 0, professor: 0, student: 0 },
+  );
+
+  const monthFormatter = new Intl.DateTimeFormat("pt-BR", { month: "short" });
+  const currentMonth = new Date();
+  currentMonth.setDate(1);
+  currentMonth.setHours(0, 0, 0, 0);
+  const monthlyActivity = Array.from({ length: 6 }, (_, index) => {
+    const monthStart = new Date(currentMonth);
+    monthStart.setMonth(currentMonth.getMonth() - (5 - index));
+    const nextMonth = new Date(monthStart);
+    nextMonth.setMonth(monthStart.getMonth() + 1);
+
+    const enrollments = enrollmentsCount.filter((enrollment) => {
+      const date = new Date(enrollment.enrolledAt);
+      return date >= monthStart && date < nextMonth;
+    }).length;
+
+    const activeUsers = usersCount.filter((user) => {
+      if (user.deletedAt) return false;
+      const date = new Date(user.lastSignedIn);
+      return date >= monthStart && date < nextMonth;
+    }).length;
+
+    return {
+      month: monthFormatter.format(monthStart).replace(".", ""),
+      enrollments,
+      activeUsers,
+    };
+  });
+
   return {
-    totalCourses: coursesCount.length,
+    totalCourses: coursesCount.filter((course) => !course.deletedAt).length,
     totalMaterials: materialsCount.length,
     totalArticles: articlesCount.length,
-    totalUsers: usersCount.length,
+    totalUsers: activeUsers.length,
     totalEnrollments: enrollmentsCount.length,
+    completedCourses: completed.length,
+    averageProgress: avgProgress,
+    roleCounts,
+    monthlyActivity,
   };
+}
+
+// Article Comments & Ratings helpers
+export async function getArticleComments(articleId: number) {
+  try {
+    return await db.select()
+      .from(schema.articleComments)
+      .where(eq(schema.articleComments.articleId, articleId))
+      .orderBy(desc(schema.articleComments.createdAt));
+  } catch (err) {
+    console.error("Error fetching article comments:", err);
+    return [];
+  }
+}
+
+export async function createArticleComment(data: {
+  articleId: number;
+  userName: string;
+  userEmail?: string;
+  rating: number;
+  comment: string;
+}) {
+  return await db.insert(schema.articleComments).values({
+    articleId: data.articleId,
+    userName: data.userName,
+    userEmail: data.userEmail,
+    rating: data.rating,
+    comment: data.comment,
+  }).returning();
 }

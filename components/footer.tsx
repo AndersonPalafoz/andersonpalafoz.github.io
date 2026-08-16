@@ -19,7 +19,7 @@ export function Footer() {
             {/* Social Links */}
             <div className="flex gap-4 pt-4">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/APalafoz/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-red-600 transition"
@@ -27,7 +27,7 @@ export function Footer() {
                 <Facebook size={20} />
               </a>
               <a
-                href="https://instagram.com"
+                href="http://instagram.com/andersonpalafoz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-red-600 transition"
@@ -35,7 +35,7 @@ export function Footer() {
                 <Instagram size={20} />
               </a>
               <a
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/andersonpalafoz/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-red-600 transition"
