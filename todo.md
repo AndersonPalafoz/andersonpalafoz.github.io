@@ -593,3 +593,8 @@
 - [x] Melhorar o dashboard do aluno com widgets interativos, resumo de XP, ofensiva e atalhos rápidos
 - [x] Implementar as principais melhorias de UX/UI sugeridas na análise profunda para navegação intuitiva
 - [x] Criar histórico de feedbacks na Trilha Adaptativa para revisão dos conteúdos curtidos pelos alunos
+
+## Filtros de Feedback, Onboarding no Dashboard e Dark Mode Completo — 16/08/2026
+- [x] Adicionar filtros por categoria e data no histórico de feedbacks da Trilha Adaptativa
+- [x] Implementar tour guiado / onboarding interativo no dashboard do aluno para apresentar novos recursos
+- [x] Garantir suporte completo e consistente a modo escuro (dark mode) na página inicial e no dashboard
