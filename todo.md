@@ -624,3 +624,14 @@
 
 ## Proteção de Downloads de Conteúdo Pago — 16/08/2026
 - [x] Restringir download de materiais e conteúdos pagos apenas a administradores, professores aprovados ou alunos com compra/matrícula confirmada
+
+## Refinamento de UX, Player com Notas, Relatórios Filtrados, Modal de Upgrade e Menu Clean — 16/08/2026
+- [ ] Adicionar notas pessoais vinculadas a marcadores de tempo no player universal de vídeo
+- [ ] Implementar filtros de data e categoria no painel de relatórios para exportação CSV
+- [ ] Criar modal de aviso amigável com botão de 'Fazer Upgrade' para downloads pagos sem autorização
+- [ ] Simplificar o menu superior (header) reduzindo a poluição visual com dropdowns organizados
+
+## Aprimoramentos de Dark Mode e Simplificação do Header — 16/08/2026
+- [x] Refinar suporte a modo escuro em todas as páginas públicas e privadas com variáveis de contraste otimizadas
+- [x] Simplificar o menu superior (header) agrupando acessos rápidos em menus limpos para evitar poluição visual
+- [x] Criar modal de upgrade para downloads pagos bloqueados
