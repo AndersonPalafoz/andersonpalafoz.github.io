@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "themePreference" varchar(20) DEFAULT 'light';
