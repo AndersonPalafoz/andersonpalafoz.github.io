@@ -531,10 +531,11 @@ export const siteContentBlocks = pgTable("site_content_blocks", {
   sectionKey: varchar("sectionKey", { length: 100 }).notNull(), // hero_title, about_text, banner, etc.
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
-  status: varchar("status", { length: 32 }).default("published").notNull(), // published, draft
+  status: varchar("status", { length: 32 }).default("published").notNull(), // published, draft, scheduled
   contentType: varchar("contentType", { length: 32 }).default("text").notNull(), // text, markdown, cta, html
   orderIndex: integer("orderIndex").default(0).notNull(),
   tag: varchar("tag", { length: 64 }).default("Geral").notNull(),
+  scheduledPublishAt: timestamp("scheduledPublishAt"),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
