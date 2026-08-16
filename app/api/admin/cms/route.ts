@@ -82,9 +82,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Preencha todos os campos obrigatórios do bloco." }, { status: 400 });
     }
 
-    const existing = await db.query.siteContentBlocks.findFirst({
-      where: eq(siteContentBlocks.sectionKey, sectionKey),
-    });
+    let existing = null;
+    if (id && !isNaN(Number(id))) {
+      existing = await db.query.siteContentBlocks.findFirst({
+        where: eq(siteContentBlocks.id, Number(id)),
+      });
+    }
+
+    if (!existing) {
+      existing = await db.query.siteContentBlocks.findFirst({
+        where: eq(siteContentBlocks.sectionKey, sectionKey),
+      });
+    }
 
     if (existing) {
       // Salvar revisão anterior no histórico
@@ -99,6 +108,7 @@ export async function POST(request: NextRequest) {
       const updated = await db.update(siteContentBlocks)
         .set({
           pageKey,
+          sectionKey,
           title,
           content,
           status: status || "published",
