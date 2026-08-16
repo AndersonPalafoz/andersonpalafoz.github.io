@@ -18,8 +18,8 @@ describe("academic analytics", () => {
     );
 
     expect(timeline).toEqual([
-      { month: "jan 26", monthKey: "2026-01", averageGrade: 90, attendanceRate: 50 },
-      { month: "fev 26", monthKey: "2026-02", averageGrade: 60, attendanceRate: 100 },
+      { month: "jan 26", monthKey: "2026-01", averageGrade: 90, gradeCount: 2, attendanceRate: 50, attendancePresent: 1, attendanceTotal: 2 },
+      { month: "fev 26", monthKey: "2026-02", averageGrade: 60, gradeCount: 1, attendanceRate: 100, attendancePresent: 1, attendanceTotal: 1 },
     ]);
   });
 
