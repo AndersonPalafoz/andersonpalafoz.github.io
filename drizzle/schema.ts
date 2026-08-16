@@ -556,3 +556,46 @@ export const siteContentRevisions = pgTable("site_content_revisions", {
 
 export type SiteContentRevision = typeof siteContentRevisions.$inferSelect;
 export type InsertSiteContentRevision = typeof siteContentRevisions.$inferInsert;
+
+/**
+ * Gamification User Points & Leaderboard table
+ */
+export const userGamificationPoints = pgTable("user_gamification_points", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  points: integer("points").default(0).notNull(),
+  level: varchar("level", { length: 50 }).default("Explorer (A1)").notNull(),
+  streakDays: integer("streakDays").default(1).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (table) => ({
+  userGamificationUnique: uniqueIndex("user_gamification_user_idx").on(table.userId),
+}));
+export type UserGamificationPoint = typeof userGamificationPoints.$inferSelect;
+
+/**
+ * Realtime Notifications table
+ */
+export const userNotifications = pgTable("user_notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  message: text("message").notNull(),
+  type: varchar("type", { length: 50 }).default("info").notNull(), // info, deadline, message, achievement
+  isRead: boolean("isRead").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type UserNotification = typeof userNotifications.$inferSelect;
+
+/**
+ * Speaking AI Assistant practice history table
+ */
+export const speakingAssistantHistory = pgTable("speaking_assistant_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  promptText: text("promptText").notNull(),
+  audioUrl: text("audioUrl"),
+  aiFeedback: text("aiFeedback").notNull(),
+  score: integer("score").default(85).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type SpeakingAssistantHistory = typeof speakingAssistantHistory.$inferSelect;
