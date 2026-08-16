@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Flame, Award, Zap, TrendingUp, ShieldCheck, CheckCircle2, Gift } from "lucide-react";
+import { Flame, Award, Zap, TrendingUp, ShieldCheck, CheckCircle2, Gift, Mic, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface Badge {
@@ -17,6 +17,7 @@ interface Mission {
   title: string;
   reward: number;
   completed: boolean;
+  type: "standard" | "speaking";
 }
 
 const mockBadges: Badge[] = [
@@ -30,19 +31,31 @@ export function StudentGamificationProfile() {
   const [totalXp, setTotalXp] = useState(1250);
   const currentStreak = 14;
   const rankPosition = 2;
+  const [celebrating, setCelebrating] = useState(false);
+  const [celebrationMsg, setCelebrationMsg] = useState("");
 
   const [missions, setMissions] = useState<Mission[]>([
-    { id: "m1", title: "Completar o Quiz diário de B1", reward: 50, completed: false },
-    { id: "m2", title: "Praticar 1 minuto de Speaking com IA", reward: 75, completed: false },
-    { id: "m3", title: "Marcar 1 material como concluído na biblioteca", reward: 40, completed: true },
+    { id: "m1", title: "Completar o Quiz diário de B1", reward: 50, completed: false, type: "standard" },
+    { id: "m2", title: "Gravar desafio de Speaking com IA", reward: 100, completed: false, type: "speaking" },
+    { id: "m3", title: "Marcar 1 material como concluído na biblioteca", reward: 40, completed: true, type: "standard" },
   ]);
 
-  const completeMission = (id: string, reward: number) => {
+  const triggerCelebration = (msg: string) => {
+    setCelebrationMsg(msg);
+    setCelebrating(true);
+    setTimeout(() => {
+      setCelebrating(false);
+    }, 3000);
+  };
+
+  const completeMission = (id: string, reward: number, title: string) => {
     setMissions((prev) =>
       prev.map((m) => {
         if (m.id === id && !m.completed) {
-          setTotalXp((xp) => xp + reward);
-          toast.success(`Missão concluída! +${reward} XP adicionados ao seu perfil.`);
+          const newTotal = totalXp + reward;
+          setTotalXp(newTotal);
+          toast.success(`Missão concluída! +${reward} XP adicionados.`);
+          triggerCelebration(`Parabéns! +${reward} XP por "${title}"!`);
           return { ...m, completed: true };
         }
         return m;
@@ -51,7 +64,26 @@ export function StudentGamificationProfile() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Banner de Celebração Animada */}
+      {celebrating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-gradient-to-tr from-red-600 to-rose-600 text-white p-8 rounded-3xl shadow-2xl text-center space-y-4 max-w-md w-full mx-4 border border-white/20 animate-in zoom-in-95">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 text-white shadow-inner mx-auto">
+              <Sparkles size={32} className="animate-spin" />
+            </div>
+            <h3 className="text-2xl font-black">Meta Atingida! 🚀</h3>
+            <p className="text-sm font-bold text-red-100">{celebrationMsg}</p>
+            <button
+              onClick={() => setCelebrating(false)}
+              className="bg-white text-red-600 font-black px-6 py-2.5 rounded-xl shadow-md hover:bg-slate-100 transition text-xs uppercase tracking-wider"
+            >
+              Continuar Estudando
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Banner Urbano & Acadêmico com Gradiente Coeso */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 p-6 sm:p-8 text-white shadow-2xl border border-slate-800">
         <div className="absolute right-0 top-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-red-600/10 blur-3xl pointer-events-none" />
@@ -145,7 +177,10 @@ export function StudentGamificationProfile() {
               {missions.map((m) => (
                 <div key={m.id} className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                   <div className="space-y-1 min-w-0 flex-1">
-                    <p className="font-extrabold text-xs text-slate-900 dark:text-white truncate">{m.title}</p>
+                    <p className="font-extrabold text-xs text-slate-900 dark:text-white truncate flex items-center gap-1.5">
+                      {m.type === "speaking" && <Mic size={13} className="text-red-600 shrink-0" />}
+                      {m.title}
+                    </p>
                     <span className="text-[10px] font-black text-amber-600 dark:text-amber-400">+{m.reward} XP</span>
                   </div>
                   {m.completed ? (
@@ -154,8 +189,8 @@ export function StudentGamificationProfile() {
                     </span>
                   ) : (
                     <button
-                      onClick={() => completeMission(m.id, m.reward)}
-                      className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-sm transition"
+                      onClick={() => completeMission(m.id, m.reward, m.title)}
+                      className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-3.5 py-1.5 rounded-xl shadow-sm transition shrink-0"
                     >
                       Resgatar
                     </button>
