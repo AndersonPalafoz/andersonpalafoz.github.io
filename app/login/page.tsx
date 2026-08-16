@@ -28,14 +28,10 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      await fetch("/api/auth/callback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      
+      const result = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/dashboard" });
+      if (result?.error) throw new Error("E-mail ou senha inválidos.");
       toast.success("Login realizado com sucesso!");
-      router.push("/dashboard");
+      router.push(result?.url || "/dashboard");
     } catch {
       toast.error("Erro ao autenticar. Verifique suas credenciais.");
     } finally {
@@ -52,8 +48,10 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      await new Promise((r) => setTimeout(r, 1000));
-      toast.success(`Instruções de recuperação enviadas para ${email}! Verifique sua caixa de entrada.`);
+      const response = await fetch("/api/auth/forgot-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível solicitar recuperação.");
+      toast.success(data.message || "Se o e-mail estiver cadastrado, enviaremos instruções.");
       setAuthMode("login");
     } catch {
       toast.error("Erro ao solicitar recuperação de senha.");

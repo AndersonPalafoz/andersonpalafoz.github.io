@@ -4,6 +4,19 @@ import { authOptions } from "@/lib/auth";
 import { getUserByEmail, updateUserProfile } from "@/lib/db";
 import { uploadAvatar } from "@/lib/avatar";
 
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    const user = await getUserByEmail(session.user.email);
+    if (!user || user.deletedAt) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
+    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl } });
+  } catch (error) {
+    console.error("Error loading profile:", error);
+    return NextResponse.json({ error: "Falha ao carregar perfil" }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);

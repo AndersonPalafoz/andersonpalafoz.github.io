@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -46,6 +46,9 @@ export default function LessonPageClient() {
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(false);
   const [activePreviewUrl, setActivePreviewUrl] = useState<string | null>(null);
+  const [certificateCelebration, setCertificateCelebration] = useState<{ certificateUrl: string; certificateCode?: string | null } | null>(null);
+  const [personalNote, setPersonalNote] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   const [speakingActivity, setSpeakingActivity] = useState<{ id: number; title: string } | null>(null);
   const [speakingHistory, setSpeakingHistory] = useState<SpeakingAttempt[]>([]);
@@ -66,6 +69,8 @@ export default function LessonPageClient() {
         setCourseTitle(json.course?.title || "Curso Oficial");
         setMaterials(json.materials || []);
         setCompleted(json.completed);
+        const noteRes = await fetch(`/api/notes?lessonId=${lessonId}`);
+        if (noteRes.ok) { const noteJson = await noteRes.json(); setPersonalNote(noteJson.note?.note || ""); }
 
         const speakingAct = json.activities?.find((a: any) => a.type === "speaking");
         if (speakingAct) {
@@ -88,6 +93,15 @@ export default function LessonPageClient() {
     void loadLesson();
   }, [lessonId]);
 
+  const savePersonalNote = async () => {
+    setSavingNote(true);
+    try {
+      const response = await fetch("/api/notes", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lessonId: Number(lessonId), note: personalNote }) });
+      if (!response.ok) throw new Error("Não foi possível salvar sua anotação.");
+      toast.success("Anotação salva para esta aula.");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao salvar anotação."); } finally { setSavingNote(false); }
+  };
+
   const handleToggleComplete = async () => {
     setLoadingProgress(true);
     try {
@@ -102,6 +116,7 @@ export default function LessonPageClient() {
         toast.success(!completed ? "Aula marcada como concluída com sucesso!" : "Aula marcada como pendente.");
         if (payload.certificate?.certificateUrl) {
           toast.success("Parabéns! 100% concluído: Seu certificado PDF foi emitido automaticamente.");
+          setCertificateCelebration(payload.certificate);
         }
       } else {
         toast.error(payload.error || "Erro ao atualizar progresso da aula.");
@@ -220,6 +235,8 @@ export default function LessonPageClient() {
             </p>
           </div>
 
+          <div className="border-t border-gray-100 pt-6 space-y-4"><div className="flex items-center justify-between"><h3 className="font-bold text-base text-gray-900">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div><textarea value={personalNote} onChange={(event) => setPersonalNote(event.target.value)} placeholder="Registre vocabulário, dúvidas e observações importantes..." className="min-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 outline-none focus:border-red-500" /><Button onClick={savePersonalNote} disabled={savingNote} variant="outline" className="gap-2 rounded-xl border-gray-300 font-bold">{savingNote && <Loader2 className="animate-spin" size={16} />} Salvar anotação</Button></div>
+
           <div className="border-t border-gray-100 pt-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-base text-gray-900">Materiais Complementares da Aula ({materials.length})</h3>
@@ -300,6 +317,24 @@ export default function LessonPageClient() {
           </div>
         </div>
       </div>
+
+      {certificateCelebration && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="certificate-celebration-title">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-red-200 bg-white p-8 text-center shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-red-600 via-amber-400 to-red-600" />
+            <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600 animate-bounce"><PartyPopper size={42} /></div>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-red-600">Conquista desbloqueada</p>
+            <h2 id="certificate-celebration-title" className="mt-2 text-3xl font-black text-gray-950">Parabéns! Curso concluído.</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">Seu certificado foi gerado automaticamente e já está disponível para download.</p>
+            {certificateCelebration.certificateCode && <p className="mt-3 rounded-xl bg-gray-50 px-3 py-2 font-mono text-xs font-bold text-gray-600">Código: {certificateCelebration.certificateCode}</p>}
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <a href={certificateCelebration.certificateUrl} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"><Download size={18} /> Baixar certificado PDF</a>
+              <button onClick={() => { const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(certificateCelebration.certificateUrl)}`; window.open(shareUrl, "_blank", "noopener,noreferrer"); }} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-5 py-3.5 text-sm font-black text-white transition hover:bg-[#084d91]"><Share2 size={18} /> Compartilhar no LinkedIn</button>
+            </div>
+            <button onClick={() => setCertificateCelebration(null)} className="mt-5 text-sm font-bold text-gray-500 underline-offset-4 hover:text-gray-900 hover:underline">Continuar estudando</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

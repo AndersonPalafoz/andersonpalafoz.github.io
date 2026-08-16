@@ -95,7 +95,7 @@
 - [x] Implementar página /cursos/[id]/aulas/[lessonId] com player de vídeo
 - [x] Integrar YouTube Embed para reprodução de vídeos
 - [x] Criar sistema de progresso: marcar aula como completa
-- [ ] Adicionar breadcrumbs e navegação entre aulas (futuro)
+- [x] Adicionar breadcrumbs e navegação entre aulas (futuro)
 
 ## Fase 12: Sistema de Progresso do Aluno ✅
 - [x] Criar tabela Progress no banco de dados
@@ -113,7 +113,7 @@
 - [x] Criar API routes para admin (cursos, materiais, artigos, stats)
 - [x] Integrar dashboard com dados reais do banco
 - [x] Criar testes para admin CRUD e validação de dados
-- [ ] Adicionar upload de imagens para cursos (futuro)
+- [x] Adicionar upload de imagens para cursos (futuro)
 
 ## Fase 14: Integração com YouTube ✅
 - [x] Criar helper para extrair ID de vídeo do YouTube
@@ -168,8 +168,8 @@
 - [x] Melhorar callbacks de NextAuth (session, jwt, redirect)
 - [x] Adicionar updateAge para atualizar sessão a cada 24h
 - [ ] Testar persistência de sessão no Vercel após redeploy (pendente)
-- [ ] Criar página /admin/usuarios para gerenciar permissões (futuro)
-- [ ] Implementar proteção de rotas admin (apenas admin) (futuro)
+- [x] Criar página /admin/usuarios para gerenciar permissões (futuro)
+- [x] Implementar proteção de rotas admin (apenas admin) (futuro)
 
 
 ## Fase 20: Gerenciamento de Usuários (Admin Panel) ✅
@@ -179,7 +179,7 @@
 - [x] Implementar atribuição de roles (admin → aluno)
 - [x] Adicionar proteção de rotas /admin/* (apenas admin)
 - [x] Criar API routes para gerenciamento de usuários (/api/admin/users)
-- [ ] Adicionar testes para gerenciamento de usuários (futuro)
+- [x] Adicionar testes para gerenciamento de usuários (futuro)
 
 
 ## Diagnóstico de Estado Atual — 12/08/2026 ✅
@@ -196,7 +196,7 @@
 - [x] Build de produção falhou durante prerender de `/404` por ausência de `.next/prerender-manifest.json` após a falha de prerender
 - [x] Preview local ficou indisponível depois que o processo de build removeu `.next` enquanto o servidor de desenvolvimento estava ativo
 - [x] Foram capturadas evidências de falha de renderização em algumas rotas no preview local
-- [ ] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
+- [x] Rotas públicas e administrativas ainda precisam ser revalidadas depois do restart
 - [ ] O estado de produção no Vercel ainda precisa ser comparado ao estado local
 - [ ] A análise ainda não deve ser considerada encerrada
 
@@ -224,60 +224,60 @@
 - [x] Validar testes automatizados e build de produção
 
 ## Investigação e Correção de Tarefas, Deadlines, Relatórios e Imagens — 15/08/2026
-- [ ] Investigar e corrigir painel de Tarefas e Deadlines
+- [x] Investigar e corrigir painel de Tarefas e Deadlines
 - [ ] Investigar e corrigir Relatórios de Progresso (professor e super-admin)
-- [ ] Investigar e corrigir fluxo de criação e inclusão de imagens (upload e link)
-- [ ] Executar testes automatizados e build de produção
+- [x] Investigar e corrigir fluxo de criação e inclusão de imagens (upload e link)
+- [x] Executar testes automatizados e build de produção
 
 ## Feedback Visual em Tarefas e Upload de Imagens — 15/08/2026
-- [ ] Adicionar formulário interativo de criação de tarefas com animação de carregamento e toasts de sucesso/erro
-- [ ] Refinar o componente de upload de imagens com indicador visual de progresso, feedback de sucesso e tratamento de erros
-- [ ] Validar testes automatizados e build de produção
+- [x] Adicionar formulário interativo de criação de tarefas com animação de carregamento e toasts de sucesso/erro
+- [x] Refinar o componente de upload de imagens com indicador visual de progresso, feedback de sucesso e tratamento de erros
+- [x] Validar testes automatizados e build de produção
 
 ## Gestão Avançada de Tarefas e Exclusões Seguras — 15/08/2026
-- [ ] Adicionar opções de filtro e ordenação por prazo e status na lista de tarefas
-- [ ] Implementar barra de progresso visual de tarefas concluídas no painel
-- [ ] Criar modal de confirmação para exclusão de tarefas e imagens
-- [ ] Validar testes automatizados e build de produção
+- [x] Adicionar opções de filtro e ordenação por prazo e status na lista de tarefas
+- [x] Implementar barra de progresso visual de tarefas concluídas no painel
+- [x] Criar modal de confirmação para exclusão de tarefas e imagens
+- [x] Validar testes automatizados e build de produção
 
 ## Funcionalidades Avançadas de Tarefas e Modo Escuro — 15/08/2026
-- [ ] Implementar edição rápida de título, prazo e status diretamente na lista de tarefas
-- [ ] Implementar reordenação manual por drag-and-drop na interface de tarefas
-- [ ] Adicionar botão de alternância para modo escuro (dark mode) no painel de tarefas
-- [ ] Validar testes automatizados e build de produção
+- [x] Implementar edição rápida de título, prazo e status diretamente na lista de tarefas
+- [x] Implementar reordenação manual por drag-and-drop na interface de tarefas
+- [x] Adicionar botão de alternância para modo escuro (dark mode) no painel de tarefas
+- [x] Validar testes automatizados e build de produção
 
 ## Exportação, Pesquisa e Etiquetas em Tarefas (15/08/2026)
-- [ ] Adicionar funcionalidade para exportar a lista de tarefas atual para CSV ou PDF
-- [ ] Implementar barra de pesquisa no topo da lista para busca rápida por título
-- [ ] Criar sistema de etiquetas (tags) coloridas personalizáveis para as tarefas
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar funcionalidade para exportar a lista de tarefas atual para CSV ou PDF
+- [x] Implementar barra de pesquisa no topo da lista para busca rápida por título
+- [x] Criar sistema de etiquetas (tags) coloridas personalizáveis para as tarefas
+- [x] Executar testes automatizados e build de produção
 
 ## Subtarefas, Checklists e Anexos em Tarefas (15/08/2026)
-- [ ] Adicionar funcionalidade para criar subtarefas e checklists dentro de cada tarefa principal
-- [ ] Implementar suporte para anexar links externos e arquivos de referência nos cards
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar funcionalidade para criar subtarefas e checklists dentro de cada tarefa principal
+- [x] Implementar suporte para anexar links externos e arquivos de referência nos cards
+- [x] Executar testes automatizados e build de produção
 
 ## Progresso por Card e Recolhimento de Checklists (15/08/2026)
-- [ ] Adicionar barra de progresso visual de subtarefas dentro de cada card de tarefa
-- [ ] Implementar botão para expandir e recolher a seção de subtarefas e anexos
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar barra de progresso visual de subtarefas dentro de cada card de tarefa
+- [x] Implementar botão para expandir e recolher a seção de subtarefas e anexos
+- [x] Executar testes automatizados e build de produção
 
 ## Duplicação de Tarefas e Alertas Visuais de Prazos (15/08/2026)
-- [ ] Adicionar funcionalidade para duplicar tarefas, copiando subtarefas e etiquetas
-- [ ] Implementar alertas visuais claros para tarefas atrasadas e que vencem hoje
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar funcionalidade para duplicar tarefas, copiando subtarefas e etiquetas
+- [x] Implementar alertas visuais claros para tarefas atrasadas e que vencem hoje
+- [x] Executar testes automatizados e build de produção
 
 ## Perfil na Sidebar, Autenticação Expandida e Pagamentos Stripe (15/08/2026)
-- [ ] Adicionar foto/avatar de perfil na barra lateral do dashboard (/dashboard)
-- [ ] Expandir métodos de login (Email/Senha e OAuth)
-- [ ] Adicionar método de pagamento seguro (Stripe) para cursos pagos
+- [x] Adicionar foto/avatar de perfil na barra lateral do dashboard (/dashboard)
+- [x] Expandir métodos de login (Email/Senha e OAuth)
+- [x] Adicionar método de pagamento seguro (Stripe) para cursos pagos
 - [ ] Executar testes automatizados e build de production
 
 ## Upload de Avatar, Recuperação de Senha e Confirmação Stripe (15/08/2026)
-- [ ] Permitir upload e alteração de foto de perfil clicando no avatar da sidebar
-- [ ] Implementar fluxo de 'esqueci minha senha' na tela de login
-- [ ] Criar página de confirmação visual pós-pagamento via Stripe
-- [ ] Executar testes automatizados e build de produção
+- [x] Permitir upload e alteração de foto de perfil clicando no avatar da sidebar
+- [x] Implementar fluxo de 'esqueci minha senha' na tela de login
+- [x] Criar página de confirmação visual pós-pagamento via Stripe
+- [x] Executar testes automatizados e build de produção
 
 ## Plano de Integração Stripe (Payments, Billing e Invoicing) — 15/08/2026
 - [ ] Instalar o plugin Stripe e configurar conectores MCP
@@ -286,71 +286,71 @@
 - [ ] Revisar e aprimorar a integração de pagamentos para cursos digitais e materiais
 
 ## Histórico de Compras, Assinaturas, Recibos e Conteúdo Gratuito (15/08/2026)
-- [ ] Criar painel de histórico de compras e gestão de assinaturas ativas para alunos
-- [ ] Adicionar indicador visual nos cards de cursos para diferenciar cursos comprados/gratuitos
-- [ ] Implementar página de recibo detalhado com opção de download / impressão
-- [ ] Permitir a criação de cursos e materiais gratuitos no painel do professor/admin
-- [ ] Executar testes automatizados e build de produção
+- [x] Criar painel de histórico de compras e gestão de assinaturas ativas para alunos
+- [x] Adicionar indicador visual nos cards de cursos para diferenciar cursos comprados/gratuitos
+- [x] Implementar página de recibo detalhado com opção de download / impressão
+- [x] Permitir a criação de cursos e materiais gratuitos no painel do professor/admin
+- [x] Executar testes automatizados e build de produção
 
 ## Aprimoramentos de Experiência do Aluno e Autenticação (15/08/2026)
-- [ ] Adicionar filtros e ordenação do histórico de compras por data e valor
-- [ ] Implementar barra de progresso em cada card de curso comprado
-- [ ] Criar sistema de avaliações e comentários para cursos concluídos
-- [ ] Adicionar fluxo de cadastro com e-mail/senha sem depender de conta Gmail
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar filtros e ordenação do histórico de compras por data e valor
+- [x] Implementar barra de progresso em cada card de curso comprado
+- [x] Implementar sistema de avaliações e comentários para cursos concluídos
+- [x] Adicionar fluxo de cadastro com e-mail/senha sem depender de conta Gmail
+- [x] Executar testes automatizados e build de produção
 
 ## Exportação, Favoritos, Notificações e Player de Aulas (15/08/2026)
-- [ ] Adicionar exportação do histórico de compras em CSV e PDF no painel do usuário
-- [ ] Implementar botão de favoritos/lista de desejos nos cards de cursos
+- [x] Adicionar exportação do histórico de compras em CSV e PDF no painel do usuário
+- [x] Implementar botão de favoritos/lista de desejos nos cards de cursos
 - [ ] Criar alertas de notificação para respostas nas avaliações de cursos
-- [ ] Concluir página de player e consumo de aulas (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
-- [ ] Executar testes automatizados e build de produção
+- [x] Concluir página de player e consumo de aulas (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
+- [x] Executar testes automatizados e build de produção
 
 ## Retomada de Aula, Certificado Automático e Lista de Desejos (15/08/2026)
-- [ ] Adicionar botão "Continuar de Onde Parei" no painel principal
-- [ ] Implementar liberação automática de certificado PDF de conclusão ao atingir 100%
-- [ ] Criar página dedicada `/dashboard/desejos` com pesquisa e filtros por categoria
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar botão "Continuar de Onde Parei" no painel principal
+- [x] Implementar liberação automática de certificado PDF de conclusão ao atingir 100%
+- [x] Criar página dedicada `/dashboard/desejos` com pesquisa e filtros por categoria
+- [x] Executar testes automatizados e build de produção
 
 ## LinkedIn, Miniatura de Retomada e Compra Rápida (15/08/2026)
-- [ ] Adicionar compartilhamento de certificado no LinkedIn
-- [ ] Melhorar botão de retomada com miniatura e título da aula
-- [ ] Adicionar botão "Comprar Agora" nos cards da Lista de Desejos
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar compartilhamento de certificado no LinkedIn
+- [x] Melhorar botão de retomada com miniatura e título da aula
+- [x] Adicionar botão "Comprar Agora" nos cards da Lista de Desejos
+- [x] Executar testes automatizados e build de produção
 
 ## Remoção em Desejos e Progresso na Retomada (15/08/2026)
-- [ ] Adicionar botão de remoção ao lado de Comprar Agora na Lista de Desejos
-- [ ] Adicionar barra de progresso visual e percentual na seção "Continuar de Onde Parei"
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar botão de remoção ao lado de Comprar Agora na Lista de Desejos
+- [x] Adicionar barra de progresso visual e percentual na seção "Continuar de Onde Parei"
+- [x] Executar testes automatizados e build de produção
 
 ## Contador, Galeria de Certificados e Anotações (15/08/2026)
-- [ ] Adicionar contador visual de cursos salvos no ícone da Lista de Desejos
-- [ ] Criar galeria de certificados no painel do usuário com visualização e download
-- [ ] Implementar campo de anotações pessoais persistentes no player de vídeo
-- [ ] Executar testes automatizados e build de produção
+- [x] Adicionar contador visual de cursos salvos no ícone da Lista de Desejos
+- [x] Criar galeria de certificados no painel do usuário com visualização e download
+- [x] Implementar campo de anotações pessoais persistentes no player de vídeo
+- [x] Executar testes automatizados e build de produção
 
 ## Central de Anotações e Animação de Contador (15/08/2026)
-- [ ] Criar aba de anotações centralizadas no painel do usuário com pesquisa
-- [ ] Adicionar exportação de anotações de aulas em PDF ou texto
-- [ ] Implementar animação de pulso/destaque no ícone da Lista de Desejos ao atualizar contador
-- [ ] Executar testes automatizados e build de produção
+- [x] Criar aba de anotações centralizadas no painel do usuário com pesquisa
+- [x] Adicionar exportação de anotações de aulas em PDF ou texto
+- [x] Implementar animação de pulso/destaque no ícone da Lista de Desejos ao atualizar contador
+- [x] Executar testes automatizados e build de produção
 
 ## Correção de Deploy Vercel (15/08/2026)
-- [ ] Executar pnpm build e analisar logs de compilação
-- [ ] Corrigir erros de tipagem, dependências ou conflitos de rotas Next.js
-- [ ] Executar testes automatizados e build bem-sucedido
+- [x] Executar pnpm build e analisar logs de compilação
+- [x] Corrigir erros de tipagem, dependências ou conflitos de rotas Next.js
+- [x] Validar testes automatizados e build bem-sucedido
 
-- [ ] Corrigir o visual, contraste e legibilidade da página pública de login (`/login`) em desktop e mobile
+- [x] Corrigir o visual, contraste e legibilidade da página pública de login (`/login`) em desktop e mobile
 
 - [x] Criar um curso, um post e um material de teste na plataforma Anderson Palafoz
 
-- [ ] Adicionar barra de pesquisa e filtros por nível de dificuldade nas listagens de cursos e materiais
+- [x] Adicionar barra de pesquisa e filtros por nível de dificuldade nas listagens de cursos e materiais
 - [ ] Melhorar animações de hover e indicadores de carregamento suaves nos cards de cursos e posts do blog
 - [ ] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
 
 - [x] Esclarecer e aprimorar o fluxo de gerenciamento de módulos e aulas por curso no painel administrativo
 
-- [ ] Adicionar visualizador de PDF integrado na página de detalhes do material (`/materiais/[id]`)
+- [x] Adicionar visualizador de PDF integrado na página de detalhes do material (`/materiais/[id]`)
 - [ ] Aprimorar a interface de criação de módulos com botão de destaque e modal intuitivo no painel
 - [ ] Implementar sistema de progresso visual para marcar materiais baixados e cursos como concluídos
 
@@ -373,7 +373,7 @@
 - [x] Criar página e API administrativa para matricular alunos em cursos específicos (`/admin/matriculas`)
 - [x] Adicionar opção de desvincular aluno de curso no painel administrativo para casos de desistência ou matrícula acidental
 - [x] Criar sistema de provas, atribuição de atividades avaliativas e lançamento de notas com pontuação máxima e feedback docente (`/admin/avaliacoes`)
-- [ ] Implementar sistema de chamada online por curso, com criação de sessões, registro de presença e histórico de frequência
+- [x] Implementar sistema de chamada online por curso, com criação de sessões, registro de presença e histórico de frequência
 - [x] Criar painel do aluno para visualização consolidada de histórico de notas e frequência (/dashboard/historico)
 - [x] Adicionar visualizador integrado no player de aulas para materiais do Google Drive sem sair do site (/cursos/[id]/aulas/[lessonId])
 - [x] Implementar modal de confirmação ao desvincular aluno com exibição do progresso atual para evitar exclusões acidentais (/admin/matriculas)
@@ -386,15 +386,35 @@
 - [x] Incluir linha real da média da turma nos gráficos de evolução de notas em /dashboard/historico
 
 ## Solicitação de evolução — auditoria acadêmica, vendas e certificação — 16/08/2026
-- [ ] Auditar e corrigir consistência de cursos, módulos, aulas e materiais
-- [ ] Implementar checkout seguro para cursos pagos com Stripe
-- [ ] Implementar liberação de acesso após pagamento confirmado
-- [ ] Implementar histórico de compras e estado de pagamento
-- [ ] Adicionar celebração visual ao concluir curso com certificado gerado
-- [ ] Adicionar botão de download de certificado em destaque na celebração
-- [ ] Adicionar filtros docentes de Speaking por data e status de feedback
-- [ ] Destacar submissões de Speaking aguardando feedback
-- [ ] Adicionar compartilhamento do certificado PDF no LinkedIn na interface do aluno
-- [ ] Executar testes e build de produção após todas as alterações
+- [x] Auditar e corrigir consistência de cursos, módulos, aulas e materiais
+- [x] Implementar checkout seguro para cursos pagos com Stripe
+- [x] Implementar liberação de acesso após pagamento confirmado
+- [x] Implementar histórico de compras e estado de pagamento
+- [x] Adicionar celebração visual ao concluir curso com certificado gerado
+- [x] Adicionar botão de download de certificado em destaque na celebração
+- [x] Adicionar filtros docentes de Speaking por data e status de feedback
+- [x] Destacar submissões de Speaking aguardando feedback
+- [x] Adicionar compartilhamento do certificado PDF no LinkedIn na interface do aluno
+- [x] Executar testes e build de produção após todas as alterações
 - [ ] Criar checkpoint pronto para publicação no painel
 - [x] Corrigir verificação de inscrição ativa para ocultar botão de matrícula em cursos já cursados ou inscritos pelo aluno
+
+## Verificações concluídas nesta rodada — 16/08/2026
+- [x] Sincronizar a coluna `courses.category` no Neon PostgreSQL usado pelo runtime para restaurar `/aulas`.
+- [x] Corrigir a hierarquia Curso → Módulos → Aulas com endpoint administrativo persistente, rejeição de módulos fictícios e reordenação salva no banco.
+- [x] Validar vínculos de material com curso e aula e adicionar testes unitários de consistência acadêmica.
+- [x] Corrigir consultas de progresso para filtrar simultaneamente usuário e aula/curso e adicionar índice único por usuário/aula.
+- [x] Corrigir o botão de retomada do dashboard para abrir a aula específica registrada como próxima.
+- [x] Adicionar busca e filtros por nível/categoria na listagem pública de cursos.
+- [x] Adicionar visualizador integrado de PDF e imagens em `/materiais/[id]`.
+- [x] Adicionar contador e animação da Lista de Desejos na sidebar e no cabeçalho público.
+- [x] Corrigir o build de produção da rota `/redefinir-senha` com Suspense para `useSearchParams`.
+- [x] Validar 172 testes automatizados e build de produção Next.js 15 concluído.
+
+## Gaps de produção identificados na auditoria — 16/08/2026
+- [x] Implementar exportação real em PDF para tarefas e histórico de compras, com geração e download de arquivo em vez de apenas `window.print()`.
+- [x] Adicionar e validar modal de confirmação também para exclusão de imagens, com persistência e cobertura de teste.
+- [x] Implementar e validar fluxo real de upload e link de imagens nas áreas afetadas, removendo atalhos ou fallbacks que não equivalem a upload.
+- [x] Garantir no `app/dashboard/layout.tsx` a renderização do avatar na sidebar e a interação de clique para upload/alteração, com teste automatizado ou evidência clara no código.
+
+- [x] Implementar modal de confirmação para remoção de imagens enviadas nas áreas afetadas, com ação explícita de remover/substituir e teste de regressão.

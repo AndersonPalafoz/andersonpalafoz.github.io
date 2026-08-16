@@ -2,10 +2,11 @@
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckSquare, Calendar, Loader2, Filter, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, FileText, CheckCircle2, Circle, Link2, Paperclip, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, CheckSquare, Calendar, Loader2, Filter, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, FileText, CheckCircle2, Circle, Link2, Paperclip, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { buildWhatsAppMessageLink, buildDeadlineReminderText } from "@/lib/notifications-helper";
+import { createTablePdf, downloadPdf } from "@/lib/pdf-export";
 
 interface SubTask {
   id: string;
@@ -26,6 +27,8 @@ interface Activity {
   type: string;
   dueDate: string | null;
   tag?: string;
+  status?: "pending" | "completed";
+  order?: number;
   subtasks?: SubTask[];
   attachments?: Attachment[];
   course: {
@@ -66,6 +69,7 @@ export default function TeacherTasksPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDueDate, setEditDueDate] = useState("");
   const [editTag, setEditTag] = useState("");
+  const [editStatus, setEditStatus] = useState<"pending" | "completed">("pending");
 
   const [newSubtaskText, setNewSubtaskText] = useState("");
   const [formSubtasks, setFormSubtasks] = useState<SubTask[]>([]);
@@ -100,13 +104,9 @@ export default function TeacherTasksPage() {
         const list = (actJson.activities || actJson || []).map((a: any) => ({
           ...a,
           tag: a.tag || "Gramática",
-          subtasks: a.subtasks || [
-            { id: "1", title: "Ler material de apoio", completed: false },
-            { id: "2", title: "Submeter exercício", completed: false },
-          ],
-          attachments: a.attachments || [
-            { id: "a1", name: "Guia PDF de Estudo", url: "https://andersonpalafoz.com.br/materiais" },
-          ],
+          status: a.status || "pending",
+          subtasks: Array.isArray(a.subtasks) ? a.subtasks : [],
+          attachments: Array.isArray(a.attachments) ? a.attachments : [],
         }));
         setActivitiesList(list);
         const initialExpanded: Record<number, boolean> = {};
@@ -189,15 +189,18 @@ export default function TeacherTasksPage() {
   };
 
   const toggleSubtask = async (activityId: number, subtaskId: string) => {
-    const updated = activitiesList.map((act) => {
-      if (act.id === activityId) {
-        const subs = (act.subtasks || []).map((s) => s.id === subtaskId ? { ...s, completed: !s.completed } : s);
-        return { ...act, subtasks: subs };
-      }
-      return act;
-    });
-    setActivitiesList(updated);
-    toast.success("Checklist atualizado!");
+    const current = activitiesList.find((act) => act.id === activityId);
+    if (!current) return;
+    const subtasks = (current.subtasks || []).map((s) => s.id === subtaskId ? { ...s, completed: !s.completed } : s);
+    setActivitiesList((items) => items.map((act) => act.id === activityId ? { ...act, subtasks } : act));
+    try {
+      const res = await fetch("/api/admin/atividades", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activityId, subtasks }) });
+      if (!res.ok) throw new Error("Falha ao salvar checklist");
+      toast.success("Checklist atualizado!");
+    } catch {
+      toast.error("Não foi possível salvar o checklist.");
+      void fetchData();
+    }
   };
 
   const startEdit = (act: Activity) => {
@@ -205,6 +208,31 @@ export default function TeacherTasksPage() {
     setEditTitle(act.title);
     setEditDueDate(act.dueDate ? new Date(act.dueDate).toISOString().slice(0, 16) : "");
     setEditTag(act.tag || "Gramática");
+    setEditStatus(act.status === "completed" ? "completed" : "pending");
+  };
+
+  const duplicateActivity = async (activity: Activity) => {
+    try {
+      const res = await fetch("/api/professor/tarefas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: `Cópia — ${activity.title}`,
+          description: activity.description,
+          courseId: activity.course?.id,
+          type: activity.type,
+          dueDate: activity.dueDate,
+          tag: activity.tag,
+          subtasks: (activity.subtasks || []).map((item) => ({ ...item, id: `${Date.now()}-${item.id}`, completed: false })),
+          attachments: activity.attachments || [],
+        }),
+      });
+      if (!res.ok) throw new Error("Falha ao duplicar tarefa");
+      toast.success("Tarefa duplicada com checklist e etiquetas.");
+      void fetchData();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível duplicar a tarefa.");
+    }
   };
 
   const saveEdit = async (id: number) => {
@@ -212,7 +240,7 @@ export default function TeacherTasksPage() {
       const res = await fetch("/api/admin/atividades", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, title: editTitle, dueDate: editDueDate, tag: editTag }),
+        body: JSON.stringify({ id, title: editTitle, dueDate: editDueDate, tag: editTag, status: editStatus }),
       });
       if (!res.ok) throw new Error("Falha ao atualizar");
       toast.success("Tarefa atualizada com sucesso!");
@@ -269,8 +297,24 @@ export default function TeacherTasksPage() {
     toast.success("Lista exportada para CSV com sucesso!");
   };
 
-  const exportToPDF = () => {
-    window.print();
+  const exportToPDF = async () => {
+    if (activitiesList.length === 0) {
+      toast.error("Não há tarefas para exportar.");
+      return;
+    }
+    try {
+      const bytes = await createTablePdf("Relatório de tarefas — Anderson Palafoz", ["Título", "Curso", "Prazo", "Status", "Etiqueta"], activitiesList.map((activity) => [
+        activity.title,
+        activity.course?.title || "Geral",
+        activity.dueDate ? new Date(activity.dueDate).toLocaleString("pt-BR") : "Sem prazo",
+        activity.status === "completed" ? "Concluída" : "Pendente",
+        activity.tag || "Nenhuma",
+      ]));
+      downloadPdf(bytes, `tarefas-anderson-palafoz-${Date.now()}.pdf`);
+      toast.success("Lista exportada para PDF com sucesso!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível gerar o PDF.");
+    }
   };
 
   const handleDragStart = (index: number) => {
@@ -287,9 +331,15 @@ export default function TeacherTasksPage() {
     setActivitiesList(updated);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = async () => {
     setDraggedIndex(null);
-    toast.success("Ordem das tarefas atualizada manualmente!");
+    try {
+      await Promise.all(activitiesList.map((activity, index) => fetch("/api/admin/atividades", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activity.id, order: index }) })));
+      toast.success("Ordem das tarefas atualizada e salva!");
+    } catch {
+      toast.error("Não foi possível salvar a nova ordem.");
+      void fetchData();
+    }
   };
 
   const highlightText = (text: string, query: string) => {
@@ -315,9 +365,11 @@ export default function TeacherTasksPage() {
     }
 
     if (filterStatus === "pending") {
-      list = list.filter((a) => !a.dueDate || new Date(a.dueDate) >= new Date());
+      list = list.filter((a) => a.status !== "completed" && (!a.dueDate || new Date(a.dueDate) >= new Date()));
     } else if (filterStatus === "expired") {
-      list = list.filter((a) => a.dueDate && new Date(a.dueDate) < new Date());
+      list = list.filter((a) => a.status !== "completed" && a.dueDate && new Date(a.dueDate) < new Date());
+    } else if (filterStatus === "completed") {
+      list = list.filter((a) => a.status === "completed");
     }
 
     if (selectedTagFilter !== "all") {
@@ -338,7 +390,7 @@ export default function TeacherTasksPage() {
   }, [activitiesList, searchQuery, filterStatus, selectedTagFilter, sortBy]);
 
   const totalCount = activitiesList.length;
-  const completedCount = activitiesList.filter((a) => a.dueDate && new Date(a.dueDate) < new Date()).length;
+  const completedCount = activitiesList.filter((a) => a.status === "completed").length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
@@ -556,6 +608,7 @@ export default function TeacherTasksPage() {
               <option value="all">Todos os Prazos</option>
               <option value="pending">No Prazo</option>
               <option value="expired">Atrasadas</option>
+              <option value="completed">Concluídas</option>
             </select>
 
             <select
@@ -590,7 +643,10 @@ export default function TeacherTasksPage() {
             </div>
           ) : (
             filteredActivities.map((act, index) => {
-              const isExpired = act.dueDate && new Date(act.dueDate) < new Date();
+              const now = new Date();
+              const dueDateValue = act.dueDate ? new Date(act.dueDate) : null;
+              const isExpired = Boolean(dueDateValue && dueDateValue < now && act.status !== "completed");
+              const isDueToday = Boolean(dueDateValue && dueDateValue.toDateString() === now.toDateString() && act.status !== "completed");
               const tagObj = AVAILABLE_TAGS.find((t) => t.name === act.tag) || AVAILABLE_TAGS[1];
               const isExpanded = expandedCards[act.id] ?? true;
 
@@ -627,14 +683,14 @@ export default function TeacherTasksPage() {
                               {act.course.title}
                             </span>
                           )}
-                          {isExpired ? (
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-600 text-white flex items-center gap-1">
-                              <AlertTriangle size={12} /> Atrasada
-                            </span>
+                          {act.status === "completed" ? (
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 flex items-center gap-1"><CheckCircle2 size={12} /> Concluída</span>
+                          ) : isExpired ? (
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-600 text-white flex items-center gap-1"><AlertTriangle size={12} /> Atrasada</span>
+                          ) : isDueToday ? (
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 flex items-center gap-1"><AlertTriangle size={12} /> Vence hoje</span>
                           ) : (
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-700 flex items-center gap-1">
-                              No Prazo
-                            </span>
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-700 flex items-center gap-1">No prazo</span>
                           )}
                         </div>
 
@@ -660,6 +716,10 @@ export default function TeacherTasksPage() {
                               {AVAILABLE_TAGS.map((t) => (
                                 <option key={t.name} value={t.name}>{t.name}</option>
                               ))}
+                            </select>
+                            <select value={editStatus} onChange={(e) => setEditStatus(e.target.value as "pending" | "completed")} className="px-2 py-1 rounded-lg border text-xs bg-white text-gray-950">
+                              <option value="pending">Pendente</option>
+                              <option value="completed">Concluída</option>
                             </select>
                             <Button size="sm" onClick={() => saveEdit(act.id)} className="bg-green-600 hover:bg-green-700 text-white h-8">
                               <Save size={14} />
@@ -698,14 +758,10 @@ export default function TeacherTasksPage() {
                       </a>
 
                       {editingId !== act.id && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEdit(act)}
-                          className="border-gray-300 dark:border-gray-700 text-xs font-semibold h-9"
-                        >
-                          <Edit3 size={14} />
-                        </Button>
+                        <>
+                          <Button variant="outline" size="sm" onClick={() => startEdit(act)} className="border-gray-300 dark:border-gray-700 text-xs font-semibold h-9"><Edit3 size={14} /></Button>
+                          <Button variant="outline" size="sm" onClick={() => void duplicateActivity(act)} className="border-blue-200 text-blue-600 hover:bg-blue-50 text-xs font-semibold h-9" title="Duplicar tarefa"><Copy size={14} /></Button>
+                        </>
                       )}
 
                       <Button
