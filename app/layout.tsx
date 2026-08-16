@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/session-provider";
@@ -11,6 +11,12 @@ const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -46,18 +52,12 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </head>
-      <body
-        className={`${poppins.variable} font-sans antialiased`}
-        style={{
-          backgroundColor: "#ffffff",
-          color: "#333333",
-          fontFamily: "Poppins, system-ui, sans-serif",
-        }}
-      >
+      <body className={`${poppins.variable} ${inter.variable} bg-slate-50 font-sans text-slate-900 antialiased`}>
+
         <SessionProviderWrapper>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <Navbar />
-            <main className="min-h-screen">{children}</main>
+            <main className="min-h-screen bg-slate-50">{children}</main>
             <Footer />
             <ToastProvider />
           </ThemeProvider>

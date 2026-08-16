@@ -36,10 +36,11 @@ export default async function AulasPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="min-h-screen flex items-center py-20 px-4 md:px-8 lg:px-16 bg-white">
+      <section className="relative flex min-h-[68vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16"><div className="pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
+              <span className="eyebrow">Trilha de aprendizagem</span>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                 Aulas de
                 <br />
@@ -51,17 +52,17 @@ export default async function AulasPage() {
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8">
-              <div>
-                <p className="text-3xl font-bold text-red-600">{cursos.length}</p>
+            <div className="grid max-w-2xl grid-cols-3 gap-3 pt-8 sm:gap-6">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+                <p className="text-3xl font-black text-red-600">{cursos.length}</p>
                 <p className="text-gray-600 text-sm">Cursos Disponíveis</p>
               </div>
-              <div>
-                <p className="text-3xl font-bold text-red-600">{totalModulos}</p>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+                <p className="text-3xl font-black text-red-600">{totalModulos}</p>
                 <p className="text-gray-600 text-sm">Módulos ao Todo</p>
               </div>
-              <div>
-                <p className="text-3xl font-bold text-red-600">100%</p>
+              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+                <p className="text-3xl font-black text-red-600">100%</p>
                 <p className="text-gray-600 text-sm">Prático</p>
               </div>
             </div>
@@ -99,7 +100,7 @@ export default async function AulasPage() {
                 description: "Certificado ao final de cada nível",
               },
             ].map((item, index) => (
-              <div key={index} className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+              <div key={index} className="interactive-card rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm">
                 <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
                   <item.icon className="text-red-600" size={24} />
                 </div>
@@ -149,10 +150,10 @@ export default async function AulasPage() {
       <section className="py-20 px-4 md:px-8 lg:px-16 bg-red-600">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Comece sua Transformação Hoje
+            Estruture seu próximo passo no inglês
           </h2>
           <p className="text-lg text-red-100">
-            Escolha seu nível e inicie sua jornada rumo à fluência em inglês.
+            Escolha um nível, acompanhe sua evolução e pratique com uma trilha organizada.
           </p>
           <Link href="/dashboard">
             <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">

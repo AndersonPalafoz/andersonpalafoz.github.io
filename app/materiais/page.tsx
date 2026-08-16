@@ -57,7 +57,7 @@ export default function MateriaisPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
+      <section className="relative overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16"><div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
@@ -146,7 +146,7 @@ export default function MateriaisPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">
-              {filteredMaterials.length} Materiais Disponíveis
+              {filteredMaterials.length} materiais disponíveis
             </h2>
           </div>
 
@@ -173,7 +173,7 @@ export default function MateriaisPage() {
                 return (
                   <div
                     key={material.id}
-                    className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-red-600 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
+                    className="interactive-card flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm group"
                   >
                     <div>
                       <div className="flex items-start justify-between mb-4 gap-3">

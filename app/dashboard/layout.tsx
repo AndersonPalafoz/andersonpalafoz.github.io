@@ -122,23 +122,23 @@ export default function DashboardLayout({
       : pathname === href || Boolean(pathname?.startsWith(href + "/"));
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background text-foreground">
       <aside
-        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative w-72 h-screen bg-white border-r border-gray-200 transition-transform z-40 flex flex-col`}
+        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-40 flex h-screen w-72 flex-col border-r border-border/70 bg-card/95 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
       >
-        <div className="p-6 border-b border-gray-200 flex items-center gap-3">
+        <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
-          <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} aria-label="Alterar foto de perfil" title="Clique para alterar sua foto" className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full bg-red-600 text-white font-semibold transition hover:ring-4 hover:ring-red-100 disabled:cursor-wait disabled:opacity-70">
+          <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} aria-label="Alterar foto de perfil" title="Clique para alterar sua foto" className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-red-600 text-white font-semibold shadow-lg shadow-red-600/20 transition hover:-translate-y-0.5 hover:ring-4 hover:ring-red-100 disabled:cursor-wait disabled:opacity-70">
             {avatarUrl ? <img src={avatarUrl} alt="Foto de perfil" className="h-full w-full object-cover" /> : getInitials(session?.user?.name)}
             {avatarUploading && <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px]">...</span>}
           </button>
           <div className="min-w-0">
-            <p className="font-semibold text-gray-900 truncate">{session?.user?.name || "Aluno"}</p>
-            <p className="text-xs text-gray-500 truncate">{session?.user?.email}</p>
+            <p className="font-semibold text-foreground truncate">{session?.user?.name || "Aluno"}</p>
+            <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 space-y-1.5 overflow-y-auto p-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href, item.exact);
@@ -146,8 +146,8 @@ export default function DashboardLayout({
             return (
               <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}>
                 <div
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm transition-colors ${
-                    active ? "bg-red-50 text-red-600" : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
+                    active ? "bg-red-50 text-red-700 shadow-sm shadow-red-900/5 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <Icon size={19} className={item.href === "/dashboard/desejos" && wishlistPulse ? "animate-pulse" : undefined} />
@@ -166,10 +166,10 @@ export default function DashboardLayout({
           })}
         </nav>
 
-        <div className="p-4 border-t border-gray-200">
+        <div className="border-t border-border/70 p-4">
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg font-medium text-sm text-gray-600 hover:bg-gray-100 hover:text-red-600 transition-colors"
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
           >
             <LogOut size={19} />
             Sair
@@ -178,19 +178,19 @@ export default function DashboardLayout({
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-          <span className="font-bold text-gray-900">Minha Área</span>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
+        <header className="flex items-center justify-between border-b border-border/70 bg-card/95 p-4 text-card-foreground shadow-sm backdrop-blur-xl md:hidden">
+          <span className="font-bold text-foreground">Minha Área</span>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen}>
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto p-6">
-          <div className="max-w-6xl mx-auto">{children}</div>
+        <main className="flex-1 overflow-auto bg-background p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
 
-      {sidebarOpen && <div className="fixed inset-0 bg-black/50 md:hidden z-30" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="fixed inset-0 z-30 bg-slate-950/45 backdrop-blur-[2px] md:hidden" onClick={() => setSidebarOpen(false)} />}
     </div>
   );
 }
