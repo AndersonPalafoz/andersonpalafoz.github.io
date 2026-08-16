@@ -384,3 +384,17 @@
 - [x] Adicionar pré-visualização e redimensionamento de imagens no editor de avaliações em /admin/avaliacoes
 - [x] Adicionar botões de seleção rápida em massa (Todos presentes / Todos ausentes) na chamada online em /admin/chamada
 - [x] Incluir linha real da média da turma nos gráficos de evolução de notas em /dashboard/historico
+
+## Solicitação de evolução — auditoria acadêmica, vendas e certificação — 16/08/2026
+- [ ] Auditar e corrigir consistência de cursos, módulos, aulas e materiais
+- [ ] Implementar checkout seguro para cursos pagos com Stripe
+- [ ] Implementar liberação de acesso após pagamento confirmado
+- [ ] Implementar histórico de compras e estado de pagamento
+- [ ] Adicionar celebração visual ao concluir curso com certificado gerado
+- [ ] Adicionar botão de download de certificado em destaque na celebração
+- [ ] Adicionar filtros docentes de Speaking por data e status de feedback
+- [ ] Destacar submissões de Speaking aguardando feedback
+- [ ] Adicionar compartilhamento do certificado PDF no LinkedIn na interface do aluno
+- [ ] Executar testes e build de produção após todas as alterações
+- [ ] Criar checkpoint pronto para publicação no painel
+- [x] Corrigir verificação de inscrição ativa para ocultar botão de matrícula em cursos já cursados ou inscritos pelo aluno
