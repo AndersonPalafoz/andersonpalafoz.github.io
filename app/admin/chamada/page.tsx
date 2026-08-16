@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Download, FileText, Loader2, Users } from "lucide-react";
+import { ChevronLeft, Download, FileText, Loader2, Users, Filter } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { attendanceStatusLabel, buildAttendanceCsv } from "@/lib/attendance-export";
+import { filterAttendanceRecords } from "@/lib/attendance-filters";
 
 interface AttendanceRecord {
   sessionId: number;
@@ -29,7 +30,10 @@ export default function AdminChamadaPage() {
   const router = useRouter();
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [courseFilter, setCourseFilter] = useState("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin" && user.role !== "professor") router.replace("/");
@@ -51,19 +55,28 @@ export default function AdminChamadaPage() {
     if (!authLoading && user) void loadRecords();
   }, [authLoading, user]);
 
-  const visibleRecords = useMemo(() => filter === "all" ? records : records.filter((record) => record.status === filter), [filter, records]);
-  const presentCount = records.filter((record) => record.status === "present").length;
-  const attendanceRate = records.length ? Math.round((presentCount / records.length) * 100) : 0;
+  const availableCourses = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of records) {
+      if (r.courseTitle) set.add(r.courseTitle);
+    }
+    return Array.from(set).sort();
+  }, [records]);
+
+  const visibleRecords = useMemo(() => filterAttendanceRecords(records, { status: statusFilter, courseTitle: courseFilter, startDate, endDate }), [records, statusFilter, courseFilter, startDate, endDate]);
+
+  const presentCount = visibleRecords.filter((record) => record.status === "present").length;
+  const attendanceRate = visibleRecords.length ? Math.round((presentCount / visibleRecords.length) * 100) : 0;
 
   const exportCSV = () => {
     const blob = new Blob([buildAttendanceCsv(visibleRecords)], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `relatorio_presenca_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `relatorio_presenca_filtrado_${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    toast.success(`${visibleRecords.length} registro(s) exportado(s) em CSV.`);
+    toast.success(`${visibleRecords.length} registro(s) exportado(s) em CSV com filtros aplicados.`);
   };
 
   const exportPDF = () => {
@@ -73,7 +86,7 @@ export default function AdminChamadaPage() {
       return;
     }
     const rows = visibleRecords.map((record) => `<tr><td>${escapeHtml(record.sessionTitle)}</td><td>${escapeHtml(new Date(record.scheduledAt).toLocaleString("pt-BR"))}</td><td>${escapeHtml(record.courseTitle)}</td><td>${escapeHtml(record.studentName || record.studentEmail)}</td><td>${escapeHtml(attendanceStatusLabel(record.status))}</td></tr>`).join("");
-    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório de Presença</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#333}h1{color:#D62828;border-bottom:2px solid #D62828;padding-bottom:10px}p{font-size:13px;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #ddd;padding:9px;text-align:left;font-size:12px}th{background:#f3f4f6;color:#333}.footer{margin-top:28px;border-top:1px solid #eee;padding-top:12px;font-size:11px;color:#777}</style></head><body><h1>Relatório Oficial de Frequência</h1><p>Anderson Palafoz Platform · Emitido em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><p>Taxa de presença no recorte: ${attendanceRate}% · Registros: ${visibleRecords.length}</p><table><thead><tr><th>Sessão</th><th>Data</th><th>Curso</th><th>Aluno</th><th>Status</th></tr></thead><tbody>${rows || "<tr><td colspan=5>Nenhum registro encontrado.</td></tr>"}</tbody></table><div class="footer">Documento gerado a partir dos registros armazenados na plataforma.</div><script>window.print()</script></body></html>`);
+    printWindow.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Relatório de Frequência Filtrado</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#333}h1{color:#D62828;border-bottom:2px solid #D62828;padding-bottom:10px}p{font-size:13px;color:#666}table{width:100%;border-collapse:collapse;margin-top:22px}th,td{border:1px solid #ddd;padding:9px;text-align:left;font-size:12px}th{background:#f3f4f6;color:#333}.footer{margin-top:28px;border-top:1px solid #eee;padding-top:12px;font-size:11px;color:#777}</style></head><body><h1>Relatório Oficial de Frequência (Filtros Personalizados)</h1><p>Anderson Palafoz Platform · Emitido em ${escapeHtml(new Date().toLocaleString("pt-BR"))}</p><p>Taxa de presença no recorte: ${attendanceRate}% · Registros filtrados: ${visibleRecords.length}</p><table><thead><tr><th>Sessão</th><th>Data</th><th>Curso</th><th>Aluno</th><th>Status</th></tr></thead><tbody>${rows || "<tr><td colspan=5>Nenhum registro encontrado para os filtros selecionados.</td></tr>"}</tbody></table><div class="footer">Documento gerado a partir dos registros armazenados na plataforma.</div><script>window.print()</script></body></html>`);
     printWindow.document.close();
     toast.success("Relatório preparado para impressão ou salvamento em PDF.");
   };
@@ -83,10 +96,44 @@ export default function AdminChamadaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
-      <header className="border-b border-gray-200 bg-white"><div className="mx-auto max-w-7xl px-4 py-6 sm:px-6"><Link href="/admin" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600"><ChevronLeft size={16} /> Painel administrativo</Link><h1 className="text-3xl font-black tracking-tight text-gray-950">Chamada e frequência</h1><p className="mt-2 text-sm text-gray-500">Exporte o recorte atual para compartilhar, arquivar ou analisar em uma planilha.</p></div></header>
+      <header className="border-b border-gray-200 bg-white"><div className="mx-auto max-w-7xl px-4 py-6 sm:px-6"><Link href="/admin" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600"><ChevronLeft size={16} /> Painel administrativo</Link><h1 className="text-3xl font-black tracking-tight text-gray-950">Chamada e frequência</h1><p className="mt-2 text-sm text-gray-500">Filtre por turma, status e período antes de exportar o relatório oficial.</p></div></header>
       <main className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Registros no recorte</p><p className="mt-2 text-3xl font-black">{visibleRecords.length}</p></div><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Presentes</p><p className="mt-2 text-3xl font-black text-emerald-700">{presentCount}</p></div><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Taxa geral</p><p className="mt-2 text-3xl font-black text-red-600">{attendanceRate}%</p></div></section>
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Relatório de presença</h2><p className="text-xs text-gray-500">Os dados abaixo vêm diretamente das chamadas registradas.</p></div></div><div className="flex flex-col gap-2 sm:flex-row"><select value={filter} onChange={(event) => setFilter(event.target.value)} className="h-11 rounded-xl border border-gray-300 bg-white px-3 text-sm"><option value="all">Todos os status</option><option value="present">Presentes</option><option value="absent">Ausentes</option><option value="justified">Justificados</option></select><Button onClick={exportCSV} variant="outline" className="h-11 gap-2"><Download size={16} className="text-red-600" /> CSV</Button><Button onClick={exportPDF} className="h-11 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro de presença foi encontrado.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3"><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Registros no recorte</p><p className="mt-2 text-3xl font-black">{visibleRecords.length}</p></div><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Presentes</p><p className="mt-2 text-3xl font-black text-emerald-700">{presentCount}</p></div><div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-bold uppercase text-gray-500">Taxa no recorte</p><p className="mt-2 text-3xl font-black text-red-600">{attendanceRate}%</p></div></section>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 space-y-4">
+          <div className="flex items-center gap-2 text-sm font-bold text-gray-900"><Filter size={18} className="text-red-600" /> Filtros Avançados de Exportação</div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Status de Presença</label>
+              <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm">
+                <option value="all">Todos os status</option>
+                <option value="present">Presentes</option>
+                <option value="absent">Ausentes</option>
+                <option value="justified">Justificados</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Turma / Curso</label>
+              <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)} className="w-full h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm">
+                <option value="all">Todas as turmas</option>
+                {availableCourses.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Data Inicial</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm" />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-600 mb-1">Data Final</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm" />
+            </div>
+          </div>
+          {(statusFilter !== "all" || courseFilter !== "all" || startDate || endDate) && (
+            <div className="flex justify-end"><button onClick={() => { setStatusFilter("all"); setCourseFilter("all"); setStartDate(""); setEndDate(""); }} className="text-xs font-bold text-red-600 hover:underline">Limpar filtros</button></div>
+          )}
+        </section>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Registros de presença filtrados</h2><p className="text-xs text-gray-500">Prontos para exportação imediata em CSV ou PDF.</p></div></div><div className="flex flex-col gap-2 sm:flex-row"><Button onClick={exportCSV} variant="outline" className="h-11 gap-2"><Download size={16} className="text-red-600" /> Exportar CSV</Button><Button onClick={exportPDF} className="h-11 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> Exportar PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro encontrado para os filtros selecionados.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
       </main>
     </div>
   );

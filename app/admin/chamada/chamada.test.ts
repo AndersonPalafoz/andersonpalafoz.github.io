@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { filterAttendanceRecords } from "@/lib/attendance-filters";
+
 describe("Chamada online", () => {
   const attendances = [
     { status: "present" },
@@ -23,5 +25,14 @@ describe("Chamada online", () => {
   it("mantém os filtros de modalidade dentro dos valores suportados", () => {
     expect(["all", "individual", "group", "hybrid"]).toContain("group");
     expect(["all", "individual", "group", "hybrid"]).not.toContain("online-only");
+  });
+
+  it("combina turma, status e intervalo de datas no mesmo recorte", () => {
+    const records = [
+      { status: "present", courseTitle: "B1", scheduledAt: "2026-01-10T12:00:00Z" },
+      { status: "absent", courseTitle: "B1", scheduledAt: "2026-02-10T12:00:00Z" },
+      { status: "present", courseTitle: "A2", scheduledAt: "2026-01-15T12:00:00Z" },
+    ];
+    expect(filterAttendanceRecords(records, { status: "present", courseTitle: "B1", startDate: "2026-01-01", endDate: "2026-01-31" })).toHaveLength(1);
   });
 });

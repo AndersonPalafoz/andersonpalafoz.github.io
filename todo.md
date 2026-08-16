@@ -378,3 +378,6 @@
 - [x] Adicionar visualizador integrado no player de aulas para materiais do Google Drive sem sair do site (/cursos/[id]/aulas/[lessonId])
 - [x] Implementar modal de confirmação ao desvincular aluno com exibição do progresso atual para evitar exclusões acidentais (/admin/matriculas)
 - [x] Aprimorar a interface de chamada online (/admin/chamada) com KPIs de frequência, busca por título, filtros por modalidade/curso, modais otimizados e design system aprimorado
+- [x] Adicionar filtros de data e turma na exportação de PDF e CSV em /admin/chamada
+- [x] Adicionar tooltips interativos detalhados aos gráficos de notas e frequência em /dashboard/historico
+- [x] Implementar upload de imagens no editor de texto rico de avaliações em /admin/avaliacoes
