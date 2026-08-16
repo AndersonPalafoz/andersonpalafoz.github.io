@@ -565,3 +565,14 @@
 - [x] Adicionar sistema de tags e categorias customizáveis na biblioteca de mídia do CMS para organização de arquivos
 - [x] Criar interface administrativa no CMS para criar, editar e gerenciar missões diárias personalizadas para os alunos
 - [x] Desenvolver o "Diário de Aprendizagem" (Learning Journal) como novo recurso interativo para os alunos registrarem reflexões semanais em inglês
+
+## Histórico Pesquisável, Busca de Mídia e Pré-visualização de Missões — 16/08/2026
+- [ ] Adicionar barra de pesquisa e visualização avançada de histórico no Diário de Aprendizagem
+- [ ] Aprimorar a barra de pesquisa rápida por nome na biblioteca de mídia do CMS
+- [ ] Criar modal de pré-visualização interativa para missões diárias no CMS antes da publicação
+
+## Trilha Adaptativa, Validação de Certificados, Alertas de Streak e Menu Global — 16/08/2026
+- [x] Implementar trilha de aprendizagem adaptativa por IA para sugerir conteúdos com base nas lacunas dos alunos
+- [x] Criar sistema de verificação pública de certificados com código único, página de validação pública e QR Code
+- [x] Implementar sistema de notificações automatizadas via e-mail e WhatsApp para alunos em risco de perder o streak
+- [x] Refinar o menu superior (Navbar) com design elegante, blur suave, navegação fluida e atalhos rápidos

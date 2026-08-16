@@ -83,9 +83,9 @@ export function Navbar() {
   const linkClass = (href: string) => `relative rounded-full px-3 py-2 text-sm font-semibold transition-colors ${isActive(href) ? "bg-red-50 text-red-700" : "text-gray-600 hover:bg-gray-50 hover:text-red-700"}`;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-gray-200/90 bg-white/85 shadow-lg shadow-black/[0.04] backdrop-blur-md" : "border-gray-200/60 bg-white/95 shadow-sm backdrop-blur-xl"}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-slate-200/80 bg-white/90 shadow-xl shadow-slate-900/[0.03] backdrop-blur-xl" : "border-slate-200/50 bg-white/95 shadow-xs backdrop-blur-md"}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex min-h-[4.5rem] items-center justify-between gap-4">
+        <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
           <Link href="/" className="shrink-0 rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-red-600" aria-label="Anderson Palafoz — página inicial">
             <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-10 w-auto sm:h-11" priority />
           </Link>
