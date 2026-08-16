@@ -21,11 +21,20 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistPulse, setWishlistPulse] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { data: session } = useSession();
 
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -61,7 +70,7 @@ export function Navbar() {
   const linkClass = (href: string) => `relative rounded-full px-3 py-2 text-sm font-semibold transition-colors ${isActive(href) ? "bg-red-50 text-red-700" : "text-gray-600 hover:bg-gray-50 hover:text-red-700"}`;
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
+    <nav className={`sticky top-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-gray-200/90 bg-white/85 shadow-lg shadow-black/[0.04] backdrop-blur-md" : "border-gray-200/60 bg-white/95 shadow-sm backdrop-blur-xl"}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex min-h-[4.5rem] items-center justify-between gap-4">
           <Link href="/" className="shrink-0 rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-red-600" aria-label="Anderson Palafoz — página inicial">

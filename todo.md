@@ -471,3 +471,9 @@
 - [x] Implementar integração Stripe guiada pelo plano documentado em `docs/stripe-integration-plan.md` (Checkout, Webhooks e Recibos).
 - [x] Incluir gráficos visuais de desempenho (engajamento, progresso médio e matrículas) na página de progresso do professor (`/professor/progresso`).
 - [x] Refinar o visual, a intuitividade e a responsividade geral de toda a plataforma Anderson Palafoz.
+
+## Últimos Aprimoramentos Implementados — 16/08/2026
+- [x] Adicionar efeito de desfoque (blur) e sombra suave condicional na rolagem do menu superior persistente (`Navbar`).
+- [x] Implementar sistema de salvamento e retomada de progresso de reprodução no `MediaPlayer` via `localStorage`.
+- [x] Adicionar filtros por data e status na seção de histórico de faturamento e recibos no perfil do usuário (`ProfileBillingSection`).
+- [x] Executar testes automatizados (190 testes aprovados) e validar build de produção Next.js 15.
