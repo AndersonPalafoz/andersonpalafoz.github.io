@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users } from "lucide-react";
+import { TeacherProgressExport } from "@/components/teacher-progress-export";
 import { db } from "@/lib/db";
 import { users, progress, enrollments, courses } from "@/drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
@@ -49,7 +50,15 @@ export default async function TeacherStudentProgressPage() {
         </div>
 
         <div className="surface-card overflow-hidden p-5 sm:p-6">
-          <h2 className="text-xl font-black text-foreground mb-6">Alunos Cadastrados e Desempenho</h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h2 className="text-xl font-black text-foreground">Alunos Cadastrados e Desempenho</h2>
+            <TeacherProgressExport students={students.map(s => ({
+              name: s.name,
+              email: s.email,
+              enrollmentsCount: allEnrollments.filter(e => e.userId === s.id).length,
+              approvalStatus: s.approvalStatus || "pending"
+            }))} />
+          </div>
 
           {students.length === 0 ? (
             <p className="text-muted-foreground py-8 text-center">Nenhum aluno cadastrado no momento.</p>
