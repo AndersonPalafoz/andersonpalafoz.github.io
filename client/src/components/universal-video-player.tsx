@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Gauge, Bookmark, Youtube, Sparkles, Clock, Trash2, Edit3, PlayCircle } from "lucide-react";
+import { Gauge, Bookmark, Youtube, Sparkles, Clock, Trash2, Edit3, PlayCircle, Check, X } from "lucide-react";
 
 interface UniversalVideoPlayerProps {
   url: string;
@@ -21,6 +21,9 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
     { time: 15, timeFormatted: "0:15", note: "Explicação principal sobre Present Perfect" },
     { time: 45, timeFormatted: "0:45", note: "Exemplo prático de conversação com nativos" }
   ]);
+
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editText, setEditText] = useState<string>("");
 
   const getEmbedUrl = (rawUrl: string, jumpTo?: number | null) => {
     if (!rawUrl) return "";
@@ -58,6 +61,24 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
 
   const handleDeleteNote = (index: number) => {
     setSavedNotes(savedNotes.filter((_, i) => i !== index));
+    if (editingIndex === index) {
+      setEditingIndex(null);
+      setEditText("");
+    }
+  };
+
+  const handleStartEdit = (index: number, currentText: string) => {
+    setEditingIndex(index);
+    setEditText(currentText);
+  };
+
+  const handleSaveEdit = (index: number) => {
+    if (!editText.trim()) return;
+    const updated = [...savedNotes];
+    updated[index].note = editText.trim();
+    setSavedNotes(updated);
+    setEditingIndex(null);
+    setEditText("");
   };
 
   const handleJumpToTime = (time: number) => {
@@ -147,7 +168,7 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
         </div>
       </div>
 
-      {/* Barra Lateral de Anotações Clicáveis (1 coluna) */}
+      {/* Barra Lateral de Anotações Clicáveis, Editáveis e Excluíveis */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm flex flex-col h-full max-h-[600px]">
         <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2">
@@ -160,7 +181,7 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
         </div>
 
         <p className="text-[11px] text-slate-500 dark:text-slate-400 py-3">
-          Clique em qualquer marcador de tempo para saltar diretamente para aquele ponto no vídeo.
+          Clique no tempo para saltar no vídeo, ou edite/exclua suas notas abaixo.
         </p>
 
         <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
@@ -174,20 +195,60 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
                 <span className="inline-flex items-center gap-1 font-mono bg-red-600 text-white px-2.5 py-0.5 rounded-lg text-[11px] font-bold shadow-xs group-hover:bg-red-700 transition-colors">
                   <PlayCircle size={13} /> {sn.timeFormatted}
                 </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteNote(i);
-                  }}
-                  className="text-slate-400 hover:text-red-600 p-1 transition-colors"
-                  title="Excluir nota"
-                >
-                  <Trash2 size={14} />
-                </button>
+                <div className="flex items-center gap-1">
+                  {editingIndex !== i && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEdit(i, sn.note);
+                      }}
+                      className="text-slate-400 hover:text-blue-600 p-1 transition-colors"
+                      title="Editar nota"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteNote(i);
+                    }}
+                    className="text-slate-400 hover:text-red-600 p-1 transition-colors"
+                    title="Excluir nota"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
-              <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
-                {sn.note}
-              </p>
+
+              {editingIndex === i ? (
+                <div className="space-y-2 pt-1" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white"
+                  />
+                  <div className="flex items-center gap-2 justify-end">
+                    <button
+                      onClick={() => setEditingIndex(null)}
+                      className="px-2.5 py-1 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-[10px] font-bold flex items-center gap-1"
+                    >
+                      <X size={12} /> Cancelar
+                    </button>
+                    <button
+                      onClick={() => handleSaveEdit(i)}
+                      className="px-2.5 py-1 rounded-lg bg-red-600 text-white text-[10px] font-bold flex items-center gap-1 shadow-xs"
+                    >
+                      <Check size={12} /> Salvar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-slate-700 dark:text-slate-200 font-medium leading-relaxed">
+                  {sn.note}
+                </p>
+              )}
             </div>
           ))}
 

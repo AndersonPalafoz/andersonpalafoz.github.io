@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Download, FileSpreadsheet, Filter, Calendar, BarChart3 } from "lucide-react";
+import { Download, FileSpreadsheet, Filter, Calendar, BarChart3, HelpCircle } from "lucide-react";
 
 interface CsvExportButtonProps {
   data: Record<string, any>[];
@@ -12,10 +12,10 @@ export function CsvExportButton({ data, filename = "relatorio_filtrado.csv", lab
   const [endDate, setEndDate] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [showFilters, setShowFilters] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
 
   const categories = Array.from(new Set(data.map((item) => item.category || item.tipo || "Geral")));
 
-  // Obter dados filtrados para exibição no gráfico de barras pré-exportação
   const getFilteredData = () => {
     let filteredData = [...data];
     if (selectedCategory !== "all") {
@@ -40,7 +40,6 @@ export function CsvExportButton({ data, filename = "relatorio_filtrado.csv", lab
 
   const filteredData = getFilteredData();
 
-  // Agrupar dados por categoria para o gráfico de barras
   const categoryCounts = filteredData.reduce((acc: Record<string, number>, item) => {
     const cat = String(item.category || item.tipo || "Geral");
     acc[cat] = (acc[cat] || 0) + 1;
@@ -140,27 +139,42 @@ export function CsvExportButton({ data, filename = "relatorio_filtrado.csv", lab
             </div>
           </div>
 
-          {/* Gráfico de Barras Simples para visualização dos dados filtrados */}
+          {/* Gráfico de Barras com Tooltips Interativos de Valores Exatos */}
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-300">
-              <BarChart3 size={15} className="text-red-500" /> Distribuição por Categoria (Pré-visualização)
+            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span className="flex items-center gap-1.5"><BarChart3 size={15} className="text-red-500" /> Distribuição por Categoria</span>
+              <span className="text-[10px] text-slate-400 flex items-center gap-1"><HelpCircle size={12} /> Passe o mouse para ver o valor exato</span>
             </div>
 
-            <div className="space-y-2 bg-white dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60">
+            <div className="space-y-2.5 bg-white dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700/60">
               {chartEntries.map(([cat, count], idx) => {
                 const percentage = Math.round((count / maxCount) * 100);
+                const isHovered = activeTooltip === cat;
                 return (
-                  <div key={idx} className="space-y-1">
+                  <div
+                    key={idx}
+                    className="space-y-1 relative cursor-pointer"
+                    onMouseEnter={() => setActiveTooltip(cat)}
+                    onMouseLeave={() => setActiveTooltip(null)}
+                  >
                     <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-300">
                       <span>{cat}</span>
-                      <span className="font-mono text-red-600 dark:text-red-400 font-bold">{count} itens</span>
+                      <span className="font-mono text-red-600 dark:text-red-400 font-bold">{count} itens ({percentage}%)</span>
                     </div>
-                    <div className="w-full h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+
+                    <div className="w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden relative">
                       <div
-                        className="h-full bg-gradient-to-r from-red-600 to-amber-500 rounded-full transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-red-600 to-amber-500 rounded-full transition-all duration-300"
                         style={{ width: `${Math.max(percentage, 8)}%` }}
                       />
                     </div>
+
+                    {isHovered && (
+                      <div className="absolute right-0 -top-8 bg-slate-900 dark:bg-slate-950 text-white text-[10px] font-bold px-3 py-1 rounded-lg shadow-xl z-20 flex items-center gap-1.5 animate-in fade-in zoom-in-95">
+                        <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        <span>Categoria: <b>{cat}</b> | Total Exato: <b>{count} registros</b></span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
