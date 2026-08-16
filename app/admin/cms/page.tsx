@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles, Undo2, Redo2, Wand2, Crop } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles, Undo2, Redo2, Wand2, Crop, History, Copy, Clock } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,20 @@ interface CmsBlock {
   sectionKey: string;
   title: string;
   content: string;
+  status: string;
+  contentType: string;
+  tag: string;
+  orderIndex: number;
   updatedAt: string;
+}
+
+interface RevisionItem {
+  id: number;
+  blockId: number;
+  title: string;
+  content: string;
+  status: string;
+  createdAt: string;
 }
 
 const PAGE_OPTIONS = [
@@ -51,11 +64,18 @@ export default function AdminCmsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPageFilter, setSelectedPageFilter] = useState("all");
 
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState("all");
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [pageKey, setPageKey] = useState("home");
   const [sectionKey, setSectionKey] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [status, setStatus] = useState("published");
+  const [contentType, setContentType] = useState("text");
+  const [tag, setTag] = useState("Geral");
+  const [orderIndex, setOrderIndex] = useState(0);
+
   const [saving, setSaving] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -66,7 +86,12 @@ export default function AdminCmsPage() {
   const [mediaSearch, setMediaSearch] = useState("");
   const [isDragging, setIsDragging] = useState(false);
 
-  // Image crop / resize modal
+  // Revisions Modal
+  const [revisionsModalOpen, setRevisionsModalOpen] = useState(false);
+  const [activeRevisions, setActiveRevisions] = useState<RevisionItem[]>([]);
+  const [revisionsBlockId, setRevisionsBlockId] = useState<number | null>(null);
+
+  // Image crop modal
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [cropWidth, setCropWidth] = useState(800);
@@ -155,15 +180,28 @@ export default function AdminCmsPage() {
     }, 900);
   };
 
+  // WYSIWYG toolbar format helper
+  const applyFormatting = (tagType: string) => {
+    let formatted = content;
+    if (tagType === "bold") formatted = `**${content || "Texto em negrito"}**`;
+    if (tagType === "italic") formatted = `*${content || "Texto em itálico"}*`;
+    if (tagType === "h2") formatted = `\n## ${content || "Título de Seção"}\n`;
+    if (tagType === "bullet") formatted = `\n- ${content || "Item de lista"}\n`;
+    if (tagType === "link") formatted = `[Link Text](https://andersonpalafoz.com.br)`;
+    handleContentChange(formatted);
+  };
+
   const filteredBlocks = useMemo(() => {
     return blocks.filter((b) => {
       if (selectedPageFilter !== "all" && b.pageKey !== selectedPageFilter) return false;
+
+      if (selectedStatusFilter !== "all" && b.status !== selectedStatusFilter) return false;
       if (searchTerm && !b.title.toLowerCase().includes(searchTerm.toLowerCase()) && !b.sectionKey.toLowerCase().includes(searchTerm.toLowerCase()) && !b.content.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
       return true;
     });
-  }, [blocks, selectedPageFilter, searchTerm]);
+  }, [blocks, selectedPageFilter, selectedStatusFilter, searchTerm]);
 
   const filteredMedia = useMemo(() => {
     return uploadedFiles.filter((f) => {
@@ -218,7 +256,7 @@ export default function AdminCmsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pageKey || !sectionKey || !title || !content) {
-      toast.error("Preencha todos os campos do bloco de conteúdo.");
+      toast.error("Preencha todos os campos obrigatórios do bloco.");
       return;
     }
 
@@ -227,7 +265,7 @@ export default function AdminCmsPage() {
       const res = await fetch("/api/admin/cms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageKey, sectionKey, title, content }),
+        body: JSON.stringify({ pageKey, sectionKey, title, content, status, contentType, orderIndex, tag }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar.");
@@ -250,8 +288,59 @@ export default function AdminCmsPage() {
     setSectionKey(block.sectionKey);
     setTitle(block.title);
     setContent(block.content);
+    setStatus(block.status || "published");
+    setContentType(block.contentType || "text");
+    setTag(block.tag || "Geral");
+    setOrderIndex(block.orderIndex || 0);
     recordHistory(block.content);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDuplicate = async (id: number) => {
+    try {
+      const res = await fetch("/api/admin/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "duplicate", id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao duplicar.");
+      toast.success(data.message || "Bloco duplicado com sucesso!");
+      await fetchBlocks();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao duplicar bloco.");
+    }
+  };
+
+  const handleOpenRevisions = async (block: CmsBlock) => {
+    try {
+      setRevisionsBlockId(block.id);
+      const res = await fetch(`/api/admin/cms?blockId=${block.id}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao carregar revisões.");
+      setActiveRevisions(data.revisions || []);
+      setRevisionsModalOpen(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao carregar histórico.");
+    }
+  };
+
+  const handleRestoreRevision = async (revId: number) => {
+    if (!revisionsBlockId) return;
+    try {
+      const res = await fetch("/api/admin/cms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restore", id: revId, blockId: revisionsBlockId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao restaurar versão.");
+      toast.success(data.message || "Versão anterior restaurada com sucesso!");
+      setRevisionsModalOpen(false);
+      await fetchBlocks();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao restaurar versão.");
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -273,6 +362,10 @@ export default function AdminCmsPage() {
     setSectionKey("");
     setTitle("");
     setContent("");
+    setStatus("published");
+    setContentType("text");
+    setTag("Geral");
+    setOrderIndex(0);
   };
 
   if (authStatus === "loading" || loading) {
@@ -295,26 +388,26 @@ export default function AdminCmsPage() {
               <ArrowLeft size={15} /> Voltar ao Painel Administrativo
             </Link>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-              <Globe className="text-red-600" size={30} /> CMS Global Inteligente com IA
+              <Globe className="text-red-600" size={30} /> CMS Global Avançado com IA & WYSIWYG
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Gerencie textos, mídias e identidades visuais de qualquer seção do site com assistente de IA, corte de imagem e preview responsivo.
+              Gerenciamento universal de conteúdo com histórico de revisões, editor visual rico, status, tags e duplicação em tempo real.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded-2xl">
             <Sparkles className="text-red-600" size={18} />
-            <span className="text-xs font-bold text-red-800">Editor Pro + IA Ativo</span>
+            <span className="text-xs font-bold text-red-800">Editor Enterprise Ativo</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Formulário de Criação/Edição */}
+        {/* Formulário de Criação/Edição Avançado */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm sticky top-24 space-y-5">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm sticky top-24 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                <Edit3 className="text-red-600" size={16} /> {editingId ? "Editar Bloco CMS" : "Novo Bloco de Conteúdo"}
+                <Edit3 className="text-red-600" size={16} /> {editingId ? "Editar Bloco Avançado" : "Novo Bloco de Conteúdo"}
               </h2>
               {editingId && (
                 <Button variant="ghost" size="sm" onClick={handleResetForm} className="text-xs text-slate-400 hover:text-red-600">
@@ -323,7 +416,7 @@ export default function AdminCmsPage() {
               )}
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
+            <form onSubmit={handleSave} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Área / Página Alvo</label>
                 <select
@@ -339,10 +432,33 @@ export default function AdminCmsPage() {
                 </select>
               </div>
 
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Status</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-900"
+                  >
+                    <option value="published">Publicado</option>
+                    <option value="draft">Rascunho</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Tag / Categoria</label>
+                  <Input
+                    placeholder="ex: Destaque, Hero, FAQ"
+                    value={tag}
+                    onChange={(e) => setTag(e.target.value)}
+                    className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-9"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Chave da Seção (slug único)</label>
                 <Input
-                  placeholder="ex: hero_title, banner_text, footer_about"
+                  placeholder="ex: hero_title, banner_text"
                   value={sectionKey}
                   onChange={(e) => setSectionKey(e.target.value)}
                   disabled={Boolean(editingId)}
@@ -362,42 +478,62 @@ export default function AdminCmsPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider">Conteúdo</label>
-                  <div className="flex items-center gap-2">
+                  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider">Conteúdo (Editor Rico)</label>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => applyFormatting("bold")}
+                      className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 rounded text-slate-700"
+                      title="Negrito"
+                    >
+                      B
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyFormatting("italic")}
+                      className="px-1.5 py-0.5 text-[10px] italic bg-slate-100 hover:bg-slate-200 rounded text-slate-700"
+                      title="Itálico"
+                    >
+                      I
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyFormatting("h2")}
+                      className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 rounded text-slate-700"
+                      title="Título H2"
+                    >
+                      H2
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyFormatting("bullet")}
+                      className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 rounded text-slate-700"
+                      title="Lista"
+                    >
+                      • List
+                    </button>
                     <button
                       type="button"
                       onClick={handleAiImprove}
                       disabled={aiLoading}
-                      className="text-red-600 hover:text-red-700 flex items-center gap-1 text-[11px] font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-200"
+                      className="text-red-600 hover:text-red-700 flex items-center gap-1 text-[11px] font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-200 ml-1"
                       title="Sugerir melhorias com IA"
                     >
-                      <Wand2 size={13} /> {aiLoading ? "IA analisando..." : "Assistente IA"}
+                      <Wand2 size={12} /> {aiLoading ? "IA..." : "IA"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleUndo}
-                      disabled={historyIndex <= 0}
-                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
-                      title="Desfazer"
-                    >
-                      <Undo2 size={14} />
+                    <button type="button" onClick={handleUndo} disabled={historyIndex <= 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-30" title="Desfazer">
+                      <Undo2 size={13} />
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleRedo}
-                      disabled={historyIndex >= history.length - 1}
-                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
-                      title="Refazer"
-                    >
-                      <Redo2 size={14} />
+                    <button type="button" onClick={handleRedo} disabled={historyIndex >= history.length - 1} className="text-slate-400 hover:text-slate-700 disabled:opacity-30" title="Refazer">
+                      <Redo2 size={13} />
                     </button>
                   </div>
                 </div>
                 <Textarea
-                  placeholder="Digite aqui o texto ou conteúdo..."
+                  placeholder="Digite o texto ou markdown formatado..."
                   value={content}
                   onChange={(e) => handleContentChange(e.target.value)}
-                  rows={5}
+                  rows={6}
                   className="bg-slate-50 border-slate-200 rounded-xl text-xs font-normal font-mono"
                 />
               </div>
@@ -420,7 +556,7 @@ export default function AdminCmsPage() {
           </div>
         </div>
 
-        {/* Lista de Blocos Cadastrados e Gerenciador de Mídia com Drag-and-Drop e Crop */}
+        {/* Gerenciador de Mídia e Listagem Avançada com Filtros e Busca */}
         <div className="lg:col-span-2 space-y-6">
           {selectedPageFilter === "brand" && <BrandEditor />}
 
@@ -506,29 +642,41 @@ export default function AdminCmsPage() {
             </div>
           </div>
           
-          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-              <Input
-                placeholder="Pesquisar por título, chave ou conteúdo..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
-              />
-            </div>
-            <div>
-              <select
-                value={selectedPageFilter}
-                onChange={(e) => setSelectedPageFilter(e.target.value)}
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800"
-              >
-                <option value="all">Todas as páginas ({blocks.length})</option>
-                {PAGE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+          {/* Barra de Filtros e Busca de Blocos */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <Input
+                  placeholder="Pesquisar por título, chave ou conteúdo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-10"
+                />
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <select
+                  value={selectedStatusFilter}
+                  onChange={(e) => setSelectedStatusFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 h-10"
+                >
+                  <option value="all">Todos os Status</option>
+                  <option value="published">Publicado</option>
+                  <option value="draft">Rascunho</option>
+                </select>
+                <select
+                  value={selectedPageFilter}
+                  onChange={(e) => setSelectedPageFilter(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 h-10"
+                >
+                  <option value="all">Todas as Páginas</option>
+                  {PAGE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
@@ -548,16 +696,25 @@ export default function AdminCmsPage() {
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-50 text-red-700 uppercase tracking-wide">
                           {b.pageKey}
                         </span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${b.status === "published" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+                          {b.status === "published" ? "Publicado" : "Rascunho"}
+                        </span>
                         <code className="text-[11px] font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700">{b.sectionKey}</code>
                       </div>
                       <h3 className="text-base font-black text-slate-900 mt-1">{b.title}</h3>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(b)} className="h-9 px-3 text-xs font-bold border-slate-200 gap-1.5 hover:bg-slate-50">
-                        <Edit3 size={14} className="text-red-600" /> Editar
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Button variant="outline" size="sm" onClick={() => handleOpenRevisions(b)} className="h-9 px-2.5 text-xs font-bold border-slate-200 gap-1 hover:bg-slate-50">
+                        <History size={13} className="text-blue-600" /> Histórico
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(b.id)} className="h-9 px-3 text-xs font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5">
-                        <Trash2 size={14} /> Excluir
+                      <Button variant="outline" size="sm" onClick={() => handleDuplicate(b.id)} className="h-9 px-2.5 text-xs font-bold border-slate-200 gap-1 hover:bg-slate-50">
+                        <Copy size={13} className="text-emerald-600" /> Duplicar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(b)} className="h-9 px-2.5 text-xs font-bold border-slate-200 gap-1 hover:bg-slate-50">
+                        <Edit3 size={13} className="text-red-600" /> Editar
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(b.id)} className="h-9 px-2.5 text-xs font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1">
+                        <Trash2 size={13} /> Excluir
                       </Button>
                     </div>
                   </div>
@@ -574,6 +731,56 @@ export default function AdminCmsPage() {
           )}
         </div>
       </div>
+
+      {/* Modal de Histórico de Revisões e Restauração */}
+      {revisionsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-2">
+                <History className="text-blue-600" size={20} />
+                <h3 className="font-extrabold text-slate-900 text-base">Histórico de Versões e Revisões</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setRevisionsModalOpen(false)} className="h-8 w-8 p-0 rounded-full">
+                <X size={18} />
+              </Button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3">
+              {activeRevisions.length === 0 ? (
+                <p className="text-xs text-slate-500 py-8 text-center">Nenhuma revisão anterior registrada para este bloco.</p>
+              ) : (
+                activeRevisions.map((rev) => (
+                  <div key={rev.id} className="p-4 rounded-2xl border border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-900">{rev.title}</span>
+                        <span className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+                          <Clock size={11} /> {new Date(rev.createdAt).toLocaleString("pt-BR")}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 font-mono truncate max-w-md">{rev.content}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleRestoreRevision(rev.id)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 rounded-xl shrink-0 gap-1"
+                    >
+                      Restaurar Versão
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={() => setRevisionsModalOpen(false)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-2.5 rounded-xl">
+                Fechar Histórico
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Corte e Redimensionamento de Imagem */}
       {cropModalOpen && (

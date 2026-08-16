@@ -2,16 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { siteContentBlocks } from "@/drizzle/schema";
+import { siteContentBlocks, siteContentRevisions } from "@/drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== "admin") {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const blockId = searchParams.get("blockId");
+
+    if (blockId && !isNaN(Number(blockId))) {
+      const revisions = await db.select()
+        .from(siteContentRevisions)
+        .where(eq(siteContentRevisions.blockId, Number(blockId)))
+        .orderBy(desc(siteContentRevisions.createdAt));
+      return NextResponse.json({ revisions });
     }
 
     const blocks = await db.select().from(siteContentBlocks).orderBy(desc(siteContentBlocks.updatedAt));
@@ -30,7 +41,21 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, id, pageKey, sectionKey, title, content, status, contentType, orderIndex, tag } = body;
+    const { action, id, blockId, pageKey, sectionKey, title, content, status, contentType, orderIndex, tag } = body;
+
+    if (action === "restore" && blockId && id) {
+      const rev = await db.query.siteContentRevisions.findFirst({
+        where: eq(siteContentRevisions.id, Number(id)),
+      });
+      if (!rev) {
+        return NextResponse.json({ error: "Versão de revisão não encontrada." }, { status: 404 });
+      }
+      const updated = await db.update(siteContentBlocks)
+        .set({ title: rev.title, content: rev.content, status: rev.status, updatedAt: new Date() })
+        .where(eq(siteContentBlocks.id, Number(blockId)))
+        .returning();
+      return NextResponse.json({ block: updated[0], message: "Versão anterior restaurada com sucesso!" });
+    }
 
     if (action === "duplicate" && id) {
       const source = await db.query.siteContentBlocks.findFirst({
@@ -62,6 +87,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
+      // Salvar revisão anterior no histórico
+      await db.insert(siteContentRevisions).values({
+        blockId: existing.id,
+        title: existing.title,
+        content: existing.content,
+        status: existing.status,
+        createdAt: new Date(),
+      });
+
       const updated = await db.update(siteContentBlocks)
         .set({
           pageKey,

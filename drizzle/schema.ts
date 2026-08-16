@@ -540,3 +540,18 @@ export const siteContentBlocks = pgTable("site_content_blocks", {
 
 export type SiteContentBlock = typeof siteContentBlocks.$inferSelect;
 export type InsertSiteContentBlock = typeof siteContentBlocks.$inferInsert;
+
+/**
+ * Site Content Revisions (CMS) table - Armazena histórico de revisões de blocos do CMS para restauração.
+ */
+export const siteContentRevisions = pgTable("site_content_revisions", {
+  id: serial("id").primaryKey(),
+  blockId: integer("blockId").notNull().references(() => siteContentBlocks.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  status: varchar("status", { length: 32 }).default("published").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type SiteContentRevision = typeof siteContentRevisions.$inferSelect;
+export type InsertSiteContentRevision = typeof siteContentRevisions.$inferInsert;
