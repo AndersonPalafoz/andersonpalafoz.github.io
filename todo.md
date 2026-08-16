@@ -635,3 +635,8 @@
 - [x] Refinar suporte a modo escuro em todas as páginas públicas e privadas com variáveis de contraste otimizadas
 - [x] Simplificar o menu superior (header) agrupando acessos rápidos em menus limpos para evitar poluição visual
 - [x] Criar modal de upgrade para downloads pagos bloqueados
+
+## Barra Lateral de Notas no Player, Tabela Comparativa de Upgrade e Gráfico em Relatórios — 16/08/2026
+- [x] Adicionar barra lateral no player de vídeo para listar anotações e permitir pular direto para o tempo marcado
+- [x] Incluir tabela comparativa simples no modal de upgrade destacando benefícios exclusivos
+- [x] Adicionar gráfico de barras simples no painel de relatórios para visualizar dados filtrados antes da exportação CSV
