@@ -183,6 +183,13 @@
       "when": 1786857650053,
       "tag": "0025_chief_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1786862203006,
+      "tag": "0026_overrated_wraith",
+      "breakpoints": true
     }
   ]
 }

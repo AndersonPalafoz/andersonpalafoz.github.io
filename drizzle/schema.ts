@@ -521,3 +521,18 @@ export const courseReviews = pgTable("course_reviews", {
   userCourseIdentity: uniqueIndex("course_reviews_user_course_idx").on(table.userId, table.courseId),
 }));
 export type CourseReview = typeof courseReviews.$inferSelect;
+
+/**
+ * Site Content Blocks (CMS) table - Permite editar textos e informações de qualquer página do site.
+ */
+export const siteContentBlocks = pgTable("site_content_blocks", {
+  id: serial("id").primaryKey(),
+  pageKey: varchar("pageKey", { length: 100 }).notNull(), // home, sobre, contato, faq, etc.
+  sectionKey: varchar("sectionKey", { length: 100 }).notNull(), // hero_title, about_text, banner, etc.
+  title: varchar("title", { length: 255 }).notNull(),
+  content: text("content").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type SiteContentBlock = typeof siteContentBlocks.$inferSelect;
+export type InsertSiteContentBlock = typeof siteContentBlocks.$inferInsert;

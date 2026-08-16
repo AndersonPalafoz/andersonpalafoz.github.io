@@ -477,3 +477,8 @@
 - [x] Implementar sistema de salvamento e retomada de progresso de reprodução no `MediaPlayer` via `localStorage`.
 - [x] Adicionar filtros por data e status na seção de histórico de faturamento e recibos no perfil do usuário (`ProfileBillingSection`).
 - [x] Executar testes automatizados (190 testes aprovados) e validar build de produção Next.js 15.
+
+## CMS Global e Editor Universal — 16/08/2026
+- [x] Criar sistema de CMS global (`site_content_blocks`) persistido no banco Neon PostgreSQL.
+- [x] Desenvolver painel administrativo intuitivo em `/admin/cms` com suporte a filtros por página/área, busca em tempo real e CRUD completo de blocos de conteúdo para qualquer seção do site.
+- [x] Executar testes automatizados (190 testes aprovados) e validar build de produção Next.js 15.
