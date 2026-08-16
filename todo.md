@@ -598,3 +598,8 @@
 - [x] Adicionar filtros por categoria e data no histórico de feedbacks da Trilha Adaptativa
 - [x] Implementar tour guiado / onboarding interativo no dashboard do aluno para apresentar novos recursos
 - [x] Garantir suporte completo e consistente a modo escuro (dark mode) na página inicial e no dashboard
+
+## Alternador de Tema na Navbar, Reinício de Onboarding e Exportação PDF de Feedbacks — 16/08/2026
+- [ ] Adicionar botão de alternância manual para o modo escuro (dark mode) na barra de navegação principal
+- [ ] Incluir opção nas configurações do perfil do aluno para reiniciar o tour guiado do dashboard a qualquer momento
+- [ ] Adicionar botão de exportação em PDF no histórico de feedbacks da Trilha Adaptativa
