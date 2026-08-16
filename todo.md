@@ -544,3 +544,13 @@
 - [x] Criar página dedicada de placar de líderes (leaderboard) para comparação de XP e ofensivas entre colegas
 - [x] Adicionar efeitos de hover e tooltips detalhados nas medalhas e badges do perfil
 - [x] Implementar sistema de missões diárias interativas no perfil do aluno com recompensa de XP bônus
+
+## Celebrações, Filtros Temporais e Missões de Speaking — 16/08/2026
+- [x] Adicionar animações de celebração ao resgatar XP bônus ou subir de nível no placar
+- [x] Criar filtro de tempo no placar de líderes (Semanal, Mensal e Geral)
+- [x] Integrar missões de speaking diárias conectadas ao assistente de voz para ganho de XP extra
+
+## Evoluções Avançadas do CMS Global — 16/08/2026
+- [x] Implementar visualizador de comparação (Diff Viewer) para revisões anteriores do CMS
+- [x] Adicionar suporte a ações em lote (Bulk Actions) para publicar ou remover múltiplos blocos de conteúdo
+- [x] Criar ferramenta de exportação e importação de blocos do CMS em formato JSON para backup e migração

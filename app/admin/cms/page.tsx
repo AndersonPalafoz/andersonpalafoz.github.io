@@ -651,8 +651,8 @@ export default function AdminCmsPage() {
             </div>
           </div>
           
-          {/* Barra de Filtros e Busca de Blocos */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
+          {/* Barra de Filtros, Busca e Ferramentas de Backup JSON */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-4">
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
@@ -663,7 +663,7 @@ export default function AdminCmsPage() {
                   className="pl-10 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold h-10"
                 />
               </div>
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex gap-2 w-full sm:w-auto flex-wrap">
                 <select
                   value={selectedStatusFilter}
                   onChange={(e) => setSelectedStatusFilter(e.target.value)}
@@ -685,6 +685,23 @@ export default function AdminCmsPage() {
                     </option>
                   ))}
                 </select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(blocks, null, 2));
+                    const downloadAnchor = document.createElement("a");
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", `cms_backup_${Date.now()}.json`);
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                    toast.success("Backup JSON exportado com sucesso!");
+                  }}
+                  className="h-10 px-3 text-xs font-bold border-slate-200 gap-1.5 hover:bg-slate-50"
+                >
+                  Exportar JSON
+                </Button>
               </div>
             </div>
           </div>
