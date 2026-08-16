@@ -539,3 +539,8 @@
 - [x] Adicionar animação visual de onda sonora ao assistente de conversação por voz durante a gravação
 - [x] Implementar recurso de ofensiva diária (streak) com ícone de chama ao lado do nome do aluno na barra de navegação/perfil
 - [x] Aplicar identidade visual urbana/adolescente de alto padrão e profissionalismo nas áreas de engajamento e quizzes
+
+## Leaderboard Dedicado, Tooltips e Missões Diárias — 16/08/2026
+- [x] Criar página dedicada de placar de líderes (leaderboard) para comparação de XP e ofensivas entre colegas
+- [x] Adicionar efeitos de hover e tooltips detalhados nas medalhas e badges do perfil
+- [x] Implementar sistema de missões diárias interativas no perfil do aluno com recompensa de XP bônus
