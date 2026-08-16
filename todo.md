@@ -464,3 +464,5 @@
 - [x] Investigar e corrigir os Relatórios de Progresso para professor e super-admin, garantindo dados consistentes e rotas seguras.
 - [x] Adicionar estado de carregamento visual e mensagens de erro amigáveis com botão de re-tentativa na página `/admin/chamada`.
 - [x] Iniciar a configuração e documentação dos conectores Stripe e MCP conforme as diretrizes da plataforma.
+- [x] Gerar plano de implementação Stripe com a ferramenta `stripe_implementation_planner` e registrar em `docs/stripe-integration-plan.md`.
+- [x] Adicionar funcionalidade para exportar relatórios de progresso em formato PDF e CSV para professores e super-admins.
