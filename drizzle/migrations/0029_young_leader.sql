@@ -1,0 +1,1 @@
+ALTER TABLE "site_content_blocks" ADD COLUMN "scheduledPublishAt" timestamp;
