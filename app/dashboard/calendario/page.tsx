@@ -1,4 +1,6 @@
 import { getServerSession } from "next-auth/next";
+export const dynamic = "force-dynamic";
+
 import { authOptions } from "@/lib/auth";
 import { getUserActivityProgress } from "@/lib/db";
 import { Calendar } from "lucide-react";

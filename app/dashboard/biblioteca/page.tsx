@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getMaterials } from "@/lib/db";
 import { FileText } from "lucide-react";
 import { DownloadMaterialButton } from "@/components/download-material-button";

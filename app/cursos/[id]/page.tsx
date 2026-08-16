@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+export const dynamic = "force-dynamic";
+
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getCourseById, getModulesByCourse } from "@/lib/db";
 import { EnrollButton } from "@/components/enroll-button";

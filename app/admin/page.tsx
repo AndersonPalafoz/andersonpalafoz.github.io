@@ -161,9 +161,25 @@ export default function AdminDashboard() {
 
           <Link href="/admin/relatorios">
             <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
-              <BarChart3 className="text-orange-600 mb-4" size={40} />
+              <BarChart3 className="text-orange-600" size={40} />
               <h2 className="text-xl font-bold text-gray-900 mb-2">Relatórios</h2>
               <p className="text-gray-600">Estatísticas e progresso dos alunos</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/chamada">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <Users className="text-emerald-600" size={40} />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Chamada e Frequência</h2>
+              <p className="text-gray-600">Registrar presença e exportar relatórios</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/avaliacoes">
+            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+              <FileText className="text-red-600" size={40} />
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Provas e Atividades</h2>
+              <p className="text-gray-600">Criar questões com formatação rica</p>
             </div>
           </Link>
         </div>

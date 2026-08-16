@@ -1,4 +1,6 @@
 import Link from "next/link";
+export const dynamic = "force-dynamic";
+
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getUserEnrollments } from "@/lib/db";
