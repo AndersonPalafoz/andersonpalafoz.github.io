@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users } from "lucide-react";
 import { TeacherProgressExport } from "@/components/teacher-progress-export";
+import { TeacherAnalyticsCharts } from "@/components/teacher-analytics-charts";
 import { db } from "@/lib/db";
 import { users, progress, enrollments, courses } from "@/drizzle/schema";
 import { eq, and, isNull } from "drizzle-orm";
@@ -48,6 +49,21 @@ export default async function TeacherStudentProgressPage() {
             </p>
           </div>
         </div>
+
+        {(() => {
+          const totalStudents = students.length;
+          const activeStudents = students.filter(s => allProgress.some(p => p.userId === s.id && (p.lessonsCompleted ?? 0) > 0)).length;
+          const allPercentages = allEnrollments.map(e => allProgress.find(p => p.userId === e.userId && p.courseId === e.courseId)?.percentageCompleted ?? 0);
+          const averageProgress = allPercentages.length ? Math.round(allPercentages.reduce((a, b) => a + b, 0) / allPercentages.length) : 0;
+          return (
+            <TeacherAnalyticsCharts
+              totalStudents={totalStudents}
+              activeStudents={activeStudents}
+              averageProgress={averageProgress}
+              totalEnrollments={allEnrollments.length}
+            />
+          );
+        })()}
 
         <div className="surface-card overflow-hidden p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">

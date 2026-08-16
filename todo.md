@@ -466,3 +466,8 @@
 - [x] Iniciar a configuração e documentação dos conectores Stripe e MCP conforme as diretrizes da plataforma.
 - [x] Gerar plano de implementação Stripe com a ferramenta `stripe_implementation_planner` e registrar em `docs/stripe-integration-plan.md`.
 - [x] Adicionar funcionalidade para exportar relatórios de progresso em formato PDF e CSV para professores e super-admins.
+
+## Aprimoramentos e Integrações Recentes — 16/08/2026
+- [x] Implementar integração Stripe guiada pelo plano documentado em `docs/stripe-integration-plan.md` (Checkout, Webhooks e Recibos).
+- [x] Incluir gráficos visuais de desempenho (engajamento, progresso médio e matrículas) na página de progresso do professor (`/professor/progresso`).
+- [x] Refinar o visual, a intuitividade e a responsividade geral de toda a plataforma Anderson Palafoz.
