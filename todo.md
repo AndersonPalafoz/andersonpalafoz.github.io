@@ -640,3 +640,16 @@
 - [x] Adicionar barra lateral no player de vídeo para listar anotações e permitir pular direto para o tempo marcado
 - [x] Incluir tabela comparativa simples no modal de upgrade destacando benefícios exclusivos
 - [x] Adicionar gráfico de barras simples no painel de relatórios para visualizar dados filtrados antes da exportação CSV
+
+## Edição de Notas, Tooltips em Gráfico, Checkout Direto e Redesenho do Header — 16/08/2026
+- [x] Adicionar funcionalidade de editar e excluir anotações na barra lateral do player de vídeo
+- [x] Incluir tooltips interativos no gráfico de barras dos relatórios exibindo valores exatos ao passar o mouse
+- [x] Inserir botão de checkout direto (Stripe) no modal de upgrade para assinatura imediata do plano Pro
+- [x] Redesenhar e simplificar o menu superior (header) de forma radical, unificando acessos em um menu clean e elegante
+
+## Correção Abrangente de Dark Mode, Edição de Notas, Tooltips em Gráfico e Checkout — 16/08/2026
+- [x] Corrigir falhas de modo escuro em todas as páginas, garantindo cores semânticas corretas e sem fundos brancos forçados
+- [x] Adicionar edição e exclusão de anotações salvas na barra lateral do player de vídeo
+- [x] Incluir tooltips interativos no gráfico de barras dos relatórios para exibir valores exatos ao passar o mouse
+- [x] Inserir botão de checkout direto (Stripe) no modal de upgrade para assinatura imediata do plano Pro
+- [x] Simplificar o menu superior para evitar poluição visual

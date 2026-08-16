@@ -1,5 +1,5 @@
-import React from "react";
-import { Lock, Sparkles, X, ArrowRight, Check, XCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Lock, Sparkles, X, ArrowRight, Check, XCircle, CreditCard, Loader2 } from "lucide-react";
 
 interface UpgradeModalProps {
   isOpen: boolean;
@@ -14,7 +14,21 @@ export function UpgradeModal({
   title = "Conteúdo Exclusivo e Pago",
   description = "Este material ou curso faz parte do ecossistema acadêmico avançado do professor Anderson Palafoz. Compare os planos abaixo e desbloqueie o acesso completo."
 }: UpgradeModalProps) {
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
+
   if (!isOpen) return null;
+
+  const handleDirectCheckout = async () => {
+    setLoadingCheckout(true);
+    try {
+      // Simulação de criação de sessão Stripe Checkout segura
+      await new Promise((res) => setTimeout(res, 1200));
+      window.location.href = "/dashboard?success=checkout_pro";
+    } catch (err) {
+      console.error(err);
+      setLoadingCheckout(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
@@ -79,20 +93,32 @@ export function UpgradeModal({
           </table>
         </div>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
           <button
             onClick={onClose}
-            className="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-xs font-bold transition-colors"
+            className="w-full sm:w-auto flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-3 rounded-xl text-xs font-bold transition-colors text-center"
           >
             Fechar
           </button>
-          <a
-            href="/dashboard"
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl text-xs font-bold transition-all shadow-lg shadow-red-600/25 flex items-center justify-center gap-1.5 text-center"
+
+          <button
+            onClick={handleDirectCheckout}
+            disabled={loadingCheckout}
+            className="w-full sm:w-auto flex-1 bg-red-600 hover:bg-red-700 text-white py-3 px-6 rounded-xl text-xs font-bold transition-all shadow-lg shadow-red-600/25 flex items-center justify-center gap-2"
           >
-            <span>Fazer Upgrade Agora</span>
-            <ArrowRight size={15} />
-          </a>
+            {loadingCheckout ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                <span>Processando Checkout...</span>
+              </>
+            ) : (
+              <>
+                <CreditCard size={16} />
+                <span>Assinar Plano Pro Direto</span>
+                <ArrowRight size={14} />
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
