@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles, Undo2, Redo2 } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -58,10 +58,17 @@ export default function AdminCmsPage() {
   const [content, setContent] = useState("");
   const [saving, setSaving] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [mediaFolder, setMediaFolder] = useState("all");
   const [mediaSearch, setMediaSearch] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Undo / Redo history
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([
     { name: "Logo Padrão", url: "/logo-horizontal.png", type: "image" },
     { name: "Banner Principal", url: "/principal.png", type: "image" },
@@ -97,6 +104,36 @@ export default function AdminCmsPage() {
     }
   }, [session]);
 
+  const recordHistory = (newContent: string) => {
+    const updated = history.slice(0, historyIndex + 1);
+    updated.push(newContent);
+    setHistory(updated);
+    setHistoryIndex(updated.length - 1);
+  };
+
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    recordHistory(val);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prevIndex = historyIndex - 1;
+      setHistoryIndex(prevIndex);
+      setContent(history[prevIndex]);
+      toast.info("Desfeito com sucesso.");
+    }
+  };
+
+  const handleRedo = () => {
+    if (historyIndex < history.length - 1) {
+      const nextIndex = historyIndex + 1;
+      setHistoryIndex(nextIndex);
+      setContent(history[nextIndex]);
+      toast.info("Refeito com sucesso.");
+    }
+  };
+
   const filteredBlocks = useMemo(() => {
     return blocks.filter((b) => {
       if (selectedPageFilter !== "all" && b.pageKey !== selectedPageFilter) return false;
@@ -117,29 +154,44 @@ export default function AdminCmsPage() {
     });
   }, [uploadedFiles, mediaFolder, mediaSearch]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-
+  const processUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
     try {
       setUploadingMedia(true);
+      setUploadProgress(25);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
+      setUploadProgress(75);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao enviar arquivo.");
       
       const fileUrl = data.url;
+      setUploadProgress(100);
       setUploadedFiles((prev) => [{ name: file.name, url: fileUrl, type: file.type || "image" }, ...prev]);
-      setContent((prev) => (prev ? `${prev}\n${fileUrl}` : fileUrl));
-      toast.success("Arquivo enviado com sucesso e inserido no conteúdo!");
+      handleContentChange(content ? `${content}\n${fileUrl}` : fileUrl);
+      toast.success("Arquivo enviado com sucesso!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar arquivo.");
     } finally {
       setUploadingMedia(false);
+      setUploadProgress(0);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    await processUpload(file);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    await processUpload(file);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -177,6 +229,7 @@ export default function AdminCmsPage() {
     setSectionKey(block.sectionKey);
     setTitle(block.title);
     setContent(block.content);
+    recordHistory(block.content);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -289,19 +342,39 @@ export default function AdminCmsPage() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider">Conteúdo</label>
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingMedia}
-                    className="text-[11px] font-bold text-red-600 hover:underline flex items-center gap-1"
-                  >
-                    <UploadCloud size={13} /> {uploadingMedia ? "Enviando..." : "Upload de Mídia"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleUndo}
+                      disabled={historyIndex <= 0}
+                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                      title="Desfazer"
+                    >
+                      <Undo2 size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleRedo}
+                      disabled={historyIndex >= history.length - 1}
+                      className="text-slate-400 hover:text-slate-700 disabled:opacity-30"
+                      title="Refazer"
+                    >
+                      <Redo2 size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingMedia}
+                      className="text-[11px] font-bold text-red-600 hover:underline flex items-center gap-1 ml-1"
+                    >
+                      <UploadCloud size={13} /> {uploadingMedia ? `Enviando (${uploadProgress}%)` : "Upload"}
+                    </button>
+                  </div>
                 </div>
                 <Textarea
                   placeholder="Digite aqui o texto ou conteúdo..."
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => handleContentChange(e.target.value)}
                   rows={5}
                   className="bg-slate-50 border-slate-200 rounded-xl text-xs font-normal font-mono"
                 />
@@ -325,21 +398,32 @@ export default function AdminCmsPage() {
           </div>
         </div>
 
-        {/* Lista de Blocos Cadastrados e Gerenciador de Mídia */}
+        {/* Lista de Blocos Cadastrados e Gerenciador de Mídia com Drag-and-Drop */}
         <div className="lg:col-span-2 space-y-6">
           {selectedPageFilter === "brand" && <BrandEditor />}
 
-          {/* Gerenciador de Mídia Integrado com Pastas e Busca */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+          {/* Gerenciador de Mídia com Drag & Drop */}
+          <div
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            className={`bg-white rounded-3xl border-2 p-6 shadow-sm space-y-4 transition-all ${isDragging ? "border-red-500 bg-red-50/40 scale-[1.01]" : "border-slate-200"}`}
+          >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <Folder className="text-red-600" size={18} />
-                <h3 className="font-extrabold text-slate-900 text-sm">Gerenciador de Mídia e Arquivos</h3>
+                <h3 className="font-extrabold text-slate-900 text-sm">Gerenciador de Mídia (Arraste arquivos aqui)</h3>
               </div>
               <Button onClick={() => fileInputRef.current?.click()} size="sm" className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-9 rounded-xl gap-1.5">
-                <UploadCloud size={14} /> Enviar Novo Arquivo
+                <UploadCloud size={14} /> Enviar Arquivo
               </Button>
             </div>
+
+            {uploadingMedia && (
+              <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-red-600 h-2.5 transition-all duration-300" style={{ width: `${uploadProgress}%` }} />
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
               <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
@@ -469,7 +553,6 @@ export default function AdminCmsPage() {
                 <h3 className="font-extrabold text-slate-900 text-base">Pré-visualização Responsiva em Tempo Real</h3>
               </div>
               
-              {/* Seletor de Dispositivo */}
               <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                 <button
                   onClick={() => setPreviewDevice("mobile")}

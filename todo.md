@@ -493,3 +493,9 @@
 - [x] Implementar gerenciador de mídia no CMS com upload direto de arquivos e imagens do computador via `/api/upload`.
 - [x] Incluir sistema de anotações temporais no `MediaPlayer` permitindo salvar notas vinculadas a minutos/segundos específicos da reprodução.
 - [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
+
+## Evoluções Avançadas — 16/08/2026
+- [x] Adicionar opções de edição, exclusão e compartilhamento de anotações de aulas na página de perfil do aluno.
+- [x] Implementar funcionalidade de arrastar e soltar (drag-and-drop) com barra de progresso em tempo real no gerenciador de mídia do CMS.
+- [x] Incluir botões de desfazer e refazer (undo/redo) no editor de conteúdo do CMS para reversão instantânea de alterações.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
