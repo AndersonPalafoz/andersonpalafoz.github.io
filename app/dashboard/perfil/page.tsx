@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth";
 import { getUserByEmail } from "@/lib/db";
 import { User, Mail, ShieldCheck } from "lucide-react";
 import { ProfileForm } from "@/components/profile-form";
+import { ProfileBillingSection } from "@/components/profile-billing-section";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -63,8 +64,8 @@ export default async function PerfilPage() {
           </div>
         </div>
 
-        {/* Formulário de Edição */}
-        <div className="md:col-span-2">
+        {/* Formulário de Edição e Faturamento */}
+        <div className="md:col-span-2 space-y-6">
           <div className="p-6 rounded-xl border border-gray-200 bg-white">
             <h3 className="font-bold text-gray-900 mb-6">Editar Informações</h3>
             <ProfileForm
@@ -75,6 +76,7 @@ export default async function PerfilPage() {
               initialAvatarUrl={dbUser?.avatarUrl ?? session?.user?.image ?? ""}
             />
           </div>
+          <ProfileBillingSection />
         </div>
       </div>
     </div>
