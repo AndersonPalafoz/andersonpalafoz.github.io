@@ -57,7 +57,7 @@ export default function RootLayout({
         <SessionProviderWrapper>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <Navbar />
-            <main className="min-h-screen bg-slate-50">{children}</main>
+            <main className="min-h-screen bg-slate-50 pt-[4.5rem]">{children}</main>
             <Footer />
             <ToastProvider />
           </ThemeProvider>
