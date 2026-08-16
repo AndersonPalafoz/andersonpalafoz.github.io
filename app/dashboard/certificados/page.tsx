@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getCertificates } from "@/lib/db";
-import { Award, Download } from "lucide-react";
+import { Award, Download, Linkedin, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 export default async function CertificadosPage() {
@@ -54,21 +54,22 @@ export default async function CertificadosPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Número do Certificado</p>
-                  <p className="font-semibold text-gray-900">CERT-{cert.id.toString().padStart(6, "0")}</p>
+                  <p className="font-semibold text-gray-900">{cert.certificateCode || `CERT-${cert.id.toString().padStart(6, "0")}`}</p>
                 </div>
               </div>
 
               {cert.certificateUrl ? (
-                <a href={cert.certificateUrl} target="_blank" rel="noopener noreferrer">
-                  <button className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
-                    <Download size={16} />
-                    Baixar Certificado
-                  </button>
-                </a>
+                <div className="space-y-2">
+                  <a href={cert.certificateUrl} download target="_blank" rel="noopener noreferrer" className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
+                    <Download size={16} /> Baixar certificado em PDF
+                  </a>
+                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cert.certificateUrl)}`} target="_blank" rel="noopener noreferrer" className="w-full border border-[#0A66C2] text-[#0A66C2] hover:bg-blue-50 py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
+                    <Linkedin size={16} /> Compartilhar no LinkedIn
+                  </a>
+                  <p className="text-[11px] text-gray-500 flex items-center justify-center gap-1"><ShieldCheck size={13} className="text-emerald-600" /> PDF emitido automaticamente ao concluir 100% do curso</p>
+                </div>
               ) : (
-                <p className="text-sm text-gray-500 text-center">
-                  Arquivo do certificado ainda não disponível.
-                </p>
+                <p className="text-sm text-gray-500 text-center">Arquivo do certificado ainda não disponível.</p>
               )}
             </div>
           ))}

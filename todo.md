@@ -201,10 +201,10 @@
 - [ ] A análise ainda não deve ser considerada encerrada
 
 ## Experiência Completa de Aulas para Alunos e Professores — 15/08/2026
-- [ ] Criar página de player e consumo de aulas para alunos (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
-- [ ] Implementar componentes interativos de Listening e Speaking nas aulas (reprodução de áudio, gravação de voz no navegador e feedback direto)
-- [ ] Adicionar upload de materiais complementares (PDFs e imagens) vinculados a cada aula por professores
-- [ ] Validar testes automatizados e build de produção
+- [x] Criar página de player e consumo de aulas para alunos (`/cursos/[id]/aulas/[lessonId]`) com marcação de aula concluída
+- [x] Implementar componentes interativos de Listening e Speaking nas aulas (reprodução de áudio, gravação de voz no navegador e feedback direto)
+- [x] Adicionar upload de materiais complementares (PDFs e imagens) vinculados a cada aula por professores
+- [x] Validar testes automatizados e build de produção
 
 ## Painel Docente, Avaliação de Speaking e Progresso Visual — 15/08/2026
 - [x] Criar painel do professor para monitorar progresso de aulas dos alunos e avaliar gravações de Speaking (`/professor/progresso-aulas`)
@@ -213,10 +213,10 @@
 - [x] Validar testes e build de produção
 
 ## Regravação de Speaking, Evolução e Certificados PDF — 15/08/2026
-- [ ] Adicionar opção para o aluno regravar atividade de Speaking e comparar evolução com IA
-- [ ] Implementar emissão automática de certificado PDF simples quando progresso do curso atingir 100%
-- [ ] Permitir que professores adicionem comentários em texto ou áudio nas submissões de Speaking
-- [ ] Validar testes automatizados e build de produção
+- [x] Adicionar opção para o aluno regravar atividade de Speaking e comparar evolução com IA
+- [x] Implementar emissão automática de certificado PDF simples quando progresso do curso atingir 100%
+- [x] Permitir que professores adicionem comentários em texto ou áudio nas submissões de Speaking
+- [x] Validar testes automatizados e build de produção
 
 ## Aprovação de Progresso e Atribuição Direta — 15/08/2026
 - [x] Adicionar funcionalidade para o professor/admin aprovar o progresso das aulas dos alunos
@@ -381,3 +381,6 @@
 - [x] Adicionar filtros de data e turma na exportação de PDF e CSV em /admin/chamada
 - [x] Adicionar tooltips interativos detalhados aos gráficos de notas e frequência em /dashboard/historico
 - [x] Implementar upload de imagens no editor de texto rico de avaliações em /admin/avaliacoes
+- [x] Adicionar pré-visualização e redimensionamento de imagens no editor de avaliações em /admin/avaliacoes
+- [x] Adicionar botões de seleção rápida em massa (Todos presentes / Todos ausentes) na chamada online em /admin/chamada
+- [x] Incluir linha real da média da turma nos gráficos de evolução de notas em /dashboard/historico

@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean, uniqueIndex } from "drizzle-orm/pg-core";
 
 // Enums
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
@@ -129,6 +129,7 @@ export const certificates = pgTable("certificates", {
   level: varchar("level", { length: 10 }).notNull(),
   issuedAt: timestamp("issuedAt").defaultNow().notNull(),
   certificateUrl: varchar("certificateUrl", { length: 500 }),
+  certificateCode: varchar("certificateCode", { length: 64 }),
 });
 
 export type Certificate = typeof certificates.$inferSelect;
@@ -161,12 +162,37 @@ export const userActivityProgress = pgTable("userActivityProgress", {
   score: serial("score"),
   audioResponseUrl: varchar("audioResponseUrl", { length: 500 }),
   teacherFeedback: text("teacherFeedback"),
+  teacherAudioFeedbackUrl: varchar("teacherAudioFeedbackUrl", { length: 1000 }),
   submittedAt: timestamp("submittedAt"),
   completedAt: timestamp("completedAt"),
 });
 
 export type UserActivityProgress = typeof userActivityProgress.$inferSelect;
 export type InsertUserActivityProgress = typeof userActivityProgress.$inferInsert;
+
+/**
+ * Speaking attempts - histórico não destrutivo de gravações e feedbacks
+ */
+export const speakingAttempts = pgTable("speaking_attempts", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  activityId: integer("activityId").notNull(),
+  attemptNumber: integer("attemptNumber").notNull().default(1),
+  audioResponseUrl: varchar("audioResponseUrl", { length: 1000 }).notNull(),
+  transcript: text("transcript"),
+  aiScore: integer("aiScore"),
+  aiFeedback: text("aiFeedback"),
+  aiSuggestions: text("aiSuggestions"),
+  teacherFeedback: text("teacherFeedback"),
+  teacherAudioFeedbackUrl: varchar("teacherAudioFeedbackUrl", { length: 1000 }),
+  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  speakingAttemptIdentity: uniqueIndex("speaking_attempt_identity_idx").on(table.userId, table.activityId, table.attemptNumber),
+}));
+
+export type SpeakingAttempt = typeof speakingAttempts.$inferSelect;
+export type InsertSpeakingAttempt = typeof speakingAttempts.$inferInsert;
 
 /**
  * Modules table - Módulos de um curso

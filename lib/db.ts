@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { eq, desc } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
 // usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
@@ -123,6 +123,40 @@ export async function getCertificates(userId: number) {
       course: true,
     },
   });
+}
+
+export async function getCertificateByUserCourse(userId: number, courseId: number) {
+  return await db.query.certificates.findFirst({
+    where: and(eq(schema.certificates.userId, userId), eq(schema.certificates.courseId, courseId)),
+    with: { course: true },
+  });
+}
+
+export async function createCertificate(data: {
+  userId: number;
+  courseId: number;
+  level: string;
+  certificateCode: string;
+  certificateUrl?: string;
+}) {
+  const existing = await getCertificateByUserCourse(data.userId, data.courseId);
+  if (existing) return existing;
+  const inserted = await db.insert(schema.certificates).values(data).returning();
+  return inserted[0];
+}
+
+export async function getSpeakingAttempts(userId: number, activityId: number) {
+  return await db.query.speakingAttempts.findMany({
+    where: and(eq(schema.speakingAttempts.userId, userId), eq(schema.speakingAttempts.activityId, activityId)),
+    orderBy: desc(schema.speakingAttempts.attemptNumber),
+  });
+}
+
+export async function createSpeakingAttempt(data: schema.InsertSpeakingAttempt) {
+  const attempts = await getSpeakingAttempts(data.userId, data.activityId);
+  const attemptNumber = data.attemptNumber ?? (attempts.length > 0 ? Math.max(...attempts.map((item) => item.attemptNumber)) + 1 : 1);
+  const inserted = await db.insert(schema.speakingAttempts).values({ ...data, attemptNumber }).returning();
+  return inserted[0];
 }
 
 // Modules and Lessons helpers

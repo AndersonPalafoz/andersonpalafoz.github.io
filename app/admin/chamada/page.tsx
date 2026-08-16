@@ -3,14 +3,17 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Download, FileText, Loader2, Users, Filter } from "lucide-react";
+import { CheckCheck, ChevronLeft, Download, FileText, Loader2, Users, Filter, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { attendanceStatusLabel, buildAttendanceCsv } from "@/lib/attendance-export";
 import { filterAttendanceRecords } from "@/lib/attendance-filters";
+import { buildBulkAttendancePayload } from "@/lib/attendance-bulk";
 
 interface AttendanceRecord {
+  attendanceId: number;
+  studentId: number;
   sessionId: number;
   sessionTitle: string;
   scheduledAt: string;
@@ -34,6 +37,7 @@ export default function AdminChamadaPage() {
   const [courseFilter, setCourseFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [batchSaving, setBatchSaving] = useState<"present" | "absent" | null>(null);
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin" && user.role !== "professor") router.replace("/");
@@ -67,6 +71,25 @@ export default function AdminChamadaPage() {
 
   const presentCount = visibleRecords.filter((record) => record.status === "present").length;
   const attendanceRate = visibleRecords.length ? Math.round((presentCount / visibleRecords.length) * 100) : 0;
+
+  const handleBulkStatus = async (status: "present" | "absent") => {
+    if (!visibleRecords.length) {
+      toast.error("Nenhum aluno está disponível no recorte atual.");
+      return;
+    }
+    try {
+      setBatchSaving(status);
+      const response = await fetch("/api/admin/attendance", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "bulkUpdate", records: buildBulkAttendancePayload(visibleRecords, status) }) });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Não foi possível atualizar a chamada.");
+      setRecords((current) => current.map((record) => visibleRecords.some((selected) => selected.attendanceId === record.attendanceId) ? { ...record, status } : record));
+      toast.success(`${payload.updated || visibleRecords.length} aluno(s) marcado(s) como ${status === "present" ? "presente(s)" : "ausente(s)"}.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar a chamada.");
+    } finally {
+      setBatchSaving(null);
+    }
+  };
 
   const exportCSV = () => {
     const blob = new Blob([buildAttendanceCsv(visibleRecords)], { type: "text/csv;charset=utf-8" });
@@ -133,7 +156,7 @@ export default function AdminChamadaPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Registros de presença filtrados</h2><p className="text-xs text-gray-500">Prontos para exportação imediata em CSV ou PDF.</p></div></div><div className="flex flex-col gap-2 sm:flex-row"><Button onClick={exportCSV} variant="outline" className="h-11 gap-2"><Download size={16} className="text-red-600" /> Exportar CSV</Button><Button onClick={exportPDF} className="h-11 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> Exportar PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro encontrado para os filtros selecionados.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"><div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div className="flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50 text-red-600"><Users size={22} /></div><div><h2 className="text-lg font-black">Registros de presença filtrados</h2><p className="text-xs text-gray-500">Ações em massa aplicam-se aos alunos do recorte atual.</p></div></div><div className="flex flex-wrap gap-2"><Button onClick={() => void handleBulkStatus("present")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50"><CheckCheck size={16} /> {batchSaving === "present" ? "Salvando..." : "Selecionar Todos: Presentes"}</Button><Button onClick={() => void handleBulkStatus("absent")} disabled={batchSaving !== null} variant="outline" className="h-10 gap-2 border-red-200 text-red-700 hover:bg-red-50"><UserX size={16} /> {batchSaving === "absent" ? "Salvando..." : "Selecionar Todos: Ausentes"}</Button><Button onClick={exportCSV} variant="outline" className="h-10 gap-2"><Download size={16} className="text-red-600" /> Exportar CSV</Button><Button onClick={exportPDF} className="h-10 gap-2 bg-red-600 text-white hover:bg-red-700"><FileText size={16} /> Exportar PDF</Button></div></div>{visibleRecords.length === 0 ? <div className="mt-6 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center text-sm text-gray-500">Nenhum registro encontrado para os filtros selecionados.</div> : <div className="mt-6 overflow-x-auto"><table className="w-full min-w-[760px] text-left text-sm"><thead className="border-b border-gray-200 text-xs uppercase tracking-wide text-gray-500"><tr><th className="pb-3 pr-4">Sessão</th><th className="pb-3 pr-4">Data</th><th className="pb-3 pr-4">Curso</th><th className="pb-3 pr-4">Aluno</th><th className="pb-3">Status</th></tr></thead><tbody className="divide-y divide-gray-100">{visibleRecords.map((record, index) => <tr key={`${record.sessionId}-${record.studentEmail}-${index}`}><td className="py-4 pr-4 font-bold text-gray-900">{record.sessionTitle}</td><td className="py-4 pr-4 text-gray-600">{new Date(record.scheduledAt).toLocaleString("pt-BR")}</td><td className="py-4 pr-4 text-gray-600">{record.courseTitle || "Sem curso"}</td><td className="py-4 pr-4"><p className="font-semibold text-gray-900">{record.studentName || "Sem nome"}</p><p className="text-xs text-gray-500">{record.studentEmail}</p></td><td className="py-4"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${record.status === "present" ? "bg-emerald-50 text-emerald-700" : record.status === "absent" ? "bg-red-50 text-red-700" : "bg-amber-50 text-amber-700"}`}>{attendanceStatusLabel(record.status)}</span></td></tr>)}</tbody></table></div>}</section>
       </main>
     </div>
   );

@@ -14,6 +14,13 @@ describe("avaliações com editor rico", () => {
     expect(["quiz", "exercise", "assignment", "speaking"]).toContain(question.type);
   });
 
+  it("preserva a largura escolhida no HTML da imagem inserida", () => {
+    const imageHtml = `<img src="https://storage.example/question.png" style="width: 50%; max-width: 100%; height: auto;" alt="Imagem da questão" />`;
+    expect(imageHtml).toContain("width: 50%");
+    expect(imageHtml).toContain("max-width: 100%");
+    expect(imageHtml).toContain('alt="Imagem da questão"');
+  });
+
   it("exige um curso, título e enunciado para uma avaliação válida", () => {
     const isValid = (payload: { courseId?: number; title?: string; description?: string }) => Boolean(
       payload.courseId && payload.title?.trim() && payload.description?.replace(/<[^>]+>/g, "").trim(),
