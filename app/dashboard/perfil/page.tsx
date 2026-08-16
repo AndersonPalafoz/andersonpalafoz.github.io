@@ -4,6 +4,7 @@ import { getUserByEmail } from "@/lib/db";
 import { User, Mail, ShieldCheck } from "lucide-react";
 import { ProfileForm } from "@/components/profile-form";
 import { ProfileBillingSection } from "@/components/profile-billing-section";
+import { ProfileNotesSection } from "@/components/profile-notes-section";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -76,6 +77,7 @@ export default async function PerfilPage() {
               initialAvatarUrl={dbUser?.avatarUrl ?? session?.user?.image ?? ""}
             />
           </div>
+          <ProfileNotesSection />
           <ProfileBillingSection />
         </div>
       </div>

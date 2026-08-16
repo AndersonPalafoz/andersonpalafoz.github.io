@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,13 @@ const PAGE_OPTIONS = [
   { value: "admin", label: "Painel Administrativo" },
 ];
 
+const MEDIA_FOLDERS = [
+  { id: "all", label: "Todas as mídias" },
+  { id: "images", label: "Imagens (.png, .jpg)" },
+  { id: "documents", label: "Documentos (.pdf)" },
+  { id: "videos", label: "Vídeos e Áudios" },
+];
+
 export default function AdminCmsPage() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
@@ -52,6 +59,13 @@ export default function AdminCmsPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const [mediaFolder, setMediaFolder] = useState("all");
+  const [mediaSearch, setMediaSearch] = useState("");
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([
+    { name: "Logo Padrão", url: "/logo-horizontal.png", type: "image" },
+    { name: "Banner Principal", url: "/principal.png", type: "image" },
+  ]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +107,16 @@ export default function AdminCmsPage() {
     });
   }, [blocks, selectedPageFilter, searchTerm]);
 
+  const filteredMedia = useMemo(() => {
+    return uploadedFiles.filter((f) => {
+      if (mediaFolder === "images" && !f.type.includes("image")) return false;
+      if (mediaFolder === "documents" && !f.type.includes("pdf")) return false;
+      if (mediaFolder === "videos" && !f.type.includes("video") && !f.type.includes("audio")) return false;
+      if (mediaSearch && !f.name.toLowerCase().includes(mediaSearch.toLowerCase()) && !f.url.toLowerCase().includes(mediaSearch.toLowerCase())) return false;
+      return true;
+    });
+  }, [uploadedFiles, mediaFolder, mediaSearch]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
@@ -105,11 +129,12 @@ export default function AdminCmsPage() {
       setUploadingMedia(true);
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao enviar imagem.");
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar arquivo.");
       
       const fileUrl = data.url;
+      setUploadedFiles((prev) => [{ name: file.name, url: fileUrl, type: file.type || "image" }, ...prev]);
       setContent((prev) => (prev ? `${prev}\n${fileUrl}` : fileUrl));
-      toast.success("Mídia enviada e inserida com sucesso!");
+      toast.success("Arquivo enviado com sucesso e inserido no conteúdo!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar arquivo.");
     } finally {
@@ -178,29 +203,33 @@ export default function AdminCmsPage() {
 
   if (authStatus === "loading" || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-red-600" size={36} />
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+        <Loader2 className="animate-spin text-red-500" size={36} />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
+    <div className="min-h-screen bg-slate-50 pb-16">
       <input ref={fileInputRef} type="file" accept="image/*,video/*,audio/*,.pdf" className="sr-only" onChange={handleFileUpload} />
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 py-8 px-4 sm:px-8">
+      <div className="bg-white border-b border-slate-200 py-8 px-4 sm:px-8 shadow-xs">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <Link href="/admin" className="text-sm font-bold text-red-600 hover:underline flex items-center gap-1.5 mb-2">
-              <ArrowLeft size={16} /> Voltar ao Painel Administrativo
+            <Link href="/admin" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1.5 mb-2">
+              <ArrowLeft size={15} /> Voltar ao Painel Administrativo
             </Link>
-            <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-              <Globe className="text-red-600" size={32} /> CMS Global — Editor de Todo o Site
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+              <Globe className="text-red-600" size={30} /> CMS Global Inteligente
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Gerencie textos, títulos, chamadas, banners, mídias e informações de qualquer página ou área da plataforma.
+            <p className="text-xs text-slate-500 mt-1">
+              Gerencie textos, mídias e identidades visuais de qualquer seção do site com pré-visualização responsiva e gerenciador de arquivos.
             </p>
+          </div>
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded-2xl">
+            <Sparkles className="text-red-600" size={18} />
+            <span className="text-xs font-bold text-red-800">Modo Editor Pro Ativo</span>
           </div>
         </div>
       </div>
@@ -208,13 +237,13 @@ export default function AdminCmsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulário de Criação/Edição */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm sticky top-24 space-y-5">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h2 className="font-extrabold text-gray-900 text-base flex items-center gap-2">
-                <Edit3 className="text-red-600" size={18} /> {editingId ? "Editar Bloco CMS" : "Novo Bloco de Conteúdo"}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm sticky top-24 space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                <Edit3 className="text-red-600" size={16} /> {editingId ? "Editar Bloco CMS" : "Novo Bloco de Conteúdo"}
               </h2>
               {editingId && (
-                <Button variant="ghost" size="sm" onClick={handleResetForm} className="text-xs text-gray-500 hover:text-red-600">
+                <Button variant="ghost" size="sm" onClick={handleResetForm} className="text-xs text-slate-400 hover:text-red-600">
                   Cancelar
                 </Button>
               )}
@@ -222,11 +251,11 @@ export default function AdminCmsPage() {
 
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Área / Página Alvo</label>
+                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Área / Página Alvo</label>
                 <select
                   value={pageKey}
                   onChange={(e) => setPageKey(e.target.value)}
-                  className="w-full bg-gray-50 border border-gray-300 rounded-xl px-3 py-2.5 text-xs font-bold text-gray-900 focus:bg-white focus:border-red-600"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-900 focus:bg-white focus:border-red-600"
                 >
                   {PAGE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -237,36 +266,36 @@ export default function AdminCmsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Chave da Seção (slug único)</label>
+                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Chave da Seção (slug único)</label>
                 <Input
                   placeholder="ex: hero_title, banner_text, footer_about"
                   value={sectionKey}
                   onChange={(e) => setSectionKey(e.target.value)}
                   disabled={Boolean(editingId)}
-                  className="bg-gray-50 border-gray-300 rounded-xl text-xs font-semibold"
+                  className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">Título Amigável do Bloco</label>
+                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Título Amigável do Bloco</label>
                 <Input
                   placeholder="ex: Título Principal da Home"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-gray-50 border-gray-300 rounded-xl text-xs font-semibold"
+                  className="bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-xs font-bold text-gray-700 uppercase">Conteúdo</label>
+                  <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider">Conteúdo</label>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingMedia}
-                    className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1"
+                    className="text-[11px] font-bold text-red-600 hover:underline flex items-center gap-1"
                   >
-                    <UploadCloud size={14} /> {uploadingMedia ? "Enviando..." : "Inserir Mídia do PC"}
+                    <UploadCloud size={13} /> {uploadingMedia ? "Enviando..." : "Upload de Mídia"}
                   </button>
                 </div>
                 <Textarea
@@ -274,7 +303,7 @@ export default function AdminCmsPage() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={5}
-                  className="bg-gray-50 border-gray-300 rounded-xl text-xs font-normal"
+                  className="bg-slate-50 border-slate-200 rounded-xl text-xs font-normal font-mono"
                 />
               </div>
 
@@ -283,38 +312,99 @@ export default function AdminCmsPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setPreviewOpen(true)}
-                  className="w-full border-gray-300 font-bold text-xs h-11 rounded-xl gap-1.5"
+                  className="w-full border-slate-200 font-bold text-xs h-11 rounded-xl gap-1.5 hover:bg-slate-50"
                 >
                   <Eye size={15} className="text-red-600" /> Pré-visualizar
                 </Button>
                 <Button type="submit" disabled={saving} className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs h-11 rounded-xl shadow-md shadow-red-600/20 gap-1.5">
                   {saving ? <Loader2 className="animate-spin" size={15} /> : <Save size={15} />}
-                  Salvar
+                  Salvar Bloco
                 </Button>
               </div>
             </form>
           </div>
         </div>
 
-        {/* Lista de Blocos Cadastrados */}
+        {/* Lista de Blocos Cadastrados e Gerenciador de Mídia */}
         <div className="lg:col-span-2 space-y-6">
           {selectedPageFilter === "brand" && <BrandEditor />}
+
+          {/* Gerenciador de Mídia Integrado com Pastas e Busca */}
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Folder className="text-red-600" size={18} />
+                <h3 className="font-extrabold text-slate-900 text-sm">Gerenciador de Mídia e Arquivos</h3>
+              </div>
+              <Button onClick={() => fileInputRef.current?.click()} size="sm" className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-9 rounded-xl gap-1.5">
+                <UploadCloud size={14} /> Enviar Novo Arquivo
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
+              <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
+                {MEDIA_FOLDERS.map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => setMediaFolder(folder.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${mediaFolder === folder.id ? "bg-red-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                  >
+                    {folder.label}
+                  </button>
+                ))}
+              </div>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                <Input
+                  placeholder="Buscar arquivos..."
+                  value={mediaSearch}
+                  onChange={(e) => setMediaSearch(e.target.value)}
+                  className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              {filteredMedia.map((m, idx) => (
+                <div key={idx} className="group relative bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-2 hover:border-red-300 transition">
+                  <div className="h-20 w-full bg-white rounded-xl border border-slate-100 flex items-center justify-center p-2 overflow-hidden shadow-inner">
+                    {m.type.includes("image") ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={m.url} alt={m.name} className="h-full w-full object-cover rounded-lg" />
+                    ) : (
+                      <File className="text-slate-400" size={32} />
+                    )}
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-800 truncate w-full">{m.name}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(m.url);
+                      toast.success("URL copiada para a área de transferência!");
+                    }}
+                    className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-1 rounded-lg hover:bg-red-100 transition w-full"
+                  >
+                    Copiar Link
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
           
-          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <Input
                 placeholder="Pesquisar por título, chave ou conteúdo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-gray-50 border-gray-300 rounded-xl text-xs font-semibold"
+                className="pl-10 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
               />
             </div>
             <div>
               <select
                 value={selectedPageFilter}
                 onChange={(e) => setSelectedPageFilter(e.target.value)}
-                className="bg-gray-50 border border-gray-300 rounded-xl px-3 py-2 text-xs font-bold text-gray-800"
+                className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-800"
               >
                 <option value="all">Todas as páginas ({blocks.length})</option>
                 {PAGE_OPTIONS.map((opt) => (
@@ -327,27 +417,27 @@ export default function AdminCmsPage() {
           </div>
 
           {filteredBlocks.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-dashed border-gray-300 p-12 text-center space-y-3">
-              <Layers className="mx-auto text-gray-400" size={40} />
-              <p className="text-base font-bold text-gray-800">Nenhum bloco encontrado</p>
-              <p className="text-xs text-gray-500 max-w-sm mx-auto">Use o formulário ao lado para cadastrar textos, títulos e informações para qualquer área do site.</p>
+            <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-12 text-center space-y-3">
+              <Layers className="mx-auto text-slate-400" size={40} />
+              <p className="text-base font-bold text-slate-800">Nenhum bloco encontrado</p>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">Use o formulário ao lado para cadastrar textos, títulos e informações para qualquer área do site.</p>
             </div>
           ) : (
             <div className="space-y-4">
               {filteredBlocks.map((b) => (
-                <div key={b.id} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:border-red-200 transition space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                <div key={b.id} className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:border-red-200 transition space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-red-50 text-red-700 uppercase tracking-wide">
                           {b.pageKey}
                         </span>
-                        <code className="text-[11px] font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-700">{b.sectionKey}</code>
+                        <code className="text-[11px] font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-700">{b.sectionKey}</code>
                       </div>
-                      <h3 className="text-base font-black text-gray-900 mt-1">{b.title}</h3>
+                      <h3 className="text-base font-black text-slate-900 mt-1">{b.title}</h3>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleEdit(b)} className="h-9 px-3 text-xs font-bold border-gray-300 gap-1.5">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(b)} className="h-9 px-3 text-xs font-bold border-slate-200 gap-1.5 hover:bg-slate-50">
                         <Edit3 size={14} className="text-red-600" /> Editar
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => handleDelete(b.id)} className="h-9 px-3 text-xs font-bold border-red-200 text-red-700 hover:bg-red-50 gap-1.5">
@@ -355,12 +445,12 @@ export default function AdminCmsPage() {
                       </Button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-700 leading-relaxed bg-gray-50 p-3.5 rounded-xl border border-gray-100 whitespace-pre-wrap font-mono">
+                  <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100 whitespace-pre-wrap font-mono">
                     {b.content}
                   </p>
-                  <div className="flex items-center justify-between text-[11px] text-gray-400 pt-1">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
                     <span>Atualizado em: {new Date(b.updatedAt).toLocaleString("pt-BR")}</span>
-                    <span className="font-semibold text-gray-500">ID #{b.id}</span>
+                    <span className="font-semibold text-slate-500">ID #{b.id}</span>
                   </div>
                 </div>
               ))}
@@ -369,33 +459,58 @@ export default function AdminCmsPage() {
         </div>
       </div>
 
-      {/* Modal de Pré-visualização em Tempo Real */}
+      {/* Modal de Pré-visualização Responsiva em Tempo Real */}
       {previewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 space-y-5 border border-gray-200 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md animate-in fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full p-6 space-y-5 border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2">
                 <Eye className="text-red-600" size={20} />
-                <h3 className="font-extrabold text-gray-900 text-base">Pré-visualização em Tempo Real</h3>
+                <h3 className="font-extrabold text-slate-900 text-base">Pré-visualização Responsiva em Tempo Real</h3>
               </div>
+              
+              {/* Seletor de Dispositivo */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button
+                  onClick={() => setPreviewDevice("mobile")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${previewDevice === "mobile" ? "bg-white text-red-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                >
+                  <Smartphone size={14} /> Celular
+                </button>
+                <button
+                  onClick={() => setPreviewDevice("tablet")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${previewDevice === "tablet" ? "bg-white text-red-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                >
+                  <Tablet size={14} /> Tablet
+                </button>
+                <button
+                  onClick={() => setPreviewDevice("desktop")}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${previewDevice === "desktop" ? "bg-white text-red-600 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                >
+                  <Monitor size={14} /> Desktop
+                </button>
+              </div>
+
               <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(false)} className="h-8 w-8 p-0 rounded-full">
                 <X size={18} />
               </Button>
             </div>
 
-            <div className="space-y-4 bg-gray-50 p-5 rounded-xl border border-gray-200">
-              <div>
-                <span className="text-[10px] font-black uppercase text-gray-400">Página / Seção</span>
-                <p className="text-xs font-bold text-red-600">{pageKey} → {sectionKey || "sem-chave"}</p>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-gray-400">Título do Bloco</span>
-                <h4 className="text-lg font-black text-gray-900">{title || "Sem título"}</h4>
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase text-gray-400">Renderização do Conteúdo</span>
-                <div className="mt-2 p-4 bg-white rounded-xl border border-gray-200 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
-                  {content || "Nenhum conteúdo digitado ainda."}
+            <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-100 p-6 rounded-2xl border border-slate-200">
+              <div
+                className={`transition-all duration-300 bg-white shadow-2xl rounded-2xl border border-slate-300 overflow-hidden ${
+                  previewDevice === "mobile" ? "w-[375px] h-[600px]" : previewDevice === "tablet" ? "w-[768px] h-[550px]" : "w-full h-full min-h-[400px]"
+                } p-6 flex flex-col`}
+              >
+                <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase text-slate-400">Página: {pageKey}</span>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Preview ao vivo</span>
+                </div>
+                <div className="space-y-3 flex-1 overflow-y-auto">
+                  <h2 className="text-xl font-black text-slate-900">{title || "Título de Exemplo"}</h2>
+                  <div className="p-4 bg-slate-50 rounded-xl text-sm text-slate-800 whitespace-pre-wrap leading-relaxed border border-slate-100">
+                    {content || "Conteúdo do bloco aparecerá aqui..."}
+                  </div>
                 </div>
               </div>
             </div>
