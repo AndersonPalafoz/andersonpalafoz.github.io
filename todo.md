@@ -505,3 +505,7 @@
 - [x] Implementar ferramenta de corte e redimensionamento de imagens diretamente no gerenciador de mídia do CMS.
 - [x] Criar a aba "Compartilhado comigo" no perfil do aluno para organizar e visualizar anotações recebidas de outros colegas, com exportação em PDF.
 - [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
+
+## Integração de Conteúdo Dinâmico CMS — 16/08/2026
+- [x] Integrar o CMS dinâmico às páginas públicas do site (`lib/public-cms.ts`), permitindo refletir blocos editados em tempo real na Home e demais seções.
+- [x] Validação de 190 testes automatizados aprovados (100% de sucesso) e build de produção Next.js 15.
