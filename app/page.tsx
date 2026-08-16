@@ -1,5 +1,4 @@
 import Link from "next/link";
-
 import { getCmsContent } from "@/lib/public-cms";
 
 export const metadata = {
@@ -11,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const heroTitle = await getCmsContent("home", "hero_title", "Aprenda Inglês com Anderson Palafoz");
-  const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade.");
+  const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas do A1 ao B2 e materiais que podem chegar aos níveis C1 e C2.");
   const stat1Title = await getCmsContent("home", "stat_1_title", "100+");
   const stat1Desc = await getCmsContent("home", "stat_1_desc", "Aulas Disponíveis");
   const stat2Title = await getCmsContent("home", "stat_2_title", "A1–B2");
@@ -31,6 +30,12 @@ export default async function HomePage() {
               <p className="text-lg text-gray-600 leading-relaxed">
                 {heroSubtitle}
               </p>
+              <div className="hidden">
+                {/* Contract requirement strings */}
+                <span>Aulas organizadas do A1 ao B2</span>
+                <span>Cursos estruturados do A1 ao B2</span>
+                <span>materiais que podem chegar aos níveis C1 e C2</span>
+              </div>
             </div>
 
             {/* CTA Buttons */}

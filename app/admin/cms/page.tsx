@@ -265,7 +265,7 @@ export default function AdminCmsPage() {
       const res = await fetch("/api/admin/cms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageKey, sectionKey, title, content, status, contentType, orderIndex, tag }),
+        body: JSON.stringify({ id: editingId, pageKey, sectionKey, title, content, status, contentType, orderIndex, tag }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar.");
