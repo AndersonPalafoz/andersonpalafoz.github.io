@@ -2,7 +2,7 @@
 
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Layers, BookOpen, Loader2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, Loader2, GripVertical, ChevronUp, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 interface Module {
@@ -24,6 +24,7 @@ export default function AdminCourseModulesPage({
   const [loading, setLoading] = useState(true);
   const [newModuleTitle, setNewModuleTitle] = useState("");
   const [saving, setSaving] = useState(false);
+  const [showModuleModal, setShowModuleModal] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -157,31 +158,11 @@ export default function AdminCourseModulesPage({
           </Link>
         </div>
 
-        {/* Formulário para Adicionar Módulo */}
-        <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Layers className="text-red-600" size={22} />
-            Adicionar Novo Módulo ao Curso
-          </h2>
-          <form onSubmit={handleCreateModule} className="flex flex-col md:flex-row gap-3">
-            <input
-              type="text"
-              required
-              value={newModuleTitle}
-              onChange={(e) => setNewModuleTitle(e.target.value)}
-              placeholder="Digite o título do módulo pedagógico..."
-              className="flex-1 h-12 px-4 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none text-sm bg-white transition"
-            />
-            <button
-              type="submit"
-              disabled={saving}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold h-12 px-6 rounded-xl flex items-center justify-center gap-2 transition shadow-md shadow-red-600/20 disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
-              <span>Adicionar Módulo</span>
-            </button>
-          </form>
-        </div>
+        {/* Ação destacada para adicionar módulo */}
+        <section className="flex flex-col gap-4 rounded-2xl border border-red-100 bg-gradient-to-br from-red-50 to-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between md:p-8">
+          <div><p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">Próximo nível da hierarquia</p><h2 className="mt-2 text-xl font-black text-gray-900">Construa o primeiro módulo do curso</h2><p className="mt-1 text-sm text-gray-600">Depois de criar o módulo, você poderá adicionar e ordenar as aulas correspondentes.</p></div>
+          <button type="button" onClick={() => setShowModuleModal(true)} className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><Plus size={18} /> Adicionar módulo</button>
+        </section>
 
         {/* Lista de Módulos com Reordenação */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -242,6 +223,7 @@ export default function AdminCourseModulesPage({
           )}
         </div>
       </div>
+      {showModuleModal && <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/60 p-4" role="dialog" aria-modal="true" aria-labelledby="module-modal-title"><div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">Novo módulo</p><h2 id="module-modal-title" className="mt-2 text-2xl font-black text-gray-900">Adicionar módulo ao curso</h2><p className="mt-2 text-sm text-gray-600">Use um título claro para orientar a progressão pedagógica do aluno.</p></div><button type="button" onClick={() => setShowModuleModal(false)} className="rounded-lg px-2 py-1 text-2xl leading-none text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Fechar modal">×</button></div><form onSubmit={async (event) => { await handleCreateModule(event); if (newModuleTitle.trim()) setShowModuleModal(false); }} className="mt-6 space-y-4"><label htmlFor="new-module-title" className="text-xs font-black uppercase tracking-widest text-gray-500">Título do módulo</label><input id="new-module-title" type="text" required autoFocus value={newModuleTitle} onChange={(event) => setNewModuleTitle(event.target.value)} placeholder="Ex.: Fundamentos da comunicação" className="h-12 w-full rounded-xl border border-gray-300 px-4 text-sm text-gray-900 outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100" /><div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end"><button type="button" onClick={() => setShowModuleModal(false)} className="h-11 rounded-xl border border-gray-300 px-5 text-sm font-bold text-gray-700 hover:bg-gray-50">Cancelar</button><button type="submit" disabled={saving} className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white hover:bg-red-700 disabled:opacity-60">{saving ? <Loader2 className="animate-spin" size={17} /> : <Plus size={17} />} Criar módulo</button></div></form></div></div>}
     </div>
   );
 }

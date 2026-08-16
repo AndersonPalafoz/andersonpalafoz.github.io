@@ -16,6 +16,8 @@ export function DownloadMaterialButton({
     setLoading(true);
     try {
       await fetch(`/api/materials/${materialId}/download`, { method: "POST" });
+      const progressResponse = await fetch(`/api/materials/${materialId}/progress`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ completed: true }) });
+      if (progressResponse.ok) window.dispatchEvent(new CustomEvent("material-progress-updated", { detail: { materialId } }));
     } catch {
       // mesmo se o contador falhar, ainda deixamos o usuario acessar o arquivo
     } finally {

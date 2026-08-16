@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Download, FileText, BookOpen, Zap, Headphones, PenTool, Search, Filter, Loader2 } from "lucide-react";
+import { Download, FileText, BookOpen, Zap, Headphones, PenTool, Search, Filter, Loader2, CheckCircle2 } from "lucide-react";
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
   Worksheets: FileText,
@@ -18,6 +18,7 @@ export default function MateriaisPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [completedMaterialIds, setCompletedMaterialIds] = useState<number[]>([]);
 
   useEffect(() => {
     async function fetchMaterials() {
@@ -33,6 +34,13 @@ export default function MateriaisPage() {
       }
     }
     fetchMaterials();
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/materials/progress", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setCompletedMaterialIds(data.completedMaterialIds || []))
+      .catch(() => undefined);
   }, []);
 
   const niveis = Array.from(new Set(materiais.map((m) => m.level))).sort();
@@ -168,13 +176,16 @@ export default function MateriaisPage() {
                     className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl hover:border-red-600 transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between group"
                   >
                     <div>
-                      <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-start justify-between mb-4 gap-3">
                         <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
                           <Icon size={24} />
                         </div>
-                        <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
-                          {material.level}
-                        </span>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {completedMaterialIds.includes(Number(material.id)) && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={13} /> Concluído</span>}
+                          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                            {material.level}
+                          </span>
+                        </div>
                       </div>
                       <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{material.category}</span>
                       <h3 className="text-xl font-bold text-gray-900 mt-1 mb-2 group-hover:text-red-600 transition-colors">

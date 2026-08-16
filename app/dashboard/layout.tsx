@@ -17,6 +17,7 @@ import {
   X,
   LogOut,
   Heart,
+  Bell,
 } from "lucide-react";
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
   { href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
   { href: "/dashboard/desejos", label: "Lista de Desejos", icon: Heart },
+  { href: "/dashboard/notificacoes", label: "Notificações", icon: Bell },
   { href: "/dashboard/certificados", label: "Certificados", icon: Award },
   { href: "/dashboard/historico", label: "Histórico", icon: FileText },
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
