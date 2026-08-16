@@ -1,0 +1,2 @@
+CREATE TYPE "public"."attendance_status" AS ENUM('present', 'absent', 'justified');--> statement-breakpoint
+ALTER TABLE "attendances" ADD COLUMN "status" "attendance_status" DEFAULT 'present' NOT NULL;

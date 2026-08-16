@@ -1,12 +1,14 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 
 // Enums
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
 // Nenhuma rota/UI usa esse valor ainda -- apenas alinhando o schema TS à realidade do banco.
 export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
-export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused"]);
-export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking"]);
+export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
+export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused", "cancelled"]);
+export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking", "listening"]);
 export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
+export const lessonProgressApprovalStatusEnum = pgEnum("lesson_progress_approval_status", ["pending", "approved", "rejected"]);
 
 /**
  * Core user table backing auth flow.
@@ -24,13 +26,20 @@ export const users = pgTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: roleEnum("role").notNull().default("user"), // user, admin
+  role: roleEnum("role").notNull().default("user"), // user, professor, admin
+  requestedRole: varchar("requestedRole", { length: 32 }).default("student"), // student, professor
+  approvalStatus: approvalStatusEnum("approvalStatus").notNull().default("pending"), // pending, approved, rejected
   phone: varchar("phone", { length: 32 }),
   location: varchar("location", { length: 120 }),
   bio: text("bio"),
+  teacherId: integer("teacherId"),
+  /** URL/key do avatar armazenado externamente; nenhum byte de imagem é salvo no banco. */
+  avatarUrl: varchar("avatarUrl", { length: 1000 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  /** Soft delete: mantém o histórico do usuário e permite recuperação pelo super-admin. */
+  deletedAt: timestamp("deletedAt"),
 });
 
 export type User = typeof users.$inferSelect;
@@ -46,6 +55,7 @@ export const courses = pgTable("courses", {
   level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
   modules: integer("modules").default(0),
   instructor: varchar("instructor", { length: 255 }).default("Anderson Palafoz"),
+  deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -80,7 +90,10 @@ export const materials = pgTable("materials", {
   category: varchar("category", { length: 100 }).notNull(), // Worksheets, Slides, Áudios, etc
   level: varchar("level", { length: 10 }).notNull(), // A1-C2
   fileUrl: varchar("fileUrl", { length: 500 }),
+  lessonId: integer("lessonId").references(() => lessons.id),
   downloads: integer("downloads").default(0).notNull(),
+  isPublic: boolean("isPublic").default(true).notNull(),
+  courseId: integer("courseId").references(() => courses.id),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -146,6 +159,8 @@ export const userActivityProgress = pgTable("userActivityProgress", {
   activityId: serial("activityId").notNull(),
   status: progressStatusEnum("status").notNull().default("pending"),
   score: serial("score"),
+  audioResponseUrl: varchar("audioResponseUrl", { length: 500 }),
+  teacherFeedback: text("teacherFeedback"),
   submittedAt: timestamp("submittedAt"),
   completedAt: timestamp("completedAt"),
 });
@@ -198,6 +213,10 @@ export const lessonProgress = pgTable("lessonProgress", {
   completed: integer("completed").default(0), // 0 ou 1
   watchedDuration: integer("watchedDuration").default(0), // em segundos
   completedAt: timestamp("completedAt"),
+  approvalStatus: lessonProgressApprovalStatusEnum("approvalStatus").notNull().default("pending"),
+  approvedBy: integer("approvedBy").references(() => users.id),
+  approvedAt: timestamp("approvedAt"),
+  approvalNote: text("approvalNote"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -229,32 +248,129 @@ export type Progress = typeof progress.$inferSelect;
 export type InsertProgress = typeof progress.$inferInsert;
 
 /**
- * Class sessions - Sessões de aula usadas pela chamada online.
+ * Admin Audit Logs table - Histórico de atividades administrativas do super-admin
+ */
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+  id: serial("id").primaryKey(),
+  adminEmail: varchar("adminEmail", { length: 320 }).notNull(),
+  action: varchar("action", { length: 64 }).notNull(), // approve, reject, role_change, soft_delete, restore, create
+  targetName: text("targetName"),
+  targetEmail: varchar("targetEmail", { length: 320 }),
+  details: text("details"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
+export type InsertAdminAuditLog = typeof adminAuditLogs.$inferInsert;
+
+/**
+ * Contact Messages table - mensagens enviadas pelo formulário público de contato.
+ */
+export const contactMessages = pgTable("contact_messages", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 160 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 160 }).notNull(),
+  message: text("message").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  deletedAt: timestamp("deletedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ContactMessageRecord = typeof contactMessages.$inferSelect;
+export type InsertContactMessage = typeof contactMessages.$inferInsert;
+
+
+/**
+ * Direct Messages table - mensagens diretas entre alunos e professores.
+ */
+export const directMessages = pgTable("direct_messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("senderId").notNull().references(() => users.id),
+  receiverId: integer("receiverId").notNull().references(() => users.id),
+  subject: varchar("subject", { length: 200 }).notNull(),
+  body: text("body").notNull(),
+  isRead: boolean("is_read").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DirectMessageRecord = typeof directMessages.$inferSelect;
+export type InsertDirectMessage = typeof directMessages.$inferInsert;
+
+
+// Novos Enums para Multimídia, Modalidade e Trilha de Eventos
+export const modalityEnum = pgEnum("modality", ["individual", "group", "hybrid"]);
+export const sessionStatusEnum = pgEnum("session_status", ["scheduled", "completed", "cancelled"]);
+export const eventTypeEnum = pgEnum("event_type", ["login", "material_submission", "activity_complete", "course_enroll", "role_change"]);
+export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "absent", "justified"]);
+
+/**
+ * Class Sessions table - Aulas/Sessões (individuais ou em grupo) para controle de chamada
  */
 export const classSessions = pgTable("class_sessions", {
   id: serial("id").primaryKey(),
-  courseId: integer("courseId"),
+  courseId: integer("courseId").references(() => courses.id),
+  teacherId: integer("teacherId").notNull().references(() => users.id),
   title: varchar("title", { length: 255 }).notNull(),
+  description: text("description"),
+  modality: modalityEnum("modality").notNull().default("individual"),
   scheduledAt: timestamp("scheduledAt").notNull(),
-  modality: varchar("modality", { length: 32 }).notNull().default("group"),
-  status: varchar("status", { length: 32 }).notNull().default("scheduled"),
+  durationMinutes: integer("durationMinutes").default(60),
+  status: sessionStatusEnum("status").notNull().default("scheduled"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export type ClassSession = typeof classSessions.$inferSelect;
 export type InsertClassSession = typeof classSessions.$inferInsert;
 
 /**
- * Attendances - Registro individual de presença por sessão e aluno.
+ * Attendances table - Chamada e presença dos alunos nas sessões
  */
 export const attendances = pgTable("attendances", {
   id: serial("id").primaryKey(),
-  sessionId: integer("sessionId").notNull(),
-  studentId: integer("studentId").notNull(),
-  status: varchar("status", { length: 32 }).notNull().default("present"),
+  sessionId: integer("sessionId").notNull().references(() => classSessions.id, { onDelete: "cascade" }),
+  studentId: integer("studentId").notNull().references(() => users.id),
+  present: boolean("present").default(true).notNull(),
+  status: attendanceStatusEnum("status").notNull().default("present"),
   notes: text("notes"),
   recordedAt: timestamp("recordedAt").defaultNow().notNull(),
 });
 
 export type Attendance = typeof attendances.$inferSelect;
 export type InsertAttendance = typeof attendances.$inferInsert;
+
+/**
+ * Event Logs table - Trilha de auditoria para logins, submissões e atividades
+ */
+export const eventLogs = pgTable("event_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").references(() => users.id),
+  userEmail: varchar("userEmail", { length: 320 }),
+  eventType: eventTypeEnum("eventType").notNull(),
+  details: text("details"),
+  ipAddress: varchar("ipAddress", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type EventLog = typeof eventLogs.$inferSelect;
+export type InsertEventLog = typeof eventLogs.$inferInsert;
+
+
+/**
+ * Article Comments & Ratings table - Comentários e avaliações por estrelas em artigos do blog.
+ */
+export const articleComments = pgTable("article_comments", {
+  id: serial("id").primaryKey(),
+  articleId: integer("articleId").notNull().references(() => articles.id, { onDelete: "cascade" }),
+  userName: varchar("userName", { length: 160 }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }),
+  rating: integer("rating").notNull().default(5), // 1 a 5 estrelas
+  comment: text("comment").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ArticleComment = typeof articleComments.$inferSelect;
+export type InsertArticleComment = typeof articleComments.$inferInsert;

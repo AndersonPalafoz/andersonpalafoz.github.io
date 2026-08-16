@@ -20,20 +20,11 @@ export default async function AdminLayout({
   }
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
-      <body
-        style={{
-          backgroundColor: "#f9fafb",
-          color: "#111827",
-          fontFamily: "Poppins, system-ui, sans-serif",
-        }}
-      >
-        {children}
-      </body>
-    </html>
+    <div
+      className="min-h-screen bg-[#f9fafb] text-[#111827]"
+      style={{ fontFamily: "Poppins, system-ui, sans-serif" }}
+    >
+      {children}
+    </div>
   );
 }

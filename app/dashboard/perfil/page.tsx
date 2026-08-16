@@ -25,11 +25,11 @@ export default async function PerfilPage() {
         {/* Avatar e Info Principal */}
         <div className="md:col-span-1">
           <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4 text-center">
-            {session?.user?.image ? (
+            {dbUser?.avatarUrl ?? session?.user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={session.user.image}
-                alt={session.user.name ?? "Foto de perfil"}
+                src={(dbUser?.avatarUrl ?? session?.user?.image) as string}
+                alt={session?.user?.name ?? "Foto de perfil"}
                 className="w-24 h-24 rounded-full mx-auto object-cover"
               />
             ) : (
@@ -72,6 +72,7 @@ export default async function PerfilPage() {
               initialPhone={dbUser?.phone ?? ""}
               initialLocation={dbUser?.location ?? ""}
               initialBio={dbUser?.bio ?? ""}
+              initialAvatarUrl={dbUser?.avatarUrl ?? session?.user?.image ?? ""}
             />
           </div>
         </div>

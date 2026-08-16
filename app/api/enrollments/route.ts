@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { enrollments, courses, users } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { notifyStudentAndTeacher } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -84,6 +85,33 @@ export async function POST(request: Request) {
         enrolledAt: new Date(),
       })
       .returning();
+
+    // Disparar e-mail para aluno e professor
+    try {
+      const studentRecord = user[0];
+      const courseRecord = course[0];
+      let teacherEmail = null;
+      let teacherName = null;
+
+      if (studentRecord.teacherId) {
+        const teacherRec = await db.query.users.findFirst({ where: eq(users.id, studentRecord.teacherId) });
+        if (teacherRec) {
+          teacherEmail = teacherRec.email;
+          teacherName = teacherRec.name;
+        }
+      }
+
+      await notifyStudentAndTeacher({
+        studentEmail: studentRecord.email,
+        studentName: studentRecord.name,
+        teacherEmail,
+        teacherName,
+        subject: `Nova Matrícula no Curso: ${courseRecord.title}`,
+        messageHtml: `<p>O aluno <b>${studentRecord.name || studentRecord.email}</b> realizou matrícula no curso <b>${courseRecord.title}</b>.</p>`,
+      });
+    } catch (mailErr) {
+      console.error("Erro ao enviar e-mail de matrícula:", mailErr);
+    }
 
     return NextResponse.json(enrollment[0], { status: 201 });
   } catch (error) {

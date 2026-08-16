@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/session-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { ToastProvider } from "@/components/toast-provider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -58,6 +59,7 @@ export default function RootLayout({
             <Navbar />
             <main className="min-h-screen">{children}</main>
             <Footer />
+            <ToastProvider />
           </ThemeProvider>
         </SessionProviderWrapper>
       </body>

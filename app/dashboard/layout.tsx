@@ -10,7 +10,7 @@ import {
   Library,
   Calendar,
   Award,
-  BarChart3,
+  FileText,
   User,
   Menu,
   X,
@@ -24,7 +24,7 @@ const navItems = [
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
   { href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
   { href: "/dashboard/certificados", label: "Certificados", icon: Award },
-  { href: "/dashboard/historico", label: "Histórico", icon: BarChart3 },
+  { href: "/dashboard/historico", label: "Histórico", icon: FileText },
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
 ];
 
@@ -45,7 +45,9 @@ export default function DashboardLayout({
   const { data: session } = useSession();
 
   const isActive = (href: string, exact?: boolean) =>
-    exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+    exact
+      ? pathname === href
+      : pathname === href || Boolean(pathname?.startsWith(href + "/"));
 
   return (
     <div className="flex h-screen bg-gray-50">

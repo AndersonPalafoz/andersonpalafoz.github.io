@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Shield } from "lucide-react";
+import { Shield, GraduationCap, Menu, X } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -30,7 +30,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -43,29 +43,40 @@ export function Navbar() {
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-2.5 whitespace-nowrap">
             {session ? (
               <>
+                {(session.user?.role === "admin" || session.user?.role === "professor") && (
+                  <Link href="/professor">
+                    <Button
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 gap-1.5 text-xs sm:text-sm px-3"
+                    >
+                      <GraduationCap size={15} />
+                      Painel do Professor
+                    </Button>
+                  </Link>
+                )}
                 {session.user?.role === "admin" && (
                   <Link href="/admin">
                     <Button
                       variant="outline"
-                      className="border-gray-400 text-gray-700 hover:bg-gray-50 gap-2"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50 gap-1.5 text-xs sm:text-sm px-3"
                     >
-                      <Shield size={16} />
+                      <Shield size={15} />
                       Painel Admin
                     </Button>
                   </Link>
                 )}
                 <Link href="/dashboard">
-                  <Button className="bg-red-600 hover:bg-red-700 text-white">
+                  <Button className="bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm px-4">
                     Minha Área
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   onClick={() => signOut()}
-                  className="border-red-600 text-red-600 hover:bg-red-50"
+                  className="border-red-600 text-red-600 hover:bg-red-50 text-xs sm:text-sm px-3"
                 >
                   Sair
                 </Button>
@@ -81,7 +92,7 @@ export function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-gray-700 hover:text-red-600"
+              className="lg:hidden text-gray-700 hover:text-red-600"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -90,7 +101,7 @@ export function Navbar() {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden pb-4 space-y-2 border-t border-gray-200">
+          <div className="lg:hidden pb-4 space-y-2 border-t border-gray-200">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href}>
                 <Button
@@ -102,6 +113,18 @@ export function Navbar() {
                 </Button>
               </Link>
             ))}
+            {(session?.user?.role === "admin" || session?.user?.role === "professor") && (
+              <Link href="/professor">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start text-gray-700 hover:text-red-600 gap-2"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <GraduationCap size={16} />
+                  Painel do Professor
+                </Button>
+              </Link>
+            )}
             {session?.user?.role === "admin" && (
               <Link href="/admin">
                 <Button

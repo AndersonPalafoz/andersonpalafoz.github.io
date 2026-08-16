@@ -5,12 +5,18 @@ declare module "next-auth" {
     user?: {
       id?: string;
       role?: "user" | "professor" | "admin";
+      approvalStatus?: "pending" | "approved" | "rejected";
+      deletedAt?: string | null;
+      image?: string | null;
+      avatarUrl?: string | null;
     } & DefaultSession["user"];
   }
 
   interface User {
     id?: string;
     role?: "user" | "professor" | "admin";
+    image?: string | null;
+    avatarUrl?: string | null;
   }
 }
 
@@ -19,5 +25,9 @@ declare module "next-auth/jwt" {
     id?: string;
     provider?: string;
     role?: "user" | "professor" | "admin";
+    approvalStatus?: "pending" | "approved" | "rejected";
+    deletedAt?: string | null;
+    picture?: string | null;
+    avatarUrl?: string | null;
   }
 }

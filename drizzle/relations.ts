@@ -6,6 +6,7 @@ import {
   activities,
   userActivityProgress,
   certificates,
+  progress,
 } from "./schema";
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -60,6 +61,17 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
   }),
   course: one(courses, {
     fields: [certificates.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const progressRelations = relations(progress, ({ one }) => ({
+  user: one(users, {
+    fields: [progress.userId],
+    references: [users.id],
+  }),
+  course: one(courses, {
+    fields: [progress.courseId],
     references: [courses.id],
   }),
 }));

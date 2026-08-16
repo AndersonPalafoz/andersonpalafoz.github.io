@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { Calendar, User, ArrowRight } from "lucide-react";
-import { getArticles } from "@/lib/db";
+import { getPublicArticles } from "@/lib/public-content";
 
 export const metadata = {
   title: "Blog | Anderson Palafoz",
@@ -10,7 +10,8 @@ export const metadata = {
 };
 
 export default async function BlogPage() {
-  const todosArtigos = await getArticles();
+  const { articles: todosArtigos, available: artigosDisponiveis } =
+    await getPublicArticles();
   // Rascunhos (published == null) nao aparecem na listagem publica
   const artigos = todosArtigos.filter((a) => a.published);
 
@@ -71,7 +72,14 @@ export default async function BlogPage() {
       {/* Artigos */}
       <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
         <div className="max-w-7xl mx-auto">
-          {artigos.length === 0 ? (
+          {!artigosDisponiveis ? (
+            <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
+              <h2 className="text-xl font-bold text-gray-900">Conteúdo temporariamente indisponível</h2>
+              <p className="mt-3 text-gray-600">
+                Estamos atualizando o blog. Tente novamente em alguns instantes.
+              </p>
+            </div>
+          ) : artigos.length === 0 ? (
             <p className="text-center text-gray-600">
               Nenhum artigo publicado no momento. Volte em breve!
             </p>
