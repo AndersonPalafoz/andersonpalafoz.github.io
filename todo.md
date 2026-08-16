@@ -603,3 +603,9 @@
 - [ ] Adicionar botão de alternância manual para o modo escuro (dark mode) na barra de navegação principal
 - [ ] Incluir opção nas configurações do perfil do aluno para reiniciar o tour guiado do dashboard a qualquer momento
 - [ ] Adicionar botão de exportação em PDF no histórico de feedbacks da Trilha Adaptativa
+
+## Analytics Preditivo, Pré-visualização PDF, Sincronização de Tema e Visual Adolescente — 16/08/2026
+- [x] Criar painel visual de analytics preditivo no dashboard do aluno (previsão de conclusão, ritmo ideal e risco de streak)
+- [x] Adicionar modal de pré-visualização do PDF do histórico de feedbacks antes de confirmar o download
+- [x] Configurar salvamento da preferência de dark mode por usuário para sincronização entre dispositivos
+- [x] Refinar elementos visuais com gradientes modernos, cartões dinâmicos e estilo envolvente para adolescentes sem perder o rigor acadêmico
