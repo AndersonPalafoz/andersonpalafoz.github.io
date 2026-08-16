@@ -559,3 +559,9 @@
 - [x] Criar aba de biblioteca de mídia especializada no CMS para gestão de medalhas e áudios do assistente
 - [x] Desenvolver painel de estatísticas de engajamento no CMS (média de XP, missões mais populares, precisão)
 - [x] Aplicar refinamento visual global em todas as páginas para máxima consistência, responsividade e sofisticação
+
+## Exportação CSV, Tags de Mídia, Gestão de Missões e Diário de Aprendizagem — 16/08/2026
+- [x] Implementar exportação de dados de engajamento dos alunos em formato CSV no painel de estatísticas do CMS
+- [x] Adicionar sistema de tags e categorias customizáveis na biblioteca de mídia do CMS para organização de arquivos
+- [x] Criar interface administrativa no CMS para criar, editar e gerenciar missões diárias personalizadas para os alunos
+- [x] Desenvolver o "Diário de Aprendizagem" (Learning Journal) como novo recurso interativo para os alunos registrarem reflexões semanais em inglês
