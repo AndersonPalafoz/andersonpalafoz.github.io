@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
-import { Heart, Shield, GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt } from "lucide-react";
+import { Heart, Shield, GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -79,8 +79,27 @@ export function Navbar() {
     };
   }, [session]);
 
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setIsDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const nextDark = !isDarkMode;
+    setIsDarkMode(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  };
+
   const isActive = (href: string) => href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-  const linkClass = (href: string) => `relative rounded-full px-3 py-2 text-sm font-semibold transition-colors ${isActive(href) ? "bg-red-50 text-red-700" : "text-gray-600 hover:bg-gray-50 hover:text-red-700"}`;
+  const linkClass = (href: string) => `relative rounded-full px-3 py-2 text-sm font-semibold transition-colors ${isActive(href) ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-red-700 dark:hover:text-red-400"}`;
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-slate-200/80 bg-white/90 shadow-xl shadow-slate-900/[0.03] backdrop-blur-xl" : "border-slate-200/50 bg-white/95 shadow-xs backdrop-blur-md"}`}>
@@ -95,6 +114,16 @@ export function Navbar() {
           </div>
 
           <div className="hidden items-center gap-2 lg:flex">
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700"
+              aria-label="Alternar modo escuro"
+              title="Alternar tema claro/escuro"
+            >
+              {isDarkMode ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
+            </button>
+
             {session ? <>
               <Link href="/dashboard/desejos" aria-label={`Abrir Lista de Desejos${wishlistCount ? `, ${wishlistCount} cursos salvos` : ""}`} className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 ${wishlistPulse ? "animate-pulse" : ""}`}>
                 <Heart size={17} className={wishlistCount > 0 || wishlistPulse ? "fill-red-500 text-red-500" : ""} />
