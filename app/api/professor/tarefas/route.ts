@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, courseId, type, dueDate } = body;
+    const { title, description, courseId, type, dueDate, tag, subtasks, attachments, order } = body;
 
     if (!title || !courseId || !type) {
       return NextResponse.json({ error: "Título, curso e tipo de atividade são obrigatórios." }, { status: 400 });
@@ -24,6 +24,13 @@ export async function POST(request: NextRequest) {
       courseId: Number(courseId),
       type,
       dueDate: dueDate ? new Date(dueDate) : null,
+      metadata: {
+        tag: tag || "Gramática",
+        status: "pending",
+        subtasks: Array.isArray(subtasks) ? subtasks : [],
+        attachments: Array.isArray(attachments) ? attachments : [],
+        order: Number.isFinite(Number(order)) ? Number(order) : undefined,
+      },
     }).returning();
 
     return NextResponse.json({ success: true, activity: newActivity[0] }, { status: 201 });

@@ -1,8 +1,13 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Clock, Users, Award, BookOpen, Layers, ArrowRight } from "lucide-react";
-import { getCourses } from "@/lib/db";
+import { Clock, Users, Award, BookOpen } from "lucide-react";
+import { CourseCatalog } from "@/components/course-catalog";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { getCourses, db } from "@/lib/db";
+import { coursePurchases, enrollments, users, wishlistItems } from "@/drizzle/schema";
+import { eq } from "drizzle-orm";
 
 export const metadata = {
   title: "Aulas de Inglês | Anderson Palafoz",
@@ -12,7 +17,17 @@ export const metadata = {
 const LEVEL_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
 export default async function AulasPage() {
-  const cursosDb = await getCourses();
+  const session = await getServerSession(authOptions);
+  const user = session?.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
+  const [cursosDb, purchasedRows, enrollmentRows, wishlistRows] = await Promise.all([
+    getCourses(),
+    user ? db.select({ courseId: coursePurchases.courseId }).from(coursePurchases).where(eq(coursePurchases.userId, user.id)) : Promise.resolve([]),
+    user ? db.select({ courseId: enrollments.courseId }).from(enrollments).where(eq(enrollments.userId, user.id)) : Promise.resolve([]),
+    user ? db.select({ courseId: wishlistItems.courseId }).from(wishlistItems).where(eq(wishlistItems.userId, user.id)) : Promise.resolve([]),
+  ]);
+  const purchasedCourseIds = new Set(purchasedRows.map((row) => row.courseId));
+  const enrolledCourseIds = new Set(enrollmentRows.map((row) => row.courseId));
+  const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));
   const cursos = [...cursosDb].sort(
     (a, b) => LEVEL_ORDER.indexOf(a.level) - LEVEL_ORDER.indexOf(b.level)
   );
@@ -110,37 +125,22 @@ export default async function AulasPage() {
               Nenhum curso publicado no momento. Volte em breve!
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {cursos.map((curso) => (
-                <div
-                  key={curso.id}
-                  className="bg-gray-50 rounded-2xl overflow-hidden border border-gray-200 hover:border-red-600 hover:shadow-lg transition flex flex-col"
-                >
-                  <div className="bg-red-600 text-white p-6">
-                    <div className="text-4xl font-bold mb-2">{curso.level}</div>
-                    <h3 className="text-2xl font-bold">{curso.title}</h3>
-                  </div>
-                  <div className="p-8 space-y-6 flex-1 flex flex-col">
-                    <p className="text-gray-600 flex-1">
-                      {curso.description || "Curso estruturado de inglês com metodologia ESA."}
-                    </p>
-
-                    <div className="flex items-center gap-3 text-gray-700">
-                      <Layers size={18} className="text-red-600" />
-                      <span>{curso.modules ?? 0} módulos</span>
-                    </div>
-
-                    <div className="border-t border-gray-200 pt-6">
-                      <Link href={`/cursos/${curso.id}`}>
-                        <button className="w-full bg-red-600 hover:bg-red-700 text-white inline-flex items-center justify-center gap-2">
-                          Ver Curso <ArrowRight size={18} />
-                        </button>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <CourseCatalog
+              courses={cursos.map((curso) => ({
+                id: curso.id,
+                level: curso.level,
+                title: curso.title,
+                description: curso.description,
+                modules: curso.modules,
+                imageUrl: curso.imageUrl,
+                isFree: curso.isFree,
+                price: curso.price,
+                category: curso.category,
+              }))}
+              purchasedCourseIds={Array.from(purchasedCourseIds)}
+              enrolledCourseIds={Array.from(enrolledCourseIds)}
+              wishlistCourseIds={Array.from(wishlistCourseIds)}
+            />
           )}
         </div>
       </section>

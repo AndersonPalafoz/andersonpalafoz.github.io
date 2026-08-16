@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Trash2, Edit2, Plus, Download, ArrowLeft, Loader2, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface Material {
   id: number;
@@ -30,6 +31,8 @@ export default function AdminMateriaisReal() {
     isPublic: true,
   });
   const [saving, setSaving] = useState(false);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
 
   useEffect(() => {
     fetchMaterials();
@@ -101,17 +104,40 @@ export default function AdminMateriaisReal() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Deseja realmente excluir este material?")) return;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const payload = new FormData();
+    payload.append("file", file);
+    payload.append("context", "material");
     try {
-      const res = await fetch(`/api/admin/materials/${id}`, {
-        method: "DELETE",
-      });
+      setUploadingFile(true);
+      const response = await fetch("/api/upload", { method: "POST", body: payload });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Falha ao enviar arquivo");
+      setFormData((current) => ({ ...current, fileUrl: data.url }));
+      toast.success("Arquivo enviado e vinculado ao material.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar o arquivo.");
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
+  const handleDelete = (material: Material) => setMaterialToDelete(material);
+
+  const confirmDelete = async () => {
+    if (!materialToDelete) return;
+    try {
+      const res = await fetch(`/api/admin/materials/${materialToDelete.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Falha ao excluir material");
-      setMaterials(materials.filter((m) => m.id !== id));
-      alert("Material excluído com sucesso!");
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir");
+      setMaterials((current) => current.filter((m) => m.id !== materialToDelete.id));
+      toast.success("Material excluído com sucesso.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir material.");
+    } finally {
+      setMaterialToDelete(null);
     }
   };
 
@@ -201,17 +227,21 @@ export default function AdminMateriaisReal() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Link do Arquivo (Google Drive / S3)</label>
-                  <div className="relative">
-                    <ExternalLink className="absolute left-3 top-3.5 text-gray-400" size={18} />
-                    <input
-                      type="url"
-                      value={formData.fileUrl}
-                      onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
-                      placeholder="https://drive.google.com/file/d/..."
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition"
-                    />
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Arquivo (upload persistente ou link externo)</label>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label htmlFor="material-file-upload" className={`inline-flex cursor-pointer items-center justify-center rounded-xl bg-blue-50 px-4 py-3 text-xs font-bold text-blue-700 transition hover:bg-blue-100 ${uploadingFile ? "pointer-events-none opacity-60" : ""}`}>
+                        {uploadingFile ? "Enviando..." : "Enviar arquivo"}
+                      </label>
+                      <input id="material-file-upload" type="file" accept="application/pdf,image/jpeg,image/png,image/webp,image/gif,audio/mpeg,audio/wav" onChange={handleFileUpload} className="sr-only" disabled={uploadingFile} />
+                      {formData.fileUrl && <span className="flex min-w-0 items-center truncate rounded-xl bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">Arquivo vinculado</span>}
+                    </div>
+                    <div className="relative">
+                      <ExternalLink className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                      <input type="url" value={formData.fileUrl} onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })} placeholder="Ou cole https://drive.google.com/file/d/..." className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none transition" />
+                    </div>
                   </div>
+                  <p className="mt-1 text-xs text-gray-500">PDFs, imagens e áudios são armazenados de forma persistente; links do Google Drive continuam suportados.</p>
                 </div>
 
                 <div>
@@ -316,7 +346,7 @@ export default function AdminMateriaisReal() {
                       <Edit2 size={14} /> Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(mat.id)}
+                      onClick={() => handleDelete(mat)}
                       className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs transition flex items-center gap-1.5"
                     >
                       <Trash2 size={14} /> Excluir
@@ -328,6 +358,15 @@ export default function AdminMateriaisReal() {
           )}
         </div>
       </div>
+      {materialToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="delete-material-title">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 id="delete-material-title" className="text-xl font-black text-gray-900">Excluir material?</h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600">A ação removerá <strong>{materialToDelete.title}</strong> da biblioteca e não poderá ser desfeita pelo painel.</p>
+            <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setMaterialToDelete(null)} className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50">Cancelar</button><button type="button" onClick={() => void confirmDelete()} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">Excluir material</button></div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

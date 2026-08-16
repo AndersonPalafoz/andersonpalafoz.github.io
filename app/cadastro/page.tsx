@@ -2,15 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { CheckCircle2, GraduationCap, Loader2, ShieldCheck } from "lucide-react";
 
 export default function CadastroPage() {
   const { data: session, status } = useSession();
   const [requestedRole, setRequestedRole] = useState("student");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const submitRegistration = async (event: React.FormEvent) => {
+    event.preventDefault();
+    try {
+      setSaving(true); setMessage(null); setError(null);
+      const response = await fetch("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, email, password }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível criar a conta.");
+      const login = await signIn("credentials", { email, password, redirect: false, callbackUrl: "/cadastro" });
+      if (login?.error) throw new Error("Conta criada. Entre pela página de login para continuar.");
+      setMessage("Conta criada. Agora solicite o papel de aluno ou professor para liberar o acesso correspondente.");
+    } catch (err) { setError(err instanceof Error ? err.message : "Não foi possível criar a conta."); } finally { setSaving(false); }
+  };
 
   const submitRequest = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -51,11 +67,17 @@ export default function CadastroPage() {
           {status === "loading" ? (
             <div className="flex justify-center p-8"><Loader2 className="animate-spin text-red-600" /></div>
           ) : !session?.user ? (
-            <div className="space-y-4 text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Entre para solicitar acesso</h2>
-              <p className="text-gray-600">Depois do login, você poderá registrar o papel desejado.</p>
-              <Link href="/login?callbackUrl=/cadastro" className="inline-flex min-h-11 items-center justify-center rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700">Ir para login</Link>
-            </div>
+            <form onSubmit={submitRegistration} className="space-y-4">
+              <h2 className="text-2xl font-bold text-gray-900">Criar conta</h2>
+              <p className="text-sm text-gray-600">Você poderá solicitar o papel de aluno ou professor após o cadastro.</p>
+              <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome completo" className="w-full rounded-xl border border-gray-300 px-4 py-3" />
+              <input required type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="E-mail" className="w-full rounded-xl border border-gray-300 px-4 py-3" />
+              <input required minLength={8} type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha (8+ caracteres, letra e número)" className="w-full rounded-xl border border-gray-300 px-4 py-3" />
+              <button type="submit" disabled={saving} className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-60">{saving && <Loader2 className="animate-spin" size={18} />} Criar conta</button>
+              <p className="text-center text-sm text-gray-600">Já possui conta? <Link href="/login" className="font-bold text-red-600 hover:underline">Entrar</Link></p>
+              {message && <p role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{message}</p>}
+              {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</p>}
+            </form>
           ) : (
             <form onSubmit={submitRequest} className="space-y-6">
               <div>

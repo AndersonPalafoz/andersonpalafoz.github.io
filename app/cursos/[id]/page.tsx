@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getCourseById, getModulesByCourse, getLessonsByModule, db } from "@/lib/db";
 import { EnrollButton } from "@/components/enroll-button";
 import { CertificateModal } from "@/components/certificate-modal";
+import { CourseEngagement } from "@/components/course-engagement";
 import { BookOpen, Layers, PlayCircle, Clock, CheckCircle } from "lucide-react";
 import { lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
@@ -198,17 +199,18 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                 <span>{course.instructor}</span>
               </div>
             )}
+            <div className={`rounded-full px-3 py-1.5 text-xs font-bold ${course.isFree ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>
+              {course.isFree ? "Curso gratuito" : `Curso pago • R$ ${Number(course.price || 0).toFixed(2).replace(".", ",")}`}
+            </div>
           </div>
 
           <div className="pt-4 pb-2 flex flex-col sm:flex-row items-center gap-4">
-            <EnrollButton courseId={course.id} />
+            <EnrollButton courseId={course.id} isFree={course.isFree ?? true} price={course.price} />
             <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>
 
-          <div className="pt-6 border-t border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2>
-            <CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} />
-          </div>
+          <div className="pt-6 border-t border-gray-200"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} /></div>
+          <CourseEngagement courseId={course.id} />
         </div>
       </div>
     </div>

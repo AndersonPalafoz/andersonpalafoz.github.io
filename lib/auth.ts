@@ -1,5 +1,7 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { verifyPassword } from "./password";
 import { db } from "./db";
 import { users, enrollments } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
@@ -7,15 +9,25 @@ import { eq } from "drizzle-orm";
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
 
 export const authOptions: NextAuthOptions = {
-  providers: process.env.GOOGLE_CLIENT_ID
-    ? [
-        GoogleProvider({
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-          allowDangerousEmailAccountLinking: true,
-        }),
-      ]
-    : [],
+  providers: [
+    ...(process.env.GOOGLE_CLIENT_ID ? [GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      allowDangerousEmailAccountLinking: true,
+    })] : []),
+    CredentialsProvider({
+      name: "E-mail e senha",
+      credentials: { email: { label: "E-mail", type: "email" }, password: { label: "Senha", type: "password" } },
+      async authorize(credentials) {
+        const email = String(credentials?.email || "").trim().toLowerCase();
+        const password = String(credentials?.password || "");
+        if (!email || !password) return null;
+        const existingUser = await db.query.users.findFirst({ where: eq(users.email, email) });
+        if (!existingUser || existingUser.deletedAt || !verifyPassword(password, existingUser.passwordHash)) return null;
+        return { id: String(existingUser.id), email: existingUser.email || email, name: existingUser.name || email, image: existingUser.avatarUrl || undefined };
+      },
+    }),
+  ],
   callbacks: {
     async signIn({ user, account }) {
       if (!user.email) return false;

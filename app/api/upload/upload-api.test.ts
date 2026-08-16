@@ -11,10 +11,11 @@ describe("upload api route", () => {
     expect(uploadRoute).toContain("session.user.role");
   });
 
-  it("saves uploaded files to public/uploads and returns a relative file url", () => {
-    expect(uploadRoute).toContain("public");
-    expect(uploadRoute).toContain("uploads");
-    expect(uploadRoute).toContain("writeFile");
+  it("uploads images through the persistent educational storage helper", () => {
+    expect(uploadRoute).toContain("uploadEducationalImage");
+    expect(uploadRoute).toContain("storageContext");
+    expect(uploadRoute).toContain("key: uploaded.objectPath");
+    expect(uploadRoute).not.toContain("writeFile");
   });
 
   it("accepts supported assessment images and rejects unsafe formats or oversized files", () => {

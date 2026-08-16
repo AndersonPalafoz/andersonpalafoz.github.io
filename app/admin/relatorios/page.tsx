@@ -17,10 +17,18 @@ interface AdminStats {
   averageProgress: number;
 }
 
+interface DetailedReports {
+  studentReports: Array<{ id: number; name: string; email: string | null; enrollments: number; completed: number; averageProgress: number; lastActivity: string | Date | null }>;
+  teacherReports: Array<{ id: number; name: string; email: string | null; students: number; enrollments: number; averageProgress: number }>;
+  courseReports: Array<{ id: number; title: string; level: string; enrollments: number; completed: number; averageProgress: number }>;
+}
+
 export default function AdminRelatoriosPage() {
   const { user, isLoading: authLoading } = useAuth(true);
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const [detailedReports, setDetailedReports] = useState<DetailedReports | null>(null);
+  const [reportTab, setReportTab] = useState<"students" | "teachers" | "courses">("students");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,6 +53,15 @@ export default function AdminRelatoriosPage() {
     };
     if (!authLoading && user?.role === "admin") {
       void fetchStats();
+    }
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    if (!authLoading && user?.role === "admin") {
+      void fetch("/api/admin/reports", { cache: "no-store" }).then(async (res) => {
+        if (!res.ok) throw new Error("Falha ao carregar relatórios detalhados");
+        setDetailedReports(await res.json());
+      }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios."));
     }
   }, [authLoading, user]);
 
@@ -168,15 +185,26 @@ export default function AdminRelatoriosPage() {
           </div>
         )}
 
+        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div><h2 className="text-lg font-bold text-gray-900">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-gray-500">Acompanhamento operacional para o super-admin.</p></div>
+            <div className="flex gap-2">
+              {([['students', 'Alunos'], ['teachers', 'Professores'], ['courses', 'Cursos']] as const).map(([value, label]) => <button key={value} onClick={() => setReportTab(value)} className={`rounded-lg px-3 py-2 text-xs font-bold ${reportTab === value ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{label}</button>)}
+            </div>
+          </div>
+          {!detailedReports ? <p className="text-sm text-gray-500">Carregando dados detalhados...</p> : reportTab === "students" ? (
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Aluno</th><th className="pb-3">Matrículas</th><th className="pb-3">Concluídos</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.studentReports.slice(0, 20).map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3"><p className="font-semibold text-gray-900">{item.name}</p><p className="text-xs text-gray-500">{item.email}</p></td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+          ) : reportTab === "teachers" ? (
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Professor</th><th className="pb-3">Alunos</th><th className="pb-3">Matrículas</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.teacherReports.map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3"><p className="font-semibold text-gray-900">{item.name}</p><p className="text-xs text-gray-500">{item.email}</p></td><td className="py-3">{item.students}</td><td className="py-3">{item.enrollments}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+          ) : (
+            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Curso</th><th className="pb-3">Nível</th><th className="pb-3">Matrículas</th><th className="pb-3">Conclusões</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.courseReports.map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3 font-semibold text-gray-900">{item.title}</td><td className="py-3">{item.level}</td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+          )}
+        </section>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-bold text-gray-900 mb-4">Relatórios Disponíveis</h2>
-            <ul className="space-y-3 text-sm text-gray-600">
-              <li className="flex items-center gap-2">📊 Desempenho e notas por aluno</li>
-              <li className="flex items-center gap-2">📈 Progresso de aulas por curso</li>
-              <li className="flex items-center gap-2">👥 Distribuição de papéis (Alunos, Professores, Admins)</li>
-              <li className="flex items-center gap-2">⏱️ Taxa de frequência e chamadas online</li>
-            </ul>
+            <p className="text-sm text-gray-600">Os dados acima são carregados do banco e podem ser exportados junto com os KPIs oficiais.</p>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">

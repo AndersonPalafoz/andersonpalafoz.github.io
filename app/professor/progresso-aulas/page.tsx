@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mic, Sparkles, Loader2, Volume2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mic, Sparkles, Loader2, Volume2, Filter, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -14,6 +14,8 @@ export default function ProfessorProgressSpeakingPage() {
   const [scoreVal, setScoreVal] = useState(95);
   const [feedbackAudio, setFeedbackAudio] = useState<File | null>(null);
   const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
+  const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
+  const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
 
   const loadData = async () => {
     try {
@@ -77,6 +79,18 @@ export default function ProfessorProgressSpeakingPage() {
 
   const speakingSubmissions = activityProgress.filter(ap => ap.activity?.type === "speaking" || ap.audioResponseUrl);
   const speakingAttempts = data?.speakingAttempts || [];
+  const filteredSpeakingSubmissions = [...speakingSubmissions]
+    .filter((submission) => {
+      const needsFeedback = !submission.teacherFeedback && !submission.teacherAudioFeedbackUrl;
+      return feedbackFilter === "all" || (feedbackFilter === "pending" ? needsFeedback : !needsFeedback);
+    })
+    .sort((a, b) => {
+      const attemptsA = speakingAttempts.filter((attempt: any) => attempt.userId === a.userId && attempt.activityId === a.activityId);
+      const attemptsB = speakingAttempts.filter((attempt: any) => attempt.userId === b.userId && attempt.activityId === b.activityId);
+      const dateA = new Date(attemptsA[0]?.submittedAt || a.submittedAt || 0).getTime();
+      const dateB = new Date(attemptsB[0]?.submittedAt || b.submittedAt || 0).getTime();
+      return dateSort === "newest" ? dateB - dateA : dateA - dateB;
+    });
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
@@ -139,19 +153,33 @@ export default function ProfessorProgressSpeakingPage() {
             <Sparkles className="text-red-600" size={24} />
             Avaliação de Speaking & Feedback Automático por IA
           </h2>
+          <div className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
+            <label className="flex items-center gap-2 text-xs font-bold text-gray-600"><Filter size={14} className="text-red-600" /> Status do feedback
+              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-semibold text-gray-800">
+                <option value="all">Todas</option><option value="pending">Aguardando feedback</option><option value="reviewed">Já avaliadas</option>
+              </select>
+            </label>
+            <label className="flex items-center gap-2 text-xs font-bold text-gray-600"><Clock size={14} className="text-red-600" /> Ordenar por data
+              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-semibold text-gray-800">
+                <option value="newest">Mais recentes</option><option value="oldest">Mais antigas</option>
+              </select>
+            </label>
+            <span className="ml-auto self-center rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold text-amber-800">{speakingSubmissions.filter((submission) => !submission.teacherFeedback && !submission.teacherAudioFeedbackUrl).length} aguardando</span>
+          </div>
 
-          {speakingSubmissions.length === 0 ? (
+          {filteredSpeakingSubmissions.length === 0 ? (
             <div className="py-12 text-center text-gray-500">
               <Mic className="mx-auto text-gray-300 mb-3" size={36} />
               <p className="font-semibold text-gray-800">Nenhuma gravação de speaking enviada pelos alunos ainda.</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {speakingSubmissions.map((sub) => {
+              {filteredSpeakingSubmissions.map((sub) => {
                 const student = students.find(s => s.id === sub.userId);
+                const needsFeedback = !sub.teacherFeedback && !sub.teacherAudioFeedbackUrl;
                 const attempts = speakingAttempts.filter((attempt) => attempt.userId === sub.userId && attempt.activityId === sub.activityId);
                 return (
-                  <div key={sub.id} className="p-6 rounded-xl border border-gray-200 bg-gray-50 space-y-4">
+                  <div key={sub.id} className={`p-6 rounded-xl border space-y-4 ${needsFeedback ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-200" : "border-gray-200 bg-gray-50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -161,6 +189,7 @@ export default function ProfessorProgressSpeakingPage() {
                           <span className="text-xs text-gray-500 font-medium">
                             Aluno: {student?.name || student?.email || `ID ${sub.userId}`}
                           </span>
+                          {needsFeedback && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold uppercase">Aguardando feedback</span>}
                         </div>
                         <p className="text-sm font-semibold text-gray-900">
                           Status: <span className="uppercase text-red-600">{sub.status}</span> {sub.score ? `• Nota: ${sub.score}/100` : ""}

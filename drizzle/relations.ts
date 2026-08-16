@@ -8,6 +8,11 @@ import {
   speakingAttempts,
   certificates,
   progress,
+  coursePurchases,
+  wishlistItems,
+  lessonNotes,
+  courseReviews,
+  lessons,
 } from "./schema";
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -15,12 +20,40 @@ export const usersRelations = relations(users, ({ many }) => ({
   certificates: many(certificates),
   activityProgress: many(userActivityProgress),
   speakingAttempts: many(speakingAttempts),
+  purchases: many(coursePurchases),
+  wishlist: many(wishlistItems),
+  notes: many(lessonNotes),
+  reviews: many(courseReviews),
 }));
 
 export const coursesRelations = relations(courses, ({ many }) => ({
   enrollments: many(enrollments),
   activities: many(activities),
   certificates: many(certificates),
+  purchases: many(coursePurchases),
+  wishlist: many(wishlistItems),
+  notes: many(lessonNotes),
+  reviews: many(courseReviews),
+}));
+
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
+  course: one(courses, { fields: [wishlistItems.courseId], references: [courses.id] }),
+}));
+
+export const lessonNotesRelations = relations(lessonNotes, ({ one }) => ({
+  user: one(users, { fields: [lessonNotes.userId], references: [users.id] }),
+  lesson: one(lessons, { fields: [lessonNotes.lessonId], references: [lessons.id] }),
+}));
+
+export const courseReviewsRelations = relations(courseReviews, ({ one }) => ({
+  user: one(users, { fields: [courseReviews.userId], references: [users.id] }),
+  course: one(courses, { fields: [courseReviews.courseId], references: [courses.id] }),
+}));
+
+export const coursePurchasesRelations = relations(coursePurchases, ({ one }) => ({
+  user: one(users, { fields: [coursePurchases.userId], references: [users.id] }),
+  course: one(courses, { fields: [coursePurchases.courseId], references: [courses.id] }),
 }));
 
 export const enrollmentsRelations = relations(enrollments, ({ one }) => ({

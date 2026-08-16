@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { CheckCircle2, Loader2, PlayCircle } from "lucide-react";
+import { CheckCircle2, Loader2, PlayCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
-export function EnrollButton({ courseId }: { courseId: number }) {
+export function EnrollButton({ courseId, isFree = true, price = 0 }: { courseId: number; isFree?: boolean; price?: number | string | null }) {
   const { status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -47,6 +47,26 @@ export function EnrollButton({ courseId }: { courseId: number }) {
     try {
       setLoading(true);
       setMessage(null);
+      if (!isFree) {
+        const response = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ courseId }),
+        });
+        const data = await response.json();
+        if (response.status === 409 && data.enrolled) {
+          setIsEnrolled(true);
+          toast.info("Você já tem acesso a este curso.");
+          return;
+        }
+        if (!response.ok) throw new Error(data.error || "Não foi possível iniciar o pagamento.");
+        if (data.checkoutUrl) {
+          toast.success("Abrindo checkout seguro do Stripe...");
+          window.open(data.checkoutUrl, "_blank", "noopener,noreferrer");
+        }
+        return;
+      }
+
       const response = await fetch("/api/enrollments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,7 +122,7 @@ export function EnrollButton({ courseId }: { courseId: number }) {
         className="bg-red-600 hover:bg-red-700 text-white px-8 py-3.5 rounded-xl font-bold transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
       >
         {loading && <Loader2 size={18} className="animate-spin" />}
-        <span>Inscrever-se no Curso Gratuitamente</span>
+        {isFree ? <span>Inscrever-se no Curso Gratuitamente</span> : <><CreditCard size={18} /><span>Comprar agora {Number(price) > 0 ? `• R$ ${Number(price).toFixed(2).replace(".", ",")}` : ""}</span></>}
       </button>
       {message && <p className="text-sm text-gray-600 font-medium">{message}</p>}
     </div>

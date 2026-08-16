@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
 // usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
@@ -188,9 +188,7 @@ export async function getLessonById(id: number) {
 
 export async function getUserLessonProgress(userId: number, lessonId: number) {
   return await db.query.lessonProgress.findFirst({
-    where: (table) => {
-      return eq(table.userId, userId) && eq(table.lessonId, lessonId);
-    },
+    where: (table) => and(eq(table.userId, userId), eq(table.lessonId, lessonId)),
   });
 }
 
@@ -213,9 +211,7 @@ export async function updateLessonProgress(userId: number, lessonId: number, com
 // Progress helpers
 export async function getUserProgress(userId: number, courseId: number) {
   return await db.query.progress.findFirst({
-    where: (table) => {
-      return eq(table.userId, userId) && eq(table.courseId, courseId);
-    },
+    where: (table) => and(eq(table.userId, userId), eq(table.courseId, courseId)),
   });
 }
 
@@ -258,6 +254,8 @@ export async function createCourse(data: {
     level: data.level,
     modules: data.modules || 0,
     instructor: data.instructor || "Anderson Palafoz",
+    isFree: data.isFree ?? true,
+    price: data.price !== undefined ? data.price.toFixed(2) : "0.00",
   }).returning();
 }
 
@@ -270,9 +268,11 @@ export async function updateCourse(id: number, data: Partial<{
   isFree: boolean;
   price: number;
 }>) {
+  const { price, ...courseData } = data;
   return await db.update(schema.courses)
     .set({
-      ...data,
+      ...courseData,
+      ...(price !== undefined ? { price: price.toFixed(2) } : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.courses.id, id))
@@ -483,4 +483,51 @@ export async function createArticleComment(data: {
     rating: data.rating,
     comment: data.comment,
   }).returning();
+}
+
+
+export async function fulfillCoursePurchase(input: {
+  userId: number;
+  courseId: number;
+  stripeCheckoutSessionId: string;
+  stripePaymentIntentId?: string | null;
+  stripeCustomerId?: string | null;
+}) {
+  const insertedPurchase = await db.insert(schema.coursePurchases).values({
+    userId: input.userId,
+    courseId: input.courseId,
+    stripeCheckoutSessionId: input.stripeCheckoutSessionId,
+    stripePaymentIntentId: input.stripePaymentIntentId || null,
+    stripeCustomerId: input.stripeCustomerId || null,
+    fulfilledAt: new Date(),
+  }).onConflictDoNothing({ target: schema.coursePurchases.stripeCheckoutSessionId }).returning();
+
+  const enrollment = await db.query.enrollments.findFirst({ where: and(eq(schema.enrollments.userId, input.userId), eq(schema.enrollments.courseId, input.courseId)) });
+  if (!enrollment) {
+    await db.insert(schema.enrollments).values({ userId: input.userId, courseId: input.courseId, status: "active", enrolledAt: new Date() });
+  }
+  return { purchase: insertedPurchase[0] || null, alreadyFulfilled: insertedPurchase.length === 0 };
+}
+
+export async function getCoursePurchases(userId: number) {
+  return db.select({ purchase: schema.coursePurchases, course: schema.courses })
+    .from(schema.coursePurchases)
+    .innerJoin(schema.courses, eq(schema.coursePurchases.courseId, schema.courses.id))
+    .where(eq(schema.coursePurchases.userId, userId))
+    .orderBy(desc(schema.coursePurchases.createdAt));
+}
+
+
+export async function getResumeLesson(userId: number, courseId: number) {
+  const courseModules = await db.query.modules.findMany({ where: eq(schema.modules.courseId, courseId), orderBy: asc(schema.modules.order) });
+  const lessonRows = [] as Array<typeof schema.lessons.$inferSelect>;
+  for (const module of courseModules) {
+    const moduleLessons = await db.query.lessons.findMany({ where: eq(schema.lessons.moduleId, module.id), orderBy: asc(schema.lessons.order) });
+    lessonRows.push(...moduleLessons);
+  }
+  if (lessonRows.length === 0) return null;
+  const completedRows = await db.query.lessonProgress.findMany({ where: eq(schema.lessonProgress.userId, userId) });
+  const completedIds = new Set(completedRows.filter((row) => row.completed === 1).map((row) => row.lessonId));
+  const next = lessonRows.find((lesson) => !completedIds.has(lesson.id)) || lessonRows[lessonRows.length - 1];
+  return { lesson: next, completedLessons: completedIds.size, totalLessons: lessonRows.length, percentage: Math.round((completedIds.size / lessonRows.length) * 100) };
 }
