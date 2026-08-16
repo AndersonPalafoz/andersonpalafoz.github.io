@@ -30,7 +30,28 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { pageKey, sectionKey, title, content } = body;
+    const { action, id, pageKey, sectionKey, title, content, status, contentType, orderIndex, tag } = body;
+
+    if (action === "duplicate" && id) {
+      const source = await db.query.siteContentBlocks.findFirst({
+        where: eq(siteContentBlocks.id, Number(id)),
+      });
+      if (!source) {
+        return NextResponse.json({ error: "Bloco original não encontrado." }, { status: 404 });
+      }
+      const duplicated = await db.insert(siteContentBlocks).values({
+        pageKey: source.pageKey,
+        sectionKey: `${source.sectionKey}_copy_${Date.now().toString().slice(-4)}`,
+        title: `${source.title} (Cópia)`,
+        content: source.content,
+        status: source.status,
+        contentType: source.contentType,
+        orderIndex: source.orderIndex + 1,
+        tag: source.tag,
+        updatedAt: new Date(),
+      }).returning();
+      return NextResponse.json({ block: duplicated[0], message: "Bloco duplicado com sucesso!" });
+    }
 
     if (!pageKey || !sectionKey || !title || content === undefined) {
       return NextResponse.json({ error: "Preencha todos os campos obrigatórios do bloco." }, { status: 400 });
@@ -42,13 +63,32 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       const updated = await db.update(siteContentBlocks)
-        .set({ pageKey, title, content, updatedAt: new Date() })
+        .set({
+          pageKey,
+          title,
+          content,
+          status: status || "published",
+          contentType: contentType || "text",
+          orderIndex: orderIndex !== undefined ? Number(orderIndex) : 0,
+          tag: tag || "Geral",
+          updatedAt: new Date(),
+        })
         .where(eq(siteContentBlocks.id, existing.id))
         .returning();
       return NextResponse.json({ block: updated[0], message: "Bloco atualizado com sucesso!" });
     } else {
       const created = await db.insert(siteContentBlocks)
-        .values({ pageKey, sectionKey, title, content, updatedAt: new Date() })
+        .values({
+          pageKey,
+          sectionKey,
+          title,
+          content,
+          status: status || "published",
+          contentType: contentType || "text",
+          orderIndex: orderIndex !== undefined ? Number(orderIndex) : 0,
+          tag: tag || "Geral",
+          updatedAt: new Date(),
+        })
         .returning();
       return NextResponse.json({ block: created[0], message: "Bloco criado com sucesso!" });
     }
