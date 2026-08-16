@@ -600,9 +600,9 @@
 - [x] Garantir suporte completo e consistente a modo escuro (dark mode) na página inicial e no dashboard
 
 ## Alternador de Tema na Navbar, Reinício de Onboarding e Exportação PDF de Feedbacks — 16/08/2026
-- [ ] Adicionar botão de alternância manual para o modo escuro (dark mode) na barra de navegação principal
-- [ ] Incluir opção nas configurações do perfil do aluno para reiniciar o tour guiado do dashboard a qualquer momento
-- [ ] Adicionar botão de exportação em PDF no histórico de feedbacks da Trilha Adaptativa
+- [x] Adicionar botão de alternância manual para o modo escuro (dark mode) na barra de navegação principal
+- [x] Incluir opção nas configurações do perfil do aluno para reiniciar o tour guiado do dashboard a qualquer momento
+- [x] Adicionar botão de exportação em PDF no histórico de feedbacks da Trilha Adaptativa
 
 ## Analytics Preditivo, Pré-visualização PDF, Sincronização de Tema e Visual Adolescente — 16/08/2026
 - [x] Criar painel visual de analytics preditivo no dashboard do aluno (previsão de conclusão, ritmo ideal e risco de streak)
