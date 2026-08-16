@@ -14,7 +14,6 @@ export function VoiceSpeakingAssistant() {
       setTranscript("");
       setFeedback(null);
       toast.info("Gravando... Fale em inglês agora.");
-      // Simulação de reconhecimento de voz após 3 segundos
       setTimeout(() => {
         setTranscript("I want to improve my English speaking skills for my professional career.");
         setIsRecording(false);
@@ -60,6 +59,18 @@ export function VoiceSpeakingAssistant() {
           "Talk about your professional goals and why you are learning English."
         </p>
 
+        {/* Animação Visual de Onda Sonora durante a Gravação */}
+        {isRecording && (
+          <div className="flex items-center justify-center gap-1.5 py-4 h-16">
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-8 [animation-delay:-0.3s]" />
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-12 [animation-delay:-0.15s]" />
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-16 [animation-delay:0s]" />
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-10 [animation-delay:-0.2s]" />
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-14 [animation-delay:-0.1s]" />
+            <span className="w-1.5 bg-red-600 rounded-full animate-bounce h-6 [animation-delay:-0.25s]" />
+          </div>
+        )}
+
         <div className="flex justify-center pt-2">
           <button
             onClick={toggleRecording}
@@ -70,7 +81,7 @@ export function VoiceSpeakingAssistant() {
             }`}
           >
             {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
-            {isRecording ? "Gravando (Fale agora)..." : "Iniciar Gravação de Voz"}
+            {isRecording ? "Parar e Enviar Áudio..." : "Iniciar Gravação de Voz"}
           </button>
         </div>
       </div>
