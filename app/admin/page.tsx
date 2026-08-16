@@ -31,20 +31,20 @@ function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
   const groupWidth = data.length > 0 ? chartWidth / data.length : chartWidth;
 
   return (
-    <div className="mt-6 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 sm:p-6">
+    <div className="mt-6 rounded-2xl border border-border/70 bg-muted/60 p-4 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="text-base font-bold text-gray-900">Evolução dos últimos 6 meses</h3>
-          <p className="text-xs text-gray-500">Matrículas e usuários com acesso registrado no período.</p>
+          <h3 className="text-base font-bold text-foreground">Evolução dos últimos 6 meses</h3>
+          <p className="text-xs text-muted-foreground">Matrículas e usuários com acesso registrado no período.</p>
         </div>
-        <div className="flex items-center gap-4 text-xs font-semibold text-gray-600" aria-label="Legenda do gráfico">
+        <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground" aria-label="Legenda do gráfico">
           <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-600" /> Matrículas</span>
           <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> Usuários ativos</span>
         </div>
       </div>
 
       {data.length === 0 ? (
-        <p className="py-10 text-center text-sm text-gray-500">Ainda não há dados mensais para exibir.</p>
+        <p className="py-10 text-center text-sm text-muted-foreground">Ainda não há dados mensais para exibir.</p>
       ) : (
         <div className="overflow-x-auto" role="img" aria-label="Gráfico de matrículas e usuários ativos nos últimos seis meses">
           <svg viewBox={`0 0 ${chartWidth} 240`} className="h-64 min-w-[640px] w-full" preserveAspectRatio="none">
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
 
   if (isLoading || loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="site-shell flex items-center justify-center px-4">
         <Loader className="animate-spin" size={32} />
       </div>
     );
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="site-shell flex items-center justify-center px-4">
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <Link href="/" className="text-blue-600 hover:underline">
@@ -130,32 +130,30 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="site-shell">
       {/* Header */}
-      <div className="bg-red-600 text-white px-6 py-8">
+      <div className="bg-primary text-primary-foreground px-4 py-8 sm:px-6">
         <h1 className="text-3xl font-bold">Painel Admin</h1>
         <p className="text-red-100 mt-2">Gerenciar cursos, materiais e usuários</p>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="page-container py-8 sm:py-12">
         {/* Atalhos e Gerenciamento */}
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Atalhos Operacionais</h2>
-          <Link href="/admin/usuarios">
-            <button className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm flex items-center gap-2">
-              <Users size={16} /> Gerenciar Usuários & Permissões (/admin/usuarios)
-            </button>
+          <h2 className="text-xl font-bold text-foreground">Atalhos Operacionais</h2>
+          <Link href="/admin/usuarios" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90">
+            <Users size={16} /> Gerenciar Usuários & Permissões
           </Link>
         </div>
 
         {/* Stats Grid Detalhado por Função e Cursos Publicados */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="surface-card interactive-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs uppercase font-bold tracking-wider">Cursos Publicados</p>
-                <p className="text-3xl font-black text-gray-900 mt-2">
+                <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Cursos Publicados</p>
+                <p className="text-3xl font-black text-foreground mt-2">
                   {stats?.totalCourses || 0}
                 </p>
                 <p className="text-xs text-red-600 font-semibold mt-1">Disponíveis na plataforma</p>
@@ -166,11 +164,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="surface-card interactive-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs uppercase font-bold tracking-wider">Alunos Registrados</p>
-                <p className="text-3xl font-black text-gray-900 mt-2">
+                <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Alunos Registrados</p>
+                <p className="text-3xl font-black text-foreground mt-2">
                   {stats?.roleCounts.student || 0}
                 </p>
                 <p className="text-xs text-blue-600 font-semibold mt-1">Perfil: Aluno (Student)</p>
@@ -181,11 +179,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="surface-card interactive-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs uppercase font-bold tracking-wider">Professores & Admins</p>
-                <p className="text-3xl font-black text-gray-900 mt-2">
+                <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Professores & Admins</p>
+                <p className="text-3xl font-black text-foreground mt-2">
                   {(stats?.roleCounts.professor || 0) + (stats?.roleCounts.admin || 0)}
                 </p>
                 <p className="text-xs text-emerald-600 font-semibold mt-1">Gestão de Conteúdo</p>
@@ -196,11 +194,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="surface-card interactive-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs uppercase font-bold tracking-wider">Total de Inscrições</p>
-                <p className="text-3xl font-black text-gray-900 mt-2">
+                <p className="text-muted-foreground text-xs uppercase font-bold tracking-wider">Total de Inscrições</p>
+                <p className="text-3xl font-black text-foreground mt-2">
                   {stats?.totalEnrollments || 0}
                 </p>
                 <p className="text-xs text-purple-600 font-semibold mt-1">Matrículas ativas</p>
@@ -213,14 +211,14 @@ export default function AdminDashboard() {
         </div>
 
         {/* Evolução mensal */}
-        <section className="mb-12 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-6">
+        <section className="mb-12 surface-card p-4 sm:p-6">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               <BarChart3 size={20} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Atividade da plataforma</h2>
-              <p className="mt-1 text-sm text-gray-500">Acompanhe a evolução real das matrículas e dos acessos ativos para orientar decisões acadêmicas.</p>
+              <h2 className="text-xl font-bold text-foreground">Atividade da plataforma</h2>
+              <p className="mt-1 text-sm text-muted-foreground">Acompanhe a evolução real das matrículas e dos acessos ativos para orientar decisões acadêmicas.</p>
             </div>
           </div>
           <MonthlyActivityChart data={stats?.monthlyActivity || []} />
@@ -229,74 +227,74 @@ export default function AdminDashboard() {
         {/* Navigation Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link href="/admin/cursos">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <BookOpen className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Gerenciar Cursos</h2>
-              <p className="text-gray-600">Criar, editar e deletar cursos</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Cursos</h2>
+              <p className="text-muted-foreground">Criar, editar e deletar cursos</p>
             </div>
           </Link>
 
           <Link href="/admin/materiais">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <FileText className="text-blue-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Gerenciar Materiais</h2>
-              <p className="text-gray-600">Adicionar e organizar materiais de apoio</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Materiais</h2>
+              <p className="text-muted-foreground">Adicionar e organizar materiais de apoio</p>
             </div>
           </Link>
 
           <Link href="/admin/artigos">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
-              <FileText className="text-green-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Gerenciar Artigos</h2>
-              <p className="text-gray-600">Publicar e editar artigos do blog</p>
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
+              <FileText className="text-muted-foreground mb-4" size={40} />
+              <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Artigos</h2>
+              <p className="text-muted-foreground">Publicar e editar artigos do blog</p>
             </div>
           </Link>
 
           <Link href="/admin/usuarios">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <Users className="text-purple-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Gerenciar Usuários</h2>
-              <p className="text-gray-600">Ver, promover e remover usuários</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Usuários</h2>
+              <p className="text-muted-foreground">Ver, promover e remover usuários</p>
             </div>
           </Link>
 
           <Link href="/admin/matriculas">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <UserPlus className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Matrículas</h2>
-              <p className="text-gray-600">Vincular ou desvincular alunos de cursos</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Matrículas</h2>
+              <p className="text-muted-foreground">Vincular ou desvincular alunos de cursos</p>
             </div>
           </Link>
 
           <Link href="/admin/chamada">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <Calendar className="text-emerald-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Chamada Online</h2>
-              <p className="text-gray-600">Registrar frequência e sessões de aula</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Chamada Online</h2>
+              <p className="text-muted-foreground">Registrar frequência e sessões de aula</p>
             </div>
           </Link>
 
           <Link href="/admin/relatorios">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <BarChart3 className="text-orange-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Relatórios</h2>
-              <p className="text-gray-600">Estatísticas e progresso dos alunos</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Relatórios</h2>
+              <p className="text-muted-foreground">Estatísticas e progresso dos alunos</p>
             </div>
           </Link>
 
           <Link href="/admin/mensagens">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <Mail className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Mensagens de Contato</h2>
-              <p className="text-gray-600">Visualizar mensagens enviadas pelo site</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Mensagens de Contato</h2>
+              <p className="text-muted-foreground">Visualizar mensagens enviadas pelo site</p>
             </div>
           </Link>
 
           <Link href="/admin/reviews">
-            <div className="bg-white border border-gray-200 rounded-lg p-8 hover:shadow-lg transition-shadow cursor-pointer">
+            <div className="surface-card interactive-card h-full p-6 sm:p-8">
               <MessageCircle className="text-amber-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Avaliações dos Cursos</h2>
-              <p className="text-gray-600">Responder avaliações e notificar alunos</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Avaliações dos Cursos</h2>
+              <p className="text-muted-foreground">Responder avaliações e notificar alunos</p>
             </div>
           </Link>
         </div>

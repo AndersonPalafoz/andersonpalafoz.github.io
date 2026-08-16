@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, BookOpen, TrendingUp, Download, FileText, Loader2, ChevronLeft } from "lucide-react";
+import { Users, BookOpen, TrendingUp, Download, FileText, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -30,6 +30,7 @@ export default function AdminRelatoriosPage() {
   const [detailedReports, setDetailedReports] = useState<DetailedReports | null>(null);
   const [reportTab, setReportTab] = useState<"students" | "teachers" | "courses">("students");
   const [loading, setLoading] = useState(true);
+  const [detailsLoading, setDetailsLoading] = useState(true);
 
   useEffect(() => {
     if (!authLoading && user && user.role !== "admin") {
@@ -61,7 +62,7 @@ export default function AdminRelatoriosPage() {
       void fetch("/api/admin/reports", { cache: "no-store" }).then(async (res) => {
         if (!res.ok) throw new Error("Falha ao carregar relatórios detalhados");
         setDetailedReports(await res.json());
-      }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios."));
+      }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios.")).finally(() => setDetailsLoading(false));
     }
   }, [authLoading, user]);
 
@@ -130,54 +131,63 @@ export default function AdminRelatoriosPage() {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-red-600" size={32} />
-      </div>
+      <main className="site-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="page-container space-y-6" aria-busy="true" aria-label="Carregando relatórios administrativos">
+          <div className="surface-card h-32 animate-pulse" />
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="surface-card h-28 animate-pulse" />
+            <div className="surface-card h-28 animate-pulse" />
+            <div className="surface-card h-28 animate-pulse" />
+          </div>
+          <div className="surface-card h-72 animate-pulse" />
+          <p className="text-center text-sm text-muted-foreground">Carregando relatórios administrativos…</p>
+        </div>
+      </main>
     );
   }
 
   if (!user || user.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-12">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
+    <div className="site-shell pb-12">
+      <header className="border-b border-border/70 bg-card">
+        <div className="page-container flex items-center justify-between gap-4 py-5">
           <div>
-            <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
+            <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-red-600">
               <ChevronLeft size={16} /> Voltar ao painel
             </Link>
-            <h1 className="text-2xl font-black text-gray-900">Relatórios e Estatísticas</h1>
-            <p className="mt-1 text-sm text-gray-500">Métricas consolidadas de engajamento, matrículas e progresso dos alunos.</p>
+            <h1 className="text-2xl font-black tracking-tight text-foreground sm:text-3xl">Relatórios e Estatísticas</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Métricas consolidadas de engajamento, matrículas e progresso dos alunos.</p>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6">
+      <main className="page-container space-y-8 py-8">
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="surface-card p-5 sm:p-6 transition-shadow hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold uppercase">Total de Usuários</p>
-                  <p className="text-3xl font-black text-gray-900 mt-2">{stats.totalUsers}</p>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase">Total de Usuários</p>
+                  <p className="text-3xl font-black text-foreground mt-2">{stats.totalUsers}</p>
                 </div>
                 <Users size={32} className="text-red-600" />
               </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="surface-card p-5 sm:p-6 transition-shadow hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold uppercase">Cursos Publicados</p>
-                  <p className="text-3xl font-black text-gray-900 mt-2">{stats.totalCourses}</p>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase">Cursos Publicados</p>
+                  <p className="text-3xl font-black text-foreground mt-2">{stats.totalCourses}</p>
                 </div>
                 <BookOpen size={32} className="text-red-600" />
               </div>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="surface-card p-5 sm:p-6 transition-shadow hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold uppercase">Progresso Médio</p>
-                  <p className="text-3xl font-black text-gray-900 mt-2">{stats.averageProgress.toFixed(1)}%</p>
+                  <p className="text-xs text-muted-foreground font-semibold uppercase">Progresso Médio</p>
+                  <p className="text-3xl font-black text-foreground mt-2">{stats.averageProgress.toFixed(1)}%</p>
                 </div>
                 <TrendingUp size={32} className="text-red-600" />
               </div>
@@ -185,30 +195,30 @@ export default function AdminRelatoriosPage() {
           </div>
         )}
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-5">
+        <section className="surface-card p-5 sm:p-6 space-y-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div><h2 className="text-lg font-bold text-gray-900">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-gray-500">Acompanhamento operacional para o super-admin.</p></div>
+            <div><h2 className="text-lg font-black text-foreground">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-muted-foreground">Acompanhamento operacional para o super-admin.</p></div>
             <div className="flex gap-2">
-              {([['students', 'Alunos'], ['teachers', 'Professores'], ['courses', 'Cursos']] as const).map(([value, label]) => <button key={value} onClick={() => setReportTab(value)} className={`rounded-lg px-3 py-2 text-xs font-bold ${reportTab === value ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{label}</button>)}
+              {([['students', 'Alunos'], ['teachers', 'Professores'], ['courses', 'Cursos']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={reportTab === value} onClick={() => setReportTab(value)} className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${reportTab === value ? 'bg-red-600 text-white' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}>{label}</button>)}
             </div>
           </div>
-          {!detailedReports ? <p className="text-sm text-gray-500">Carregando dados detalhados...</p> : reportTab === "students" ? (
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Aluno</th><th className="pb-3">Matrículas</th><th className="pb-3">Concluídos</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.studentReports.slice(0, 20).map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3"><p className="font-semibold text-gray-900">{item.name}</p><p className="text-xs text-gray-500">{item.email}</p></td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+          {detailsLoading ? <div className="space-y-3" aria-busy="true"><div className="h-10 animate-pulse rounded-xl bg-muted" /><div className="h-10 animate-pulse rounded-xl bg-muted" /><div className="h-10 animate-pulse rounded-xl bg-muted" /></div> : !detailedReports ? <div className="empty-state"><p>Não foi possível carregar os dados detalhados.</p></div> : reportTab === "students" ? (
+            <div className="overflow-x-auto"><table className="data-table w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-muted-foreground"><th className="pb-3">Aluno</th><th className="pb-3">Matrículas</th><th className="pb-3">Concluídos</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.studentReports.slice(0, 20).map((item) => <tr key={item.id} className="border-b border-border/70 last:border-0"><td className="py-3"><p className="font-semibold text-foreground">{item.name}</p><p className="text-xs text-muted-foreground">{item.email}</p></td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
           ) : reportTab === "teachers" ? (
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Professor</th><th className="pb-3">Alunos</th><th className="pb-3">Matrículas</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.teacherReports.map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3"><p className="font-semibold text-gray-900">{item.name}</p><p className="text-xs text-gray-500">{item.email}</p></td><td className="py-3">{item.students}</td><td className="py-3">{item.enrollments}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="data-table w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-muted-foreground"><th className="pb-3">Professor</th><th className="pb-3">Alunos</th><th className="pb-3">Matrículas</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.teacherReports.map((item) => <tr key={item.id} className="border-b border-border/70 last:border-0"><td className="py-3"><p className="font-semibold text-foreground">{item.name}</p><p className="text-xs text-muted-foreground">{item.email}</p></td><td className="py-3">{item.students}</td><td className="py-3">{item.enrollments}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
           ) : (
-            <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-gray-500"><th className="pb-3">Curso</th><th className="pb-3">Nível</th><th className="pb-3">Matrículas</th><th className="pb-3">Conclusões</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.courseReports.map((item) => <tr key={item.id} className="border-b last:border-0"><td className="py-3 font-semibold text-gray-900">{item.title}</td><td className="py-3">{item.level}</td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
+            <div className="overflow-x-auto"><table className="data-table w-full text-left text-sm"><thead><tr className="border-b text-xs uppercase text-muted-foreground"><th className="pb-3">Curso</th><th className="pb-3">Nível</th><th className="pb-3">Matrículas</th><th className="pb-3">Conclusões</th><th className="pb-3">Progresso médio</th></tr></thead><tbody>{detailedReports.courseReports.map((item) => <tr key={item.id} className="border-b border-border/70 last:border-0"><td className="py-3 font-semibold text-foreground">{item.title}</td><td className="py-3">{item.level}</td><td className="py-3">{item.enrollments}</td><td className="py-3">{item.completed}</td><td className="py-3 font-bold text-red-600">{item.averageProgress}%</td></tr>)}</tbody></table></div>
           )}
         </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Relatórios Disponíveis</h2>
-            <p className="text-sm text-gray-600">Os dados acima são carregados do banco e podem ser exportados junto com os KPIs oficiais.</p>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="surface-card p-5 sm:p-6 transition-shadow hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
+            <h2 className="text-lg font-bold text-foreground mb-4">Relatórios Disponíveis</h2>
+            <p className="text-sm text-muted-foreground">Os dados acima são carregados do banco e podem ser exportados junto com os KPIs oficiais.</p>
           </div>
 
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Exportar Dados Oficiais</h2>
+          <div className="surface-card p-5 sm:p-6 transition-shadow hover:shadow-[0_8px_20px_rgba(0,0,0,0.10)]">
+            <h2 className="text-lg font-bold text-foreground mb-4">Exportar Dados Oficiais</h2>
             <div className="space-y-3">
               <Button onClick={exportCSV} variant="outline" className="w-full justify-start gap-2 font-semibold">
                 <Download size={16} className="text-red-600" /> Exportar Dados como CSV

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mic, Sparkles, Loader2, Volume2, Filter, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mic, Sparkles, Volume2, Filter, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -67,9 +67,16 @@ export default function ProfessorProgressSpeakingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="animate-spin text-red-600" size={36} />
-      </div>
+      <main className="site-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+        <div className="page-container space-y-6" aria-busy="true" aria-label="Carregando progresso dos alunos">
+          <div className="surface-card h-36 animate-pulse" />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="surface-card h-64 animate-pulse" />
+            <div className="surface-card h-64 animate-pulse" />
+          </div>
+          <p className="text-center text-sm text-muted-foreground">Carregando progresso e submissões…</p>
+        </div>
+      </main>
     );
   }
 
@@ -93,49 +100,49 @@ export default function ProfessorProgressSpeakingPage() {
     });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
-      <div className="max-w-7xl mx-auto space-y-8">
-        <header className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+      <div className="page-container space-y-8">
+        <header className="surface-card flex flex-col justify-between gap-4 p-5 sm:p-7 md:flex-row md:items-center">
           <div>
             <Link href="/professor" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
               <ArrowLeft size={16} /> Voltar ao Painel do Professor
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
               <Mic className="text-red-600" size={32} />
               Progresso de Aulas & Avaliação de Speaking (IA)
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
               Acompanhe as aulas concluídas pelos alunos vinculados e avalie as gravações de voz com análise automática de IA.
             </p>
           </div>
         </header>
 
         {/* Seção 1: Progresso de Aulas por Aluno */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <div className="surface-card space-y-6 p-5 sm:p-6">
+          <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
             <CheckCircle2 className="text-red-600" size={24} />
             Progresso Geral de Aulas dos Alunos
           </h2>
 
           {students.length === 0 ? (
-            <p className="text-gray-500 text-sm py-4">Nenhum aluno vinculado no momento.</p>
+            <p className="py-4 text-sm text-muted-foreground">Nenhum aluno vinculado no momento.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {students.map((student) => {
                 const studentLessons = lessonProgress.filter(lp => lp.userId === student.id && lp.completed === 1);
                 return (
-                  <div key={student.id} className="p-5 rounded-xl border border-gray-200 bg-gray-50 space-y-3">
+                  <div key={student.id} className="rounded-2xl border border-border/70 bg-muted/50 p-5 space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold">
                         {student.name ? student.name.charAt(0).toUpperCase() : "A"}
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900">{student.name || "Aluno"}</h3>
-                        <p className="text-xs text-gray-500">{student.email}</p>
+                        <h3 className="font-bold text-foreground">{student.name || "Aluno"}</h3>
+                        <p className="text-xs text-muted-foreground">{student.email}</p>
                       </div>
                     </div>
-                    <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-sm">
-                      <span className="text-gray-600 font-medium">Aulas Concluídas:</span>
+                    <div className="flex items-center justify-between border-t border-border/70 pt-3 text-sm">
+                      <span className="font-medium text-muted-foreground">Aulas Concluídas:</span>
                       <span className="font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full">
                         {studentLessons.length} aulas
                       </span>
@@ -148,19 +155,19 @@ export default function ProfessorProgressSpeakingPage() {
         </div>
 
         {/* Seção 2: Submissões de Speaking & Feedback por IA */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
-          <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+        <div className="surface-card space-y-6 p-5 sm:p-6">
+          <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
             <Sparkles className="text-red-600" size={24} />
             Avaliação de Speaking & Feedback Automático por IA
           </h2>
-          <div className="flex flex-col sm:flex-row gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3">
-            <label className="flex items-center gap-2 text-xs font-bold text-gray-600"><Filter size={14} className="text-red-600" /> Status do feedback
-              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-semibold text-gray-800">
+          <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-muted/50 p-3 sm:flex-row sm:items-center">
+            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Filter size={14} className="text-red-600" /> Status do feedback
+              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
                 <option value="all">Todas</option><option value="pending">Aguardando feedback</option><option value="reviewed">Já avaliadas</option>
               </select>
             </label>
-            <label className="flex items-center gap-2 text-xs font-bold text-gray-600"><Clock size={14} className="text-red-600" /> Ordenar por data
-              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-xs font-semibold text-gray-800">
+            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Clock size={14} className="text-red-600" /> Ordenar por data
+              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
                 <option value="newest">Mais recentes</option><option value="oldest">Mais antigas</option>
               </select>
             </label>
@@ -168,9 +175,9 @@ export default function ProfessorProgressSpeakingPage() {
           </div>
 
           {filteredSpeakingSubmissions.length === 0 ? (
-            <div className="py-12 text-center text-gray-500">
-              <Mic className="mx-auto text-gray-300 mb-3" size={36} />
-              <p className="font-semibold text-gray-800">Nenhuma gravação de speaking enviada pelos alunos ainda.</p>
+            <div className="empty-state py-12 text-center">
+              <Mic className="mx-auto mb-3 text-muted-foreground" size={36} />
+              <p className="font-semibold text-foreground">Nenhuma gravação de speaking enviada pelos alunos ainda.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -179,19 +186,19 @@ export default function ProfessorProgressSpeakingPage() {
                 const needsFeedback = !sub.teacherFeedback && !sub.teacherAudioFeedbackUrl;
                 const attempts = speakingAttempts.filter((attempt) => attempt.userId === sub.userId && attempt.activityId === sub.activityId);
                 return (
-                  <div key={sub.id} className={`p-6 rounded-xl border space-y-4 ${needsFeedback ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-200" : "border-gray-200 bg-gray-50"}`}>
+                  <div key={sub.id} className={`rounded-2xl border p-5 sm:p-6 space-y-4 ${needsFeedback ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-200" : "border-border/70 bg-muted/50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
                             {sub.activity?.title || "Atividade de Speaking"}
                           </span>
-                          <span className="text-xs text-gray-500 font-medium">
+                          <span className="text-xs font-medium text-muted-foreground">
                             Aluno: {student?.name || student?.email || `ID ${sub.userId}`}
                           </span>
                           {needsFeedback && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold uppercase">Aguardando feedback</span>}
                         </div>
-                        <p className="text-sm font-semibold text-gray-900">
+                        <p className="text-sm font-semibold text-foreground">
                           Status: <span className="uppercase text-red-600">{sub.status}</span> {sub.score ? `• Nota: ${sub.score}/100` : ""}
                         </p>
                       </div>
@@ -201,16 +208,16 @@ export default function ProfessorProgressSpeakingPage() {
                     </div>
 
                     {attempts.length > 0 && (
-                      <div className="rounded-xl bg-white border border-blue-100 p-4 space-y-2">
+                      <div className="surface-card space-y-2 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-bold uppercase tracking-wide text-blue-700">Histórico de tentativas ({attempts.length})</p>
-                          <span className="text-[11px] text-gray-500">A mais recente aparece primeiro</span>
+                          <p className="text-xs font-bold uppercase tracking-wide text-info">Histórico de tentativas ({attempts.length})</p>
+                          <span className="text-[11px] text-muted-foreground">A mais recente aparece primeiro</span>
                         </div>
                         {attempts.map((attempt: any) => (
-                          <div key={attempt.id} className="flex flex-col md:flex-row md:items-center gap-3 rounded-lg border border-blue-50 bg-blue-50/40 p-3">
+                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-info/20 bg-info/5 p-3 md:flex-row md:items-center">
                             <div className="flex-1">
-                              <p className="text-xs font-bold text-gray-800">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
-                              <p className="text-[11px] text-gray-500">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
+                              <p className="text-xs font-bold text-foreground">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
+                              <p className="text-[11px] text-muted-foreground">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
                             </div>
                             {attempt.audioResponseUrl && <audio controls src={attempt.audioResponseUrl} className="h-8 w-full md:w-56" />}
                             <Button size="sm" variant="outline" onClick={() => { setSelectedAttemptId(attempt.id); setEvaluatingId(sub.id); }} className="text-xs">Avaliar esta</Button>
@@ -220,7 +227,7 @@ export default function ProfessorProgressSpeakingPage() {
                     )}
 
                     {sub.teacherFeedback && (
-                      <div className="p-4 rounded-lg bg-white border border-red-100 text-sm text-gray-700">
+                      <div className="surface-card p-4 text-sm text-foreground">
                         <p className="font-bold text-red-700 mb-1">Feedback Registrado:</p>
                         <p className="whitespace-pre-wrap">{sub.teacherFeedback}</p>
                         {sub.teacherAudioFeedbackUrl && <audio controls src={sub.teacherAudioFeedbackUrl} className="mt-3 h-8 w-full" />}
@@ -228,32 +235,32 @@ export default function ProfessorProgressSpeakingPage() {
                     )}
 
                     {evaluatingId === sub.id ? (
-                      <div className="p-4 rounded-xl bg-white border border-gray-200 space-y-4">
-                        <h4 className="font-bold text-gray-900 text-sm">Avaliar e Fornecer Feedback</h4>
+                      <div className="surface-card space-y-4 p-4">
+                        <h4 className="text-sm font-bold text-foreground">Avaliar e Fornecer Feedback</h4>
                         <div>
-                          <label className="block text-xs font-semibold text-gray-700 mb-1">Nota (0 a 100)</label>
+                          <label className="mb-1 block text-xs font-semibold text-foreground">Nota (0 a 100)</label>
                           <input
                             type="number"
                             min={0}
                             max={100}
                             value={scoreVal}
                             onChange={(e) => setScoreVal(Number(e.target.value))}
-                            className="w-32 px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none"
+                            className="field-control w-32 text-sm"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs font-semibold text-gray-700 mb-1">Comentário do Professor</label>
+                          <label className="mb-1 block text-xs font-semibold text-foreground">Comentário do Professor</label>
                           <textarea
                             rows={2}
                             value={feedbackText}
                             onChange={(e) => setFeedbackText(e.target.value)}
                             placeholder="Comentários sobre pronúncia, entonação e fluência..."
-                            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm outline-none"
+                            className="field-control w-full text-sm"
                           />
                         </div>
-                        <div className="rounded-lg border border-dashed border-red-200 bg-red-50/40 p-3">
-                          <label className="flex items-center gap-2 text-xs font-semibold text-gray-700 mb-2"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
-                          <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-gray-600 file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
+                        <div className="rounded-xl border border-dashed border-red-200 bg-red-50/50 p-3">
+                          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
+                          <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                           {feedbackAudio && <p className="mt-2 text-[11px] text-emerald-700">Arquivo pronto: {feedbackAudio.name}</p>}
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -283,7 +290,7 @@ export default function ProfessorProgressSpeakingPage() {
                         <Button
                           size="sm"
                           onClick={() => { setEvaluatingId(sub.id); setSelectedAttemptId(attempts[0]?.id || null); setFeedbackText(""); setFeedbackAudio(null); }}
-                          className="bg-gray-900 hover:bg-black text-white text-xs font-bold"
+                          className="bg-foreground text-background text-xs font-bold hover:bg-foreground/90"
                         >
                           Avaliar com IA / Professor
                         </Button>

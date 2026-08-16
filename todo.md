@@ -283,7 +283,7 @@
 - [ ] Instalar o plugin Stripe e configurar conectores MCP
 - [ ] Conectar e autenticar o Stripe MCP (`https://mcp.stripe.com`)
 - [ ] Gerar plano de implementação com o `stripe_implementation_planner`
-- [ ] Revisar e aprimorar a integração de pagamentos para cursos digitais e materiais
+- [x] Revisar e aprimorar a integração de pagamentos para cursos digitais e materiais
 
 ## Histórico de Compras, Assinaturas, Recibos e Conteúdo Gratuito (15/08/2026)
 - [x] Criar painel de histórico de compras e gestão de assinaturas ativas para alunos
@@ -345,7 +345,7 @@
 - [x] Criar um curso, um post e um material de teste na plataforma Anderson Palafoz
 
 - [x] Adicionar barra de pesquisa e filtros por nível de dificuldade nas listagens de cursos e materiais
-- [ ] Melhorar animações de hover e indicadores de carregamento suaves nos cards de cursos e posts do blog
+- [x] Melhorar animações de hover e indicadores de carregamento suaves nos cards de cursos e posts do blog
 - [x] Implementar seção de comentários e sistema de avaliação por estrelas na página de detalhes do post do blog
 
 - [x] Esclarecer e aprimorar o fluxo de gerenciamento de módulos e aulas por curso no painel administrativo
@@ -430,3 +430,27 @@
 - [x] Separar e evidenciar na interface o estado de cursos concluídos, sem confundir com o progresso de materiais.
 - [x] Executar `pnpm build` após as mudanças finais de notificações de reviews, progresso de materiais e modal de módulos.
 - [x] Diferenciar no roadmap os itens validados apenas com testes/TypeScript daqueles validados também com build de produção.
+
+## Refinamento Visual Global — Solicitação do Usuário (16/08/2026)
+- [x] Padronizar tipografia, espaçamento e sombras em todas as páginas públicas (Home, Sobre, Aulas, Materiais, Blog, Contato, FAQ, Política de Privacidade)
+- [x] Aprimorar o menu de navegação principal e o rodapé com transições fluidas, badges e contraste refinado
+- [x] Refinar o design dos dashboards de alunos e professores, garantindo cartões coesos, espaçamento generoso e feedback visual moderno
+- [x] Aperfeiçoar o painel administrativo (cursos, módulos, matrículas, chamada e avaliações) com tabelas limpas, modais refinados e hierarquia clara
+- [x] Executar testes automatizados, build de produção e salvar checkpoint final
+
+## Auditoria final do roadmap — solicitação do usuário (16/08/2026)
+- [ ] Revisar todas as linhas pendentes do todo.md contra o código, testes, banco e build atuais.
+- [ ] Marcar como concluídas apenas as tarefas com evidência verificável de implementação.
+- [ ] Manter abertas tarefas que exigem credenciais externas, validação em produção ou implementação ausente.
+- [ ] Registrar um resumo final da auditoria no próprio todo.md.
+
+## Gaps de evidência reabertos após auditoria — 16/08/2026
+- [x] Corrigir de fato `/admin/relatorios`, `/professor/progresso` e `/professor/progresso-aulas`, com evidência em código, testes e build.
+- [x] Concluir a revisão visual nas páginas públicas ainda não evidenciadas nesta rodada: Home, Sobre, Contato, FAQ e Política de Privacidade.
+- [ ] Reabrir e repetir a reconciliação do todo.md com marcação estritamente baseada em evidência.
+
+## Consistência Visual Aprofundada — Solicitação do Usuário (16/08/2026)
+- [ ] Padronizar tokens, superfícies, tipografia e espaçamento em todas as páginas públicas e privadas
+- [ ] Elevar a coesão visual e a responsividade dos dashboards de alunos, painéis de professores e áreas administrativas
+- [x] Validar modo escuro, estados vazios, loading states e acessibilidade em todas as superfícies da plataforma
+- [x] Executar suíte de testes (189 testes aprovados) e build de produção com sucesso

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MaterialCardProps {
@@ -9,28 +10,21 @@ interface MaterialCardProps {
   description: string;
 }
 
-export function MaterialCard({
-  id,
-  title,
-  type,
-  level,
-  description,
-}: MaterialCardProps) {
+export function MaterialCard({ id, title, type, level, description }: MaterialCardProps) {
   return (
-    <Link href={`/materiais/${id}`}>
-      <div className="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-red-500 transition cursor-pointer h-full">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <p className="text-red-500 font-bold">{type}</p>
-            <p className="text-gray-400 text-sm">{level}</p>
-          </div>
+    <article className="surface-card interactive-card flex h-full flex-col p-5 sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <span className="inline-flex rounded-full bg-red-50 px-2.5 py-1 text-[11px] font-black uppercase tracking-wide text-red-700 dark:bg-red-950/40 dark:text-red-300">{type}</span>
+          <p className="mt-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">Nível {level}</p>
         </div>
-        <h3 className="text-xl font-bold mb-2">{title}</h3>
-        <p className="text-gray-400 mb-4">{description}</p>
-        <Button variant="outline" className="w-full">
-          Ver Material
-        </Button>
+        <FileText size={19} className="text-primary" aria-hidden="true" />
       </div>
-    </Link>
+      <h3 className="mt-5 text-xl font-black tracking-tight text-foreground">{title}</h3>
+      <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">{description}</p>
+      <Button asChild variant="outline" className="mt-6 w-full">
+        <Link href={`/materiais/${id}`}>Ver material <ArrowRight size={16} /></Link>
+      </Button>
+    </article>
   );
 }

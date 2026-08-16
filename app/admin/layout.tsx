@@ -20,10 +20,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div
-      className="min-h-screen bg-[#f9fafb] text-[#111827]"
-      style={{ fontFamily: "Poppins, system-ui, sans-serif" }}
-    >
+    <div className="site-shell min-h-screen text-foreground">
       {children}
     </div>
   );

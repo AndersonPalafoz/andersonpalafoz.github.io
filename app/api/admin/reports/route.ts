@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { enrollments, progress } from "@/drizzle/schema";
+import { users, courses, enrollments, progress } from "@/drizzle/schema";
 import { desc } from "drizzle-orm";
 
 export async function GET() {
@@ -11,10 +11,10 @@ export async function GET() {
     if (!session?.user || session.user.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const [userRows, courseRows, enrollmentRows, progressRows] = await Promise.all([
-      db.query.users.findMany(),
-      db.query.courses.findMany(),
-      db.query.enrollments.findMany({ with: { course: true, user: true }, orderBy: desc(enrollments.enrolledAt) }),
-      db.query.progress.findMany({ with: { course: true, user: true }, orderBy: desc(progress.updatedAt) }),
+      db.select().from(users),
+      db.select().from(courses),
+      db.select().from(enrollments).orderBy(desc(enrollments.enrolledAt)),
+      db.select().from(progress).orderBy(desc(progress.updatedAt)),
     ]);
 
     const activeUsers = userRows.filter((user) => !user.deletedAt);

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Mail, ShieldCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
@@ -60,14 +60,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleAdminQuickLogin = () => {
-    setEmail("palafozanderson@gmail.com");
-    setPassword("admin123");
-    toast.success("Credenciais de Super-Admin preenchidas!");
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="site-shell flex min-h-screen flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-6 justify-center">
           <ArrowLeft size={16} /> Voltar para a Página Inicial
@@ -75,30 +69,30 @@ export default function LoginPage() {
         <div className="mx-auto w-16 h-16 rounded-2xl bg-red-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-4">
           AP
         </div>
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="text-center text-3xl font-black tracking-tight text-foreground">
           {authMode === "forgot" ? "Recuperar Acesso" : "Acesse sua Conta"}
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Plataforma de Ensino de Inglês e Hub Acadêmico de Anderson Palafoz
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-sm border border-gray-200 sm:rounded-2xl sm:px-10 space-y-6">
+        <div className="surface-card space-y-6 px-4 py-8 sm:rounded-2xl sm:px-10">
           {authMode === "forgot" ? (
             <form onSubmit={handleForgotPassword} className="space-y-4 animate-in fade-in">
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-muted-foreground">
                 Digite seu e-mail cadastrado para receber um link seguro de redefinição de senha.
               </p>
               <div>
-                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">E-mail Cadastrado</label>
+                <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">E-mail Cadastrado</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu.email@exemplo.com"
-                  className="w-full h-11 px-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 text-sm"
+                  className="field-control h-11"
                 />
               </div>
 
@@ -115,20 +109,20 @@ export default function LoginPage() {
           ) : authMode === "email" ? (
             <form onSubmit={handleCredentialsLogin} className="space-y-4 animate-in fade-in">
               <div>
-                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">E-mail</label>
+                <label className="block text-xs font-semibold uppercase text-muted-foreground mb-1">E-mail</label>
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="seu.email@exemplo.com"
-                  className="w-full h-11 px-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 text-sm"
+                  className="field-control h-11"
                 />
               </div>
 
               <div>
                 <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-semibold uppercase text-gray-600">Senha</label>
+                  <label className="block text-xs font-semibold uppercase text-muted-foreground">Senha</label>
                   <button type="button" onClick={() => setAuthMode("forgot")} className="text-xs text-red-600 font-semibold hover:underline">
                     Esqueceu a senha?
                   </button>
@@ -139,7 +133,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full h-11 px-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 text-sm"
+                  className="field-control h-11"
                 />
               </div>
 
@@ -148,19 +142,19 @@ export default function LoginPage() {
               </Button>
 
               <div className="pt-2 flex justify-between items-center text-xs">
-                <button type="button" onClick={() => setAuthMode("login")} className="text-gray-500 hover:underline">
+                <button type="button" onClick={() => setAuthMode("login")} className="text-muted-foreground hover:underline">
                   Voltar às opções
                 </button>
-                <button type="button" onClick={handleAdminQuickLogin} className="text-red-600 font-bold hover:underline">
-                  Preencher Super-Admin
-                </button>
+                <Link href="/cadastro" className="text-red-600 font-bold hover:underline">
+                  Criar uma conta
+                </Link>
               </div>
             </form>
           ) : (
             <div className="space-y-4 animate-in fade-in">
               <Button
                 onClick={handleGoogleSignIn}
-                className="w-full flex items-center justify-center gap-3 py-3 h-11 px-4 border border-gray-300 rounded-xl shadow-sm bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
+                className="field-control flex items-center justify-center gap-3 border-border bg-card font-semibold text-foreground hover:bg-muted"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -184,25 +178,24 @@ export default function LoginPage() {
               </Button>
 
               <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-gray-200"></div>
-                <span className="flex-shrink mx-4 text-gray-400 text-xs uppercase font-bold">Ou com e-mail</span>
-                <div className="flex-grow border-t border-gray-200"></div>
+                <div className="flex-grow border-t border-border/70"></div>
+                <span className="flex-shrink mx-4 text-muted-foreground text-xs uppercase font-bold">Ou com e-mail</span>
+                <div className="flex-grow border-t border-border/70"></div>
               </div>
 
               <Button
                 variant="outline"
                 onClick={() => setAuthMode("email")}
-                className="w-full py-3 h-11 rounded-xl border-gray-300 font-semibold"
+                className="w-full h-11 rounded-xl border-border font-semibold"
               >
                 <Mail size={16} className="mr-2" /> Entrar com E-mail e Senha
               </Button>
             </div>
           )}
 
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 space-y-1">
-            <p className="font-bold flex items-center gap-1"><ShieldCheck size={14} /> Conta Super-Admin Master:</p>
-            <p><b>E-mail:</b> palafozanderson@gmail.com</p>
-            <p className="text-gray-600">Acesso total com privilégios de gestão de cursos, aprovação de alunos e professores, e controle do site.</p>
+          <div className="border-t border-border/70 pt-5 text-center text-xs leading-5 text-muted-foreground">
+            <p>Seu acesso é protegido. Use um e-mail cadastrado ou entre com Google para continuar.</p>
+            <Link href="/cadastro" className="mt-2 inline-block font-bold text-red-600 hover:underline">Ainda não tem conta? Cadastre-se</Link>
           </div>
         </div>
       </div>

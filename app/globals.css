@@ -261,3 +261,113 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Sistema visual refinado: superfícies, hierarquia e microinterações compartilhadas. */
+@layer base {
+  body {
+    background: #f8fafc;
+    color: #1f2937;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgba(214, 40, 40, 0.18);
+    color: #7f1d1d;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select {
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+}
+
+@layer components {
+  .site-shell {
+    @apply min-h-screen bg-slate-50;
+  }
+
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-heading {
+    @apply max-w-3xl;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center rounded-full border border-red-100 bg-red-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-red-700;
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-slate-200/80 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.06)];
+  }
+
+  .interactive-card {
+    @apply transition duration-200 ease-out hover:-translate-y-1 hover:border-red-200 hover:shadow-[0_18px_45px_rgba(127,29,29,0.12)];
+  }
+
+  .muted-label {
+    @apply text-xs font-black uppercase tracking-[0.16em] text-slate-500;
+  }
+
+  .btn-primary {
+    @apply shadow-sm shadow-red-600/20 hover:-translate-y-0.5 hover:shadow-md hover:shadow-red-600/25 active:translate-y-0;
+  }
+
+  .card {
+    @apply rounded-2xl border-slate-200/80 shadow-[0_12px_35px_rgba(15,23,42,0.06)];
+  }
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    @apply px-4;
+  }
+
+  section {
+    scroll-margin-top: 5.5rem;
+  }
+}
+
+/* Camada semântica final: mantém páginas legadas e novas dentro do mesmo produto. */
+@layer base {
+  body {
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, label, nav {
+    font-family: var(--font-poppins), Poppins, system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 { color: hsl(var(--foreground)); }
+  p { color: hsl(var(--muted-foreground)); }
+
+  .dark .bg-white { background-color: hsl(var(--card)) !important; }
+  .dark .bg-gray-50, .dark .bg-slate-50 { background-color: hsl(var(--background)) !important; }
+  .dark .bg-gray-100, .dark .bg-gray-200, .dark .bg-slate-100 { background-color: hsl(var(--muted)) !important; }
+  .dark .bg-red-50 { background-color: hsl(0 40% 19%) !important; }
+  .dark .bg-red-100 { background-color: hsl(0 45% 24%) !important; }
+  .dark .text-gray-900, .dark .text-gray-800, .dark .text-gray-700 { color: hsl(var(--foreground)) !important; }
+  .dark .text-gray-600, .dark .text-gray-500, .dark .text-gray-400 { color: hsl(var(--muted-foreground)) !important; }
+  .dark .border-gray-100, .dark .border-gray-200, .dark .border-gray-300 { border-color: hsl(var(--border)) !important; }
+  .dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]), .dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: hsl(var(--border)) !important; }
+  .dark .hover\:bg-gray-50:hover, .dark .hover\:bg-gray-100:hover { background-color: hsl(var(--muted)) !important; }
+}
+
+@layer components {
+  .site-shell, main.min-h-screen { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+  .surface-card { border-color: hsl(var(--border) / 0.78); background: hsl(var(--card)); color: hsl(var(--card-foreground)); }
+  .interactive-card { will-change: transform, box-shadow; }
+  .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; }
+  .data-table th { @apply bg-muted/60 px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground; }
+  .data-table td { @apply border-t border-border/70 px-4 py-3 text-sm text-foreground; }
+  .field-control { @apply h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/15; }
+  .empty-state { @apply rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-sm; }
+}
