@@ -183,12 +183,13 @@ export default function AdminCmsPage() {
   // WYSIWYG toolbar format helper
   const applyFormatting = (tagType: string) => {
     let formatted = content;
-    if (tagType === "bold") formatted = `**${content || "Texto em negrito"}**`;
-    if (tagType === "italic") formatted = `*${content || "Texto em itálico"}*`;
-    if (tagType === "h2") formatted = `\n## ${content || "Título de Seção"}\n`;
-    if (tagType === "bullet") formatted = `\n- ${content || "Item de lista"}\n`;
-    if (tagType === "link") formatted = `[Link Text](https://andersonpalafoz.com.br)`;
+    if (tagType === "bold") formatted = content ? `**${content}**` : `**Texto em negrito**`;
+    if (tagType === "italic") formatted = content ? `*${content}*` : `*Texto em itálico*`;
+    if (tagType === "h2") formatted = content ? `\n## ${content}\n` : `\n## Título de Seção\n`;
+    if (tagType === "bullet") formatted = content ? `\n- ${content}\n` : `\n- Item de lista\n`;
+    if (tagType === "link") formatted = content ? `[${content}](https://andersonpalafoz.com.br)` : `[Visite o site](https://andersonpalafoz.com.br)`;
     handleContentChange(formatted);
+    toast.success(`Formatação aplicada: ${tagType}`);
   };
 
   const filteredBlocks = useMemo(() => {
@@ -511,6 +512,14 @@ export default function AdminCmsPage() {
                       title="Lista"
                     >
                       • List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyFormatting("link")}
+                      className="px-1.5 py-0.5 text-[10px] font-bold bg-slate-100 hover:bg-slate-200 rounded text-slate-700"
+                      title="Inserir Link"
+                    >
+                      Link
                     </button>
                     <button
                       type="button"
