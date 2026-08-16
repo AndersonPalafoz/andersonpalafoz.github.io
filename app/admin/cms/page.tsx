@@ -55,8 +55,12 @@ const MEDIA_FOLDERS = [
   { id: "videos", label: "Vídeos e Áudios" },
 ];
 
+import { MediaAssetLibrary } from "./media-library";
+import { CMSEngagementAnalytics } from "./engagement-analytics";
+
 export default function AdminCmsPage() {
   const { data: session, status: authStatus } = useSession();
+  const [activeTab, setActiveTab] = useState<"content" | "media" | "analytics">("content");
   const router = useRouter();
 
   const [blocks, setBlocks] = useState<CmsBlock[]>([]);
@@ -402,6 +406,39 @@ export default function AdminCmsPage() {
         </div>
       </div>
 
+      {/* Abas Superiores do CMS */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-6">
+        <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
+          <Button
+            onClick={() => setActiveTab("content")}
+            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "content" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+          >
+            📄 Blocos de Conteúdo
+          </Button>
+          <Button
+            onClick={() => setActiveTab("media")}
+            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "media" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+          >
+            🏅 Biblioteca de Mídia (Medalhas & Áudios)
+          </Button>
+          <Button
+            onClick={() => setActiveTab("analytics")}
+            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "analytics" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
+          >
+            📊 Estatísticas de Engajamento
+          </Button>
+        </div>
+      </div>
+
+      {activeTab === "media" ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8">
+          <MediaAssetLibrary />
+        </div>
+      ) : activeTab === "analytics" ? (
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8">
+          <CMSEngagementAnalytics />
+        </div>
+      ) : (
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Formulário de Criação/Edição Avançado */}
         <div className="lg:col-span-1">
@@ -757,6 +794,7 @@ export default function AdminCmsPage() {
           )}
         </div>
       </div>
+      )}
 
       {/* Modal de Histórico de Revisões e Restauração */}
       {revisionsModalOpen && (
