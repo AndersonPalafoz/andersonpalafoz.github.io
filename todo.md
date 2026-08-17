@@ -401,3 +401,9 @@
 - [x] Implementar exportação dos relatórios acadêmicos em PDF formatado e Excel (CSV estruturado).
 - [x] Criar gráficos visuais dinâmicos no painel administrativo para resumir estatísticas reais de alunos, notas e turmas sincronizadas.
 - [x] Adicionar filtros avançados de busca por data e status no painel administrativo.
+
+- [ ] Adicionar skeleton loaders independentes para gráficos e tabelas nos relatórios acadêmicos.
+- [ ] Implementar modal de detalhes individuais do aluno com progresso e notas estritamente reais extraídas do banco de dados Neon.
+
+- [x] Adicionar skeleton loaders independentes para gráficos e tabelas nos relatórios acadêmicos.
+- [x] Implementar modal de detalhes individuais do aluno com progresso e notas estritamente reais extraídas do banco de dados Neon.

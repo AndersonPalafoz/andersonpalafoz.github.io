@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { redirect } from "next/navigation";
-import { CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, Download, BarChart3 } from "lucide-react";
+import { CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, Download, BarChart3, Eye, X } from "lucide-react";
 import Link from "next/link";
 
 interface ReportItem {
@@ -41,6 +41,18 @@ interface ReportData {
   };
 }
 
+interface StudentDetail {
+  id: number;
+  name: string;
+  email: string | null;
+  role: string;
+  lastSignedIn: string | Date | null;
+  enrolledCourses: any[];
+  completedLessonsCount: number;
+  totalProgressRecords: number;
+  provenance: string;
+}
+
 export default function AcademicReportsPage() {
   const { user, isLoading } = useAuth();
   const [data, setData] = useState<ReportData | null>(null);
@@ -52,6 +64,11 @@ export default function AcademicReportsPage() {
   const [page, setPage] = useState(1);
   const [syncing, setSyncing] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  // Modal State
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null);
+  const [loadingStudent, setLoadingStudent] = useState(false);
 
   const fetchReports = async () => {
     try {
@@ -83,6 +100,21 @@ export default function AcademicReportsPage() {
     }
     fetchReports();
   }, [user, isLoading, sourceFilter, statusFilter, startDate, endDate, page]);
+
+  const handleOpenStudentModal = async (studentId: number) => {
+    setSelectedStudentId(studentId);
+    setLoadingStudent(true);
+    try {
+      const res = await fetch(`/api/admin/academic-reports/student?id=${studentId}`);
+      if (!res.ok) throw new Error("Failed to fetch student details");
+      const json = await res.json();
+      setStudentDetail(json.student);
+    } catch (err) {
+      console.error("Error loading student details:", err);
+    } finally {
+      setLoadingStudent(false);
+    }
+  };
 
   const handleSyncClassroom = async () => {
     setSyncing(true);
@@ -137,7 +169,7 @@ export default function AcademicReportsPage() {
     window.print();
   };
 
-  if (isLoading || (loading && !data)) {
+  if (isLoading) {
     return (
       <div className="site-shell flex items-center justify-center px-4">
         <Loader2 className="animate-spin text-red-600" size={32} />
@@ -163,6 +195,60 @@ export default function AcademicReportsPage() {
           <button onClick={() => setToastMessage(null)} className="text-muted-foreground hover:text-foreground">
             &times;
           </button>
+        </div>
+      )}
+
+      {/* Student Detail Modal */}
+      {selectedStudentId !== null && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="surface-card w-full max-w-lg p-6 sm:p-8 space-y-6 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => { setSelectedStudentId(null); setStudentDetail(null); }}
+              className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground rounded-xl bg-muted/50 transition"
+            >
+              <X size={18} />
+            </button>
+            <h3 className="text-lg font-black text-foreground flex items-center gap-2">
+              <Eye className="text-red-600" size={20} /> Detalhes Individuais do Aluno
+            </h3>
+
+            {loadingStudent ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="animate-spin text-red-600" size={28} />
+              </div>
+            ) : studentDetail ? (
+              <div className="space-y-4 text-xs">
+                <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+                  <p className="font-black text-sm text-foreground">{studentDetail.name}</p>
+                  <p className="text-muted-foreground">{studentDetail.email || "Sem email cadastrado"}</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">{studentDetail.role}</span>
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-bold">{studentDetail.provenance}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                    <p className="text-muted-foreground font-bold">Cursos Matriculados</p>
+                    <p className="text-xl font-black text-foreground mt-1">{studentDetail.enrolledCourses.length}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/40 border border-border/60">
+                    <p className="text-muted-foreground font-bold">Aulas Concluídas</p>
+                    <p className="text-xl font-black text-emerald-600 mt-1">{studentDetail.completedLessonsCount}</p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-xl border border-border space-y-2">
+                  <p className="font-bold text-foreground">Último Acesso Registrado:</p>
+                  <p className="text-muted-foreground">
+                    {studentDetail.lastSignedIn ? new Date(studentDetail.lastSignedIn).toLocaleString() : "Nenhum login registrado recentemente"}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-center py-8 text-muted-foreground text-xs">Erro ao carregar os dados reais do aluno.</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -211,76 +297,95 @@ export default function AcademicReportsPage() {
               <ShieldCheck className="text-red-600" size={20} /> Auditoria de Integridade: Dados 100% Reais
             </h2>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-              <CheckCircle2 size={14} /> {data?.classroomSyncStatus.sourceBadge}
+              <CheckCircle2 size={14} /> {data?.classroomSyncStatus.sourceBadge || "Conectando..."}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            <strong>Compromisso contra dados falsos:</strong> Todos os registros exibidos abaixo provêm diretamente do banco relacional Neon e de chamadas ativas ao Google Workspace. Não há dados simulados, estimativas manuais ou placeholders nesta tela.
+            <strong>Compromisso contra dados falsos:</strong> Todos os registros exibidos abaixo provêm diretamente do banco relacional Neon e de chamadas ativas ao Google Workspace. Clique em qualquer aluno para abrir o modal de detalhes individuais.
           </p>
         </div>
 
-        {/* Summary Metric Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total de Alunos Reais</p>
-            <p className="text-3xl font-black text-foreground mt-2">{data?.summary.totalStudents || 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">Contas ativas na base Neon</p>
+        {/* Summary Metric Cards with Skeleton Loaders */}
+        {loading && !data ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="surface-card p-5 space-y-3 animate-pulse">
+                <div className="h-3 bg-muted rounded w-24" />
+                <div className="h-8 bg-muted rounded w-16" />
+                <div className="h-3 bg-muted rounded w-32" />
+              </div>
+            ))}
           </div>
-          <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Importados do Classroom</p>
-            <p className="text-3xl font-black text-red-600 mt-2">{data?.summary.classroomImportedCount || 0}</p>
-            <p className="text-xs text-red-600 font-semibold mt-1">Sincronizados via API</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="surface-card p-5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total de Alunos Reais</p>
+              <p className="text-3xl font-black text-foreground mt-2">{data?.summary.totalStudents || 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">Contas ativas na base Neon</p>
+            </div>
+            <div className="surface-card p-5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Importados do Classroom</p>
+              <p className="text-3xl font-black text-red-600 mt-2">{data?.summary.classroomImportedCount || 0}</p>
+              <p className="text-xs text-red-600 font-semibold mt-1">Sincronizados via API</p>
+            </div>
+            <div className="surface-card p-5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Criados Internamente</p>
+              <p className="text-3xl font-black text-blue-600 mt-2">{data?.summary.localCreatedCount || 0}</p>
+              <p className="text-xs text-blue-600 font-semibold mt-1">Registrados no site</p>
+            </div>
+            <div className="surface-card p-5">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Real Consolidada</p>
+              <p className="text-3xl font-black text-emerald-600 mt-2">{data?.summary.averagePlatformGrade || "0.0"}</p>
+              <p className="text-xs text-emerald-600 font-semibold mt-1">Baseada em notas do sistema</p>
+            </div>
           </div>
-          <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Criados Internamente</p>
-            <p className="text-3xl font-black text-blue-600 mt-2">{data?.summary.localCreatedCount || 0}</p>
-            <p className="text-xs text-blue-600 font-semibold mt-1">Registrados no site</p>
-          </div>
-          <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Real Consolidada</p>
-            <p className="text-3xl font-black text-emerald-600 mt-2">{data?.summary.averagePlatformGrade || "0.0"}</p>
-            <p className="text-xs text-emerald-600 font-semibold mt-1">Baseada em notas do sistema</p>
-          </div>
-        </div>
+        )}
 
-        {/* Visual Summary Charts Section */}
+        {/* Visual Summary Charts Section with Skeleton Loader */}
         <div className="surface-card p-6 sm:p-8 space-y-4">
           <h3 className="text-base font-bold text-foreground flex items-center gap-2">
             <BarChart3 className="text-red-600" size={18} /> Resumo Gráfico de Alunos e Origens
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
-              <div className="flex justify-between text-xs font-bold text-foreground">
-                <span>Google Classroom</span>
-                <span>{data?.summary.classroomImportedCount || 0} alunos</span>
+          {loading && !data ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 animate-pulse">
+              <div className="h-20 bg-muted rounded-xl" />
+              <div className="h-20 bg-muted rounded-xl" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+              <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+                <div className="flex justify-between text-xs font-bold text-foreground">
+                  <span>Google Classroom</span>
+                  <span>{data?.summary.classroomImportedCount || 0} alunos</span>
+                </div>
+                <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-red-600 transition-all duration-500"
+                    style={{
+                      width: `${data?.summary.totalStudents ? ((data.summary.classroomImportedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-red-600 transition-all duration-500"
-                  style={{
-                    width: `${data?.summary.totalStudents ? ((data.summary.classroomImportedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
-                  }}
-                />
+              <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+                <div className="flex justify-between text-xs font-bold text-foreground">
+                  <span>Plataforma Local</span>
+                  <span>{data?.summary.localCreatedCount || 0} alunos</span>
+                </div>
+                <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 transition-all duration-500"
+                    style={{
+                      width: `${data?.summary.totalStudents ? ((data.summary.localCreatedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
+                    }}
+                  />
+                </div>
               </div>
             </div>
-            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
-              <div className="flex justify-between text-xs font-bold text-foreground">
-                <span>Plataforma Local</span>
-                <span>{data?.summary.localCreatedCount || 0} alunos</span>
-              </div>
-              <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-600 transition-all duration-500"
-                  style={{
-                    width: `${data?.summary.totalStudents ? ((data.summary.localCreatedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
-                  }}
-                />
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Filters Section */}
+        {/* Filters and Table Section with Skeleton Loader */}
         <div className="surface-card p-6 sm:p-8 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
@@ -328,51 +433,64 @@ export default function AcademicReportsPage() {
           </div>
 
           <div className="overflow-x-auto pt-4">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-muted text-muted-foreground uppercase tracking-wider font-bold">
-                <tr>
-                  <th className="px-4 py-3 rounded-l-xl">Estudante</th>
-                  <th className="px-4 py-3">Cursos</th>
-                  <th className="px-4 py-3">Média</th>
-                  <th className="px-4 py-3">Frequência</th>
-                  <th className="px-4 py-3">Origem</th>
-                  <th className="px-4 py-3 rounded-r-xl">Proveniência Real</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
-                {data?.reports.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3 py-8 animate-pulse">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="h-12 bg-muted rounded-xl w-full" />
+                ))}
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted text-muted-foreground uppercase tracking-wider font-bold">
                   <tr>
-                    <td colSpan={6} className="text-center py-8 text-muted-foreground font-semibold">
-                      Nenhum registro encontrado para os filtros selecionados.
-                    </td>
+                    <th className="px-4 py-3 rounded-l-xl">Estudante</th>
+                    <th className="px-4 py-3">Cursos</th>
+                    <th className="px-4 py-3">Média</th>
+                    <th className="px-4 py-3">Frequência</th>
+                    <th className="px-4 py-3">Origem</th>
+                    <th className="px-4 py-3 rounded-r-xl">Ação</th>
                   </tr>
-                ) : (
-                  data?.reports.map((r) => (
-                    <tr key={r.id} className="hover:bg-muted/30 transition">
-                      <td className="px-4 py-4">
-                        <p className="font-black text-foreground">{r.studentName}</p>
-                        <p className="text-[11px] text-muted-foreground">{r.studentEmail}</p>
-                      </td>
-                      <td className="px-4 py-4 font-bold text-foreground">{r.enrolledCoursesCount} curso(s)</td>
-                      <td className="px-4 py-4 font-black text-emerald-600">{r.averageGrade}</td>
-                      <td className="px-4 py-4 font-bold text-foreground">{r.attendanceRate}</td>
-                      <td className="px-4 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
-                          r.dataSource === "Google Classroom"
-                            ? "bg-red-500/10 text-red-600 border border-red-500/20"
-                            : "bg-blue-500/10 text-blue-600 border border-blue-500/20"
-                        }`}>
-                          <Database size={12} /> {r.dataSource}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-muted-foreground text-[11px] max-w-xs truncate" title={r.provenanceDetails}>
-                        {r.provenanceDetails}
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {data?.reports.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-muted-foreground font-semibold">
+                        Nenhum registro encontrado para os filtros selecionados.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    data?.reports.map((r) => (
+                      <tr key={r.id} className="hover:bg-muted/30 transition cursor-pointer" onClick={() => handleOpenStudentModal(r.id)}>
+                        <td className="px-4 py-4">
+                          <p className="font-black text-foreground">{r.studentName}</p>
+                          <p className="text-[11px] text-muted-foreground">{r.studentEmail}</p>
+                        </td>
+                        <td className="px-4 py-4 font-bold text-foreground">{r.enrolledCoursesCount} curso(s)</td>
+                        <td className="px-4 py-4 font-black text-emerald-600">{r.averageGrade}</td>
+                        <td className="px-4 py-4 font-bold text-foreground">{r.attendanceRate}</td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold ${
+                            r.dataSource === "Google Classroom"
+                              ? "bg-red-500/10 text-red-600 border border-red-500/20"
+                              : "bg-blue-500/10 text-blue-600 border border-blue-500/20"
+                          }`}>
+                            <Database size={12} /> {r.dataSource}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleOpenStudentModal(r.id); }}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary font-bold transition text-[11px]"
+                          >
+                            <Eye size={14} /> Ver Detalhes
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
 
           {/* Pagination Controls */}
