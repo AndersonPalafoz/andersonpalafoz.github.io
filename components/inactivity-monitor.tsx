@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { signOut } from "next-auth/react";
 import { Clock, ShieldAlert } from "lucide-react";
 
-const INACTIVITY_LIMIT_MS = 20 * 60 * 1000; // 20 minutos de inatividade para alunos e usuários
+const DEFAULT_INACTIVITY_MINUTES = 20;
 const WARNING_BEFORE_MS = 60 * 1000; // Aviso 1 minuto antes
 
 export function InactivityMonitor() {
@@ -14,6 +14,12 @@ export function InactivityMonitor() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const getLimitMinutes = () => {
+    if (typeof window === "undefined") return DEFAULT_INACTIVITY_MINUTES;
+    const stored = localStorage.getItem("ap_inactivity_minutes");
+    return stored ? parseInt(stored, 10) : DEFAULT_INACTIVITY_MINUTES;
+  };
 
   const triggerLogout = useCallback(() => {
     signOut({ callbackUrl: "/login?reason=inactivity" });
@@ -26,6 +32,8 @@ export function InactivityMonitor() {
 
     setShowWarning(false);
     setSecondsRemaining(60);
+
+    const limitMs = getLimitMinutes() * 60 * 1000;
 
     // Configurar temporizador de aviso
     warningTimerRef.current = setTimeout(() => {
@@ -41,12 +49,12 @@ export function InactivityMonitor() {
           triggerLogout();
         }
       }, 1000);
-    }, INACTIVITY_LIMIT_MS - WARNING_BEFORE_MS);
+    }, limitMs - WARNING_BEFORE_MS);
 
     // Configurar temporizador final de logout
     timerRef.current = setTimeout(() => {
       triggerLogout();
-    }, INACTIVITY_LIMIT_MS);
+    }, limitMs);
   }, [triggerLogout]);
 
   useEffect(() => {
