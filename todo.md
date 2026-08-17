@@ -203,3 +203,9 @@
 ## Relatório de Notas em Alto Contrastes para Impressão Direta — 17/08/2026
 - [x] Adicionada funcionalidade para professores gerarem relatórios de notas em alto contraste com layout otimizado para impressão direta e exportação em PDF acessível
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Sistema de Notas, Gerenciamento Acadêmico e Rubricas Estilo Google Sala de Aula — 17/08/2026
+- [x] Projetado e implementado o sistema persistente de notas por atividade, aluno e turma
+- [x] Implementado o criador e gerenciador de rubricas avaliativas configuráveis com critérios, níveis e pesos (estilo Google Sala de Aula)
+- [x] Adicionados lançamento de notas, feedback formativo, publicação para alunos e integração com boletins
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
