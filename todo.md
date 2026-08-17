@@ -300,3 +300,7 @@
 - [x] Implementar sistema de metas de notas por disciplina com acompanhamento visual de progresso
 - [x] Expandir gráficos do histórico para incluir comparativo detalhado de frequência e faltas por curso
 - [x] Validar 190 testes automatizados e build de produção sem erros
+
+- [x] Adicionar seção de guias de gramática em PDF na biblioteca pública (`/materiais`)
+- [x] Criar sistema visual de metas semanais de estudo no dashboard do aluno (`/dashboard`)
+- [x] Revisar descrições e títulos na página inicial (`/`) destacando a metodologia exclusiva e interativa do professor

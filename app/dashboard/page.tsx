@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getUserEnrollments, getCertificates, getUserActivityProgress, getResumeLesson } from "@/lib/db";
 import { BookOpen, Award, CheckSquare, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WeeklyGoalsWidget } from "./metas-semanais";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,9 @@ export default async function DashboardPage() {
           </article>
         ))}
       </section>
+
+      {/* Widget de Metas Semanais */}
+      <WeeklyGoalsWidget />
 
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
