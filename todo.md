@@ -728,3 +728,9 @@
 - [x] Adicionar funcionalidade de pré-visualização de avatares e bordas na loja de XP antes da compra
 - [x] Implementar modal explicativo detalhando recursos ativados/ocultados ao alternar entre os modos de experiência
 - [x] Reorganizar a navegação para centralizar os painéis de Professor e Administrador dentro de "Minha Área" com controle rigoroso de permissões
+
+## Cartões de Resumo na Minha Área, Exportação PDF de Boletim, Modo Padrão por Turma e Redesenho do Header — 17/08/2026
+- [x] Adicionar cartões de resumo na "Minha Área" do professor para exibir rapidamente as próximas aulas e as tarefas pendentes de correção
+- [x] Implementar botão de exportação do boletim de notas e presença em formato PDF no painel do modo tradicional
+- [x] Permitir que o professor defina um modo padrão (Tradicional ou Gamificado) para turmas inteiras de instituições externas na Minha Área
+- [x] Retirar os links de Professor e Administrador do menu superior (header) e centralizá-los exclusivamente no dashboard de Minha Área com base no papel do usuário
