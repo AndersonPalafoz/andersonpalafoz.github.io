@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
-import { Heart, Shield, GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check, Palette, Laptop } from "lucide-react";
+import { Heart, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check, Palette, Laptop } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -216,8 +216,7 @@ export function Navbar() {
                   <Heart size={17} className={wishlistCount > 0 || wishlistPulse ? "fill-red-500 text-red-500" : ""} />
                   {wishlistCount > 0 && <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-center text-[10px] font-black leading-5 text-white">{wishlistCount > 99 ? "99+" : wishlistCount}</span>}
                 </Link>
-                {(session.user?.role === "admin" || session.user?.role === "professor") && <Link href="/professor" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 px-3 text-xs font-bold text-gray-800 dark:text-gray-200 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><GraduationCap size={15} /> Professor</Link>}
-                {session.user?.role === "admin" && <Link href="/admin" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-gray-200 dark:border-gray-700 px-3 text-xs font-bold text-gray-800 dark:text-gray-200 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><Shield size={15} /> Admin</Link>}
+                {/* Links de Professor e Admin movidos estritamente para o dashboard conforme solicitado */}
                 <Link href="/dashboard" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-600 px-4 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><LayoutDashboard size={15} /> Minha área</Link>
                 
                 {/* Indicador de Ofensiva Diária (Streak) */}
@@ -306,8 +305,7 @@ export function Navbar() {
               {session ? <>
                 <Link href="/dashboard/desejos" onClick={() => setIsOpen(false)} className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><span className="flex items-center gap-2"><Heart size={17} className={wishlistCount > 0 ? "fill-red-500 text-red-500" : ""} /> Lista de Desejos</span>{wishlistCount > 0 && <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black text-white">{wishlistCount}</span>}</Link>
                 <Link href="/dashboard/perfil" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><User size={17} /> Meu Perfil e Faturamento</Link>
-                {(session.user?.role === "admin" || session.user?.role === "professor") && <Link href="/professor" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><GraduationCap size={17} /> Painel do Professor</Link>}
-                {session.user?.role === "admin" && <Link href="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><Shield size={17} /> Painel Admin</Link>}
+                {/* Links de Professor e Admin movidos estritamente para o dashboard */}
                 <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-sm font-black text-white"><LayoutDashboard size={17} /> Minha Área</Link>
                 <button type="button" onClick={() => signOut()} className="flex items-center gap-2 rounded-xl px-3 py-3 text-left text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"><LogOut size={17} /> Sair</button>
               </> : <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-sm font-black text-white"><LogIn size={17} /> Entrar</Link>}

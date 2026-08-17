@@ -77,3 +77,8 @@
 - [x] Incluir tooltips interativos no gráfico de pizza do Google Drive para exibir o tamanho exato de cada tipo de arquivo
 - [x] Adicionar paginação e limite ajustável no histórico de sincronização do calendário
 - [x] Validação completa com 190 testes automatizados e build de produção Next.js 15
+
+## Correção Definitiva de Navegação e Fontes — 17/08/2026
+- [x] Remover links de Professor e Administrador do menu superior (header) e centralizá-los exclusivamente no sidebar da "Minha Área" (/dashboard) protegidos por nível de acesso
+- [x] Preservar tipografia profissional (Inter e Poppins) via Google Fonts e globals.css com estabilidade garantida para o Vercel
+- [x] Validação com 190 testes automatizados (Vitest) e build de produção Next.js 15 aprovados
