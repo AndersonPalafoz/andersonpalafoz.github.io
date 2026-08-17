@@ -199,3 +199,7 @@
 ## Varredura de Contraste WCAG AAA em Relatórios Administrativos — 17/08/2026
 - [x] Concluída a varredura WCAG AAA nas páginas de relatórios administrativos (`/admin/relatorios`), garantindo alto contraste em textos, botões e tabelas nos modos claro, escuro e alto contraste
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Relatório de Notas em Alto Contrastes para Impressão Direta — 17/08/2026
+- [x] Adicionada funcionalidade para professores gerarem relatórios de notas em alto contraste com layout otimizado para impressão direta e exportação em PDF acessível
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
