@@ -231,3 +231,7 @@
 ## Barra Inferior Mobile com Seletor Rápido de Temas — 17/08/2026
 - [x] Incluído botão de acesso rápido na barra inferior flutuante para dispositivos móveis para alternar entre claro, escuro e alto contraste
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Ícone de Notificações na Barra Inferior Mobile para Professores — 17/08/2026
+- [x] Adicionado ícone de notificações com badge dinâmico de tarefas pendentes de correção na barra inferior mobile para professores, com redirecionamento direto
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
