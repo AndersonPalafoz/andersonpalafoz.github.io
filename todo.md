@@ -431,3 +431,5 @@
 - [x] Aprimorar API de turmas externas para filtrar por professor e suportar edição de turmas/alunos.
 - [x] Adicionar barra de busca e filtros por instituição na página de turmas externas do professor (`/professor/turmas-externas`).
 - [x] Refinar skeleton loaders no histórico acadêmico (`/dashboard/historico`) com estados parciais e transições suaves.
+
+- [x] Criar e estruturar o checklist de auditoria modular (`docs/audit-checklist.md`) dividido em 6 módulos independentes para revisão em múltiplos prompts.
