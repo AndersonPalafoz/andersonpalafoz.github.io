@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { medalsCatalog, userMedals, users } from "@/drizzle/schema";
+import { medalsCatalog, userMedals, userNotifications, users } from "@/drizzle/schema";
 import { eq, desc } from "drizzle-orm";
 
 export async function GET() {
@@ -53,6 +53,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing required fields: userId and medalCode" }, { status: 400 });
     }
 
+    // Inserir medalha
     await db.insert(userMedals).values({
       userId: Number(userId),
       medalCode,
@@ -61,7 +62,20 @@ export async function POST(request: Request) {
       notes: notes || "Concedido manualmente pelo painel administrativo.",
     });
 
-    return NextResponse.json({ success: true, message: "Medalha concedida com sucesso!" });
+    // Buscar detalhes da medalha para notificação bonita
+    const [medalMeta] = await db.select().from(medalsCatalog).where(eq(medalsCatalog.code, medalCode));
+    const medalTitle = medalMeta ? `${medalMeta.icon} ${medalMeta.title}` : "Nova Medalha Conquistada";
+
+    // Criar notificação persistente para o aluno
+    await db.insert(userNotifications).values({
+      userId: Number(userId),
+      title: `🏆 Conquista Desbloqueada: ${medalTitle}`,
+      message: notes ? `Você recebeu uma nova medalha! Justificativa: "${notes}"` : "Você recebeu uma nova medalha por seu desempenho na plataforma!",
+      type: "achievement",
+      isRead: false,
+    });
+
+    return NextResponse.json({ success: true, message: "Medalha concedida e notificação enviada ao aluno com sucesso!" });
   } catch (error) {
     console.error("Error granting medal manually:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
