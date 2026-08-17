@@ -67,7 +67,7 @@ export default async function HomePage() {
               </div>
               <div className="space-y-1 col-span-2 sm:col-span-1">
                 <p className="text-3xl font-black text-red-600 dark:text-red-400">100%</p>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Interativo & Com IA</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Interativo & Moderno</p>
               </div>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default async function HomePage() {
           <span className="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400">Metodologia Comprovada</span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight">Por que estudar com Anderson Palafoz?</h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-            Uma abordagem moderna que une rigor linguístico (morfologia e sintaxe), tecnologia adaptativa por inteligência artificial e acolhimento comunitário.
+            Uma abordagem moderna que une rigor linguístico (morfologia e sintaxe), tecnologia educacional avançada e acolhimento comunitário.
           </p>
         </div>
 
@@ -113,9 +113,9 @@ export default async function HomePage() {
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Sparkles size={24} />
             </div>
-            <h3 className="text-xl font-black">Prática de Speaking com IA</h3>
+            <h3 className="text-xl font-black">Prática de Speaking Guiada</h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Gravação de voz no navegador com feedback instantâneo da inteligência artificial sobre pronúncia, entonação e precisão.
+              Gravação de voz no navegador com feedback instantâneo sobre pronúncia, entonação e precisão.
             </p>
           </div>
 
