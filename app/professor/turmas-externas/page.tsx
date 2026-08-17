@@ -712,7 +712,7 @@ export default function TurmasExternasPage() {
                                 {student.studentIdNumber && <span>Matrícula: {student.studentIdNumber}</span>}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <select
                                 value={student.status}
                                 onChange={(e) => void handleUpdateStudentStatus(student.id, e.target.value)}
@@ -722,6 +722,13 @@ export default function TurmasExternasPage() {
                                 <option value="completed">Concluído</option>
                                 <option value="inactive">Inativo</option>
                               </select>
+                              <Link
+                                href={`/professor/boletim/${student.id}`}
+                                className="px-2.5 py-1.5 rounded-xl bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold flex items-center gap-1"
+                                title="Ver Boletim Consolidado"
+                              >
+                                Boletim
+                              </Link>
                               <button
                                 type="button"
                                 onClick={() => startEditStudent(student, cls.id)}
