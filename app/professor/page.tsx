@@ -44,6 +44,12 @@ export default async function TeacherDashboardPage() {
               Tarefas e Deadlines
             </Link>
             <Link
+              href="/professor/turmas-externas"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 flex items-center gap-1.5"
+            >
+              Turmas Externas (SIMAL/UFBA)
+            </Link>
+            <Link
               href="/professor/alunos"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >

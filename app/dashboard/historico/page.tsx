@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from "react";
-import { Award, BarChart3, CalendarCheck, Loader2, TrendingUp, Filter, Calendar, Download, AlertTriangle, CheckCircle2, BookOpen, Cloud } from "lucide-react";
+import { Award, BarChart3, CalendarCheck, TrendingUp, Filter, Calendar, Download, AlertTriangle, CheckCircle2, BookOpen, Cloud } from "lucide-react";
 import { toast } from "sonner";
 import { Line, LineChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from "recharts";
 import { mergeAcademicTimelines, AcademicComparisonPoint } from "@/lib/academic-comparison";
@@ -188,7 +188,47 @@ export default function HistoricoAcademicoPage() {
 
 
   if (loading) {
-    return <div className="flex min-h-64 items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>;
+    return (
+      <div className="space-y-8 pb-12 font-sans animate-pulse">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="h-4 w-48 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+            <div className="h-8 w-80 bg-gray-200 dark:bg-slate-800 rounded-xl"></div>
+            <div className="h-4 w-96 bg-gray-100 dark:bg-slate-800/60 rounded-lg"></div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-40 bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
+            <div className="h-10 w-32 bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
+          </div>
+        </div>
+
+        <div className="h-16 w-full bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+            <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+          </div>
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+            <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+          </div>
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+            <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+            <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+          </div>
+        </div>
+
+        <div className="h-64 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-800 p-6 space-y-4">
+          <div className="h-5 w-48 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-24 bg-gray-100 dark:bg-slate-800/60 rounded-2xl"></div>
+            <div className="h-24 bg-gray-100 dark:bg-slate-800/60 rounded-2xl"></div>
+            <div className="h-24 bg-gray-100 dark:bg-slate-800/60 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (loadError) {

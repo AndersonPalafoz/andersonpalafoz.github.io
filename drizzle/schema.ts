@@ -632,3 +632,36 @@ export const userMedals = pgTable("user_medals", {
 
 export type UserMedal = typeof userMedals.$inferSelect;
 export type InsertUserMedal = typeof userMedals.$inferInsert;
+
+/**
+ * External Classes & Students (SIMAL, Megaworks, UFBA, etc.)
+ */
+export const externalClasses = pgTable("external_classes", {
+  id: serial("id").primaryKey(),
+  institution: varchar("institution", { length: 120 }).notNull(), // ex: "SIMAL", "Megaworks", "UFBA"
+  className: varchar("className", { length: 180 }).notNull(),
+  courseName: varchar("courseName", { length: 180 }).notNull(),
+  academicTerm: varchar("academicTerm", { length: 50 }).notNull(), // ex: "2026.1"
+  teacherId: integer("teacherId").notNull().references(() => users.id),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ExternalClass = typeof externalClasses.$inferSelect;
+export type InsertExternalClass = typeof externalClasses.$inferInsert;
+
+export const externalStudents = pgTable("external_students", {
+  id: serial("id").primaryKey(),
+  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 180 }).notNull(),
+  email: varchar("email", { length: 320 }),
+  studentIdNumber: varchar("studentIdNumber", { length: 64 }), // ex: Matrícula institucional
+  status: varchar("status", { length: 32 }).notNull().default("active"), // active, inactive, completed
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type ExternalStudent = typeof externalStudents.$inferSelect;
+export type InsertExternalStudent = typeof externalStudents.$inferInsert;
