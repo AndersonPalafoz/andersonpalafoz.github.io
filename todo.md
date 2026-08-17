@@ -273,3 +273,11 @@
 ## Sincronização Incremental Automática de Atividades no Google Classroom — 17/08/2026
 - [x] Implementada a função de sincronização incremental para atualizar automaticamente no Google Classroom as atividades que já foram exportadas quando houver alterações na plataforma
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Evolução de Trilha Adaptativa, Fórum com Áudio e Leitura Aprimorada — 17/08/2026
+- [x] Adicionar opção de gravar e enviar pequenos clipes de áudio diretamente nos tópicos do fórum para ajuda na pronúncia
+- [x] Implementar sistema de recompensas com XP e conquistas visuais ao finalizar aulas sugeridas na trilha de aprendizagem
+- [x] Criar filtros de categorias e barra de pesquisa avançada no fórum para dúvidas antigas e dicas específicas
+- [x] Integrar trilha adaptativa baseada em erros reais de quizzes com sugestões dinâmicas
+- [x] Adicionar feedback visual e animações de progresso ao concluir módulos nas aulas
+- [x] Otimizar a experiência de leitura tipográfica, espaçamento e contraste em todo o site
