@@ -1,8 +1,7 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
 import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, UserCheck } from "lucide-react";
-import { getTeacherDashboardData } from "@/lib/teacher";
+import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents } from "@/lib/teacher";
+import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 
 export const metadata = {
   title: "Painel do Professor | Anderson Palafoz",
@@ -10,7 +9,11 @@ export const metadata = {
 };
 
 export default async function TeacherDashboardPage() {
-  const data = await getTeacherDashboardData();
+  const [data, allCourses, allStudents] = await Promise.all([
+    getTeacherDashboardData(),
+    getTeacherCourses(),
+    getTeacherStudents(),
+  ]);
 
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
@@ -54,6 +57,9 @@ export default async function TeacherDashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Motor de Busca Acadêmica do Professor */}
+        <TeacherSearchWidget courses={allCourses} students={allStudents} />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
