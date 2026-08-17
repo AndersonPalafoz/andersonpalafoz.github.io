@@ -122,3 +122,17 @@
 - [x] Tornado o badge de tarefas pendentes interativo e clicável, direcionando direto para a correção
 - [x] Incluído botão "Restaurar Padrões" nas configurações de cores de cargos do painel de admin
 - [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15
+
+## Ajustes Finais de Tipografia e CMS — 17/08/2026
+- [x] Restaurar a escala tipográfica exata da fonte Poppins sem alterações visuais excessivas
+- [x] Adicionar atalho de teclado "/" para focar rapidamente na barra de pesquisa do gerenciador de mídias do CMS
+- [x] Incluir resumo visual do uso de armazenamento no topo da biblioteca de mídias do CMS
+- [x] Implementar seleção múltipla de arquivos no gerenciador de mídias com opção de exclusão em massa
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Tipografia Poppins e Atalhos do CMS — 17/08/2026
+- [x] Restaurada a Poppins no tamanho tipográfico original sem distorções visuais
+- [x] Adicionado atalho de teclado "/" para focar instantaneamente na pesquisa de mídias do CMS
+- [x] Incluído resumo visual de armazenamento no topo da biblioteca de mídias do CMS
+- [x] Implementada seleção múltipla e exclusão em massa de arquivos com confirmação
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
