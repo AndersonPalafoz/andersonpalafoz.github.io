@@ -227,3 +227,7 @@
 - [x] Otimizada a alternância e a persistência de temas (Claro, Escuro, Sistema e Alto Contraste) com foco em dispositivos móveis
 - [x] Refinados menus móveis, modais, cards, formulários e tabelas para garantir legibilidade e toque preciso em telas pequenas
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Barra Inferior Mobile com Seletor Rápido de Temas — 17/08/2026
+- [x] Incluído botão de acesso rápido na barra inferior flutuante para dispositivos móveis para alternar entre claro, escuro e alto contraste
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
