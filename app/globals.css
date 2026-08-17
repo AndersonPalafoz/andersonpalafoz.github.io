@@ -401,3 +401,18 @@
 .high-contrast * {
   border-color: #ffffff !important;
 }
+
+
+/* Aprimoramentos de Alto Contraste: Sublinhado em links e bordas espessas em botões */
+.high-contrast a:not([role="button"]):not(.no-underline) {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+.high-contrast button, 
+.high-contrast [role="button"], 
+.high-contrast input, 
+.high-contrast select {
+  border: 2px solid #ffffff !important;
+}
