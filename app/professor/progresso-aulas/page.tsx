@@ -1,102 +1,95 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mic, Sparkles, Volume2, Filter, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function ProfessorProgressSpeakingPage() {
   const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [evaluatingId, setEvaluatingId] = useState<number | null>(null);
+  const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
+  const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
+  const [scoreVal, setScoreVal] = useState<number>(85);
   const [feedbackText, setFeedbackText] = useState("");
-  const [scoreVal, setScoreVal] = useState(95);
   const [feedbackAudio, setFeedbackAudio] = useState<File | null>(null);
-  const [selectedAttemptId, setSelectedAttemptId] = useState<number | null>(null);
   const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
 
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/professor/progress-speaking");
-      const json = await res.json();
-      if (res.ok) {
-        setData(json);
-      } else {
-        toast.error(json.error || "Falha ao carregar dados.");
-      }
-    } catch (err) {
-      toast.error("Erro ao carregar progresso e submissões.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    void loadData();
+    async function loadData() {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/professor/progress-speaking");
+        if (!res.ok) throw new Error("Erro ao carregar dados");
+        const json = await res.json();
+        setData(json);
+      } catch (err) {
+        console.error("Error loading progress & speaking:", err);
+        toast.error("Não foi possível carregar os dados de progresso.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
-  const handleEvaluate = async (activityProgressId: number, triggerAI: boolean) => {
+  const handleEvaluate = async (activityProgressId: string) => {
     try {
       const payload = new FormData();
-      payload.append("activityProgressId", String(activityProgressId));
-      payload.append("teacherFeedback", feedbackText);
+      payload.append("activityProgressId", activityProgressId);
+      if (selectedAttemptId) payload.append("attemptId", selectedAttemptId);
       payload.append("score", String(scoreVal));
-      payload.append("triggerAIAnalysis", String(triggerAI));
-      if (selectedAttemptId) payload.append("attemptId", String(selectedAttemptId));
+      payload.append("teacherFeedback", feedbackText);
       if (feedbackAudio) payload.append("teacherAudio", feedbackAudio);
+
       const res = await fetch("/api/professor/progress-speaking", {
         method: "POST",
-        body: payload,
+        body: payload
       });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Falha ao salvar avaliação");
 
-      toast.success(triggerAI ? "Feedback gerado por IA e salvo com sucesso!" : "Avaliação salva com sucesso!");
+      if (!res.ok) throw new Error("Erro ao salvar avaliação");
+      toast.success("Avaliação salva com sucesso pelo professor!");
       setEvaluatingId(null);
-      setFeedbackText("");
       setFeedbackAudio(null);
-      setSelectedAttemptId(null);
-      void loadData();
+
+      const refreshRes = await fetch("/api/professor/progress-speaking");
+      if (refreshRes.ok) {
+        const json = await refreshRes.json();
+        setData(json);
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao avaliar");
+      console.error(err);
+      toast.error("Falha ao salvar a avaliação.");
     }
   };
 
   if (loading) {
     return (
-      <main className="site-shell min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-        <div className="page-container space-y-6" aria-busy="true" aria-label="Carregando progresso dos alunos">
-          <div className="surface-card h-36 animate-pulse" />
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="surface-card h-64 animate-pulse" />
-            <div className="surface-card h-64 animate-pulse" />
-          </div>
-          <p className="text-center text-sm text-muted-foreground">Carregando progresso e submissões…</p>
+      <div className="site-shell flex items-center justify-center p-12" aria-busy="true">
+        <div className="surface-card h-64 animate-pulse flex items-center justify-center">
+          <p className="text-sm font-bold text-muted-foreground">Carregando painel de progresso...</p>
         </div>
-      </main>
+      </div>
     );
   }
 
   const students = data?.students || [];
   const lessonProgress = data?.lessonProgress || [];
   const activityProgress = data?.activityProgress || [];
-
   const speakingSubmissions = activityProgress.filter(ap => ap.activity?.type === "speaking" || ap.audioResponseUrl);
   const speakingAttempts = data?.speakingAttempts || [];
+
   const filteredSpeakingSubmissions = [...speakingSubmissions]
-    .filter((submission) => {
-      const needsFeedback = !submission.teacherFeedback && !submission.teacherAudioFeedbackUrl;
+    .filter((sub) => {
+      const needsFeedback = !sub.teacherFeedback && !sub.teacherAudioFeedbackUrl;
       return feedbackFilter === "all" || (feedbackFilter === "pending" ? needsFeedback : !needsFeedback);
     })
     .sort((a, b) => {
-      const attemptsA = speakingAttempts.filter((attempt: any) => attempt.userId === a.userId && attempt.activityId === a.activityId);
-      const attemptsB = speakingAttempts.filter((attempt: any) => attempt.userId === b.userId && attempt.activityId === b.activityId);
-      const dateA = new Date(attemptsA[0]?.submittedAt || a.submittedAt || 0).getTime();
-      const dateB = new Date(attemptsB[0]?.submittedAt || b.submittedAt || 0).getTime();
-      return dateSort === "newest" ? dateB - dateA : dateA - dateB;
+      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return dateSort === "newest" ? timeB - timeA : timeA - timeB;
     });
 
   return (
@@ -109,10 +102,10 @@ export default function ProfessorProgressSpeakingPage() {
             </Link>
             <h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
               <Mic className="text-red-600" size={32} />
-              Progresso de Aulas & Avaliação de Speaking (IA)
+              Progresso de Aulas & Avaliação de Speaking
             </h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
-              Acompanhe as aulas concluídas pelos alunos vinculados e avalie as gravações de voz com análise automática de IA.
+              Acompanhe o andamento das aulas e avalie as gravações de áudio enviadas pelos alunos com feedback personalizado.
             </p>
           </div>
         </header>
@@ -154,20 +147,20 @@ export default function ProfessorProgressSpeakingPage() {
           )}
         </div>
 
-        {/* Seção 2: Submissões de Speaking & Feedback por IA */}
+        {/* Seção 2: Submissões de Speaking & Feedback do Professor */}
         <div className="surface-card space-y-6 p-5 sm:p-6">
           <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
-            <Sparkles className="text-red-600" size={24} />
-            Avaliação de Speaking & Feedback Automático por IA
+            <MessageSquare className="text-red-600" size={24} />
+            Avaliação de Gravações de Speaking (Feedback Docente)
           </h2>
           <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-muted/50 p-3 sm:flex-row sm:items-center">
             <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Filter size={14} className="text-red-600" /> Status do feedback
-              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
+              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
                 <option value="all">Todas</option><option value="pending">Aguardando feedback</option><option value="reviewed">Já avaliadas</option>
               </select>
             </label>
             <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Clock size={14} className="text-red-600" /> Ordenar por data
-              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
+              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
                 <option value="newest">Mais recentes</option><option value="oldest">Mais antigas</option>
               </select>
             </label>
@@ -228,7 +221,7 @@ export default function ProfessorProgressSpeakingPage() {
 
                     {sub.teacherFeedback && (
                       <div className="surface-card p-4 text-sm text-foreground">
-                        <p className="font-bold text-red-700 mb-1">Feedback Registrado:</p>
+                        <p className="font-bold text-red-700 mb-1">Feedback Registrado pelo Professor:</p>
                         <p className="whitespace-pre-wrap">{sub.teacherFeedback}</p>
                         {sub.teacherAudioFeedbackUrl && <audio controls src={sub.teacherAudioFeedbackUrl} className="mt-3 h-8 w-full" />}
                       </div>
@@ -265,16 +258,10 @@ export default function ProfessorProgressSpeakingPage() {
                         </div>
                         <div className="flex flex-wrap gap-3">
                           <Button
-                            onClick={() => handleEvaluate(sub.id, true)}
-                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
-                          >
-                            <Sparkles size={16} className="mr-1" /> Gerar Feedback Automático por IA & Salvar
-                          </Button>
-                          <Button
-                            onClick={() => handleEvaluate(sub.id, false)}
+                            onClick={() => handleEvaluate(sub.id)}
                             className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
                           >
-                            Salvar Avaliação Manual
+                            Salvar Avaliação
                           </Button>
                           <Button
                             variant="outline"
@@ -292,7 +279,7 @@ export default function ProfessorProgressSpeakingPage() {
                           onClick={() => { setEvaluatingId(sub.id); setSelectedAttemptId(attempts[0]?.id || null); setFeedbackText(""); setFeedbackAudio(null); }}
                           className="bg-foreground text-background text-xs font-bold hover:bg-foreground/90"
                         >
-                          Avaliar com IA / Professor
+                          Avaliar Submissão
                         </Button>
                       </div>
                     )}
