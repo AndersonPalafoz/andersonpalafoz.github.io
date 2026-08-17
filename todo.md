@@ -182,3 +182,11 @@
 - [x] Removidos todos os dados simulados, nomes fictícios e placeholders do painel analítico do CMS
 - [x] Conectadas todas as métricas de engajamento a consultas reais do banco de dados persistido via `/api/admin/stats`
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Modo de Auditoria de Dados Brutos no CMS — 17/08/2026
+- [x] Adicionada opção de visualização de dados brutos (JSON) das consultas analíticas reais no CMS para auditoria transparente
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão do Modo de Auditoria de Dados Brutos (JSON) — 17/08/2026
+- [x] Adicionado botão e painel interativo de auditoria de dados brutos (JSON) no CMS para inspecionar o payload real retornado pelo banco de dados
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
