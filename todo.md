@@ -257,3 +257,7 @@
 - [x] Implementada a sincronização bidirecional e importação de turmas, alunos, professores, atividades, prazos e notas do Google Classroom
 - [x] Criado painel dedicado de sincronização com o Google Classroom para professores e administradores
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Filtros por Turma do Google Classroom nos Relatórios do Professor — 17/08/2026
+- [x] Adicionados seletores e filtros por turma importada do Google Classroom no painel de relatórios do professor, filtrando dinamicamente indicadores, gráficos, tabelas e exportações com dados reais
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
