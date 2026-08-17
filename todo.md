@@ -387,3 +387,7 @@
 
 - [x] Implementar rota de API e botão de sincronização manual real com o Google Classroom com feedback visual por toasts (sucesso/erro).
 - [x] Documentar recomendação arquitetural sobre o uso do Supabase para otimizar armazenamento e descarregar operações do Neon.
+
+## Auditoria Integral do Sistema e Fechamento de Pendências — 17/08/2026
+- [x] Conduzir auditoria integral do `todo.md` e verificar cobertura de código, rotas, banco Neon, autenticação e segurança.
+- [x] Consolidar e validar todas as pendências reais, garantindo aprovação de 190 testes automatizados e build de produção Next.js 15.
