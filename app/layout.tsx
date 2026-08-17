@@ -55,7 +55,7 @@ export default function RootLayout({
       <body className={`${poppins.variable} ${inter.variable} bg-slate-50 font-sans text-slate-900 antialiased`}>
 
         <SessionProviderWrapper>
-          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Navbar />
             <main className="min-h-screen bg-slate-50 pt-[4.5rem]">{children}</main>
             <Footer />

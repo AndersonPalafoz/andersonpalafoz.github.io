@@ -662,3 +662,8 @@
 - [x] Inspecionar e corrigir classes estáticas incorretas em `/sobre` e páginas de conteúdo que quebram o modo escuro
 - [x] Garantir aplicação consistente de `bg-background text-foreground dark:bg-slate-950 dark:text-slate-100` em todos os containers principais
 - [x] Validar renderização visual em modo claro e escuro nas principais rotas da plataforma
+
+## Transição Suave, Detecção de Sistema e Acessibilidade em Hover/Focus — 16/08/2026
+- [x] Implementar detecção automática da preferência do sistema operacional no primeiro acesso do usuário
+- [x] Adicionar transições suaves de cores e fundos em todos os elementos ao alternar entre os modos claro e escuro
+- [x] Revisar e aprimorar estados de hover e focus em botões, links e componentes interativos para garantir contraste perfeito em ambos os temas
