@@ -391,3 +391,13 @@
 ## Auditoria Integral do Sistema e Fechamento de Pendências — 17/08/2026
 - [x] Conduzir auditoria integral do `todo.md` e verificar cobertura de código, rotas, banco Neon, autenticação e segurança.
 - [x] Consolidar e validar todas as pendências reais, garantindo aprovação de 190 testes automatizados e build de produção Next.js 15.
+
+- [ ] Remover 100% de dados estáticos/falsos dos relatórios acadêmicos e garantir proveniência estrita baseada exclusivamente no banco Neon e na API real do Google Classroom.
+- [ ] Implementar exportação dos relatórios acadêmicos em PDF formatado e Excel (CSV estruturado).
+- [ ] Criar gráficos visuais dinâmicos no painel administrativo para resumir estatísticas reais de alunos, notas e turmas sincronizadas.
+- [ ] Adicionar filtros avançados de busca por data e status no painel administrativo.
+
+- [x] Remover 100% de dados estáticos/falsos dos relatórios acadêmicos e garantir proveniência estrita baseada exclusivamente no banco Neon e na API real do Google Classroom.
+- [x] Implementar exportação dos relatórios acadêmicos em PDF formatado e Excel (CSV estruturado).
+- [x] Criar gráficos visuais dinâmicos no painel administrativo para resumir estatísticas reais de alunos, notas e turmas sincronizadas.
+- [x] Adicionar filtros avançados de busca por data e status no painel administrativo.
