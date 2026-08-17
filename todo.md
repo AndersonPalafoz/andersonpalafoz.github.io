@@ -722,3 +722,9 @@
 - [x] Adicionar itens cosméticos na loja de XP (avatares customizados e bordas de perfil exclusivas)
 - [x] Exibir emblemas de marcos de ofensiva conquistados no perfil do aluno e ao lado do nome no ranking geral
 - [x] Implementar alternância de modo de experiência acadêmica (Modo Gamificado, Modo Tradicional ou Híbrido) nas configurações, permitindo ocultar elementos de jogo para uma abordagem sóbria e tradicional sem perder recursos essenciais
+
+## Painel Tradicional Minimalista, Pré-visualização na Loja, Modal Explicativo e Reorganização de Acessos em "Minha Área" — 17/08/2026
+- [x] Criar painel de progresso minimalista exclusivo para o Modo Tradicional (focado em notas e presença sem elementos de gamificação)
+- [x] Adicionar funcionalidade de pré-visualização de avatares e bordas na loja de XP antes da compra
+- [x] Implementar modal explicativo detalhando recursos ativados/ocultados ao alternar entre os modos de experiência
+- [x] Reorganizar a navegação para centralizar os painéis de Professor e Administrador dentro de "Minha Área" com controle rigoroso de permissões
