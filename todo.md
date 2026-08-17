@@ -333,3 +333,5 @@
 - [x] Criar fluxo de onboarding interativo para novos usuários (`OnboardingModal`), guiando-os para conectar suas contas e iniciar o primeiro curso
 - [x] Implementar botão de importação automática de turmas e atividades reais do Google Classroom no painel inicial vazio (`ClassroomImportAction`)
 - [x] Adicionar gráfico de progresso semanal em tempo real no painel do aluno (`WeeklyProgressChart`) atualizado conforme as aulas são concluídas
+
+- [x] Adicionar sistema de conquistas e medalhas no gráfico de progresso semanal para recompensar metas de estudo reais, respeitando o Modo Tradicional
