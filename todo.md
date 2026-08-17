@@ -712,3 +712,8 @@
 - [x] Adicionar botão de compartilhamento rápido para postar ofensiva diária no WhatsApp e redes sociais
 - [x] Criar leaderboard específico para os mini-jogos educacionais com competição saudável e opção de privacidade (opt-out)
 - [x] Implementar calendário visual no perfil do usuário exibindo histórico detalhado dos dias de ofensiva mantidos, perdidos e recuperados
+
+## Marcos de Ofensiva (7, 30, 100 dias), Filtro Institucional no Ranking e Loja de XP (Congelamento) — 17/08/2026
+- [x] Adicionar recompensas de emblemas especiais e XP extra ao atingir marcos de ofensiva de 7, 30 e 100 dias no calendário
+- [x] Implementar filtro por instituição no ranking dos mini-jogos para comparação segmentada entre colegas parceiros
+- [x] Criar loja de XP com item de "congelamento de ofensiva" para os alunos protegerem o streak em dias de ausência
