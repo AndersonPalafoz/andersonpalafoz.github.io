@@ -702,3 +702,8 @@
 - [x] Implementar interface de chat interativa em tempo real para prática de conversação com a IA pedagógica na área do aluno
 - [x] Adicionar tooltips interativos nos gráficos temporais exibindo dados exatos de desempenho e frequência ao passar o mouse
 - [x] Implementar ação em massa na lista de alunos para exportar dados filtrados por instituição diretamente para CSV ou PDF
+
+## Área Demonstrativa de Vídeos e Jogos Interativos, e Aprimoramento da Ofensiva Diária — 17/08/2026
+- [x] Criar página/seção demonstrativa (`/demo` ou componente dedicado) com exemplos funcionais de vídeos (YouTube/Vimeo) e jogos educacionais interativos de inglês
+- [x] Aprimorar o sistema de ofensiva diária (streak) com lógica anti-duplicidade baseada em UTC, recuperação após falhas e notificações visuais
+- [x] Integrar a demonstração interativa e o sistema de streak aprimorado ao ecossistema acadêmico da plataforma
