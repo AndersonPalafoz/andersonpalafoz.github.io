@@ -409,3 +409,5 @@
 - [x] Implementar modal de detalhes individuais do aluno com progresso e notas estritamente reais extraídas do banco de dados Neon.
 
 - [x] Investigar e eliminar notificações de notas estáticas/falsas do Google Classroom na interface do aluno (`classroom-notifications.tsx`), exigindo conexão real e proveniência verificada.
+
+- [x] Corrigir o erro de build no Vercel em `app/admin/page.tsx` adicionando a diretiva `"use client"` para suportar os hooks React (`useState`, `useEffect`) utilizados no painel administrativo.
