@@ -697,3 +697,8 @@
 - [x] Implementar painel de customização de cores e nomes das tags institucionais nas configurações do professor
 - [x] Integrar gráficos interativos de evolução temporal de desempenho ao painel comparativo de turmas
 - [x] Aprimorar o sistema de IA com diretrizes rigorosas, feedback de pronúncia detalhado e trilhas adaptativas inteligentes
+
+## Chat Conversacional com IA Pedagógica, Tooltips em Gráficos e Exportação em Massa — 17/08/2026
+- [x] Implementar interface de chat interativa em tempo real para prática de conversação com a IA pedagógica na área do aluno
+- [x] Adicionar tooltips interativos nos gráficos temporais exibindo dados exatos de desempenho e frequência ao passar o mouse
+- [x] Implementar ação em massa na lista de alunos para exportar dados filtrados por instituição diretamente para CSV ou PDF
