@@ -244,3 +244,7 @@
 ## Sincronização Automática de Prazos com o Google Calendar — 17/08/2026
 - [x] Implementada a sincronização automática de prazos de tarefas reais com o Google Calendar, incluindo vínculo persistente, prevenção de duplicidades, atualizações e exclusão segura
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Anexos de Arquivos do Google Drive nas Tarefas — 17/08/2026
+- [x] Implementada a funcionalidade para anexar arquivos do Google Drive diretamente nas tarefas criadas, com persistência de referências, seletor integrado, controle de acesso e visualização contextual
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
