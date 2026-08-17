@@ -379,3 +379,25 @@
   transition-duration: 250ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+
+/* Modo de Alto Contraste para Acessibilidade */
+.high-contrast {
+  --background: 0 0% 0% !important;
+  --foreground: 0 0% 100% !important;
+  --card: 0 0% 5% !important;
+  --card-foreground: 0 0% 100% !important;
+  --primary: 0 100% 50% !important;
+  --primary-foreground: 0 0% 100% !important;
+  --border: 0 0% 100% !important;
+  --input: 0 0% 100% !important;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast * {
+  border-color: #ffffff !important;
+}
