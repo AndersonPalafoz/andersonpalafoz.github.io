@@ -286,3 +286,10 @@
 - [x] Implementar recurso de feedback por IA para analisar pronúncia dos áudios enviados no fórum e sugerir melhorias detalhadas
 - [x] Criar sistema completo de avaliações de cursos (com notas de 1 a 5 estrelas e feedbacks qualitativos reais)
 - [x] Validar 190 testes automatizados e build de produção sem erros
+
+## Evolução de Histórico Acadêmico, PDF e Integração Google — 17/08/2026
+- [x] Adicionar botão de exportação do histórico acadêmico filtrado em formato PDF para impressão e compartilhamento
+- [x] Implementar alertas automáticos no painel com base na variação de notas ao longo do semestre
+- [x] Criar visualização detalhada agrupando notas e frequência por disciplina específica
+- [x] Aprimorar o painel de integração com ferramentas Google (Drive, Calendar, Classroom)
+- [x] Validar 190 testes automatizados e build de produção sem erros
