@@ -665,3 +665,21 @@ export const externalStudents = pgTable("external_students", {
 
 export type ExternalStudent = typeof externalStudents.$inferSelect;
 export type InsertExternalStudent = typeof externalStudents.$inferInsert;
+
+/**
+ * Media Assets table - Biblioteca de Mídia para persistência real de arquivos no S3 e banco.
+ */
+export const mediaAssets = pgTable("media_assets", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: varchar("type", { length: 64 }).notNull(), // medal, audio, image, document
+  url: text("url").notNull(),
+  fileKey: varchar("fileKey", { length: 500 }).notNull(),
+  size: varchar("size", { length: 64 }).notNull(),
+  tag: varchar("tag", { length: 64 }).default("Geral").notNull(),
+  uploaderId: integer("uploaderId").references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MediaAssetRecord = typeof mediaAssets.$inferSelect;
+export type InsertMediaAsset = typeof mediaAssets.$inferInsert;

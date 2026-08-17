@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Allow: /sobre
+Allow: /cursos
+Allow: /materiais
+Allow: /blog
+Allow: /contato
+Allow: /faq
+Disallow: /admin/
+Disallow: /professor/
+Disallow: /dashboard/
+Disallow: /api/
+
+Sitemap: https://andersonpalafoz.vercel.app/sitemap.xml

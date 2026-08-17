@@ -1,35 +1,49 @@
-import { useState, useRef } from "react";
-import { Image, Music, Upload, Trash2, Copy, Search, Check, Folder, FileUp } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Image, Music, Upload, Trash2, Copy, Search, Check, Folder, FileUp, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 interface MediaAsset {
-  id: string;
+  id: number;
   name: string;
-  type: "medal" | "audio" | "image";
+  type: string;
   url: string;
+  fileKey: string;
   size: string;
   uploadedAt: string;
   tag: string;
 }
 
-const initialAssets: MediaAsset[] = [
-  { id: "1", name: "badge-grammar-master.png", type: "medal", url: "/manus-storage/badge-grammar.png", size: "120 KB", uploadedAt: "15 Ago 2026", tag: "Gramática" },
-  { id: "2", name: "badge-speaking-pro.png", type: "medal", url: "/manus-storage/badge-speaking.png", size: "145 KB", uploadedAt: "14 Ago 2026", tag: "Speaking" },
-  { id: "3", name: "speaking-prompt-b1-audio.mp3", type: "audio", url: "/manus-storage/speaking-b1.mp3", size: "1.2 MB", uploadedAt: "12 Ago 2026", tag: "Áudio B1" },
-  { id: "4", name: "listening-exercise-unit2.mp3", type: "audio", url: "/manus-storage/listening-unit2.mp3", size: "2.4 MB", uploadedAt: "10 Ago 2026", tag: "Listening" },
-];
-
 export function MediaAssetLibrary() {
-  const [assets, setAssets] = useState<MediaAsset[]>(initialAssets);
+  const [assets, setAssets] = useState<MediaAsset[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterTag, setFilterTag] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const fetchAssets = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/media");
+      const data = await res.json();
+      if (data.success && Array.isArray(data.assets)) {
+        setAssets(data.assets);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar ativos de mídia:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAssets();
+  }, []);
 
   const filteredAssets = assets.filter((asset) => {
     if (filterType !== "all" && asset.type !== filterType) return false;
@@ -38,51 +52,61 @@ export function MediaAssetLibrary() {
     return true;
   });
 
-  const handleCopyUrl = (url: string, id: string) => {
+  const handleCopyUrl = (url: string, id: number) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     toast.success("URL do arquivo copiada para a área de transferência!");
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm("Deseja realmente remover este arquivo da biblioteca de mídia?")) return;
-    setAssets((prev) => prev.filter((a) => a.id !== id));
-    toast.success("Arquivo removido com sucesso.");
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Deseja realmente remover este arquivo do Supabase Storage e da biblioteca de mídia?")) return;
+    try {
+      const res = await fetch(`/api/admin/media?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setAssets((prev) => prev.filter((a) => a.id !== id));
+        toast.success("Arquivo removido com sucesso.");
+      } else {
+        toast.error(data.error || "Erro ao excluir arquivo.");
+      }
+    } catch (err) {
+      console.error("Erro ao excluir arquivo:", err);
+      toast.error("Erro ao conectar com o servidor.");
+    }
   };
 
   const processFiles = async (files: FileList | File[]) => {
     setUploading(true);
     try {
-      const newAssets: MediaAsset[] = [];
       for (const file of Array.from(files)) {
-        let assetType: "medal" | "audio" | "image" = "image";
+        let assetType = "image";
         if (file.type.includes("audio") || file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
           assetType = "audio";
         } else if (file.name.includes("badge") || file.name.includes("medal")) {
           assetType = "medal";
         }
 
-        const sizeKb = (file.size / 1024).toFixed(1);
-        const sizeStr = Number(sizeKb) > 1024 ? `${(Number(sizeKb) / 1024).toFixed(1)} MB` : `${sizeKb} KB`;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("type", assetType);
+        formData.append("tag", assetType === "medal" ? "Conquista" : assetType === "audio" ? "Speaking" : "Geral");
 
-        const newAsset: MediaAsset = {
-          id: `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
-          name: file.name,
-          type: assetType,
-          url: `/manus-storage/${file.name}`,
-          size: sizeStr,
-          uploadedAt: "Agora mesmo",
-          tag: assetType === "medal" ? "Conquista" : assetType === "audio" ? "Speaking" : "Geral",
-        };
-        newAssets.push(newAsset);
+        const res = await fetch("/api/admin/media", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        if (!data.success) {
+          throw new Error(data.error || "Erro no upload.");
+        }
       }
 
-      setAssets((prev) => [...newAssets, ...prev]);
-      toast.success(`${newAssets.length} arquivo(s) enviado(s) e indexado(s) com sucesso!`);
+      toast.success("Arquivo(s) enviado(s) e persistido(s) com sucesso!");
+      fetchAssets();
     } catch (error) {
       console.error("Erro no upload:", error);
-      toast.error("Erro ao enviar arquivos.");
+      toast.error(error instanceof Error ? error.message : "Erro ao enviar arquivos.");
     } finally {
       setUploading(false);
     }
@@ -121,9 +145,9 @@ export function MediaAssetLibrary() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
           <div>
             <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <Folder className="text-red-600" size={20} /> Biblioteca de Mídia (Medalhas & Áudios)
+              <Folder className="text-red-600" size={20} /> Biblioteca de Mídia Persistida (Supabase Storage)
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Gerencie ícones de conquistas, medalhas dos quizzes e áudios do assistente virtual de speaking.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Gerencie ativos reais de áudio, medalhas e imagens da plataforma.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <input
@@ -139,7 +163,8 @@ export function MediaAssetLibrary() {
               disabled={uploading}
               className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs h-10 px-5 rounded-xl shadow-sm gap-2 transition-all active:scale-95"
             >
-              <Upload size={14} /> {uploading ? "Enviando..." : "Selecionar ou Arrastar Arquivos"}
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />} 
+              {uploading ? "Enviando para S3..." : "Selecionar ou Arrastar Arquivos"}
             </Button>
           </div>
         </div>
@@ -162,14 +187,14 @@ export function MediaAssetLibrary() {
             </div>
             <div>
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                {isDragging ? "Solte os arquivos aqui..." : "Arraste e solte arquivos aqui"}
+                {isDragging ? "Solte os arquivos aqui..." : "Arraste e solte arquivos aqui para upload real"}
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                Suporta imagens (.png, .jpg), áudios (.mp3, .wav) e documentos (.pdf)
+                Imagens (.png, .jpg, .webp), áudios (.mp3, .wav) até 10 MB
               </p>
             </div>
             <span className="inline-block text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 px-3 py-1 rounded-full">
-              Ou clique para procurar no computador
+              {uploading ? "Enviando arquivo..." : "Ou clique para procurar no computador"}
             </span>
           </div>
         </div>
@@ -210,51 +235,57 @@ export function MediaAssetLibrary() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredAssets.map((asset) => (
-            <div key={asset.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-red-600 shadow-sm">
-                  {asset.type === "audio" ? <Music size={18} /> : <Image size={18} />}
+        {loading ? (
+          <div className="py-16 text-center text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
+            <Loader2 size={18} className="animate-spin text-red-600" /> Carregando ativos da biblioteca...
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {filteredAssets.map((asset) => (
+              <div key={asset.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 flex flex-col justify-between space-y-3 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-red-600 shadow-sm">
+                    {asset.type === "audio" ? <Music size={18} /> : <Image size={18} />}
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                    {asset.tag}
+                  </span>
                 </div>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                  {asset.tag}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-bold text-slate-900 dark:text-white truncate" title={asset.name}>{asset.name}</p>
-                <div className="flex items-center justify-between text-[11px] text-slate-400">
-                  <span>{asset.size}</span>
-                  <span>{asset.uploadedAt}</span>
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white truncate" title={asset.name}>{asset.name}</p>
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>{asset.size}</span>
+                    <span>{new Date(asset.uploadedAt || Date.now()).toLocaleDateString("pt-BR")}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCopyUrl(asset.url, asset.id)}
+                    className="flex-1 h-8 text-xs font-bold rounded-xl gap-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  >
+                    {copiedId === asset.id ? <Check size={13} className="text-green-600" /> : <Copy size={13} />} Copiar URL
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(asset.id)}
+                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border-slate-200 dark:border-slate-700"
+                    title="Excluir arquivo"
+                  >
+                    <Trash2 size={13} />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleCopyUrl(asset.url, asset.id)}
-                  className="flex-1 h-8 text-xs font-bold rounded-xl gap-1 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700"
-                >
-                  {copiedId === asset.id ? <Check size={13} className="text-green-600" /> : <Copy size={13} />} Copiar URL
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDelete(asset.id)}
-                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl border-slate-200 dark:border-slate-700"
-                  title="Excluir arquivo"
-                >
-                  <Trash2 size={13} />
-                </Button>
+            ))}
+            {filteredAssets.length === 0 && (
+              <div className="col-span-full py-12 text-center text-slate-400 text-xs font-semibold">
+                Nenhum arquivo encontrado na biblioteca persistida.
               </div>
-            </div>
-          ))}
-          {filteredAssets.length === 0 && (
-            <div className="col-span-full py-12 text-center text-slate-400 text-xs font-semibold">
-              Nenhum arquivo encontrado com os filtros atuais.
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

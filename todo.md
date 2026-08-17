@@ -447,3 +447,6 @@
 - [x] Implementar funcionalidade de arrastar e soltar (drag-and-drop) na biblioteca de mídia do CMS, incluindo feedback visual e processamento automático de arquivos enviados.
 
 - [x] Concluir a auditoria do Módulo 6 (Qualidade, Testes Automatizados & Build de Produção) com 100% de aprovação nos 192 testes Vitest e no build de compilação Next.js 15. Finalizado o checklist de auditoria modular.
+
+- [x] Aplicar correções de integridade, garantindo que a biblioteca de mídia persista arquivos reais no Supabase Storage e metadados no banco relacional (`media_assets`), eliminando mocks.
+- [x] Configurar base de SEO técnico com sitemap.xml e robots.txt otimizados para indexação orgânica das rotas públicas e bloqueio de áreas protegidas.
