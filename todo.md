@@ -38,3 +38,17 @@
 - [x] Adicionar integração com o Google Calendar para sincronizar automaticamente os prazos das turmas no calendário
 - [x] Concluir integração operacional com o Google Drive para gerenciamento e visualização de documentos acadêmicos
 - [x] Executar 190 testes automatizados com 100% de sucesso e validar build de produção do Next.js 15
+
+## Ajustes Finais: Navegação Centralizada, Armazenamento Drive, Prazos por IA e Sincronização Manual — 17/08/2026
+- [x] Garantir que os links de Professor e Administrador apareçam exclusivamente dentro do dashboard
+- [x] Adicionar painel visual de uso de armazenamento do Google Drive na área administrativa
+- [x] Implementar assistente de IA para sugerir automaticamente prazos no calendário com base no conteúdo de cada módulo
+- [x] Criar botão de "Sincronizar Agora" na interface do calendário com feedback visual e tratamento de erros
+- [x] Executar testes automatizados (190 testes) e validar build de produção do Next.js 15
+
+## Conclusão de Ajustes Finais (Dashboard Centralizado, Google Drive, Prazos por IA e Sincronização) — 17/08/2026
+- [x] Consolidar acessos de Professor e Administrador estritamente no Dashboard
+- [x] Implementar painel visual de armazenamento do Google Drive na área de admin
+- [x] Adicionar assistente de IA para sugestão automática de prazos por módulo
+- [x] Implementar botão "Sincronizar Agora" na interface do calendário com feedback em tempo real
+- [x] Validar 190 testes automatizados (100% de aprovação) e build de produção Next.js 15
