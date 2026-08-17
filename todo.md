@@ -433,3 +433,5 @@
 - [x] Refinar skeleton loaders no histórico acadêmico (`/dashboard/historico`) com estados parciais e transições suaves.
 
 - [x] Criar e estruturar o checklist de auditoria modular (`docs/audit-checklist.md`) dividido em 6 módulos independentes para revisão em múltiplos prompts.
+
+- [x] Concluir a auditoria do Módulo 1 (Autenticação, Segurança & RBAC) com 100% de conformidade verificada na persistência de sessão, super-admin (`palafozanderson@gmail.com`), isolamento de painéis e proteção de rotas/APIs.
