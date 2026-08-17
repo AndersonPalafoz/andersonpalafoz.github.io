@@ -353,3 +353,7 @@
 - [ ] Criar motor de busca ampliado no painel administrativo (`/admin`) para buscar professores, além de alunos e cursos.
 
 - [x] Criar motor de busca ampliado no painel administrativo (`/admin`) para buscar professores, além de alunos e cursos.
+
+- [ ] Implementar paginação nos resultados do motor de busca administrativo (`AdminSearchWidget`).
+
+- [x] Implementar paginação nos resultados do motor de busca administrativo (`AdminSearchWidget`).
