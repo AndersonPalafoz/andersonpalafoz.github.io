@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from "react";
-import { MessageSquare, ThumbsUp, Search, PlusCircle, Tag, Send, Mic, Play, Square, Check, Activity } from "lucide-react";
-import { analyzeForumAudioPronunciation, PronunciationFeedback } from "@/lib/ai-forum-pronunciation";
+import { MessageSquare, ThumbsUp, Search, PlusCircle, Tag, Check, Mic, Play, Square, Clock } from "lucide-react";
+import { toast } from "sonner";
 
 interface DiscussionPost {
   id: string;
@@ -11,10 +11,10 @@ interface DiscussionPost {
   category: string;
   content: string;
   audioUrl?: string;
-  pronunciation?: PronunciationFeedback;
   likes: number;
   replies: number;
   createdAt: string;
+  status: string;
 }
 
 export default function ForumPage() {
@@ -25,11 +25,9 @@ export default function ForumPage() {
   const [newCategory, setNewCategory] = useState("Gramática");
   const [newContent, setNewContent] = useState("");
   
-  // Estado para gravação de áudio e feedback automatizado
   const [isRecording, setIsRecording] = useState(false);
   const [audioRecorded, setAudioRecorded] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
-  const [activeFeedback, setActiveFeedback] = useState<PronunciationFeedback | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const [posts, setPosts] = useState<DiscussionPost[]>([
@@ -41,7 +39,8 @@ export default function ForumPage() {
       content: "Sempre me confundo quando usar 'I have visited' ou 'I visited last year'. Alguém tem uma dica prática?",
       likes: 14,
       replies: 5,
-      createdAt: "Há 2 horas"
+      createdAt: "Há 2 horas",
+      status: "Respondido"
     },
     {
       id: "2",
@@ -50,16 +49,10 @@ export default function ForumPage() {
       category: "Dicas",
       content: "Pessoal, 'to touch base' e 'to keep me in the loop' são fundamentais em reuniões corporativas em inglês. Ouça meu exemplo de pronúncia abaixo!",
       audioUrl: "sample-audio.webm",
-      pronunciation: {
-        score: 95,
-        clarity: "Excelente",
-        intonation: "Naturalidade profissional e ótima entonação corporativa.",
-        phonemeTips: ["Excelente projeção de voz e ritmo nativo."],
-        encouragement: "Exemplo perfeito de pronúncia para reuniões."
-      },
       likes: 32,
       replies: 9,
-      createdAt: "Há 1 dia"
+      createdAt: "Há 1 dia",
+      status: "Avaliado pelo Professor"
     },
     {
       id: "3",
@@ -68,16 +61,10 @@ export default function ForumPage() {
       category: "Pronúncia",
       content: "Como posicionar a língua corretamente em 'think' versus 'that'? Sinto que o som sai abafado.",
       audioUrl: "sample-audio-2.webm",
-      pronunciation: {
-        score: 88,
-        clarity: "Boa",
-        intonation: "Boa tentativa com clareza nos fonemas.",
-        phonemeTips: ["Mantenha a língua levemente entre os dentes ao emitir o som interdental."],
-        encouragement: "Bom progresso! Com mais repetição ficará impecável."
-      },
       likes: 8,
       replies: 3,
-      createdAt: "Há 2 dias"
+      createdAt: "Há 2 dias",
+      status: "Aguardando resposta (Prazo: até 48h)"
     }
   ]);
 
@@ -96,24 +83,17 @@ export default function ForumPage() {
   const startRecording = () => {
     setIsRecording(true);
     setAudioRecorded(false);
-    setActiveFeedback(null);
     setTimeout(() => {
       setIsRecording(false);
       setAudioRecorded(true);
-      const feedback = analyzeForumAudioPronunciation();
-      setActiveFeedback(feedback);
-      setToastMessage("Áudio gravado com sucesso!");
-      setTimeout(() => setToastMessage(null), 3500);
+      toast.success("Clipe de áudio gravado com sucesso! Pronto para envio.");
     }, 2500);
   };
 
   const stopRecording = () => {
     setIsRecording(false);
     setAudioRecorded(true);
-    const feedback = analyzeForumAudioPronunciation();
-    setActiveFeedback(feedback);
-    setToastMessage("Gravação de áudio concluída!");
-    setTimeout(() => setToastMessage(null), 3500);
+    toast.success("Gravação concluída.");
   };
 
   const handleCreatePost = (e: React.FormEvent) => {
@@ -127,20 +107,19 @@ export default function ForumPage() {
       category: newCategory,
       content: newContent,
       audioUrl: audioRecorded ? "user-recording.webm" : undefined,
-      pronunciation: activeFeedback || undefined,
       likes: 1,
       replies: 0,
-      createdAt: "Agora mesmo"
+      createdAt: "Agora mesmo",
+      status: "Aguardando resposta (Prazo: até 48h)"
     };
 
     setPosts([created, ...posts]);
     setNewTitle("");
     setNewContent("");
     setAudioRecorded(false);
-    setActiveFeedback(null);
     setIsModalOpen(false);
-    setToastMessage("Discussão publicada com sucesso!");
-    setTimeout(() => setToastMessage(null), 3500);
+    setToastMessage("Tópico enviado com sucesso! O professor responderá em até 48 horas.");
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const togglePlayAudio = (id: string) => {
@@ -163,7 +142,7 @@ export default function ForumPage() {
           </div>
           <h1 className="text-3xl font-black tracking-tight">Fórum de Discussão e Prática</h1>
           <p className="text-white/90 text-sm max-w-xl leading-relaxed">
-            Tire dúvidas, compartilhe dicas e envie clipes de áudio para prática de pronúncia com acompanhamento pedagógico.
+            Tire dúvidas, compartilhe dicas e envie clipes de áudio para prática. O professor responderá e avaliará as submissões em até 48 horas.
           </p>
         </div>
         <button
@@ -214,9 +193,14 @@ export default function ForumPage() {
                   <p className="text-[10px] text-slate-500">{post.createdAt}</p>
                 </div>
               </div>
-              <span className="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200/60 dark:border-red-900/40 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5">
-                <Tag size={12} /> {post.category}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+                  <Clock size={11} /> {post.status}
+                </span>
+                <span className="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200/60 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5">
+                  <Tag size={12} /> {post.category}
+                </span>
+              </div>
             </div>
 
             <h2 className="text-base font-black text-slate-900 dark:text-white">{post.title}</h2>
@@ -234,34 +218,13 @@ export default function ForumPage() {
                   </button>
                   <div className="flex-1 space-y-1">
                     <p className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Mic size={14} className="text-red-600" /> Clipe de Pronúncia em Áudio
+                      <Mic size={14} className="text-red-600" /> Clipe de Pronúncia em Áudio enviado para análise
                     </p>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                       <div className={`bg-red-600 h-full ${playingAudioId === post.id ? "w-full transition-all duration-3000" : "w-1/3"}`} />
                     </div>
                   </div>
                 </div>
-
-                {post.pronunciation && (
-                  <div className="bg-gradient-to-r from-red-50/60 to-amber-50/60 dark:from-red-950/30 dark:to-amber-950/30 border border-red-200/80 dark:border-red-900/40 p-4 rounded-2xl space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-red-700 dark:text-red-300 flex items-center gap-1.5">
-                        <Activity size={15} /> Feedback de Pronúncia (Beta)
-                      </span>
-                      <span className="bg-red-600 text-white px-2.5 py-0.5 rounded-full text-[10px] font-black">
-                        Nota: {post.pronunciation.score}/100 ({post.pronunciation.clarity})
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium">
-                      {post.pronunciation.intonation}
-                    </p>
-                    <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-4 list-disc">
-                      {post.pronunciation.phonemeTips.map((tip, idx) => (
-                        <li key={idx}>{tip}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             )}
 
@@ -274,7 +237,7 @@ export default function ForumPage() {
                 <ThumbsUp size={15} /> {post.likes} Curtidas
               </button>
               <span className="flex items-center gap-1.5">
-                <MessageSquare size={15} /> {post.replies} Respostas
+                <MessageSquare size={15} /> {post.replies} Respostas do Professor / Alunos
               </span>
             </div>
           </div>
@@ -286,7 +249,7 @@ export default function ForumPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <MessageSquare className="text-red-600" size={18} /> Nova Discussão com Áudio
+                <MessageSquare className="text-red-600" size={18} /> Nova Discussão ou Dúvida
               </h3>
               <button
                 type="button"
@@ -339,9 +302,9 @@ export default function ForumPage() {
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Mic size={15} className="text-red-600" /> Gravar Clipe de Áudio
+                    <Mic size={15} className="text-red-600" /> Anexar Clipe de Áudio (Opcional)
                   </span>
-                  {audioRecorded && <span className="text-[10px] font-bold text-emerald-600">Áudio gravado</span>}
+                  {audioRecorded && <span className="text-[10px] font-bold text-emerald-600">Áudio pronto</span>}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -363,12 +326,7 @@ export default function ForumPage() {
                     </button>
                   )}
                 </div>
-
-                {activeFeedback && (
-                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-bold">
-                    Áudio gravado com sucesso!
-                  </div>
-                )}
+                <p className="text-[11px] text-slate-500">O professor ouvirá o áudio e responderá em até 48 horas.</p>
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
@@ -381,9 +339,9 @@ export default function ForumPage() {
                 </button>
                 <button
                   type="submit"
-                  className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5"
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl text-xs font-bold transition shadow-sm"
                 >
-                  <Send size={14} /> Publicar Tópico
+                  Publicar Discussão
                 </button>
               </div>
             </form>

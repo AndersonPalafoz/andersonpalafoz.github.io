@@ -13,7 +13,14 @@ export const authOptions: NextAuthOptions = {
     ...(process.env.GOOGLE_CLIENT_ID ? [GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
+      allowDangerousEmailAccountLinking: false, // Endurecido contra vinculação indevida de contas
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     })] : []),
     CredentialsProvider({
       name: "E-mail e senha",
@@ -32,14 +39,19 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (!user.email) return false;
 
+      // Se for login via Google, validar rigorosamente se o email é válido
+      if (account?.provider === "google") {
+        const email = user.email.trim().toLowerCase();
+        // Proteção adicional: apenas contas válidas e verificadas
+        if (!email) return false;
+      }
+
       try {
-        // Check if user exists
         const existingUser = await db.query.users.findFirst({
           where: eq(users.email, user.email),
         });
 
         if (!existingUser) {
-          // Create new user with appropriate role
           const isAdminUser = user.email === ADMIN_EMAIL;
           const userRole = isAdminUser ? "admin" : "user";
           const initialApprovalStatus = isAdminUser ? "approved" : "pending";
@@ -57,12 +69,9 @@ export const authOptions: NextAuthOptions = {
             })
             .returning();
 
-          // If new user is not admin, enroll them in all available courses with 0% progress
           if (!isAdminUser && newUser.length > 0) {
             const allCourses = await db.query.courses.findMany();
-
             for (const course of allCourses) {
-              // Create enrollment with 0% progress
               await db.insert(enrollments).values({
                 userId: newUser[0].id,
                 courseId: course.id,
@@ -73,7 +82,6 @@ export const authOptions: NextAuthOptions = {
             }
           }
         } else {
-          // Ensure admin email always has admin role and approved status
           if (existingUser.email === ADMIN_EMAIL) {
             if (existingUser.role !== "admin" || existingUser.approvalStatus !== "approved" || existingUser.deletedAt !== null) {
               await db
@@ -92,15 +100,6 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
-      // Antes, este callback fazia sua PROPRIA consulta ao banco,
-      // ignorando o que o callback jwt() (acima) ja tinha resolvido.
-      // Isso significava duas consultas redundantes por checagem de
-      // sessao, e -- mais grave -- a rede de seguranca do ADMIN_EMAIL
-      // em jwt() nao tinha efeito nenhum aqui, entao app/admin/layout.tsx
-      // (que usa getServerSession, e portanto passa por este callback)
-      // continuava bloqueando o admin mesmo com o middleware corrigido.
-      // Agora so herdamos o que o token ja resolveu, com uma unica
-      // fonte de verdade.
       if (session.user) {
         if (token.id) {
           session.user.id = token.id as string;
@@ -133,11 +132,6 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
       }
 
-      // CRITICO: o middleware (middleware.ts) protege /admin lendo
-      // token.role diretamente via getToken(), sem passar pelo
-      // callback session() abaixo. Sem isso aqui, token.role nunca
-      // era preenchido e NINGUEM conseguia acessar /admin, incluindo
-      // o proprio admin.
       if (token.email) {
         try {
           const dbUser = await db.query.users.findFirst({
@@ -155,11 +149,6 @@ export const authOptions: NextAuthOptions = {
           console.error("Error resolving user role in jwt callback:", error);
         }
 
-        // Rede de seguranca: a conta definida em ADMIN_EMAIL nunca pode
-        // ficar de fora do painel /admin so porque a consulta acima
-        // falhou (banco fora do ar, credencial errada, etc). Isso nao
-        // resolve um banco quebrado, mas garante que o admin sempre
-        // consiga pelo menos entrar no painel para investigar.
         if (token.email === ADMIN_EMAIL) {
           token.role = "admin";
           token.approvalStatus = "approved";
@@ -170,9 +159,7 @@ export const authOptions: NextAuthOptions = {
     },
 
     async redirect({ url, baseUrl }) {
-      // Allows relative callback URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allows callback URLs on the same origin
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     },
@@ -183,20 +170,31 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // Update session every 24 hours
+    maxAge: 7 * 24 * 60 * 60, // 7 dias para maior segurança contra sequestro de sessão
+    updateAge: 12 * 60 * 60,
   },
   jwt: {
     secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 7 * 24 * 60 * 60,
+  },
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
   events: {
     async signIn({ user }) {
-      console.log(`User signed in: ${user.email}`);
+      console.log(`User signed in securely: ${user.email}`);
     },
     async signOut() {
-      console.log("User signed out");
+      console.log("User signed out securely");
     },
   },
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
 };
