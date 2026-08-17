@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { Download, FileText, CheckCircle2 } from "lucide-react";
+import { Download, FileText, CheckCircle2, Eye, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface GrammarGuide {
@@ -11,6 +11,7 @@ interface GrammarGuide {
   pages: number;
   description: string;
   fileSize: string;
+  summary: string[];
 }
 
 export function GrammarGuidesSection() {
@@ -21,7 +22,14 @@ export function GrammarGuidesSection() {
       level: "A2-B1",
       pages: 12,
       description: "Explicação detalhada com exemplos práticos, estruturas sintáticas e exercícios comentados.",
-      fileSize: "2.4 MB"
+      fileSize: "2.4 MB",
+      summary: [
+        "1. Introdução à Morfologia do Passado Simples",
+        "2. Verbos Regulares vs. Irregulares (Tabela de Apoio)",
+        "3. Past Continuous: Ações em Andamento",
+        "4. Conjunções de Contraste (When vs. While)",
+        "5. Gabarito Comentado e Exercícios Práticos"
+      ]
     },
     {
       id: "g2",
@@ -29,7 +37,14 @@ export function GrammarGuidesSection() {
       level: "B1-B2",
       pages: 16,
       description: "Guia avançado sobre o uso de can, could, must, should, might e suas nuances no inglês profissional.",
-      fileSize: "3.1 MB"
+      fileSize: "3.1 MB",
+      summary: [
+        "1. Fundamentos dos Verbos Modais na Sintaxe Inglesa",
+        "2. Habilidade e Permissão (Can, Could, Be able to)",
+        "3. Obrigação e Conselho (Must, Have to, Should)",
+        "4. Dedução e Probabilidade no Passado e Presente",
+        "5. Casos Práticos de Redação Acadêmica"
+      ]
     },
     {
       id: "g3",
@@ -37,15 +52,25 @@ export function GrammarGuidesSection() {
       level: "A1-B2",
       pages: 8,
       description: "Instruções visuais e fonéticas para aperfeiçoar a articulação e eliminar o sotaque interferente.",
-      fileSize: "1.8 MB"
+      fileSize: "1.8 MB",
+      summary: [
+        "1. Anatomia da Articulação Interdental (Voiced vs. Voiceless)",
+        "2. Pares Mínimos para Treino Diário",
+        "3. Frases de Fluência e Ritmo de Fraseado",
+        "4. Dicas de Gravação e Autoavaliação de Pronúncia"
+      ]
     }
   ]);
 
   const [downloadedIds, setDownloadedIds] = useState<string[]>([]);
+  const [selectedGuide, setSelectedGuide] = useState<GrammarGuide | null>(null);
 
   const handleDownload = (guide: GrammarGuide) => {
-    setDownloadedIds(prev => [...prev, guide.id]);
+    if (!downloadedIds.includes(guide.id)) {
+      setDownloadedIds(prev => [...prev, guide.id]);
+    }
     toast.success(`Baixando "${guide.title}" (PDF)...`);
+    setSelectedGuide(null);
   };
 
   return (
@@ -79,22 +104,83 @@ export function GrammarGuidesSection() {
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{guide.description}</p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleDownload(guide)}
-                  className={`w-full py-3 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition shadow-sm ${
-                    isDownloaded 
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                      : "bg-red-600 hover:bg-red-700 text-white"
-                  }`}
-                >
-                  {isDownloaded ? <CheckCircle2 size={16} /> : <Download size={16} />}
-                  <span>{isDownloaded ? "PDF Baixado com Sucesso" : `Baixar Guia PDF (${guide.pages} págs)`}</span>
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedGuide(guide)}
+                    className="w-full bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition"
+                  >
+                    <Eye size={16} /> Pré-visualizar Sumário
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(guide)}
+                    className={`w-full py-2.5 px-4 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition shadow-sm ${
+                      isDownloaded 
+                        ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                        : "bg-red-600 hover:bg-red-700 text-white"
+                    }`}
+                  >
+                    {isDownloaded ? <CheckCircle2 size={16} /> : <Download size={16} />}
+                    <span>{isDownloaded ? "PDF Baixado" : `Baixar Guia (${guide.pages} págs)`}</span>
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
+
+        {/* Modal de Pré-visualização do Sumário */}
+        {selectedGuide && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-6 shadow-2xl relative animate-fade-in">
+              <button
+                onClick={() => setSelectedGuide(null)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="space-y-2">
+                <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-[10px] font-black uppercase">
+                  Sumário Oficial • {selectedGuide.level} ({selectedGuide.pages} páginas)
+                </span>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white">{selectedGuide.title}</h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400">{selectedGuide.description}</p>
+              </div>
+
+              <div className="space-y-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-700">
+                <p className="text-xs font-black uppercase tracking-wider text-slate-500">Conteúdo Programático do PDF:</p>
+                <ul className="space-y-2">
+                  {selectedGuide.summary.map((item, idx) => (
+                    <li key={idx} className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-red-600" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedGuide(null)}
+                  className="flex-1 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 py-3 rounded-xl font-bold text-xs transition"
+                >
+                  Fechar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownload(selectedGuide)}
+                  className="flex-1 bg-red-650 hover:bg-red-700 text-white bg-red-600 py-3 rounded-xl font-bold text-xs transition flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Download size={16} /> Baixar PDF Agora
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
