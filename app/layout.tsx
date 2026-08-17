@@ -1,23 +1,10 @@
-import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/session-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToastProvider } from "@/components/toast-provider";
-
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
-});
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Anderson Palafoz | Ensino de Inglês",
@@ -51,9 +38,14 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;900&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body className={`${poppins.variable} ${inter.variable} bg-slate-50 font-sans text-slate-900 antialiased`}>
-
+      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
         <SessionProviderWrapper>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <Navbar />
