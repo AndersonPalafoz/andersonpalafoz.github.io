@@ -75,7 +75,11 @@
 
   body {
     @apply bg-white text-gray-900 font-sans;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif !important;
+  }
+
+  *, ::before, ::after {
+    font-family: 'Poppins', system-ui, -apple-system, sans-serif;
   }
 
   h1 {
