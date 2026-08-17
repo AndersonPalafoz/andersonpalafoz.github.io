@@ -26,7 +26,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           <div className="lg:col-span-7 space-y-8 text-left">
             <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-full text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wider shadow-xs">
-              <Sparkles size={15} /> Ecossistema Acadêmico de Excelência
+              <Sparkles size={15} /> Metodologia Exclusiva & Interativa
             </div>
 
             <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.08] text-slate-900 dark:text-white">
@@ -94,7 +94,7 @@ export default async function HomePage() {
           <span className="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400">Metodologia Comprovada</span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight">Por que estudar com Anderson Palafoz?</h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
-            Uma abordagem moderna que une rigor linguístico (morfologia e sintaxe), tecnologia educacional avançada e acolhimento comunitário.
+            Uma abordagem autoral desenvolvida por Anderson Palafoz que une o rigor da morfossintaxe universitária, o modelo ESA (Engage, Study, Activate) e aulas dinâmicas para acelerar a fluência natural.
           </p>
         </div>
 
