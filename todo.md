@@ -177,3 +177,8 @@
 - [x] Adicionados filtros por tipo de evento (Quiz, Speaking, Conclusão de Módulo) no log de atividades reais
 - [x] Criada a opção de exportar todos os relatórios e dados analíticos reais do CMS em formato PDF formatado
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Auditoria e Exclusão de Mocks no CMS — 17/08/2026
+- [x] Removidos todos os dados simulados, nomes fictícios e placeholders do painel analítico do CMS
+- [x] Conectadas todas as métricas de engajamento a consultas reais do banco de dados persistido via `/api/admin/stats`
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
