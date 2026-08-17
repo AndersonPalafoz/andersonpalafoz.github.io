@@ -5,6 +5,7 @@ import { getUserEnrollments, getCertificates, getUserActivityProgress, getResume
 import { BookOpen, Award, CheckSquare, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeeklyGoalsWidget } from "./metas-semanais";
+import { ClassroomGradesNotificationBanner } from "./classroom-notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +54,9 @@ export default async function DashboardPage() {
           <Sparkles size={16} /> Aprenda com clareza e propósito
         </div>
       </header>
+
+      {/* Banner de Notificações de Notas do Google Classroom */}
+      <ClassroomGradesNotificationBanner />
 
       <section aria-label="Resumo acadêmico" className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {metrics.map(({ label, value, icon: Icon, tone }) => (
