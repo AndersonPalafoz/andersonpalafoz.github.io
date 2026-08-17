@@ -717,3 +717,8 @@
 - [x] Adicionar recompensas de emblemas especiais e XP extra ao atingir marcos de ofensiva de 7, 30 e 100 dias no calendário
 - [x] Implementar filtro por instituição no ranking dos mini-jogos para comparação segmentada entre colegas parceiros
 - [x] Criar loja de XP com item de "congelamento de ofensiva" para os alunos protegerem o streak em dias de ausência
+
+## Cosméticos na Loja de XP, Emblemas no Perfil/Ranking e Modo Tradicional vs Gamificado — 17/08/2026
+- [x] Adicionar itens cosméticos na loja de XP (avatares customizados e bordas de perfil exclusivas)
+- [x] Exibir emblemas de marcos de ofensiva conquistados no perfil do aluno e ao lado do nome no ranking geral
+- [x] Implementar alternância de modo de experiência acadêmica (Modo Gamificado, Modo Tradicional ou Híbrido) nas configurações, permitindo ocultar elementos de jogo para uma abordagem sóbria e tradicional sem perder recursos essenciais
