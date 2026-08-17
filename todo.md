@@ -281,3 +281,8 @@
 - [x] Integrar trilha adaptativa baseada em erros reais de quizzes com sugestões dinâmicas
 - [x] Adicionar feedback visual e animações de progresso ao concluir módulos nas aulas
 - [x] Otimizar a experiência de leitura tipográfica, espaçamento e contraste em todo o site
+
+## Feedback de Pronúncia por IA no Fórum e Avaliações de Cursos — 17/08/2026
+- [x] Implementar recurso de feedback por IA para analisar pronúncia dos áudios enviados no fórum e sugerir melhorias detalhadas
+- [x] Criar sistema completo de avaliações de cursos (com notas de 1 a 5 estrelas e feedbacks qualitativos reais)
+- [x] Validar 190 testes automatizados e build de produção sem erros
