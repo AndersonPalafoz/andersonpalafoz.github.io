@@ -443,3 +443,5 @@
 - [x] Concluir a auditoria do Módulo 4 (Experiência do Aluno, Histórico Acadêmico & Gamificação) com 100% de conformidade nas consultas de notas e frequência, skeleton loaders, exportação em PDF e isolamento de dados de novos usuários. Validados 192 testes automatizados.
 
 - [x] Concluir a auditoria do Módulo 5 (CMS Global, Editor Visual, Biblioteca de Mídia & Identidade Visual) com 100% de conformidade nas APIs de blocos de conteúdo, revisões, biblioteca de mídia e editor de marca (`BrandEditor`). Validados 192 testes automatizados.
+
+- [x] Implementar funcionalidade de arrastar e soltar (drag-and-drop) na biblioteca de mídia do CMS, incluindo feedback visual e processamento automático de arquivos enviados.
