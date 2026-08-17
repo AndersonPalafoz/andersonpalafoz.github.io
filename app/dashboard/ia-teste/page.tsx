@@ -2,13 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Mic, Square, Sparkles, Activity, ArrowLeft, Check, Volume2 } from "lucide-react";
-import { analyzeForumAudioPronunciation, PronunciationFeedback } from "@/lib/ai-forum-pronunciation";
+import { Mic, Square, Sparkles, AlertTriangle, ArrowLeft, Check, Volume2, Info } from "lucide-react";
 
 export default function IATestLabPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioRecorded, setAudioRecorded] = useState(false);
-  const [feedback, setFeedback] = useState<PronunciationFeedback | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [selectedPhrase, setSelectedPhrase] = useState("Could you please explain how to improve my English fluency in business meetings?");
 
@@ -22,24 +20,19 @@ export default function IATestLabPage() {
   const startRecording = () => {
     setIsRecording(true);
     setAudioRecorded(false);
-    setFeedback(null);
     setTimeout(() => {
       setIsRecording(false);
       setAudioRecorded(true);
-      const result = analyzeForumAudioPronunciation();
-      setFeedback(result);
-      setToastMessage("Áudio analisado com sucesso pela IA pedagógica!");
-      setTimeout(() => setToastMessage(null), 3500);
-    }, 2800);
+      setToastMessage("Áudio gravado com sucesso no modo Beta (análise automática desativada temporariamente).");
+      setTimeout(() => setToastMessage(null), 4000);
+    }, 2500);
   };
 
   const stopRecording = () => {
     setIsRecording(false);
     setAudioRecorded(true);
-    const result = analyzeForumAudioPronunciation();
-    setFeedback(result);
-    setToastMessage("Gravação finalizada e avaliada!");
-    setTimeout(() => setToastMessage(null), 3500);
+    setToastMessage("Gravação salva localmente para revisão do professor.");
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   return (
@@ -56,19 +49,32 @@ export default function IATestLabPage() {
           <ArrowLeft size={14} /> Voltar ao Dashboard
         </Link>
         <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 flex items-center justify-center font-black">
+          <div className="h-12 w-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black">
             <Sparkles size={24} />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Laboratório de Teste de Pronúncia por IA</h1>
-            <p className="text-xs sm:text-sm text-slate-500">Grave sua voz lendo uma frase em inglês e receba análise instantânea de clareza, entonação e dicas fonéticas.</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Laboratório de Pronúncia (Modo Beta)</h1>
+              <span className="bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-amber-300 dark:border-amber-900">
+                Beta / Em Ajustes
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">A avaliação automática por inteligência artificial foi temporariamente desativada do fluxo principal para ajustes. Utilize este ambiente exclusivamente para testes de gravação local.</p>
           </div>
         </div>
       </div>
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 rounded-3xl shadow-xs space-y-6">
+        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 text-amber-900 dark:text-amber-200 text-xs">
+          <AlertTriangle size={20} className="shrink-0 text-amber-600 mt-0.5" />
+          <div>
+            <p className="font-black uppercase tracking-wider mb-0.5">Aviso Importante</p>
+            <p className="leading-relaxed">O sistema de análise automática de fonemas está em modo Beta e não emite notas automáticas válidas no momento. Suas gravações podem ser enviadas diretamente para a moderação do professor.</p>
+          </div>
+        </div>
+
         <div>
-          <label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Escolha ou Digite a Frase de Teste</label>
+          <label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Frase para Prática de Leitura</label>
           <select
             value={selectedPhrase}
             onChange={(e) => setSelectedPhrase(e.target.value)}
@@ -78,10 +84,10 @@ export default function IATestLabPage() {
               <option key={idx} value={phrase}>{phrase}</option>
             ))}
           </select>
-          <div className="p-4 rounded-2xl bg-red-50/70 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/40 flex items-start gap-3">
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
             <Volume2 className="text-red-600 shrink-0 mt-0.5" size={20} />
             <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-red-700 dark:text-red-300">Texto para Leitura</p>
+              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Texto Sugerido</p>
               <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5 italic">"{selectedPhrase}"</p>
             </div>
           </div>
@@ -108,41 +114,16 @@ export default function IATestLabPage() {
 
           <div className="text-center space-y-1">
             <p className="text-xs font-black text-slate-800 dark:text-slate-200">
-              {isRecording ? "Ouvindo e analisando fonemas em tempo real..." : audioRecorded ? "Áudio gravado com sucesso!" : "Clique no microfone para iniciar a gravação"}
+              {isRecording ? "Gravando áudio para teste local..." : audioRecorded ? "Áudio gravado com sucesso (Modo Beta)." : "Clique no microfone para gravar"}
             </p>
-            <p className="text-[10px] text-slate-500">O sistema avaliará a precisão vocabular, entonação e ritmo.</p>
+            <p className="text-[10px] text-slate-500">Nenhuma pontuação automática será emitida neste ambiente experimental.</p>
           </div>
         </div>
 
-        {feedback && (
-          <div className="bg-gradient-to-r from-red-600 to-amber-600 p-6 rounded-2xl text-white shadow-xl space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-white/20 pb-3">
-              <span className="text-xs font-black uppercase tracking-wider flex items-center gap-2">
-                <Activity size={18} /> Relatório de Avaliação por IA
-              </span>
-              <span className="bg-white text-red-600 px-3 py-1 rounded-full text-xs font-black shadow-sm">
-                Nota Final: {feedback.score}/100 ({feedback.clarity})
-              </span>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <p className="font-bold text-white/90">
-                <span className="text-white font-black">Ritmo e Entonação:</span> {feedback.intonation}
-              </p>
-              <div className="space-y-1 bg-white/10 backdrop-blur-md p-3.5 rounded-xl border border-white/20">
-                <p className="font-black text-[11px] uppercase tracking-wider mb-1">Dicas Fonéticas Específicas:</p>
-                <ul className="list-disc pl-4 space-y-1">
-                  {feedback.phonemeTips.map((tip, idx) => (
-                    <li key={idx} className="text-white/95">{tip}</li>
-                  ))}
-                </ul>
-              </div>
-              <p className="text-[11px] italic text-white/90 pt-1">
-                "{feedback.encouragement}"
-              </p>
-            </div>
-          </div>
-        )}
+        <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
+          <Info size={18} className="text-slate-500 shrink-0" />
+          <span>Para feedback oficial de pronúncia, utilize o envio de áudio nas atividades de speaking avaliadas pelo professor.</span>
+        </div>
       </div>
     </div>
   );
