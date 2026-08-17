@@ -683,3 +683,35 @@ export const mediaAssets = pgTable("media_assets", {
 
 export type MediaAssetRecord = typeof mediaAssets.$inferSelect;
 export type InsertMediaAsset = typeof mediaAssets.$inferInsert;
+
+/**
+ * External Classes Attendance, Grades & Materials
+ */
+export const externalClassAttendance = pgTable("external_class_attendance", {
+  id: serial("id").primaryKey(),
+  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  date: varchar("date", { length: 32 }).notNull(), // ex: "2026-08-17"
+  attendanceData: text("attendanceData").notNull(), // JSON string map of studentId -> status ("present", "absent", "late")
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export const externalClassGrades = pgTable("external_class_grades", {
+  id: serial("id").primaryKey(),
+  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  studentId: integer("studentId").notNull().references(() => externalStudents.id, { onDelete: "cascade" }),
+  assessmentTitle: varchar("assessmentTitle", { length: 180 }).notNull(), // ex: "Avaliação 1", "Quiz Oral"
+  score: varchar("score", { length: 32 }).notNull(), // ex: "9.5"
+  maxScore: varchar("maxScore", { length: 32 }).notNull().default("10.0"),
+  feedback: text("feedback"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export const externalClassMaterials = pgTable("external_class_materials", {
+  id: serial("id").primaryKey(),
+  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 180 }).notNull(),
+  fileUrl: text("fileUrl").notNull(),
+  description: text("description"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});

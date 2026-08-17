@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { externalClasses, externalStudents, users } from "@/drizzle/schema";
+import {
+  externalClasses,
+  externalStudents,
+  externalClassAttendance,
+  externalClassGrades,
+  externalClassMaterials,
+  users,
+} from "@/drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 
 export async function GET() {
@@ -25,6 +32,9 @@ export async function GET() {
     const result = [];
     for (const cls of classes) {
       const students = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, cls.id));
+      const attendance = await db.select().from(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, cls.id)).orderBy(desc(externalClassAttendance.createdAt));
+      const grades = await db.select().from(externalClassGrades).where(eq(externalClassGrades.externalClassId, cls.id)).orderBy(desc(externalClassGrades.createdAt));
+      const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
       
       const totalStudents = students.length;
       const activeStudents = students.filter(s => s.status === "active").length;
@@ -33,6 +43,9 @@ export async function GET() {
       result.push({
         ...cls,
         students,
+        attendance,
+        grades,
+        materials,
         stats: {
           total: totalStudents,
           active: activeStudents,
@@ -77,6 +90,18 @@ export async function POST(request: NextRequest) {
       studentStatus,
       studentId,
       csvData,
+      // Attendance, Grades, Materials fields
+      date,
+      attendanceData,
+      assessmentTitle,
+      score,
+      maxScore,
+      feedback,
+      gradeId,
+      materialTitle,
+      fileUrl,
+      materialDescription,
+      materialId,
     } = body;
 
     if (action === "createClass") {
@@ -133,7 +158,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Acesso negado para gerenciar alunos desta turma." }, { status: 403 });
       }
 
-      // Prevenir duplicidade por email ou número de matrícula na mesma turma
       if (studentEmail) {
         const existingByEmail = await db.query.externalStudents.findFirst({
           where: and(
@@ -216,7 +240,6 @@ export async function POST(request: NextRequest) {
         const email = row.email || row.e_mail || null;
         const studentIdNumber = row.studentIdNumber || row.matricula || row.id || null;
 
-        // Evitar duplicados
         if (email) {
           const exists = await db.query.externalStudents.findFirst({
             where: and(
@@ -268,9 +291,120 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+        await db.delete(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, Number(classId)));
+        await db.delete(externalClassGrades).where(eq(externalClassGrades.externalClassId, Number(classId)));
+        await db.delete(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, Number(classId)));
         await db.delete(externalClasses).where(eq(externalClasses.id, Number(classId)));
       }
 
+      return NextResponse.json({ success: true });
+    }
+
+    // Ações de Chamada (Attendance)
+    if (action === "saveAttendance") {
+      if (!classId || !date || !attendanceData) {
+        return NextResponse.json({ error: "ID da turma, data e dados de frequência são obrigatórios." }, { status: 400 });
+      }
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      // Verificar se já existe chamada para esta data
+      const existingAtt = await db.query.externalClassAttendance.findFirst({
+        where: and(
+          eq(externalClassAttendance.externalClassId, Number(classId)),
+          eq(externalClassAttendance.date, String(date).trim())
+        )
+      });
+
+      if (existingAtt) {
+        await db.update(externalClassAttendance)
+          .set({ attendanceData: JSON.stringify(attendanceData) })
+          .where(eq(externalClassAttendance.id, existingAtt.id));
+      } else {
+        await db.insert(externalClassAttendance).values({
+          externalClassId: Number(classId),
+          date: String(date).trim(),
+          attendanceData: JSON.stringify(attendanceData),
+        });
+      }
+
+      return NextResponse.json({ success: true, message: "Chamada salva com sucesso!" });
+    }
+
+    // Ações de Notas (Grades)
+    if (action === "saveGrade") {
+      if (!classId || !studentId || !assessmentTitle || !score) {
+        return NextResponse.json({ error: "Turma, aluno, título da avaliação e nota são obrigatórios." }, { status: 400 });
+      }
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      const inserted = await db.insert(externalClassGrades).values({
+        externalClassId: Number(classId),
+        studentId: Number(studentId),
+        assessmentTitle: String(assessmentTitle).trim(),
+        score: String(score).trim(),
+        maxScore: maxScore ? String(maxScore).trim() : "10.0",
+        feedback: feedback ? String(feedback).trim() : null,
+      }).returning();
+
+      return NextResponse.json({ success: true, grade: inserted[0] });
+    }
+
+    if (action === "deleteGrade") {
+      if (!gradeId) {
+        return NextResponse.json({ error: "ID da nota não informado." }, { status: 400 });
+      }
+      const grade = await db.query.externalClassGrades.findFirst({ where: eq(externalClassGrades.id, Number(gradeId)) });
+      if (grade) {
+        const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, grade.externalClassId) });
+        if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+        }
+        await db.delete(externalClassGrades).where(eq(externalClassGrades.id, Number(gradeId)));
+      }
+      return NextResponse.json({ success: true });
+    }
+
+    // Ações de Materiais (Materials)
+    if (action === "addMaterial") {
+      if (!classId || !materialTitle || !fileUrl) {
+        return NextResponse.json({ error: "Turma, título do material e URL/link do arquivo são obrigatórios." }, { status: 400 });
+      }
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      const inserted = await db.insert(externalClassMaterials).values({
+        externalClassId: Number(classId),
+        title: String(materialTitle).trim(),
+        fileUrl: String(fileUrl).trim(),
+        description: materialDescription ? String(materialDescription).trim() : null,
+      }).returning();
+
+      return NextResponse.json({ success: true, material: inserted[0] });
+    }
+
+    if (action === "deleteMaterial") {
+      if (!materialId) {
+        return NextResponse.json({ error: "ID do material não informado." }, { status: 400 });
+      }
+      const mat = await db.query.externalClassMaterials.findFirst({ where: eq(externalClassMaterials.id, Number(materialId)) });
+      if (mat) {
+        const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, mat.externalClassId) });
+        if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+        }
+        await db.delete(externalClassMaterials).where(eq(externalClassMaterials.id, Number(materialId)));
+      }
       return NextResponse.json({ success: true });
     }
 

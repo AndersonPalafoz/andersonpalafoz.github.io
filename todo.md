@@ -467,3 +467,7 @@
 - [ ] Aprimorar o gerenciamento e manutenção unificada de cursos internos (plataforma) e externos (IsF, PROFICI, SIMAL, Megaworks, UFBA) com controle de status, módulos, turmas e arquivamento seguro.
 
 - [x] Aprimorar o gerenciamento e manutenção unificada de cursos internos (plataforma) e externos (IsF, PROFICI, SIMAL, Megaworks, UFBA) com controle de status, módulos, turmas e arquivamento seguro.
+
+- [x] Permitir o cadastro, gerenciamento e relatórios de quaisquer instituições ou cursos externos customizados informados pelo professor, além da lista padrão (IsF, PROFICI, SIMAL, Megaworks, UFBA).
+
+- [x] Implementar sistema integrado de chamada (frequência), lançamento de notas e vinculação de materiais didáticos para todas as turmas e cursos externos (institucionais e customizados) diretamente na plataforma.
