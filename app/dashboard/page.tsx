@@ -6,6 +6,9 @@ import { BookOpen, Award, CheckSquare, ArrowRight, Sparkles } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { WeeklyGoalsWidget } from "./metas-semanais";
 import { ClassroomGradesNotificationBanner } from "./classroom-notifications";
+import { OnboardingModal } from "@/components/onboarding-modal";
+import { ClassroomImportAction } from "@/components/classroom-import-action";
+import { WeeklyProgressChart } from "@/components/weekly-progress-chart";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +47,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+      <OnboardingModal />
+
       <header className="flex flex-col gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <span className="eyebrow">Área do aluno</span>
@@ -73,6 +78,9 @@ export default async function DashboardPage() {
       {/* Widget de Metas Semanais */}
       <WeeklyGoalsWidget />
 
+      {/* Gráfico de Progresso Semanal Real */}
+      <WeeklyProgressChart />
+
       <section className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -83,11 +91,15 @@ export default async function DashboardPage() {
         </div>
 
         {cursosAtivos.length === 0 ? (
-          <div className="surface-card border-dashed p-8 text-center sm:p-12">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={24} /></div>
-            <h3 className="mt-4 text-lg font-black text-foreground">Sua próxima conquista começa aqui</h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Você ainda não está inscrito em um curso. Encontre uma trilha adequada ao seu nível e avance no seu ritmo.</p>
-            <Button asChild className="mt-6"><Link href="/aulas">Explorar cursos <ArrowRight size={17} /></Link></Button>
+          <div className="space-y-6">
+            <div className="surface-card border-dashed p-8 text-center sm:p-12">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={24} /></div>
+              <h3 className="mt-4 text-lg font-black text-foreground">Sua próxima conquista começa aqui</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Você ainda não está inscrito em um curso. Como sua conta começou zerada por padrão, encontre uma trilha adequada ao seu nível ou importe do Classroom.</p>
+              <Button asChild className="mt-6"><Link href="/aulas">Explorar cursos <ArrowRight size={17} /></Link></Button>
+            </div>
+            {/* Ação para importar do Google Classroom em painéis vazios */}
+            <ClassroomImportAction />
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
