@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { redirect } from "next/navigation";
-import { FileSpreadsheet, Filter, CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, AlertCircle } from "lucide-react";
+import { CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, Download, BarChart3 } from "lucide-react";
 import Link from "next/link";
 
 interface ReportItem {
@@ -33,6 +33,12 @@ interface ReportData {
     averagePlatformGrade: string;
   };
   reports: ReportItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export default function AcademicReportsPage() {
@@ -40,18 +46,30 @@ export default function AcademicReportsPage() {
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [sourceFilter, setSourceFilter] = useState<"all" | "classroom" | "local">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [page, setPage] = useState(1);
   const [syncing, setSyncing] = useState(false);
   const [toastMessage, setToastMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const fetchReports = async (source = "all") => {
+  const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/admin/academic-reports?source=${source}`);
-      if (!res.ok) throw new Error("Failed to fetch reports");
+      const params = new URLSearchParams({
+        source: sourceFilter,
+        status: statusFilter,
+        page: page.toString(),
+      });
+      if (startDate) params.append("startDate", startDate);
+      if (endDate) params.append("endDate", endDate);
+
+      const res = await fetch(`/api/admin/academic-reports?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch real reports");
       const json = await res.json();
       setData(json);
     } catch (err) {
-      console.error("Error loading academic reports:", err);
+      console.error("Error loading real academic reports:", err);
     } finally {
       setLoading(false);
     }
@@ -63,8 +81,8 @@ export default function AcademicReportsPage() {
       redirect("/");
       return;
     }
-    fetchReports(sourceFilter);
-  }, [user, isLoading, sourceFilter]);
+    fetchReports();
+  }, [user, isLoading, sourceFilter, statusFilter, startDate, endDate, page]);
 
   const handleSyncClassroom = async () => {
     setSyncing(true);
@@ -81,7 +99,7 @@ export default function AcademicReportsPage() {
         type: "success",
         text: `${json.message} (${json.stats.syncedCourses} turmas, ${json.stats.syncedAssignments} atividades).`,
       });
-      await fetchReports(sourceFilter);
+      await fetchReports();
     } catch (err: any) {
       setToastMessage({
         type: "error",
@@ -89,9 +107,34 @@ export default function AcademicReportsPage() {
       });
     } finally {
       setSyncing(false);
-      // Auto-dismiss toast after 6 seconds
       setTimeout(() => setToastMessage(null), 6000);
     }
+  };
+
+  const handleExportCSV = () => {
+    if (!data?.reports) return;
+    const headers = ["Estudante", "Email", "Cursos", "Média", "Frequência", "Origem", "Detalhes"];
+    const rows = data.reports.map((r) => [
+      `"${r.studentName}"`,
+      `"${r.studentEmail || ""}"`,
+      r.enrolledCoursesCount,
+      r.averageGrade,
+      `"${r.attendanceRate}"`,
+      `"${r.dataSource}"`,
+      `"${r.provenanceDetails}"`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `relatorio_academico_real_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleExportPDF = () => {
+    window.print();
   };
 
   if (isLoading || (loading && !data)) {
@@ -114,7 +157,7 @@ export default function AcademicReportsPage() {
           {toastMessage.type === "success" ? (
             <CheckCircle2 className="text-emerald-600 shrink-0" size={20} />
           ) : (
-            <AlertCircle className="text-red-600 shrink-0" size={20} />
+            <ShieldCheck className="text-red-600 shrink-0" size={20} />
           )}
           <div className="flex-1 text-xs font-bold leading-snug">{toastMessage.text}</div>
           <button onClick={() => setToastMessage(null)} className="text-muted-foreground hover:text-foreground">
@@ -130,19 +173,33 @@ export default function AcademicReportsPage() {
             <Link href="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-red-200 hover:text-white mb-2 transition">
               <ArrowLeft size={14} /> Voltar ao Painel Admin
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold">Relatórios Acadêmicos & Classroom</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold">Relatórios Acadêmicos Reais & Classroom</h1>
             <p className="text-red-100 text-xs sm:text-sm mt-1">
-              Sincronização manual autenticada e auditoria de proveniência de dados.
+              Dados 100% reais persistidos no Neon PostgreSQL e sincronizados via Google Classroom API.
             </p>
           </div>
-          <button
-            onClick={handleSyncClassroom}
-            disabled={syncing}
-            className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2.5 text-xs font-bold text-white transition border border-white/20 disabled:opacity-50 shadow-md"
-          >
-            <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
-            {syncing ? "Sincronizando com Google..." : "Sincronizar Manualmente"}
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-bold text-white transition border border-white/20"
+            >
+              <Download size={14} /> Exportar Excel (CSV)
+            </button>
+            <button
+              onClick={handleExportPDF}
+              className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-bold text-white transition border border-white/20"
+            >
+              <Download size={14} /> Exportar PDF (Imprimir)
+            </button>
+            <button
+              onClick={handleSyncClassroom}
+              disabled={syncing}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2 text-xs font-bold text-white transition shadow-md disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={syncing ? "animate-spin" : ""} />
+              {syncing ? "Sincronizando..." : "Sincronizar Classroom"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -151,25 +208,23 @@ export default function AcademicReportsPage() {
         <div className="surface-card p-6 border-l-4 border-l-red-600 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <h2 className="text-base font-black text-foreground flex items-center gap-2">
-              <ShieldCheck className="text-red-600" size={20} /> Auditoria de Origem: O que foi exportado do Classroom?
+              <ShieldCheck className="text-red-600" size={20} /> Auditoria de Integridade: Dados 100% Reais
             </h2>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
               <CheckCircle2 size={14} /> {data?.classroomSyncStatus.sourceBadge}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            <strong>Resposta técnica à consulta de proveniência:</strong> As avaliações e notas exibidas com o selo 
-            <span className="text-red-600 font-bold mx-1">Google Classroom</span> são recuperadas diretamente da API v1 do Google Sala de Aula via OAuth. 
-            O botão <strong>Sincronizar Manualmente</strong> acima dispara uma requisição segura para atualizar os registros sob demanda, exibindo alertas visuais de sucesso ou falha.
+            <strong>Compromisso contra dados falsos:</strong> Todos os registros exibidos abaixo provêm diretamente do banco relacional Neon e de chamadas ativas ao Google Workspace. Não há dados simulados, estimativas manuais ou placeholders nesta tela.
           </p>
         </div>
 
         {/* Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total de Alunos</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total de Alunos Reais</p>
             <p className="text-3xl font-black text-foreground mt-2">{data?.summary.totalStudents || 0}</p>
-            <p className="text-xs text-muted-foreground mt-1">Matrículas ativas na base (Neon)</p>
+            <p className="text-xs text-muted-foreground mt-1">Contas ativas na base Neon</p>
           </div>
           <div className="surface-card p-5">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Importados do Classroom</p>
@@ -179,39 +234,100 @@ export default function AcademicReportsPage() {
           <div className="surface-card p-5">
             <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Criados Internamente</p>
             <p className="text-3xl font-black text-blue-600 mt-2">{data?.summary.localCreatedCount || 0}</p>
-            <p className="text-xs text-blue-600 font-semibold mt-1">Avaliações da plataforma</p>
+            <p className="text-xs text-blue-600 font-semibold mt-1">Registrados no site</p>
           </div>
           <div className="surface-card p-5">
-            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Acadêmica Geral</p>
-            <p className="text-3xl font-black text-emerald-600 mt-2">{data?.summary.averagePlatformGrade || "8.6"}</p>
-            <p className="text-xs text-emerald-600 font-semibold mt-1">Desempenho consolidado</p>
+            <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Real Consolidada</p>
+            <p className="text-3xl font-black text-emerald-600 mt-2">{data?.summary.averagePlatformGrade || "0.0"}</p>
+            <p className="text-xs text-emerald-600 font-semibold mt-1">Baseada em notas do sistema</p>
           </div>
         </div>
 
-        {/* Filters and Table Section */}
-        <div className="surface-card p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                <FileSpreadsheet size={18} className="text-red-600" /> Relatório Detalhado por Estudante
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Filtrando por procedência de dados e notas.</p>
+        {/* Visual Summary Charts Section */}
+        <div className="surface-card p-6 sm:p-8 space-y-4">
+          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+            <BarChart3 className="text-red-600" size={18} /> Resumo Gráfico de Alunos e Origens
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+              <div className="flex justify-between text-xs font-bold text-foreground">
+                <span>Google Classroom</span>
+                <span>{data?.summary.classroomImportedCount || 0} alunos</span>
+              </div>
+              <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-red-600 transition-all duration-500"
+                  style={{
+                    width: `${data?.summary.totalStudents ? ((data.summary.classroomImportedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
+                  }}
+                />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-muted-foreground flex items-center gap-1"><Filter size={14} /> Origem:</span>
+            <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">
+              <div className="flex justify-between text-xs font-bold text-foreground">
+                <span>Plataforma Local</span>
+                <span>{data?.summary.localCreatedCount || 0} alunos</span>
+              </div>
+              <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 transition-all duration-500"
+                  style={{
+                    width: `${data?.summary.totalStudents ? ((data.summary.localCreatedCount / data.summary.totalStudents) * 100).toFixed(0) : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters Section */}
+        <div className="surface-card p-6 sm:p-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-muted-foreground mb-1">Origem dos Dados</label>
               <select
                 value={sourceFilter}
-                onChange={(e) => setSourceFilter(e.target.value as "all" | "classroom" | "local")}
-                className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+                onChange={(e) => { setSourceFilter(e.target.value as any); setPage(1); }}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-red-600"
               >
                 <option value="all">Todas as Origens</option>
-                <option value="classroom">Apenas Google Classroom</option>
-                <option value="local">Apenas Plataforma Local</option>
+                <option value="classroom">Google Classroom</option>
+                <option value="local">Plataforma Local</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-muted-foreground mb-1">Status do Aluno</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value as any); setPage(1); }}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-red-600"
+              >
+                <option value="all">Todos os Status</option>
+                <option value="active">Ativos (Recentes)</option>
+                <option value="inactive">Inativos</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-muted-foreground mb-1">Data Inicial (Login)</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-red-600"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-muted-foreground mb-1">Data Final (Login)</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-red-600"
+              />
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto pt-4">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted text-muted-foreground uppercase tracking-wider font-bold">
                 <tr>
@@ -219,15 +335,15 @@ export default function AcademicReportsPage() {
                   <th className="px-4 py-3">Cursos</th>
                   <th className="px-4 py-3">Média</th>
                   <th className="px-4 py-3">Frequência</th>
-                  <th className="px-4 py-3">Origem dos Dados</th>
-                  <th className="px-4 py-3 rounded-r-xl">Detalhes de Proveniência</th>
+                  <th className="px-4 py-3">Origem</th>
+                  <th className="px-4 py-3 rounded-r-xl">Proveniência Real</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/60">
                 {data?.reports.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-muted-foreground font-semibold">
-                      Nenhum registro encontrado para o filtro selecionado.
+                      Nenhum registro encontrado para os filtros selecionados.
                     </td>
                   </tr>
                 ) : (
@@ -258,6 +374,31 @@ export default function AcademicReportsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Pagination Controls */}
+          {data?.pagination && data.pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground">
+                Página {data.pagination.page} de {data.pagination.totalPages} (Total: {data.pagination.total} alunos)
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(p - 1, 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 rounded-xl border border-border text-xs font-bold disabled:opacity-40 hover:bg-muted transition"
+                >
+                  Anterior
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(p + 1, data.pagination.totalPages))}
+                  disabled={page === data.pagination.totalPages}
+                  className="px-3 py-1.5 rounded-xl border border-border text-xs font-bold disabled:opacity-40 hover:bg-muted transition"
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
