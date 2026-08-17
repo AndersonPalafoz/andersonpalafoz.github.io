@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
 import { useEffect, useMemo, useState } from "react";
-import { Award, BarChart3, CalendarCheck, Loader2, TrendingUp } from "lucide-react";
+import { Award, BarChart3, CalendarCheck, Loader2, TrendingUp, Filter, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { Line, LineChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, TooltipProps, XAxis, YAxis } from "recharts";
 import { mergeAcademicTimelines, AcademicComparisonPoint } from "@/lib/academic-comparison";
@@ -64,6 +64,7 @@ export default function HistoricoAcademicoPage() {
   const [grades, setGrades] = useState<GradeRecord[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSemester, setSelectedSemester] = useState<string>("all");
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -84,12 +85,36 @@ export default function HistoricoAcademicoPage() {
     void loadHistory();
   }, []);
 
-  const gradeAverage = useMemo(() => {
-    const scored = grades.filter((grade) => grade.score !== null).map((grade) => grade.score as number);
-    return scored.length ? (scored.reduce((sum, score) => sum + score, 0) / scored.length).toFixed(1) : "—";
-  }, [grades]);
+  // Filtragem por Semestre Letivo (ex: 2026.1 = Jan-Jun, 2026.2 = Jul-Dez)
+  const filteredTimeline = useMemo(() => {
+    if (selectedSemester === "all") return timeline;
+    return timeline.filter((point) => {
+      if (!point.monthKey) return true;
+      const [year, monthStr] = point.monthKey.split("-");
+      const month = Number(monthStr);
+      const sem = month <= 6 ? `${year}.1` : `${year}.2`;
+      return sem === selectedSemester;
+    });
+  }, [timeline, selectedSemester]);
 
-  const chartTimeline = useMemo(() => mergeAcademicTimelines(timeline, classTimeline), [timeline, classTimeline]);
+  const filteredGrades = useMemo(() => {
+    if (selectedSemester === "all") return grades;
+    return grades.filter((g) => {
+      if (!g.submittedAt) return true;
+      const d = new Date(g.submittedAt);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const sem = month <= 6 ? `${year}.1` : `${year}.2`;
+      return sem === selectedSemester;
+    });
+  }, [grades, selectedSemester]);
+
+  const gradeAverage = useMemo(() => {
+    const scored = filteredGrades.filter((grade) => grade.score !== null).map((grade) => grade.score as number);
+    return scored.length ? (scored.reduce((sum, score) => sum + score, 0) / scored.length).toFixed(1) : "—";
+  }, [filteredGrades]);
+
+  const chartTimeline = useMemo(() => mergeAcademicTimelines(filteredTimeline, classTimeline), [filteredTimeline, classTimeline]);
 
   const presenceRate = useMemo(() => {
     if (!attendance.length) return "—";
@@ -102,36 +127,75 @@ export default function HistoricoAcademicoPage() {
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      <header>
-        <p className="text-sm font-bold uppercase tracking-widest text-red-600">Acompanhamento</p>
-        <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950">Histórico acadêmico</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">Veja como suas notas e sua frequência evoluíram ao longo do tempo. Passe o cursor sobre cada ponto para consultar os valores exatos e a base usada no cálculo.</p>
+    <div className="space-y-8 pb-12 font-sans">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-red-600">Acompanhamento Acadêmico</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 dark:text-white">Histórico e Evolução de Notas</h1>
+          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-gray-500 dark:text-gray-400">Analise seu desempenho por semestre letivo, compare sua evolução com a média da turma e filtre suas avaliações com precisão.</p>
+        </div>
+
+        <div className="flex items-center gap-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-3 rounded-2xl shadow-xs">
+          <Filter size={16} className="text-red-600 shrink-0" />
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Semestre:</span>
+          <select
+            value={selectedSemester}
+            onChange={(e) => setSelectedSemester(e.target.value)}
+            className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-red-600"
+          >
+            <option value="all">Todos os Semestres</option>
+            <option value="2026.1">2026.1 (Jan–Jun)</option>
+            <option value="2026.2">2026.2 (Jul–Dez)</option>
+            <option value="2025.2">2025.2 (Jul–Dez)</option>
+          </select>
+        </div>
       </header>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Média das notas</span><Award size={20} className="text-red-600" /></div><p className="mt-3 text-3xl font-black text-gray-950">{gradeAverage}</p><p className="mt-1 text-xs text-gray-500">pontuação média registrada</p></div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Frequência</span><CalendarCheck size={20} className="text-emerald-600" /></div><p className="mt-3 text-3xl font-black text-emerald-700">{presenceRate}</p><p className="mt-1 text-xs text-gray-500">presenças nas chamadas</p></div>
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Períodos acompanhados</span><TrendingUp size={20} className="text-blue-600" /></div><p className="mt-3 text-3xl font-black text-gray-950">{timeline.length}</p><p className="mt-1 text-xs text-gray-500">meses com registros reais</p></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Média das Notas</span><Award size={20} className="text-red-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{gradeAverage}</p><p className="mt-1 text-xs text-gray-500">pontuação média no filtro</p></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Frequência Geral</span><CalendarCheck size={20} className="text-emerald-600" /></div><p className="mt-3 text-3xl font-black text-emerald-700 dark:text-emerald-400">{presenceRate}</p><p className="mt-1 text-xs text-gray-500">presenças registradas</p></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Avaliações Filtradas</span><TrendingUp size={20} className="text-blue-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{filteredGrades.length}</p><p className="mt-1 text-xs text-gray-500">atividades pontuadas</p></div>
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950">Evolução das notas</h2><p className="mt-1 text-xs text-gray-500">Média das pontuações por mês. A linha tracejada mostra a média da turma nos mesmos cursos.</p></div><BarChart3 size={20} className="text-red-600" /></div>
-          {timeline.some((point) => point.averageGrade !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip content={<AcademicTooltip metric="grade" />} /><Legend /><Line type="monotone" dataKey="averageGrade" name="Sua média" stroke="#D62828" strokeWidth={3} dot={{ r: 4, fill: "#D62828" }} connectNulls /><Line type="monotone" dataKey="classAverageGrade" name="Média da turma" stroke="#6B7280" strokeWidth={2} strokeDasharray="6 5" dot={false} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há notas registradas em períodos suficientes para formar um gráfico.</div>}
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
+          <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950 dark:text-white flex items-center gap-2"><Calendar size={18} className="text-red-600" /> Evolução Visual das Notas por Período</h2><p className="mt-1 text-xs text-gray-500">Gráfico dinâmico comparando suas notas com a média da turma no semestre selecionado.</p></div><BarChart3 size={20} className="text-red-600" /></div>
+          <div className="h-72 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartTimeline} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" opacity={0.5} />
+                <XAxis dataKey="month" stroke="#64748b" fontSize={11} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={11} domain={[0, 100]} tickLine={false} />
+                <Tooltip content={<AcademicTooltip metric="grade" />} />
+                <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+                <Line type="monotone" dataKey="averageGrade" name="Sua Média" stroke="#dc2626" strokeWidth={3} dot={{ r: 5, fill: "#dc2626" }} activeDot={{ r: 7 }} />
+                <Line type="monotone" dataKey="classAverageGrade" name="Média da Turma" stroke="#94a3b8" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950">Evolução da frequência</h2><p className="mt-1 text-xs text-gray-500">Percentual de presença por mês. A linha tracejada mostra a média da turma nos mesmos cursos.</p></div><CalendarCheck size={20} className="text-emerald-600" /></div>
-          {timeline.some((point) => point.attendanceRate !== null) ? <div className="h-72 w-full"><ResponsiveContainer width="100%" height="100%"><LineChart data={chartTimeline} margin={{ top: 8, right: 8, left: -16, bottom: 4 }}><CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" /><XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#6B7280" /><YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6B7280" /><Tooltip content={<AcademicTooltip metric="attendance" />} /><Legend /><Line type="monotone" dataKey="attendanceRate" name="Sua frequência" stroke="#16A34A" strokeWidth={3} dot={{ r: 4, fill: "#16A34A" }} connectNulls /><Line type="monotone" dataKey="classAttendanceRate" name="Média da turma" stroke="#6B7280" strokeWidth={2} strokeDasharray="6 5" dot={false} connectNulls /></LineChart></ResponsiveContainer></div> : <div className="flex h-72 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-6 text-center text-sm text-gray-500">Ainda não há registros de chamada suficientes para formar um gráfico.</div>}
-        </div>
-      </section>
-
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-black text-gray-950">Registros recentes</h2>
-        <div className="mt-4 divide-y divide-gray-100">
-          {grades.slice(-5).reverse().map((grade, index) => <div key={`${grade.activityTitle}-${grade.submittedAt}-${index}`} className="flex flex-col gap-1 py-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-bold text-gray-900">{grade.activityTitle}</p><p className="text-xs text-gray-500">{grade.courseTitle} · {grade.submittedAt ? new Date(grade.submittedAt).toLocaleDateString("pt-BR") : "Sem data"}</p></div><span className="text-sm font-black text-red-600">{grade.score === null ? "Pendente" : `${grade.score} pts`}</span></div>)}
-          {grades.length === 0 && <p className="py-8 text-center text-sm text-gray-500">Nenhuma nota registrada ainda.</p>}
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
+          <h2 className="text-lg font-black text-gray-950 dark:text-white mb-1">Detalhamento das Avaliações</h2>
+          <p className="text-xs text-gray-500 mb-4">Lista de notas obtidas nas atividades do semestre selecionado.</p>
+          
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {filteredGrades.length === 0 ? (
+              <p className="text-xs text-gray-500 text-center py-10">Nenhuma avaliação encontrada para o semestre selecionado.</p>
+            ) : (
+              filteredGrades.map((g, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/40">
+                  <div>
+                    <p className="text-xs font-black text-gray-900 dark:text-white">{g.activityTitle}</p>
+                    <p className="text-[10px] text-gray-500">{g.courseTitle} • {g.submittedAt ? new Date(g.submittedAt).toLocaleDateString("pt-BR") : "Data não informada"}</p>
+                  </div>
+                  <span className="bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 font-black text-xs px-3 py-1 rounded-full border border-red-200 dark:border-red-900/40">
+                    {g.score !== null ? `${g.score} pts` : "Pendente"}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </section>
     </div>
