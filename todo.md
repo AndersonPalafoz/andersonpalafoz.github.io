@@ -417,3 +417,7 @@
 - [x] Conduzir auditoria e purgação de dados estáticos nas 13 rotas solicitadas (`/dashboard/calendario`, `/dashboard`, `/dashboard/historico`, `/dashboard/perfil`, `/dashboard/certificados`, `/professor`, `/professor/progresso-aulas`, `/admin/cursos`, `/admin`, `/admin/relatorios-academicos`, `/admin/medalhas`, `/admin/cms`), garantindo que operem 100% com dados reais do banco Neon e APIs verificadas.
 
 - [x] Reauditar e purgar quaisquer resquícios de dados estáticos ou inventados nas 13 URLs publicadas pelo usuário, assegurando que rotas como calendário, relatórios e painéis operem 100% com banco Neon e APIs reais verificadas.
+
+- [ ] Remover referências residuais à IA na página de progresso de aulas (`/professor/progresso-aulas`).
+
+- [x] Remover menções residuais à IA na página de progresso de aulas (`/professor/progresso-aulas`), consolidando o fluxo estritamente no feedback e avaliação do professor.
