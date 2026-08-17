@@ -707,3 +707,8 @@
 - [x] Criar página/seção demonstrativa (`/demo` ou componente dedicado) com exemplos funcionais de vídeos (YouTube/Vimeo) e jogos educacionais interativos de inglês
 - [x] Aprimorar o sistema de ofensiva diária (streak) com lógica anti-duplicidade baseada em UTC, recuperação após falhas e notificações visuais
 - [x] Integrar a demonstração interativa e o sistema de streak aprimorado ao ecossistema acadêmico da plataforma
+
+## Compartilhamento de Ofensiva, Leaderboard de Mini-Jogos e Calendário Visual de Streak — 17/08/2026
+- [x] Adicionar botão de compartilhamento rápido para postar ofensiva diária no WhatsApp e redes sociais
+- [x] Criar leaderboard específico para os mini-jogos educacionais com competição saudável e opção de privacidade (opt-out)
+- [x] Implementar calendário visual no perfil do usuário exibindo histórico detalhado dos dias de ofensiva mantidos, perdidos e recuperados
