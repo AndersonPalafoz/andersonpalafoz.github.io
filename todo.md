@@ -136,3 +136,13 @@
 - [x] Incluído resumo visual de armazenamento no topo da biblioteca de mídias do CMS
 - [x] Implementada seleção múltipla e exclusão em massa de arquivos com confirmação
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Ajustes Finais de Tipografia Global (Poppins) e Dados Reais no CMS — 17/08/2026
+- [x] Aplicar fonte Poppins universalmente em todo o site e aumentar moderadamente a escala tipográfica para legibilidade ideal
+- [x] Substituir dados simulados/placeholders no CMS por métricas e conteúdos estritamente reais extraídos do banco de dados persistido
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Poppins Global, Legibilidade e Dados Reais — 17/08/2026
+- [x] Aplicada a fonte Poppins universalmente em todo o site com escala tipográfica otimizada e aumentada para melhor legibilidade
+- [x] Removidos quaisquer placeholders ou dados simulados do CMS, exibindo estritamente métricas e conteúdos reais persistidos
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados

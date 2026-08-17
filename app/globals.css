@@ -418,10 +418,15 @@
 }
 
 @layer base {
+  html {
+    font-size: 16px;
+  }
   body {
-    font-family: 'Poppins', 'Inter', sans-serif;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.025rem;
+    line-height: 1.6;
   }
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Poppins', 'Inter', sans-serif;
+    font-family: 'Poppins', sans-serif;
   }
 }
