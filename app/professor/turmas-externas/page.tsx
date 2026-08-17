@@ -14,6 +14,12 @@ interface ExternalStudentItem {
   notes: string | null;
 }
 
+interface ExternalClassStats {
+  total: number;
+  active: number;
+  completed: number;
+}
+
 interface ExternalClassItem {
   id: number;
   institution: string;
@@ -22,6 +28,7 @@ interface ExternalClassItem {
   academicTerm: string;
   description: string | null;
   students: ExternalStudentItem[];
+  stats?: ExternalClassStats;
 }
 
 export default function TurmasExternasPage() {
@@ -48,6 +55,7 @@ export default function TurmasExternasPage() {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [studentIdNumber, setStudentIdNumber] = useState("");
+  const [studentStatus, setStudentStatus] = useState("active");
   const [studentNotes, setStudentNotes] = useState("");
 
   const loadClasses = async () => {
@@ -119,6 +127,7 @@ export default function TurmasExternasPage() {
     setCourseName(cls.courseName);
     setAcademicTerm(cls.academicTerm);
     setDescription(cls.description || "");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const resetClassForm = () => {
@@ -128,6 +137,23 @@ export default function TurmasExternasPage() {
     setCourseName("");
     setAcademicTerm("2026.1");
     setDescription("");
+  };
+
+  const handleDeleteClass = async (classId: number) => {
+    if (!window.confirm("Deseja realmente excluir esta turma e todos os seus alunos cadastrados?")) return;
+    try {
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteClass", classId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir turma.");
+      toast.success("Turma externa excluída com sucesso.");
+      void loadClasses();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir turma.");
+    }
   };
 
   const handleAddStudent = async (e: React.FormEvent) => {
@@ -147,78 +173,80 @@ export default function TurmasExternasPage() {
           studentName,
           studentEmail,
           studentIdNumber,
+          studentStatus,
           studentNotes,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao cadastrar aluno.");
-      toast.success("Aluno cadastrado na turma externa!");
+      if (!res.ok) throw new Error(data.error || "Erro ao matricular aluno.");
+      toast.success("Aluno matriculado com sucesso na turma externa!");
       setStudentName("");
       setStudentEmail("");
       setStudentIdNumber("");
       setStudentNotes("");
+      setSelectedClassId(null);
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao cadastrar aluno.");
+      toast.error(err instanceof Error ? err.message : "Erro ao matricular aluno.");
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleRemoveStudent = async (studentId: number) => {
-    if (!confirm("Deseja realmente remover este aluno da turma?")) return;
+  const handleDeleteStudent = async (studentId: number) => {
+    if (!window.confirm("Deseja realmente remover este aluno da turma?")) return;
     try {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "removeStudent", studentId }),
+        body: JSON.stringify({ action: "deleteStudent", studentId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao remover aluno.");
-      toast.success("Aluno removido com sucesso.");
+      toast.success("Aluno removido da turma com sucesso.");
       void loadClasses();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao remover aluno.");
     }
   };
 
-  const handleRemoveClass = async (classId: number) => {
-    if (!confirm("Deseja realmente excluir esta turma externa e todos os seus alunos?")) return;
+  const handleUpdateStudentStatus = async (studentId: number, newStatus: string) => {
     try {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "removeClass", classId }),
+        body: JSON.stringify({ action: "updateStudentStatus", studentId, studentStatus: newStatus }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao excluir turma.");
-      toast.success("Turma excluída com sucesso.");
+      if (!res.ok) throw new Error(data.error || "Erro ao atualizar status do aluno.");
+      toast.success("Status do aluno atualizado.");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir turma.");
+      toast.error(err instanceof Error ? err.message : "Erro ao atualizar status.");
     }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-slate-950 px-4 py-8 sm:px-6 lg:px-8 font-sans">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
-          <Link href="/professor" className="mb-4 inline-flex items-center gap-2 text-xs font-black text-red-600 hover:underline">
-            <ArrowLeft size={15} /> Voltar ao Painel do Professor
-          </Link>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-red-600">Gestão de Projetos e Instituições Externas</p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 dark:text-white">Cadastro Manual de Turmas & Alunos</h1>
-              <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-gray-500 dark:text-gray-400">Gerencie turmas presenciais ou de terceiros (como SIMAL, Megaworks, UFBA) sem depender da plataforma principal de alunos.</p>
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white p-6 md:p-10 font-sans">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Cabeçalho */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-200 dark:border-slate-800 pb-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/professor"
+                className="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition shadow-xs"
+                title="Voltar ao Painel"
+              >
+                <ArrowLeft size={18} />
+              </Link>
+              <h1 className="text-2xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
+                <Building2 className="text-red-600" size={26} /> Gestão de Cursos e Turmas Externas
+              </h1>
             </div>
-            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 px-4 py-3 rounded-2xl flex items-center gap-3">
-              <Building2 className="text-red-600 shrink-0" size={22} />
-              <div>
-                <p className="text-[10px] uppercase font-bold text-gray-500">Instituições Ativas</p>
-                <p className="text-sm font-black text-gray-950 dark:text-white">SIMAL • Megaworks • UFBA</p>
-              </div>
-            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 pl-13">
+              Gerencie turmas, alunos e matrículas em projetos e programas educacionais externos (SIMAL, Megaworks, UFBA, IsF, PROFICI).
+            </p>
           </div>
         </header>
 
@@ -237,7 +265,7 @@ export default function TurmasExternasPage() {
 
           <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
             <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Filtrar Instituição:</span>
-            {["all", "SIMAL", "Megaworks", "UFBA"].map((inst) => (
+            {["all", "SIMAL", "Megaworks", "UFBA", "IsF", "PROFICI"].map((inst) => (
               <button
                 key={inst}
                 type="button"
@@ -284,8 +312,10 @@ export default function TurmasExternasPage() {
                   >
                     <option value="SIMAL">Projeto SIMAL</option>
                     <option value="Megaworks">Megaworks</option>
-                    <option value="UFBA">UFBA (Universidade)</option>
-                    <option value="Outro">Outra Instituição</option>
+                    <option value="UFBA">UFBA (Universidade Federal da Bahia)</option>
+                    <option value="IsF">IsF (Idioma sem Fronteiras)</option>
+                    <option value="PROFICI">PROFICI</option>
+                    <option value="Outro">Outra Instituição / Projeto</option>
                   </select>
                 </div>
                 <div>
@@ -319,41 +349,30 @@ export default function TurmasExternasPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Observações (Opcional)</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Descrição / Observações</label>
                   <textarea
-                    placeholder="Detalhes sobre horários ou local..."
+                    placeholder="Detalhes opcionais da turma..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={2}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
                   />
                 </div>
-                <div className="flex gap-2">
-                  {editingClassId && (
-                    <button
-                      type="button"
-                      onClick={resetClassForm}
-                      className="w-1/3 bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 text-gray-800 dark:text-gray-200 font-black text-xs p-3.5 rounded-xl transition"
-                    >
-                      Cancelar
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className={`${editingClassId ? "w-2/3" : "w-full"} bg-red-600 hover:bg-red-700 text-white font-black text-xs p-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50`}
-                  >
-                    {submitting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
-                    {editingClassId ? "Salvar Alterações" : "Cadastrar Turma"}
-                  </button>
-                </div>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
+                >
+                  {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  {editingClassId ? "Salvar Alterações" : "Criar Turma Externa"}
+                </button>
               </form>
             </section>
 
-            {/* Adicionar Aluno à Turma */}
+            {/* Matricular Aluno */}
             <section className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
               <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
-                <Users size={18} className="text-red-600" /> Matricular Aluno Externo
+                <Users size={18} className="text-red-600" /> Matricular Aluno na Turma
               </h2>
               <form onSubmit={handleAddStudent} className="space-y-4">
                 <div>
@@ -363,10 +382,10 @@ export default function TurmasExternasPage() {
                     onChange={(e) => setSelectedClassId(Number(e.target.value))}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   >
-                    <option value="">Selecione a turma...</option>
-                    {classes.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        [{c.institution}] {c.className} — {c.courseName}
+                    <option value="">-- Escolha a Turma --</option>
+                    {classes.map((cls) => (
+                      <option key={cls.id} value={cls.id}>
+                        [{cls.institution}] {cls.className} ({cls.courseName})
                       </option>
                     ))}
                   </select>
@@ -401,117 +420,164 @@ export default function TurmasExternasPage() {
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Status da Matrícula</label>
+                  <select
+                    value={studentStatus}
+                    onChange={(e) => setStudentStatus(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    <option value="active">Ativo (Cursando)</option>
+                    <option value="completed">Concluído</option>
+                    <option value="inactive">Inativo / Desistente</option>
+                  </select>
+                </div>
                 <button
                   type="submit"
                   disabled={submitting || !selectedClassId}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs p-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {submitting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />} Adicionar à Turma
+                  {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+                  Matricular Aluno
                 </button>
               </form>
             </section>
           </div>
 
-          {/* Listagem de Turmas e Alunos Cadastrados */}
-          <div className="space-y-6 lg:col-span-2">
-            <section className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
-                <div>
-                  <h2 className="text-lg font-black text-gray-950 dark:text-white">Turmas & Alunos Externos Cadastrados</h2>
-                  <p className="text-xs text-gray-500">Visualização consolidada por instituição e turma.</p>
-                </div>
-                <span className="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 font-bold text-xs px-3 py-1 rounded-full">
-                  {filteredClasses.length} de {classes.length} Turma(s)
-                </span>
+          {/* Listagem de Turmas e Alunos */}
+          <div className="lg:col-span-2 space-y-6">
+            {loading ? (
+              <div className="py-24 text-center text-gray-400 text-xs font-semibold flex flex-col items-center justify-center gap-3">
+                <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e alunos externos...
               </div>
-
-              {loading ? (
-                <div className="flex justify-center items-center py-16">
-                  <Loader2 className="animate-spin text-red-600" size={32} />
-                </div>
-              ) : filteredClasses.length === 0 ? (
-                <div className="text-center py-16 space-y-3">
-                  <AlertCircle className="mx-auto text-gray-400" size={40} />
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Nenhuma turma externa encontrada com os filtros atuais.</p>
-                  <p className="text-xs text-gray-500 max-w-sm mx-auto">Tente ajustar a busca ou cadastrar uma nova turma na barra lateral.</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {filteredClasses.map((cls) => (
-                    <div key={cls.id} className="border border-gray-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 bg-gray-50/50 dark:bg-slate-800/40">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="bg-red-600 text-white font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                              {cls.institution}
-                            </span>
-                            <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
-                          </div>
-                          <h3 className="text-base font-black text-gray-950 dark:text-white mt-1">{cls.className}</h3>
-                          <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{cls.courseName}</p>
-                          {cls.description && <p className="text-xs text-gray-500 mt-1 italic">{cls.description}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 self-start sm:self-center">
-                          <button
-                            type="button"
-                            onClick={() => startEditClass(cls)}
-                            className="text-gray-700 dark:text-gray-300 hover:text-red-600 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold shadow-xs"
-                            title="Editar Turma"
-                          >
-                            <Edit3 size={15} /> Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void handleRemoveClass(cls.id)}
-                            className="text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold"
-                            title="Excluir Turma"
-                          >
-                            <Trash2 size={16} /> Excluir
-                          </button>
-                        </div>
+            ) : filteredClasses.length === 0 ? (
+              <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3">
+                <AlertCircle size={32} className="mx-auto text-gray-400" />
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">Nenhuma turma externa encontrada</h3>
+                <p className="text-xs text-gray-500">Cadastre uma nova turma ao lado para começar a gerenciar seus alunos e cursos externos.</p>
+              </div>
+            ) : (
+              filteredClasses.map((cls) => (
+                <div key={cls.id} className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+                          {cls.institution}
+                        </span>
+                        <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
                       </div>
+                      <h3 className="text-lg font-black text-gray-950 dark:text-white">{cls.className}</h3>
+                      <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
+                      {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => startEditClass(cls)}
+                        className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                      >
+                        <Edit3 size={14} /> Editar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteClass(cls.id)}
+                        className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1.5"
+                      >
+                        <Trash2 size={14} /> Excluir
+                      </button>
+                    </div>
+                  </div>
 
-                      {/* Alunos da Turma */}
-                      <div className="space-y-2 pt-2 border-t border-gray-200/60 dark:border-slate-700">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
-                            <Users size={14} /> Alunos Matriculados ({cls.students.length})
-                          </h4>
-                          <span className="text-[11px] text-gray-400">Gerenciamento manual</span>
-                        </div>
-
-                        {cls.students.length === 0 ? (
-                          <p className="text-xs text-gray-400 italic py-2">Nenhum aluno cadastrado nesta turma ainda.</p>
-                        ) : (
-                          <div className="divide-y divide-gray-200 dark:divide-slate-700">
-                            {cls.students.map((st) => (
-                              <div key={st.id} className="py-2.5 flex items-center justify-between text-xs">
-                                <div>
-                                  <span className="font-bold text-gray-900 dark:text-white">{st.name}</span>
-                                  {st.studentIdNumber && <span className="ml-2 text-gray-500 font-mono text-[11px]">ID: {st.studentIdNumber}</span>}
-                                  {st.email && <span className="block text-[11px] text-gray-500">{st.email}</span>}
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => void handleRemoveStudent(st.id)}
-                                  className="text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition"
-                                  title="Remover aluno"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                  {/* Resumo estatístico da turma */}
+                  {cls.stats && (
+                    <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total de Alunos</p>
+                        <p className="text-sm font-black text-gray-900 dark:text-white mt-0.5">{cls.stats.total}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-green-600">Ativos</p>
+                        <p className="text-sm font-black text-green-600 mt-0.5">{cls.stats.active}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Concluídos</p>
+                        <p className="text-sm font-black text-blue-600 mt-0.5">{cls.stats.completed}</p>
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Lista de Alunos Matriculados */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
+                        <Users size={14} /> Alunos Matriculados ({cls.students.length})
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedClassId(cls.id)}
+                        className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+                      >
+                        <Plus size={14} /> Matricular aluno aqui
+                      </button>
+                    </div>
+
+                    {cls.students.length === 0 ? (
+                      <p className="text-xs text-gray-400 italic py-3 bg-gray-50/50 dark:bg-slate-800/30 rounded-xl px-4 text-center">
+                        Nenhum aluno matriculado nesta turma externa ainda.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {cls.students.map((student) => (
+                          <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-gray-300 transition">
+                            <div className="space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-black text-gray-900 dark:text-white">{student.name}</span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  student.status === "completed"
+                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
+                                    : student.status === "inactive"
+                                    ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
+                                    : "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300"
+                                }`}>
+                                  {student.status === "completed" ? "Concluído" : student.status === "inactive" ? "Inativo" : "Ativo"}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-gray-500 flex-wrap">
+                                {student.email && <span>{student.email}</span>}
+                                {student.studentIdNumber && <span>Matrícula: {student.studentIdNumber}</span>}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={student.status}
+                                onChange={(e) => handleUpdateStudentStatus(student.id, e.target.value)}
+                                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-[11px] font-bold text-gray-700 dark:text-gray-300 focus:outline-none"
+                              >
+                                <option value="active">Ativo</option>
+                                <option value="completed">Concluído</option>
+                                <option value="inactive">Inativo</option>
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteStudent(student.id)}
+                                className="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition"
+                                title="Remover aluno"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </section>
+              ))
+            )}
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
