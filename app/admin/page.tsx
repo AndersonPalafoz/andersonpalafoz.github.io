@@ -148,6 +148,9 @@ export default function AdminDashboard() {
             <Link href="/admin/usuarios" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90">
               <Users size={16} /> Gerenciar Usuários & Permissões
             </Link>
+            <Link href="/admin/relatorios-academicos" className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5">
+              <FileText size={16} /> Relatórios Acadêmicos & Classroom
+            </Link>
           </div>
         </div>
 
