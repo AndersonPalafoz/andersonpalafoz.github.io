@@ -361,3 +361,7 @@
 - [ ] Adicionar skeleton loader na paginação e nas trocas de filtro do motor de busca administrativo (`AdminSearchWidget`).
 
 - [x] Adicionar skeleton loader na paginação e nas trocas de filtro do motor de busca administrativo (`AdminSearchWidget`).
+
+- [ ] Refinar design e responsividade mobile em todas as páginas e widgets (tabelas touch-friendly, espaçamentos fluidos e tipografia adaptada).
+
+- [x] Refinar design e responsividade mobile em todas as páginas e widgets (tabelas touch-friendly, espaçamentos fluidos e tipografia adaptada).
