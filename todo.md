@@ -52,3 +52,16 @@
 - [x] Adicionar assistente de IA para sugestão automática de prazos por módulo
 - [x] Implementar botão "Sincronizar Agora" na interface do calendário com feedback em tempo real
 - [x] Validar 190 testes automatizados (100% de aprovação) e build de produção Next.js 15
+
+## Ajustes de Navegação e Ferramentas Avançadas — 17/08/2026
+- [x] Remover links de Admin e Professor do menu superior (header) e centralizá-los exclusivamente no Dashboard com base no papel do usuário
+- [x] Adicionar opção de revisão e edição prévia para as sugestões de prazos geradas pela IA antes da aplicação ao calendário
+- [x] Incluir gráfico de pizza no painel de armazenamento do Google Drive detalhando a distribuição por tipo de arquivo
+- [x] Adicionar histórico de sincronização abaixo do botão "Sincronizar Agora" no calendário com data, hora e status
+
+## Ajustes Finais de Navegação e Ferramentas — 17/08/2026
+- [x] Remover links de Admin e Professor do menu superior (header) e centralizá-los exclusivamente no Dashboard
+- [x] Implementar modal de revisão e edição das sugestões de prazos da IA antes da aplicação ao calendário
+- [x] Adicionar gráfico de pizza no painel do Google Drive para distribuição de armazenamento por tipo de arquivo
+- [x] Incluir histórico de sincronização detalhado abaixo do botão "Sincronizar Agora" no calendário
+- [x] Validação completa com 190 testes automatizados (Vitest) e build de produção Next.js 15
