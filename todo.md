@@ -339,3 +339,11 @@
 - [x] Criar seção de galeria de medalhas na página de perfil do aluno (`ProfileMedalsGallery`) para exibir conquistas acumuladas com base no progresso real, com respeito automático ao Modo Tradicional
 
 - [x] Criar catálogo completo de medalhas e painel administrativo (`/admin/medalhas`) para concessão manual e automática com auditoria e controle por permissões de administrador.
+
+- [ ] Adicionar sistema de notificação em tempo real na interface do aluno (`realtime-notifications.tsx` e API de medalhas) para alertá-lo automaticamente sempre que uma nova medalha for concedida.
+
+- [x] Adicionar sistema de notificação em tempo real na interface do aluno (`realtime-notifications.tsx` e API de medalhas) para alertá-lo automaticamente sempre que uma nova medalha for concedida.
+
+- [ ] Criar motor de busca avançado no painel do professor (`/professor`) para filtrar cursos e alunos específicos em tempo real por nome, email ou nível.
+
+- [x] Criar motor de busca avançado no painel do professor (`/professor`) para filtrar cursos e alunos específicos em tempo real por nome, email ou nível.
