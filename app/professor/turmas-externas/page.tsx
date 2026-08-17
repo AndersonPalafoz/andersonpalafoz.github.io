@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3 } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -12,6 +12,31 @@ interface ExternalStudentItem {
   studentIdNumber: string | null;
   status: string;
   notes: string | null;
+}
+
+interface ExternalClassAttendanceItem {
+  id: number;
+  date: string;
+  attendanceData: string;
+  createdAt: string;
+}
+
+interface ExternalClassGradeItem {
+  id: number;
+  studentId: number;
+  assessmentTitle: string;
+  score: string;
+  maxScore: string;
+  feedback: string | null;
+  createdAt: string;
+}
+
+interface ExternalClassMaterialItem {
+  id: number;
+  title: string;
+  fileUrl: string;
+  description: string | null;
+  createdAt: string;
 }
 
 interface ExternalClassStats {
@@ -28,6 +53,9 @@ interface ExternalClassItem {
   academicTerm: string;
   description: string | null;
   students: ExternalStudentItem[];
+  attendance?: ExternalClassAttendanceItem[];
+  grades?: ExternalClassGradeItem[];
+  materials?: ExternalClassMaterialItem[];
   stats?: ExternalClassStats;
 }
 
@@ -49,6 +77,8 @@ export default function TurmasExternasPage() {
 
   // Form states for creating/editing class
   const [institution, setInstitution] = useState("SIMAL");
+  const [customInstitutionInput, setCustomInstitutionInput] = useState("");
+  const [isCustomInstitution, setIsCustomInstitution] = useState(false);
   const [className, setClassName] = useState("");
   const [courseName, setCourseName] = useState("");
   const [academicTerm, setAcademicTerm] = useState("2026.1");
@@ -61,6 +91,24 @@ export default function TurmasExternasPage() {
   const [studentIdNumber, setStudentIdNumber] = useState("");
   const [studentStatus, setStudentStatus] = useState("active");
   const [studentNotes, setStudentNotes] = useState("");
+
+  // Tab view per class: 'students' | 'attendance' | 'grades' | 'materials'
+  const [activeTabByClass, setActiveTabByClass] = useState<Record<number, string>>({});
+
+  // Chamada state
+  const [attendanceDate, setAttendanceDate] = useState<Record<number, string>>({});
+  const [attendanceStatuses, setAttendanceStatuses] = useState<Record<number, Record<number, string>>>({});
+
+  // Grades state
+  const [gradeAssessmentTitle, setGradeAssessmentTitle] = useState<Record<number, string>>({});
+  const [gradeStudentId, setGradeStudentId] = useState<Record<number, number>>({});
+  const [gradeScore, setGradeScore] = useState<Record<number, string>>({});
+  const [gradeFeedback, setGradeFeedback] = useState<Record<number, string>>({});
+
+  // Materials state
+  const [materialTitle, setMaterialTitle] = useState<Record<number, string>>({});
+  const [materialFileUrl, setMaterialFileUrl] = useState<Record<number, string>>({});
+  const [materialDescription, setMaterialDescription] = useState<Record<number, string>>({});
 
   const loadClasses = async () => {
     try {
@@ -94,9 +142,14 @@ export default function TurmasExternasPage() {
     return summary;
   }, [classes]);
 
+  const uniqueInstitutions = useMemo(() => {
+    const instSet = new Set<string>();
+    classes.forEach(c => instSet.add(c.institution));
+    return Array.from(instSet);
+  }, [classes]);
+
   const filteredClasses = useMemo(() => {
     return classes.map((cls) => {
-      // Filtrar alunos da turma com base no status e termo de busca
       const filteredStudents = cls.students.filter((s) => {
         const matchesStatus = studentStatusFilter === "all" || s.status === studentStatusFilter;
         const term = searchTerm.toLowerCase();
@@ -119,16 +172,17 @@ export default function TurmasExternasPage() {
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!className || !courseName || !academicTerm) {
-      toast.error("Preencha todos os campos obrigatórios da turma.");
+    const finalInstitution = isCustomInstitution ? customInstitutionInput.trim() : institution;
+    if (!finalInstitution || !className || !courseName || !academicTerm) {
+      toast.error("Preencha todos os campos obrigatórios e informe a instituição.");
       return;
     }
     try {
       setSubmitting(true);
       const action = editingClassId ? "updateClass" : "createClass";
       const body = editingClassId
-        ? { action, classId: editingClassId, institution, className, courseName, academicTerm, description }
-        : { action, institution, className, courseName, academicTerm, description };
+        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description }
+        : { action, institution: finalInstitution, className, courseName, academicTerm, description };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -149,7 +203,16 @@ export default function TurmasExternasPage() {
 
   const startEditClass = (cls: ExternalClassItem) => {
     setEditingClassId(cls.id);
-    setInstitution(cls.institution);
+    const standardList = ["IsF", "PROFICI", "SIMAL", "Megaworks", "UFBA"];
+    if (standardList.includes(cls.institution)) {
+      setInstitution(cls.institution);
+      setIsCustomInstitution(false);
+      setCustomInstitutionInput("");
+    } else {
+      setInstitution("Outro");
+      setIsCustomInstitution(true);
+      setCustomInstitutionInput(cls.institution);
+    }
     setClassName(cls.className);
     setCourseName(cls.courseName);
     setAcademicTerm(cls.academicTerm);
@@ -160,6 +223,8 @@ export default function TurmasExternasPage() {
   const resetClassForm = () => {
     setEditingClassId(null);
     setInstitution("SIMAL");
+    setCustomInstitutionInput("");
+    setIsCustomInstitution(false);
     setClassName("");
     setCourseName("");
     setAcademicTerm("2026.1");
@@ -167,7 +232,7 @@ export default function TurmasExternasPage() {
   };
 
   const handleDeleteClass = async (classId: number) => {
-    if (!window.confirm("Deseja realmente excluir esta turma e todos os seus alunos cadastrados?")) return;
+    if (!window.confirm("Deseja realmente excluir esta turma, seus alunos, chamadas, notas e materiais?")) return;
     try {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -251,19 +316,142 @@ export default function TurmasExternasPage() {
     }
   };
 
-  const handleUpdateStudentStatus = async (studentId: number, newStatus: string) => {
+  // Handlers para Chamada, Notas e Materiais
+  const handleSaveAttendance = async (classId: number, students: ExternalStudentItem[]) => {
+    const date = attendanceDate[classId] || new Date().toISOString().split("T")[0];
+    const dataMap = attendanceStatuses[classId] || {};
+    const finalMap: Record<number, string> = {};
+    for (const s of students) {
+      finalMap[s.id] = dataMap[s.id] || "present";
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "saveAttendance", classId, date, attendanceData: finalMap }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao salvar chamada.");
+      toast.success("Chamada registrada com sucesso!");
+      void loadClasses();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar chamada.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSaveGrade = async (classId: number) => {
+    const sId = gradeStudentId[classId];
+    const title = gradeAssessmentTitle[classId];
+    const scoreVal = gradeScore[classId];
+    const maxVal = "10.0";
+    const fb = gradeFeedback[classId] || "";
+
+    if (!sId || !title || !scoreVal) {
+      toast.error("Selecione o aluno, informe o título da avaliação e a nota.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "saveGrade",
+          classId,
+          studentId: sId,
+          assessmentTitle: title,
+          score: scoreVal,
+          maxScore: maxVal,
+          feedback: fb,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao salvar nota.");
+      toast.success("Nota lançada com sucesso!");
+      setGradeAssessmentTitle(prev => ({ ...prev, [classId]: "" }));
+      setGradeScore(prev => ({ ...prev, [classId]: "" }));
+      setGradeFeedback(prev => ({ ...prev, [classId]: "" }));
+      void loadClasses();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar nota.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteGrade = async (gradeId: number) => {
+    if (!window.confirm("Deseja realmente excluir esta nota?")) return;
     try {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateStudentStatus", studentId, studentStatus: newStatus }),
+        body: JSON.stringify({ action: "deleteGrade", gradeId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao atualizar status.");
-      toast.success("Status do aluno atualizado.");
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir nota.");
+      toast.success("Nota excluída com sucesso.");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao atualizar status.");
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir nota.");
+    }
+  };
+
+  const handleAddMaterial = async (classId: number) => {
+    const title = materialTitle[classId];
+    const url = materialFileUrl[classId];
+    const desc = materialDescription[classId] || "";
+
+    if (!title || !url) {
+      toast.error("Informe o título e o link/URL do material.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addMaterial",
+          classId,
+          materialTitle: title,
+          fileUrl: url,
+          materialDescription: desc,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao adicionar material.");
+      toast.success("Material vinculado à turma com sucesso!");
+      setMaterialTitle(prev => ({ ...prev, [classId]: "" }));
+      setMaterialFileUrl(prev => ({ ...prev, [classId]: "" }));
+      setMaterialDescription(prev => ({ ...prev, [classId]: "" }));
+      void loadClasses();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao adicionar material.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId: number) => {
+    if (!window.confirm("Deseja realmente remover este material da turma?")) return;
+    try {
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "deleteMaterial", materialId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir material.");
+      toast.success("Material removido com sucesso.");
+      void loadClasses();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir material.");
     }
   };
 
@@ -338,11 +526,11 @@ export default function TurmasExternasPage() {
                 <ArrowLeft size={18} />
               </Link>
               <h1 className="text-2xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
-                <Building2 className="text-red-600" size={26} /> Gestão Avançada de Cursos e Turmas Externas
+                <Building2 className="text-red-600" size={26} /> Gestão Completa de Cursos, Chamada, Notas e Materiais Externos
               </h1>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 pl-13">
-              Controle turmas, matrículas, importação CSV em lote e acompanhamento acadêmico por instituição (IsF, PROFICI, SIMAL, Megaworks, UFBA).
+              Controle total de turmas institucionais e customizadas (IsF, PROFICI, SIMAL, Megaworks, UFBA e outras), chamada diária, notas, feedbacks e repositório de materiais.
             </p>
           </div>
         </header>
@@ -407,18 +595,29 @@ export default function TurmasExternasPage() {
 
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Instituição:</span>
-              {["all", "IsF", "PROFICI", "SIMAL", "Megaworks", "UFBA"].map((inst) => (
+              <button
+                type="button"
+                onClick={() => setSelectedInstitutionFilter("all")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                  selectedInstitutionFilter === "all"
+                    ? "bg-red-600 text-white shadow-xs"
+                    : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                Todas
+              </button>
+              {uniqueInstitutions.map((inst) => (
                 <button
                   key={inst}
                   type="button"
                   onClick={() => setSelectedInstitutionFilter(inst)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                    selectedInstitutionFilter === inst
+                    selectedInstitutionFilter.toLowerCase() === inst.toLowerCase()
                       ? "bg-red-600 text-white shadow-xs"
                       : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
                   }`}
                 >
-                  {inst === "all" ? "Todas" : inst}
+                  {inst}
                 </button>
               ))}
             </div>
@@ -450,16 +649,34 @@ export default function TurmasExternasPage() {
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Programa</label>
                   <select
                     value={institution}
-                    onChange={(e) => setInstitution(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setInstitution(val);
+                      if (val === "Outro") {
+                        setIsCustomInstitution(true);
+                      } else {
+                        setIsCustomInstitution(false);
+                      }
+                    }}
+                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600 mb-2"
                   >
                     <option value="IsF">IsF (Idioma sem Fronteiras)</option>
                     <option value="PROFICI">PROFICI</option>
                     <option value="SIMAL">Projeto SIMAL</option>
                     <option value="Megaworks">Megaworks</option>
                     <option value="UFBA">UFBA (Universidade)</option>
-                    <option value="Outro">Outra Instituição</option>
+                    <option value="Outro">Outra Instituição (Digitar Nova)</option>
                   </select>
+                  {isCustomInstitution && (
+                    <input
+                      type="text"
+                      placeholder="Digite o nome da nova instituição ou programa..."
+                      value={customInstitutionInput}
+                      onChange={(e) => setCustomInstitutionInput(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      required
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome da Turma</label>
@@ -599,7 +816,7 @@ export default function TurmasExternasPage() {
             </section>
           </div>
 
-          {/* Listagem de Turmas, Alunos e Importação CSV */}
+          {/* Listagem de Turmas, Abas e Gerenciamento */}
           <div className="lg:col-span-2 space-y-6">
             {loading ? (
               <div className="py-24 text-center text-gray-400 text-xs font-semibold flex flex-col items-center justify-center gap-3">
@@ -612,147 +829,484 @@ export default function TurmasExternasPage() {
                 <p className="text-xs text-gray-500">Ajuste os filtros de busca ou cadastre uma nova turma externa.</p>
               </div>
             ) : (
-              filteredClasses.map((cls) => (
-                <div key={cls.id} className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
-                    <div className="space-y-1">
+              filteredClasses.map((cls) => {
+                const activeTab = activeTabByClass[cls.id] || "students";
+                const classDate = attendanceDate[cls.id] || new Date().toISOString().split("T")[0];
+                const currentStatuses = attendanceStatuses[cls.id] || {};
+
+                return (
+                  <div key={cls.id} className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+                            {cls.institution}
+                          </span>
+                          <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
+                        </div>
+                        <h3 className="text-lg font-black text-gray-950 dark:text-white">{cls.className}</h3>
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
+                        {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
+                      </div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
-                          {cls.institution}
-                        </span>
-                        <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
+                        <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                          <FileSpreadsheet size={14} className="text-green-600" /> CSV
+                          <input
+                            type="file"
+                            accept=".csv"
+                            className="hidden"
+                            onChange={(e) => void handleCsvImport(cls.id, e)}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => startEditClass(cls)}
+                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                        >
+                          <Edit3 size={14} /> Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteClass(cls.id)}
+                          className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1.5"
+                        >
+                          <Trash2 size={14} /> Excluir
+                        </button>
                       </div>
-                      <h3 className="text-lg font-black text-gray-950 dark:text-white">{cls.className}</h3>
-                      <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
-                      {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-                        <FileSpreadsheet size={14} className="text-green-600" /> Importar CSV
-                        <input
-                          type="file"
-                          accept=".csv"
-                          className="hidden"
-                          onChange={(e) => void handleCsvImport(cls.id, e)}
-                        />
-                      </label>
+
+                    {/* Resumo estatístico da turma */}
+                    {cls.stats && (
+                      <div className="grid grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Alunos</p>
+                          <p className="text-sm font-black text-gray-900 dark:text-white mt-0.5">{cls.stats.total}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-green-600">Ativos</p>
+                          <p className="text-sm font-black text-green-600 mt-0.5">{cls.stats.active}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Notas</p>
+                          <p className="text-sm font-black text-blue-600 mt-0.5">{cls.grades?.length || 0}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Materiais</p>
+                          <p className="text-sm font-black text-amber-600 mt-0.5">{cls.materials?.length || 0}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Navegação por Abas (Alunos, Chamada, Notas, Materiais) */}
+                    <div className="flex border-b border-gray-200 dark:border-slate-800 gap-2 overflow-x-auto">
                       <button
                         type="button"
-                        onClick={() => startEditClass(cls)}
-                        className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "students" })}
+                        className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
+                          activeTab === "students"
+                            ? "border-red-600 text-red-600 dark:text-red-400"
+                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        }`}
                       >
-                        <Edit3 size={14} /> Editar
+                        <Users size={14} /> Alunos ({cls.students.length})
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeleteClass(cls.id)}
-                        className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1.5"
+                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "attendance" })}
+                        className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
+                          activeTab === "attendance"
+                            ? "border-red-600 text-red-600 dark:text-red-400"
+                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        }`}
                       >
-                        <Trash2 size={14} /> Excluir
+                        <Calendar size={14} /> Chamada ({cls.attendance?.length || 0})
                       </button>
-                    </div>
-                  </div>
-
-                  {/* Resumo estatístico da turma */}
-                  {cls.stats && (
-                    <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total</p>
-                        <p className="text-sm font-black text-gray-900 dark:text-white mt-0.5">{cls.stats.total}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-green-600">Ativos</p>
-                        <p className="text-sm font-black text-green-600 mt-0.5">{cls.stats.active}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Concluídos</p>
-                        <p className="text-sm font-black text-blue-600 mt-0.5">{cls.stats.completed}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Lista de Alunos Filtrados */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                        <Users size={14} /> Alunos ({cls.filteredStudents.length} de {cls.students.length})
-                      </h4>
                       <button
                         type="button"
-                        onClick={() => setSelectedClassId(cls.id)}
-                        className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "grades" })}
+                        className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
+                          activeTab === "grades"
+                            ? "border-red-600 text-red-600 dark:text-red-400"
+                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        }`}
                       >
-                        <Plus size={14} /> Matricular aluno
+                        <Award size={14} /> Notas & Avaliações ({cls.grades?.length || 0})
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "materials" })}
+                        className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
+                          activeTab === "materials"
+                            ? "border-red-600 text-red-600 dark:text-red-400"
+                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        }`}
+                      >
+                        <FileText size={14} /> Materiais Didáticos ({cls.materials?.length || 0})
                       </button>
                     </div>
 
-                    {cls.filteredStudents.length === 0 ? (
-                      <p className="text-xs text-gray-400 italic py-3 bg-gray-50/50 dark:bg-slate-800/30 rounded-xl px-4 text-center">
-                        Nenhum aluno encontrado com os filtros atuais nesta turma.
-                      </p>
-                    ) : (
-                      <div className="space-y-2">
-                        {cls.filteredStudents.map((student) => (
-                          <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-gray-300 transition">
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-black text-gray-900 dark:text-white">{student.name}</span>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  student.status === "completed"
-                                    ? "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300"
-                                    : student.status === "inactive"
-                                    ? "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
-                                    : "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300"
-                                }`}>
-                                  {student.status === "completed" ? "Concluído" : student.status === "inactive" ? "Inativo" : "Ativo"}
-                                </span>
+                    {/* CONTEÚDO DA ABA: ALUNOS */}
+                    {activeTab === "students" && (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400">
+                            Matriculados ({cls.filteredStudents.length})
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedClassId(cls.id);
+                              window.scrollTo({ top: 400, behavior: "smooth" });
+                            }}
+                            className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+                          >
+                            <Plus size={14} /> Adicionar Aluno
+                          </button>
+                        </div>
+                        {cls.filteredStudents.length === 0 ? (
+                          <p className="text-xs text-gray-400 py-4 text-center">Nenhum aluno cadastrado nesta turma ou correspondente ao filtro.</p>
+                        ) : (
+                          <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                            {cls.filteredStudents.map((st) => (
+                              <div key={st.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-sm text-gray-900 dark:text-white">{st.name}</span>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
+                                      st.status === "active" ? "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300" :
+                                      st.status === "completed" ? "bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300" :
+                                      "bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-400"
+                                    }`}>
+                                      {st.status === "active" ? "Ativo" : st.status === "completed" ? "Concluído" : "Inativo"}
+                                    </span>
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-0.5">
+                                    {st.email || "Sem e-mail"} {st.studentIdNumber ? `• Matrícula: ${st.studentIdNumber}` : ""}
+                                  </p>
+                                  {st.notes && <p className="text-xs text-gray-400 italic mt-1">Obs: {st.notes}</p>}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Link
+                                    href={`/professor/boletim/${st.id}`}
+                                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition text-gray-700 dark:text-gray-300"
+                                    title="Ver Boletim Consolidado"
+                                  >
+                                    Boletim
+                                  </Link>
+                                  <button
+                                    type="button"
+                                    onClick={() => startEditStudent(st, cls.id)}
+                                    className="p-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                                    title="Editar Aluno"
+                                  >
+                                    <Edit3 size={14} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteStudent(st.id)}
+                                    className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition"
+                                    title="Excluir Aluno"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3 text-[11px] text-gray-500 flex-wrap">
-                                {student.email && <span>{student.email}</span>}
-                                {student.studentIdNumber && <span>Matrícula: {student.studentIdNumber}</span>}
-                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* CONTEÚDO DA ABA: CHAMADA */}
+                    {activeTab === "attendance" && (
+                      <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl">
+                          <div>
+                            <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Nova Chamada / Frequência</h4>
+                            <p className="text-[11px] text-gray-500">Selecione a data da aula e marque a presença de cada aluno.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="date"
+                              value={classDate}
+                              onChange={(e) => setAttendanceDate({ ...attendanceDate, [cls.id]: e.target.value })}
+                              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => void handleSaveAttendance(cls.id, cls.students)}
+                              disabled={submitting || cls.students.length === 0}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                            >
+                              Salvar Chamada
+                            </button>
+                          </div>
+                        </div>
+
+                        {cls.students.length === 0 ? (
+                          <p className="text-xs text-gray-400 py-4 text-center">Cadastre alunos na turma antes de realizar a chamada.</p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-left text-xs">
+                              <thead>
+                                <tr className="border-b border-gray-200 dark:border-slate-800 text-gray-500 font-bold uppercase text-[10px]">
+                                  <th className="py-2.5 px-3">Aluno</th>
+                                  <th className="py-2.5 px-3 text-center">Presente</th>
+                                  <th className="py-2.5 px-3 text-center">Ausente</th>
+                                  <th className="py-2.5 px-3 text-center">Atrasado</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                                {cls.students.map((st) => {
+                                  const studentStatusVal = currentStatuses[st.id] || "present";
+                                  return (
+                                    <tr key={st.id}>
+                                      <td className="py-3 px-3 font-bold text-gray-900 dark:text-white">{st.name}</td>
+                                      <td className="py-3 px-3 text-center">
+                                        <input
+                                          type="radio"
+                                          name={`att_${cls.id}_${st.id}`}
+                                          checked={studentStatusVal === "present"}
+                                          onChange={() => setAttendanceStatuses({
+                                            ...attendanceStatuses,
+                                            [cls.id]: { ...currentStatuses, [st.id]: "present" }
+                                          })}
+                                          className="accent-green-600 cursor-pointer"
+                                        />
+                                      </td>
+                                      <td className="py-3 px-3 text-center">
+                                        <input
+                                          type="radio"
+                                          name={`att_${cls.id}_${st.id}`}
+                                          checked={studentStatusVal === "absent"}
+                                          onChange={() => setAttendanceStatuses({
+                                            ...attendanceStatuses,
+                                            [cls.id]: { ...currentStatuses, [st.id]: "absent" }
+                                          })}
+                                          className="accent-red-600 cursor-pointer"
+                                        />
+                                      </td>
+                                      <td className="py-3 px-3 text-center">
+                                        <input
+                                          type="radio"
+                                          name={`att_${cls.id}_${st.id}`}
+                                          checked={studentStatusVal === "late"}
+                                          onChange={() => setAttendanceStatuses({
+                                            ...attendanceStatuses,
+                                            [cls.id]: { ...currentStatuses, [st.id]: "late" }
+                                          })}
+                                          className="accent-amber-600 cursor-pointer"
+                                        />
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+
+                        {/* Histórico de Chamadas Realizadas */}
+                        <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-gray-500">Histórico de Chamadas Registradas</h5>
+                          {(!cls.attendance || cls.attendance.length === 0) ? (
+                            <p className="text-xs text-gray-400">Nenhuma chamada registrada para esta turma ainda.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {cls.attendance.map((att) => (
+                                <div key={att.id} className="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/60 flex items-center justify-between text-xs">
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle2 size={14} className="text-green-600" />
+                                    <span className="font-bold text-gray-900 dark:text-white">Aula em {att.date}</span>
+                                  </div>
+                                  <span className="text-[10px] text-gray-400">Registrado em {new Date(att.createdAt).toLocaleDateString("pt-BR")}</span>
+                                </div>
+                              ))}
                             </div>
-                            <div className="flex items-center gap-2 flex-wrap">
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CONTEÚDO DA ABA: NOTAS */}
+                    {activeTab === "grades" && (
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Lançar Nova Nota ou Avaliação</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Aluno</label>
                               <select
-                                value={student.status}
-                                onChange={(e) => void handleUpdateStudentStatus(student.id, e.target.value)}
-                                className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-[11px] font-bold text-gray-700 dark:text-gray-300 focus:outline-none"
+                                value={gradeStudentId[cls.id] || ""}
+                                onChange={(e) => setGradeStudentId({ ...gradeStudentId, [cls.id]: Number(e.target.value) })}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
                               >
-                                <option value="active">Ativo</option>
-                                <option value="completed">Concluído</option>
-                                <option value="inactive">Inativo</option>
+                                <option value="">-- Aluno --</option>
+                                {cls.students.map((st) => (
+                                  <option key={st.id} value={st.id}>{st.name}</option>
+                                ))}
                               </select>
-                              <Link
-                                href={`/professor/boletim/${student.id}`}
-                                className="px-2.5 py-1.5 rounded-xl bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold flex items-center gap-1"
-                                title="Ver Boletim Consolidado"
-                              >
-                                Boletim
-                              </Link>
-                              <button
-                                type="button"
-                                onClick={() => startEditStudent(student, cls.id)}
-                                className="p-1.5 rounded-xl text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
-                                title="Editar aluno"
-                              >
-                                <Edit3 size={14} />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => void handleDeleteStudent(student.id)}
-                                className="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition"
-                                title="Remover aluno"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Título da Avaliação</label>
+                              <input
+                                type="text"
+                                placeholder="Ex: Prova 1, Quiz Oral..."
+                                value={gradeAssessmentTitle[cls.id] || ""}
+                                onChange={(e) => setGradeAssessmentTitle({ ...gradeAssessmentTitle, [cls.id]: e.target.value })}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Nota (ex: 9.5)</label>
+                              <input
+                                type="text"
+                                placeholder="9.5"
+                                value={gradeScore[cls.id] || ""}
+                                onChange={(e) => setGradeScore({ ...gradeScore, [cls.id]: e.target.value })}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
                             </div>
                           </div>
-                        ))}
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500 mb-1">Feedback / Comentário (Opcional)</label>
+                            <input
+                              type="text"
+                              placeholder="Bom desempenho na leitura instrumental..."
+                              value={gradeFeedback[cls.id] || ""}
+                              onChange={(e) => setGradeFeedback({ ...gradeFeedback, [cls.id]: e.target.value })}
+                              className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleSaveGrade(cls.id)}
+                            disabled={submitting || cls.students.length === 0}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                          >
+                            Salvar Nota
+                          </button>
+                        </div>
+
+                        {/* Listagem de Notas Lançadas */}
+                        <div className="space-y-3">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-gray-500">Notas Registradas na Turma</h5>
+                          {(!cls.grades || cls.grades.length === 0) ? (
+                            <p className="text-xs text-gray-400 py-3 text-center">Nenhuma nota lançada para esta turma ainda.</p>
+                          ) : (
+                            <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                              {cls.grades.map((g) => {
+                                const st = cls.students.find(s => s.id === g.studentId);
+                                return (
+                                  <div key={g.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                                    <div>
+                                      <p className="font-bold text-gray-900 dark:text-white">
+                                        {st ? st.name : "Aluno ID " + g.studentId} — <span className="text-red-600">{g.assessmentTitle}</span>
+                                      </p>
+                                      <p className="text-gray-500 mt-0.5">Nota: <strong className="text-gray-900 dark:text-white">{g.score} / {g.maxScore}</strong> {g.feedback ? `• "${g.feedback}"` : ""}</p>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteGrade(g.id)}
+                                      className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 transition"
+                                      title="Excluir Nota"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CONTEÚDO DA ABA: MATERIAIS */}
+                    {activeTab === "materials" && (
+                      <div className="space-y-4">
+                        <div className="bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3">
+                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Vincular Material Didático / Link</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Título do Material</label>
+                              <input
+                                type="text"
+                                placeholder="Ex: Apostila Unidade 1 - PDF"
+                                value={materialTitle[cls.id] || ""}
+                                onChange={(e) => setMaterialTitle({ ...materialTitle, [cls.id]: e.target.value })}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Link ou URL do Arquivo (Google Drive / S3)</label>
+                              <input
+                                type="url"
+                                placeholder="https://drive.google.com/..."
+                                value={materialFileUrl[cls.id] || ""}
+                                onChange={(e) => setMaterialFileUrl({ ...materialFileUrl, [cls.id]: e.target.value })}
+                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-gray-500 mb-1">Descrição / Instruções (Opcional)</label>
+                            <input
+                              type="text"
+                              placeholder="Leitura obrigatória antes da próxima aula síncrona..."
+                              value={materialDescription[cls.id] || ""}
+                              onChange={(e) => setMaterialDescription({ ...materialDescription, [cls.id]: e.target.value })}
+                              className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => void handleAddMaterial(cls.id)}
+                            disabled={submitting}
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                          >
+                            Adicionar Material
+                          </button>
+                        </div>
+
+                        {/* Listagem de Materiais */}
+                        <div className="space-y-3">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-gray-500">Materiais Disponíveis para a Turma</h5>
+                          {(!cls.materials || cls.materials.length === 0) ? (
+                            <p className="text-xs text-gray-400 py-3 text-center">Nenhum material vinculado a esta turma ainda.</p>
+                          ) : (
+                            <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                              {cls.materials.map((m) => (
+                                <div key={m.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                                  <div>
+                                    <a
+                                      href={m.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="font-bold text-red-600 hover:underline flex items-center gap-1.5"
+                                    >
+                                      <FileText size={14} /> {m.title}
+                                    </a>
+                                    {m.description && <p className="text-gray-500 mt-0.5">{m.description}</p>}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteMaterial(m.id)}
+                                    className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 transition"
+                                    title="Remover Material"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
