@@ -146,3 +146,17 @@
 - [x] Aplicada a fonte Poppins universalmente em todo o site com escala tipográfica otimizada e aumentada para melhor legibilidade
 - [x] Removidos quaisquer placeholders ou dados simulados do CMS, exibindo estritamente métricas e conteúdos reais persistidos
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Melhorias Finais de Acessibilidade e CMS User-Friendly — 17/08/2026
+- [x] Adicionar botão de acessibilidade no cabeçalho para alternar entre tamanho de fonte normal e ampliado
+- [x] Incluir botão de atualização manual (refresh) no painel do CMS para buscar dados reais recentes
+- [x] Adicionar filtros de período e categoria no painel do CMS para organizar os dados reais exibidos
+- [x] Tornar o CMS altamente user-friendly, claro e intuitivo com feedback visual e estados refinados
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Acessibilidade de Fonte, Atualização do CMS e Filtros — 17/08/2026
+- [x] Adicionado botão de acessibilidade no cabeçalho para alternar entre fonte normal e ampliada
+- [x] Incluído botão de atualização manual (refresh) no painel do CMS para carregar dados reais recentes
+- [x] Implementados filtros por período e categoria para organizar a visualização dos dados reais no CMS
+- [x] Aprimorada a usabilidade geral do CMS com feedback visual, estados claros e interface user-friendly
+- [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
