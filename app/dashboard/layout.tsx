@@ -18,6 +18,8 @@ import {
   LogOut,
   Heart,
   Bell,
+  GraduationCap,
+  Shield,
 } from "lucide-react";
 
 const navItems = [
@@ -65,7 +67,7 @@ export default function DashboardLayout({
         const data = await response.json();
         if (mounted) setWishlistCount(Array.isArray(data.items) ? data.items.length : 0);
       } catch {
-        // A navegação continua funcional mesmo quando a API de desejos estiver indisponível.
+        // Ignorado
       }
     };
 
@@ -164,6 +166,27 @@ export default function DashboardLayout({
               </Link>
             );
           })}
+
+          {/* Links exclusivos de Professor e Admin no Dashboard */}
+          {(session?.user?.role === "admin" || session?.user?.role === "professor") && (
+            <div className="pt-4 mt-4 border-t border-border/70 space-y-1.5">
+              <p className="px-4 text-[11px] font-black uppercase tracking-wider text-muted-foreground">Gestão Acadêmica</p>
+              <Link href="/professor" onClick={() => setSidebarOpen(false)}>
+                <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/professor") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                  <GraduationCap size={19} />
+                  <span className="flex-1">Painel do Professor</span>
+                </div>
+              </Link>
+              {session?.user?.role === "admin" && (
+                <Link href="/admin" onClick={() => setSidebarOpen(false)}>
+                  <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/admin") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                    <Shield size={19} />
+                    <span className="flex-1">Painel Admin</span>
+                  </div>
+                </Link>
+              )}
+            </div>
+          )}
         </nav>
 
         <div className="border-t border-border/70 p-4">
