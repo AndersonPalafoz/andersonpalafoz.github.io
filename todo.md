@@ -421,3 +421,6 @@
 - [ ] Remover referências residuais à IA na página de progresso de aulas (`/professor/progresso-aulas`).
 
 - [x] Remover menções residuais à IA na página de progresso de aulas (`/professor/progresso-aulas`), consolidando o fluxo estritamente no feedback e avaliação do professor.
+
+- [ ] Diagnosticar e corrigir o erro de carregamento na página de histórico acadêmico (`/dashboard/historico`).
+- [x] Diagnosticar e corrigir o erro de carregamento na página de histórico acadêmico (`/dashboard/historico`).
