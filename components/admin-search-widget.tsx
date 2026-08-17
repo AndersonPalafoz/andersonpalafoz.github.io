@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useTransition } from "react";
 import { Search, BookOpen, Users, GraduationCap, ArrowRight, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -29,6 +29,7 @@ export function AdminSearchWidget() {
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [usersList, setUsersList] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
   // Pagination states per section
   const [teacherPage, setTeacherPage] = useState(1);
@@ -103,12 +104,32 @@ export function AdminSearchWidget() {
     return filteredCourses.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredCourses, coursePage]);
 
+  const handleCategoryChange = (cat: "all" | "teachers" | "students" | "courses") => {
+    startTransition(() => {
+      setFilterCategory(cat);
+      setTeacherPage(1);
+      setStudentPage(1);
+      setCoursePage(1);
+    });
+  };
+
+  const handleQueryChange = (val: string) => {
+    startTransition(() => {
+      setQuery(val);
+      setTeacherPage(1);
+      setStudentPage(1);
+      setCoursePage(1);
+    });
+  };
+
   const clearSearch = () => {
-    setQuery("");
-    setFilterCategory("all");
-    setTeacherPage(1);
-    setStudentPage(1);
-    setCoursePage(1);
+    startTransition(() => {
+      setQuery("");
+      setFilterCategory("all");
+      setTeacherPage(1);
+      setStudentPage(1);
+      setCoursePage(1);
+    });
   };
 
   const hasActiveFilters = query || filterCategory !== "all";
@@ -127,33 +148,33 @@ export function AdminSearchWidget() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Search className="text-red-600" size={20} /> Motor de Busca Ampliado (Pag الجهado)
+            <Search className="text-red-600" size={20} /> Motor de Busca Ampliado (Com Skeleton Loader)
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Pesquise por professores, alunos e cursos com paginação inteligente por categoria.
+            Pesquise por professores, alunos e cursos com transições suaves e paginação dinâmica.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => { setFilterCategory("all"); setTeacherPage(1); setStudentPage(1); setCoursePage(1); }}
+            onClick={() => handleCategoryChange("all")}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "all" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Todos
           </button>
           <button
-            onClick={() => { setFilterCategory("teachers"); setTeacherPage(1); }}
+            onClick={() => handleCategoryChange("teachers")}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "teachers" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Professores ({teachers.length})
           </button>
           <button
-            onClick={() => { setFilterCategory("students"); setStudentPage(1); }}
+            onClick={() => handleCategoryChange("students")}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "students" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Alunos ({students.length})
           </button>
           <button
-            onClick={() => { setFilterCategory("courses"); setCoursePage(1); }}
+            onClick={() => handleCategoryChange("courses")}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "courses" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Cursos ({courses.length})
@@ -168,12 +189,7 @@ export function AdminSearchWidget() {
         <input
           type="text"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setTeacherPage(1);
-            setStudentPage(1);
-            setCoursePage(1);
-          }}
+          onChange={(e) => handleQueryChange(e.target.value)}
           placeholder="Digite o nome/email do professor ou aluno, ou título do curso..."
           className="w-full rounded-2xl border border-border bg-background pl-11 pr-10 py-3.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600 shadow-sm"
         />
@@ -195,7 +211,17 @@ export function AdminSearchWidget() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* Grid de Seções com Skeleton Loader */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+        {isPending && (
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-xs z-10 flex items-center justify-center rounded-2xl">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border shadow-lg">
+              <Loader2 className="animate-spin text-red-600" size={16} />
+              <span className="text-xs font-bold text-foreground">Atualizando resultados...</span>
+            </div>
+          </div>
+        )}
+
         {/* Professores */}
         {filterCategory !== "students" && filterCategory !== "courses" && (
           <div className="space-y-3 flex flex-col justify-between">
@@ -203,7 +229,19 @@ export function AdminSearchWidget() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
                 <GraduationCap size={14} className="text-red-600" /> Professores ({filteredTeachers.length})
               </h3>
-              {filteredTeachers.length === 0 ? (
+              {isPending ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="p-3.5 rounded-xl border border-border/70 bg-muted/20 animate-pulse flex items-center justify-between">
+                      <div className="space-y-1.5 w-3/4">
+                        <div className="h-3.5 bg-muted rounded w-1/2" />
+                        <div className="h-2.5 bg-muted rounded w-3/4" />
+                      </div>
+                      <div className="h-6 w-16 bg-muted rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredTeachers.length === 0 ? (
                 <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum professor encontrado.</p>
               ) : (
                 <div className="space-y-2">
@@ -229,14 +267,14 @@ export function AdminSearchWidget() {
                 <span className="text-muted-foreground">Pág. {teacherPage} de {Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE)}</span>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setTeacherPage((p) => Math.max(1, p - 1))}
+                    onClick={() => startTransition(() => setTeacherPage((p) => Math.max(1, p - 1)))}
                     disabled={teacherPage === 1}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
                   <button
-                    onClick={() => setTeacherPage((p) => (p * ITEMS_PER_PAGE < filteredTeachers.length ? p + 1 : p))}
+                    onClick={() => startTransition(() => setTeacherPage((p) => (p * ITEMS_PER_PAGE < filteredTeachers.length ? p + 1 : p)))}
                     disabled={teacherPage * ITEMS_PER_PAGE >= filteredTeachers.length}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
@@ -255,7 +293,19 @@ export function AdminSearchWidget() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
                 <Users size={14} className="text-red-600" /> Alunos ({filteredStudents.length})
               </h3>
-              {filteredStudents.length === 0 ? (
+              {isPending ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="p-3.5 rounded-xl border border-border/70 bg-muted/20 animate-pulse flex items-center justify-between">
+                      <div className="space-y-1.5 w-3/4">
+                        <div className="h-3.5 bg-muted rounded w-1/2" />
+                        <div className="h-2.5 bg-muted rounded w-3/4" />
+                      </div>
+                      <div className="h-6 w-16 bg-muted rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredStudents.length === 0 ? (
                 <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum aluno encontrado.</p>
               ) : (
                 <div className="space-y-2">
@@ -281,14 +331,14 @@ export function AdminSearchWidget() {
                 <span className="text-muted-foreground">Pág. {studentPage} de {Math.ceil(filteredStudents.length / ITEMS_PER_PAGE)}</span>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setStudentPage((p) => Math.max(1, p - 1))}
+                    onClick={() => startTransition(() => setStudentPage((p) => Math.max(1, p - 1)))}
                     disabled={studentPage === 1}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
                   <button
-                    onClick={() => setStudentPage((p) => (p * ITEMS_PER_PAGE < filteredStudents.length ? p + 1 : p))}
+                    onClick={() => startTransition(() => setStudentPage((p) => (p * ITEMS_PER_PAGE < filteredStudents.length ? p + 1 : p)))}
                     disabled={studentPage * ITEMS_PER_PAGE >= filteredStudents.length}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
@@ -307,7 +357,19 @@ export function AdminSearchWidget() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
                 <BookOpen size={14} className="text-red-600" /> Cursos ({filteredCourses.length})
               </h3>
-              {filteredCourses.length === 0 ? (
+              {isPending ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((n) => (
+                    <div key={n} className="p-3.5 rounded-xl border border-border/70 bg-muted/20 animate-pulse flex items-center justify-between">
+                      <div className="space-y-1.5 w-3/4">
+                        <div className="h-3.5 bg-muted rounded w-1/2" />
+                        <div className="h-2.5 bg-muted rounded w-3/4" />
+                      </div>
+                      <div className="h-6 w-16 bg-muted rounded-lg" />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredCourses.length === 0 ? (
                 <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum curso encontrado.</p>
               ) : (
                 <div className="space-y-2">
@@ -333,14 +395,14 @@ export function AdminSearchWidget() {
                 <span className="text-muted-foreground">Pág. {coursePage} de {Math.ceil(filteredCourses.length / ITEMS_PER_PAGE)}</span>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => setCoursePage((p) => Math.max(1, p - 1))}
+                    onClick={() => startTransition(() => setCoursePage((p) => Math.max(1, p - 1)))}
                     disabled={coursePage === 1}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
                     <ChevronLeft size={14} />
                   </button>
                   <button
-                    onClick={() => setCoursePage((p) => (p * ITEMS_PER_PAGE < filteredCourses.length ? p + 1 : p))}
+                    onClick={() => startTransition(() => setCoursePage((p) => (p * ITEMS_PER_PAGE < filteredCourses.length ? p + 1 : p)))}
                     disabled={coursePage * ITEMS_PER_PAGE >= filteredCourses.length}
                     className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
                   >
