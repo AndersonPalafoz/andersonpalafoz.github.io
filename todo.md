@@ -82,3 +82,17 @@
 - [x] Remover links de Professor e Administrador do menu superior (header) e centralizá-los exclusivamente no sidebar da "Minha Área" (/dashboard) protegidos por nível de acesso
 - [x] Preservar tipografia profissional (Inter e Poppins) via Google Fonts e globals.css com estabilidade garantida para o Vercel
 - [x] Validação com 190 testes automatizados (Vitest) e build de produção Next.js 15 aprovados
+
+## Restauração de Poppins, Indicadores de Cargo e Tour Guiado — 17/08/2026
+- [x] Restaurar Poppins como fonte principal em todo o site com fallback para Inter
+- [x] Adicionar indicador visual dinâmico de cargo (Administrador, Professor ou Aluno) no topo do menu lateral do dashboard
+- [x] Criar atalhos rápidos no dashboard para alternância ágil entre os painéis de professor e administrador
+- [x] Implementar tour guiado interativo no primeiro acesso para orientar sobre a nova localização dos painéis docentes
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15
+
+## Conclusão da Restauração de Poppins e Aprimoramentos de Sidebar — 17/08/2026
+- [x] Fonte Poppins restaurada como primária em todo o site
+- [x] Indicador visual de cargo dinâmico (Administrador, Professor, Estudante) no topo do menu lateral
+- [x] Atalhos rápidos de alternância entre os painéis de Professor e Administrador no dashboard
+- [x] Tour guiado interativo de primeiro acesso explicando a nova localização dos painéis docentes
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15

@@ -20,6 +20,8 @@ import {
   Bell,
   GraduationCap,
   Shield,
+  Sparkles,
+  HelpCircle,
 } from "lucide-react";
 
 const navItems = [
@@ -52,6 +54,7 @@ export default function DashboardLayout({
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [showTour, setShowTour] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const { data: session } = useSession();
@@ -81,12 +84,19 @@ export default function DashboardLayout({
 
     void loadWishlistCount();
     window.addEventListener("wishlist:changed", handleWishlistChange);
+
+    // Verificar se é o primeiro acesso para o tour guiado
+    const hasSeenTour = localStorage.getItem("dashboard_tour_seen");
+    if (!hasSeenTour && (session?.user?.role === "admin" || session?.user?.role === "professor")) {
+      setShowTour(true);
+    }
+
     return () => {
       mounted = false;
       if (pulseTimer) window.clearTimeout(pulseTimer);
       window.removeEventListener("wishlist:changed", handleWishlistChange);
     };
-  }, []);
+  }, [session?.user?.role]);
 
   useEffect(() => {
     if (!session?.user?.email) return;
@@ -118,13 +128,51 @@ export default function DashboardLayout({
     }
   };
 
+  const closeTour = () => {
+    localStorage.setItem("dashboard_tour_seen", "true");
+    setShowTour(false);
+  };
+
   const isActive = (href: string, exact?: boolean) =>
     exact
       ? pathname === href
       : pathname === href || Boolean(pathname?.startsWith(href + "/"));
 
+  const userRole = session?.user?.role || "user";
+  const roleLabel = userRole === "admin" ? "Administrador" : userRole === "professor" ? "Professor(a)" : "Estudante";
+  const roleBadgeColor = userRole === "admin" ? "bg-red-600 text-white" : userRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
+
   return (
     <div className="flex h-screen bg-background text-foreground">
+      {/* Tour Guiado Modal */}
+      {showTour && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-card text-card-foreground max-w-md w-full rounded-3xl p-6 border border-border shadow-2xl relative space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-red-600 text-white flex items-center justify-center font-bold">
+                <Sparkles size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">Bem-vindo(a) à Nova Minha Área!</h3>
+                <p className="text-xs text-muted-foreground">Orientações de acesso docente</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Para manter o menu superior limpo e focado, os painéis exclusivos de <strong className="text-foreground">Professor</strong> e <strong className="text-foreground">Admin</strong> agora ficam centralizados no final deste menu lateral à esquerda. Você também pode alternar entre eles rapidamente usando os novos atalhos.
+            </p>
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={closeTour}
+                className="bg-red-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:bg-red-700 transition"
+              >
+                Entendi, começar!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <aside
         className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-40 flex h-screen w-72 flex-col border-r border-border/70 bg-card/95 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
       >
@@ -134,9 +182,14 @@ export default function DashboardLayout({
             {avatarUrl ? <img src={avatarUrl} alt="Foto de perfil" className="h-full w-full object-cover" /> : getInitials(session?.user?.name)}
             {avatarUploading && <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px]">...</span>}
           </button>
-          <div className="min-w-0">
-            <p className="font-semibold text-foreground truncate">{session?.user?.name || "Aluno"}</p>
-            <p className="text-xs text-muted-foreground truncate">{session?.user?.email}</p>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadgeColor}`}>
+                {roleLabel}
+              </span>
+            </div>
+            <p className="font-semibold text-foreground text-sm truncate">{session?.user?.name || "Aluno"}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{session?.user?.email}</p>
           </div>
         </div>
 
@@ -167,23 +220,47 @@ export default function DashboardLayout({
             );
           })}
 
-          {/* Links exclusivos de Professor e Admin no Dashboard */}
+          {/* Seção Exclusiva de Gestão Acadêmica com Atalhos Rápidos */}
           {(session?.user?.role === "admin" || session?.user?.role === "professor") && (
-            <div className="pt-4 mt-4 border-t border-border/70 space-y-1.5">
-              <p className="px-4 text-[11px] font-black uppercase tracking-wider text-muted-foreground">Gestão Acadêmica</p>
+            <div className="pt-4 mt-4 border-t border-border/70 space-y-2">
+              <div className="flex items-center justify-between px-4">
+                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Gestão Acadêmica</p>
+                <button
+                  type="button"
+                  onClick={() => setShowTour(true)}
+                  className="text-muted-foreground hover:text-foreground transition"
+                  title="Ver orientações dos painéis"
+                >
+                  <HelpCircle size={14} />
+                </button>
+              </div>
+
               <Link href="/professor" onClick={() => setSidebarOpen(false)}>
                 <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/professor") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
                   <GraduationCap size={19} />
                   <span className="flex-1">Painel do Professor</span>
                 </div>
               </Link>
+
               {session?.user?.role === "admin" && (
-                <Link href="/admin" onClick={() => setSidebarOpen(false)}>
-                  <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/admin") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                    <Shield size={19} />
-                    <span className="flex-1">Painel Admin</span>
+                <>
+                  <Link href="/admin" onClick={() => setSidebarOpen(false)}>
+                    <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/admin") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                      <Shield size={19} />
+                      <span className="flex-1">Painel Admin</span>
+                    </div>
+                  </Link>
+
+                  {/* Atalhos Rápidos de Alternância */}
+                  <div className="grid grid-cols-2 gap-2 pt-1 px-1">
+                    <Link href="/professor" onClick={() => setSidebarOpen(false)} className="bg-muted/60 hover:bg-muted text-foreground text-[11px] font-bold py-1.5 px-2 rounded-lg text-center transition border border-border/60">
+                      ⇄ Ir p/ Professor
+                    </Link>
+                    <Link href="/admin" onClick={() => setSidebarOpen(false)} className="bg-muted/60 hover:bg-muted text-foreground text-[11px] font-bold py-1.5 px-2 rounded-lg text-center transition border border-border/60">
+                      ⇄ Ir p/ Admin
+                    </Link>
                   </div>
-                </Link>
+                </>
               )}
             </div>
           )}

@@ -419,7 +419,7 @@
 
 @layer base {
   body {
-    font-family: 'Inter', 'Poppins', sans-serif;
+    font-family: 'Poppins', 'Inter', sans-serif;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Poppins', 'Inter', sans-serif;
