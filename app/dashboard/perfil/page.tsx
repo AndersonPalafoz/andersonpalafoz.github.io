@@ -5,6 +5,7 @@ import { User, Mail, ShieldCheck } from "lucide-react";
 import { ProfileForm } from "@/components/profile-form";
 import { ProfileBillingSection } from "@/components/profile-billing-section";
 import { ProfileNotesSection } from "@/components/profile-notes-section";
+import { ProfileInactivitySettings } from "@/components/profile-inactivity-settings";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -25,7 +26,7 @@ export default async function PerfilPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Avatar e Info Principal */}
-        <div className="md:col-span-1">
+        <div className="md:col-span-1 space-y-6">
           <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4 text-center">
             {dbUser?.avatarUrl ?? session?.user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -52,7 +53,7 @@ export default async function PerfilPage() {
             )}
           </div>
 
-          <div className="mt-6 p-6 rounded-xl border border-gray-200 bg-white space-y-4">
+          <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4">
             <h3 className="font-bold text-gray-900 text-sm">Conta</h3>
             <div className="flex items-center gap-3">
               <Mail size={16} className="text-red-600 flex-shrink-0" />
@@ -63,6 +64,8 @@ export default async function PerfilPage() {
               <p className="text-sm text-gray-700">Conectado via Google</p>
             </div>
           </div>
+
+          <ProfileInactivitySettings />
         </div>
 
         {/* Formulário de Edição e Faturamento */}

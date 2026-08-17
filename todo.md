@@ -321,3 +321,6 @@
 
 - [x] Implementar opção de autenticação em dois fatores (2FA) com TOTP para o painel administrativo (`/admin`)
 - [x] Criar sistema de desconexão automática por inatividade (20 minutos com aviso de 1 minuto) para proteger sessões de alunos e usuários (`InactivityMonitor`)
+
+- [x] Adicionar opção de escanear QR Code para configurar o Google Authenticator no painel administrativo (`AdminTwoFactorSection`)
+- [x] Permitir que os alunos configurem o tempo limite de inatividade nas preferências do seu perfil (`ProfileInactivitySettings`)

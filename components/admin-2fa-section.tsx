@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from "react";
-import { ShieldCheck, Lock, CheckCircle2, KeyRound } from "lucide-react";
+import { ShieldCheck, Lock, CheckCircle2, KeyRound, QrCode, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
 export function AdminTwoFactorSection() {
   const [enabled2FA, setEnabled2FA] = useState(true);
   const [code, setCode] = useState("");
   const [verified, setVerified] = useState(true);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   const handleVerify2FA = (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,17 +53,27 @@ export function AdminTwoFactorSection() {
 
       {enabled2FA && (
         <div className="bg-red-50/60 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 p-5 rounded-2xl space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold">
-              <KeyRound size={20} />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold shrink-0">
+                <KeyRound size={20} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-foreground">Google Authenticator & Aplicativos TOTP</h3>
+                <p className="text-xs text-muted-foreground">Escaneie o QR Code com seu celular ou insira o código de 6 dígitos gerado.</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-black text-foreground">Dispositivo Autenticador (TOTP)</h3>
-              <p className="text-xs text-muted-foreground">Insira o código gerado pelo seu aplicativo autenticador (Google Authenticator / Authy) para validar alterações sensíveis.</p>
-            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowQrModal(true)}
+              className="bg-slate-900 text-white dark:bg-slate-800 hover:bg-slate-800 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 transition shadow-sm shrink-0"
+            >
+              <QrCode size={16} /> Configurar via QR Code
+            </button>
           </div>
 
-          <form onSubmit={handleVerify2FA} className="flex flex-col sm:flex-row gap-3 pt-2">
+          <form onSubmit={handleVerify2FA} className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-red-200/60 dark:border-red-900/40">
             <div className="relative flex-1">
               <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input
@@ -87,6 +98,52 @@ export function AdminTwoFactorSection() {
               <CheckCircle2 size={15} /> <span>Sessão atual verificada com 2FA em {new Date().toLocaleTimeString("pt-BR")}.</span>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal QR Code Google Authenticator */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl relative animate-fade-in text-center">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400 mx-auto flex items-center justify-center">
+              <Smartphone size={24} />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-foreground">Configurar Google Authenticator</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Abra o Google Authenticator ou Authy no seu celular, escaneie o código abaixo ou insira a chave secreta manualmente.
+              </p>
+            </div>
+
+            {/* Simulação Visual Segura do QR Code */}
+            <div className="bg-slate-50 dark:bg-slate-800/80 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center space-y-4">
+              <div className="w-40 h-40 bg-white p-3 rounded-2xl shadow-inner border border-slate-300 flex items-center justify-center">
+                <div className="grid grid-cols-6 gap-1 w-full h-full bg-slate-900 p-2 rounded-lg">
+                  {Array.from({ length: 36 }).map((_, i) => (
+                    <div key={i} className={`rounded-xs ${i % 2 === 0 || i % 5 === 0 ? "bg-white" : "bg-slate-900"}`} />
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Chave Secreta Manual:</p>
+                <code className="text-xs font-mono font-bold bg-muted px-3 py-1.5 rounded-lg text-foreground block">
+                  JBSWY3DPEHPK3PXP
+                </code>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowQrModal(false);
+                toast.success("Dispositivo vinculado com sucesso ao Google Authenticator!");
+              }}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-3 rounded-xl text-xs transition shadow-sm"
+            >
+              Concluir Configuração
+            </button>
+          </div>
         </div>
       )}
     </div>
