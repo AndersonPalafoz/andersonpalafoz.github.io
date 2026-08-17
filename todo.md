@@ -165,3 +165,15 @@
 - [x] Substituídas todas as métricas simuladas de engajamento no CMS por chamadas reais via API ao banco de dados persistido
 - [x] Adicionados estados de carregamento, tratamento de erros e botão de atualização manual para os dados reais
 - [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Aprimoramentos Analíticos Reais no CMS — 17/08/2026
+- [x] Implementar gráficos temporais dinâmicos baseados no histórico real de logins na tabela de sessões
+- [x] Adicionar filtros por tipo de evento (Quiz, Speaking, Conclusão de Módulo) no log de atividades reais
+- [x] Criar opção para exportar os dados analíticos reais do CMS em formato PDF formatado
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Gráficos Temporais, Filtros e Exportação PDF Real — 17/08/2026
+- [x] Implementados gráficos temporais dinâmicos no CMS baseados no histórico real de logins das sessões
+- [x] Adicionados filtros por tipo de evento (Quiz, Speaking, Conclusão de Módulo) no log de atividades reais
+- [x] Criada a opção de exportar todos os relatórios e dados analíticos reais do CMS em formato PDF formatado
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
