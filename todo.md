@@ -347,3 +347,9 @@
 - [ ] Criar motor de busca avançado no painel do professor (`/professor`) para filtrar cursos e alunos específicos em tempo real por nome, email ou nível.
 
 - [x] Criar motor de busca avançado no painel do professor (`/professor`) para filtrar cursos e alunos específicos em tempo real por nome, email ou nível.
+
+- [ ] Adicionar filtros avançados por data e status do aluno ao motor de busca do painel do professor (`TeacherSearchWidget`).
+
+- [ ] Criar motor de busca ampliado no painel administrativo (`/admin`) para buscar professores, além de alunos e cursos.
+
+- [x] Criar motor de busca ampliado no painel administrativo (`/admin`) para buscar professores, além de alunos e cursos.

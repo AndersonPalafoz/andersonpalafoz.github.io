@@ -1,10 +1,9 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, BookOpen, FileText, Users, Loader, Mail, UserPlus, Calendar, MessageCircle, Globe, Award } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Users, Loader, Award } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { AdminSearchWidget } from "@/components/admin-search-widget";
 
 interface Stats {
   totalCourses: number;
@@ -138,9 +137,9 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="page-container py-8 sm:py-12">
+      <div className="page-container py-8 sm:py-12 space-y-12">
         {/* Atalhos e Gerenciamento */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-foreground">Atalhos Operacionais</h2>
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/admin/medalhas" className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:-translate-y-0.5">
@@ -152,8 +151,11 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+        {/* Motor de Busca Ampliado (Admin) */}
+        <AdminSearchWidget />
+
         {/* Stats Grid Detalhado por Função e Cursos Publicados */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="surface-card interactive-card p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -216,7 +218,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Evolução mensal */}
-        <section className="mb-12 surface-card p-4 sm:p-6">
+        <section className="surface-card p-4 sm:p-6">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               <BarChart3 size={20} />
@@ -238,76 +240,18 @@ export default function AdminDashboard() {
               <p className="text-muted-foreground">Criar, editar e deletar cursos</p>
             </div>
           </Link>
-
           <Link href="/admin/materiais">
             <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <FileText className="text-blue-600 mb-4" size={40} />
+              <FileText className="text-red-600 mb-4" size={40} />
               <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Materiais</h2>
-              <p className="text-muted-foreground">Adicionar e organizar materiais de apoio</p>
+              <p className="text-muted-foreground">Adicionar e organizar materiais públicos</p>
             </div>
           </Link>
-
-          <Link href="/admin/artigos">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <FileText className="text-muted-foreground mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Artigos</h2>
-              <p className="text-muted-foreground">Publicar e editar artigos do blog</p>
-            </div>
-          </Link>
-
           <Link href="/admin/usuarios">
             <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <Users className="text-purple-600 mb-4" size={40} />
+              <Users className="text-red-600 mb-4" size={40} />
               <h2 className="text-xl font-bold text-foreground mb-2">Gerenciar Usuários</h2>
-              <p className="text-muted-foreground">Ver, promover e remover usuários</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/matriculas">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <UserPlus className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Matrículas</h2>
-              <p className="text-muted-foreground">Vincular ou desvincular alunos de cursos</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/chamada">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <Calendar className="text-emerald-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Chamada Online</h2>
-              <p className="text-muted-foreground">Registrar frequência e sessões de aula</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/relatorios">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <BarChart3 className="text-orange-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Relatórios</h2>
-              <p className="text-muted-foreground">Estatísticas e progresso dos alunos</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/cms">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8 border-2 border-red-200 bg-red-50/40">
-              <Globe className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">CMS Global Inteligente</h2>
-              <p className="text-muted-foreground">Editar textos, mídias e logotipos de qualquer página</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/mensagens">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <Mail className="text-red-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Mensagens de Contato</h2>
-              <p className="text-muted-foreground">Visualizar mensagens enviadas pelo site</p>
-            </div>
-          </Link>
-
-          <Link href="/admin/reviews">
-            <div className="surface-card interactive-card h-full p-6 sm:p-8">
-              <MessageCircle className="text-amber-600 mb-4" size={40} />
-              <h2 className="text-xl font-bold text-foreground mb-2">Avaliações dos Cursos</h2>
-              <p className="text-muted-foreground">Responder avaliações e notificar alunos</p>
+              <p className="text-muted-foreground">Controle de permissões e acessos</p>
             </div>
           </Link>
         </div>
