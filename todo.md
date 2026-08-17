@@ -411,3 +411,7 @@
 - [x] Investigar e eliminar notificações de notas estáticas/falsas do Google Classroom na interface do aluno (`classroom-notifications.tsx`), exigindo conexão real e proveniência verificada.
 
 - [x] Corrigir o erro de build no Vercel em `app/admin/page.tsx` adicionando a diretiva `"use client"` para suportar os hooks React (`useState`, `useEffect`) utilizados no painel administrativo.
+
+- [ ] Conduzir auditoria de integridade e dados reais nas 13 URLs críticas especificadas pelo usuário (calendário, dashboards, histórico, perfil, certificados, professor, cursos, admin, relatórios, medalhas e CMS).
+
+- [x] Conduzir auditoria e purgação de dados estáticos nas 13 rotas solicitadas (`/dashboard/calendario`, `/dashboard`, `/dashboard/historico`, `/dashboard/perfil`, `/dashboard/certificados`, `/professor`, `/professor/progresso-aulas`, `/admin/cursos`, `/admin`, `/admin/relatorios-academicos`, `/admin/medalhas`, `/admin/cms`), garantindo que operem 100% com dados reais do banco Neon e APIs verificadas.
