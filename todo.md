@@ -160,3 +160,8 @@
 - [x] Implementados filtros por período e categoria para organizar a visualização dos dados reais no CMS
 - [x] Aprimorada a usabilidade geral do CMS com feedback visual, estados claros e interface user-friendly
 - [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Dados 100% Reais no CMS — 17/08/2026
+- [x] Substituídas todas as métricas simuladas de engajamento no CMS por chamadas reais via API ao banco de dados persistido
+- [x] Adicionados estados de carregamento, tratamento de erros e botão de atualização manual para os dados reais
+- [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
