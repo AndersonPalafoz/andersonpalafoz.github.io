@@ -32,3 +32,9 @@
 - [x] Executar e aprovar 190 testes automatizados (Vitest) com 100% de sucesso
 - [x] Validar build de produção do Next.js 15 sem erros
 - [x] Testar persistência de sessão e robustez de fontes para deploy otimizado no Vercel
+
+## Integrações Avançadas: Notificações Push, Google Calendar e Google Drive — 17/08/2026
+- [x] Implementar notificações push em tempo real para alertar os professores sobre novas tarefas e notas enviadas
+- [x] Adicionar integração com o Google Calendar para sincronizar automaticamente os prazos das turmas no calendário
+- [x] Concluir integração operacional com o Google Drive para gerenciamento e visualização de documentos acadêmicos
+- [x] Executar 190 testes automatizados com 100% de sucesso e validar build de produção do Next.js 15
