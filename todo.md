@@ -657,3 +657,8 @@
 ## Auditoria Completa da Plataforma Anderson Palafoz — 16/08/2026
 - [x] Executar auditoria técnica e visual abrangente de rotas, segurança, testes, UX/UI, modo escuro e performance
 - [x] Consolidar achados e recomendações em documento estruturado para o professor Anderson Palafoz
+
+## Correção Definitiva de Modo Escuro em /sobre e Outras Páginas — 16/08/2026
+- [x] Inspecionar e corrigir classes estáticas incorretas em `/sobre` e páginas de conteúdo que quebram o modo escuro
+- [x] Garantir aplicação consistente de `bg-background text-foreground dark:bg-slate-950 dark:text-slate-100` em todos os containers principais
+- [x] Validar renderização visual em modo claro e escuro nas principais rotas da plataforma
