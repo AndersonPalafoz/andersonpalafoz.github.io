@@ -424,3 +424,6 @@
 
 - [ ] Diagnosticar e corrigir o erro de carregamento na página de histórico acadêmico (`/dashboard/historico`).
 - [x] Diagnosticar e corrigir o erro de carregamento na página de histórico acadêmico (`/dashboard/historico`).
+
+- [x] Implementar sistema de cadastro manual de turmas e alunos externos (SIMAL, Megaworks, UFBA, etc.) no painel do professor.
+- [x] Adicionar skeleton loader na página de histórico acadêmico (`/dashboard/historico`) para melhorar a experiência visual.
