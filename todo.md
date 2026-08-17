@@ -265,3 +265,7 @@
 ## Exportação de Turmas e Atividades para o Google Sala de Aula (Google Classroom) — 17/08/2026
 - [x] Implementada a funcionalidade de exportação de turmas e atividades locais da plataforma diretamente para o Google Classroom, com confirmação, tratamento de erros e mapeamento persistente
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Indicador Visual de Exportação para o Google Classroom e Prevenção de Duplicidades — 17/08/2026
+- [x] Adicionado indicador visual de status de exportação nas atividades, com prevenção de envios duplicados e links diretos para o Google Classroom
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
