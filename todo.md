@@ -190,3 +190,8 @@
 ## Conclusão do Modo de Auditoria de Dados Brutos (JSON) — 17/08/2026
 - [x] Adicionado botão e painel interativo de auditoria de dados brutos (JSON) no CMS para inspecionar o payload real retornado pelo banco de dados
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Melhorias de Contraste em Temas Escuros e Responsividade Global — 17/08/2026
+- [x] Otimizados os tokens de cores, contraste de texto e visibilidade de bordas em todos os temas escuros do site
+- [x] Aprimorada a responsividade de layouts em todos os breakpoints (mobile, tablet e desktop)
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
