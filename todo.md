@@ -680,3 +680,9 @@
 - [x] Implementar salvamento automático do progresso de reprodução do vídeo para retomada exata na próxima sessão
 - [x] Criar tutorial em tooltip (onboarding) destacando o novo menu de temas e o atalho Alt+C para novos usuários
 - [x] Ampliar a gamificação para contemplar aulas presenciais e tarefas offline com registro de presença e XP auditável
+
+## Gestão de Alunos e Cursos Externos / Projetos Parceiros (Megaworks, SIMAL, UFBA) — 17/08/2026
+- [x] Criar estrutura de organizações parceiras e turmas externas no sistema para gerenciar alunos de projetos externos
+- [x] Implementar painel de gestão de alunos externos (adicionar, editar, vincular a instituições e turmas específicas)
+- [x] Integrar alunos externos aos módulos de chamada, notas, atribuição de tarefas e relatórios de progresso do professor
+- [x] Garantir isolamento de dados e filtros específicos para que o professor acompanhe alunos internos e externos sem conflitos
