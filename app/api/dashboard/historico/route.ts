@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
 import { asc, and, eq, inArray } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -44,7 +44,7 @@ export async function GET() {
     const classAttendanceRows = enrolledCourseIds.length ? await db.select({ status: attendances.status, recordedAt: attendances.recordedAt }).from(attendances)
       .innerJoin(classSessions, eq(attendances.sessionId, classSessions.id))
       .where(inArray(classSessions.courseId, enrolledCourseIds))
-      .orderBy(asc(attendances.recordedAt)) : [];
+      .orderBy(asc(classSessions.id)) : [];
 
     const timeline = buildAcademicTimeline(
       grades.map((grade) => ({ score: grade.score === null ? null : Number(grade.score), occurredAt: grade.submittedAt })),
