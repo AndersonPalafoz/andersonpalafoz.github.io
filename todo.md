@@ -110,3 +110,15 @@
 - [x] Adicionado badge com contagem de tarefas pendentes de correção nos atalhos do painel do professor
 - [x] Incluída opção no menu de perfil do usuário para reiniciar o tour guiado a qualquer momento
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Refinamentos Finais de CMS, Badge Clicável e Cores — 17/08/2026
+- [x] Adicionar barra de pesquisa e filtros por categoria no gerenciador de mídias do CMS
+- [x] Tornar o badge de tarefas pendentes clicável com redirecionamento direto para correção de atividades
+- [x] Incluir botão "Restaurar Padrões" nas configurações de cores dos cargos no painel de admin
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Conclusão de Busca em Mídias, Badge Clicável e Restaurar Padrões — 17/08/2026
+- [x] Adicionada barra de pesquisa e filtros por categoria no gerenciador de mídias do CMS
+- [x] Tornado o badge de tarefas pendentes interativo e clicável, direcionando direto para a correção
+- [x] Incluído botão "Restaurar Padrões" nas configurações de cores de cargos do painel de admin
+- [x] Validação completa com 190 testes automatizados Vitest e build de produção Next.js 15
