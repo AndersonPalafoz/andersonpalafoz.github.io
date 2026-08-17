@@ -4,6 +4,7 @@ import { SessionProviderWrapper } from "@/components/session-provider";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ToastProvider } from "@/components/toast-provider";
+import { InactivityMonitor } from "@/components/inactivity-monitor";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -52,6 +53,7 @@ export default function RootLayout({
             <main className="min-h-screen bg-slate-50 pt-[4.5rem]">{children}</main>
             <Footer />
             <ToastProvider />
+            <InactivityMonitor />
           </ThemeProvider>
         </SessionProviderWrapper>
       </body>
