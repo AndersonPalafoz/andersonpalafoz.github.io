@@ -213,3 +213,7 @@
 ## Biblioteca de Rubricas Reutilizáveis para Professores — 17/08/2026
 - [x] Implementada a biblioteca de rubricas salváveis, permitindo que professores busquem, dupliquem e importem rubricas anteriores em novas atividades com um clique
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Modal de Visualização Rápida de Rubricas — 17/08/2026
+- [x] Adicionado modal de visualização rápida para professores revisarem critérios, níveis e pesos de qualquer rubrica salva antes de importá-la
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
