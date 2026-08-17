@@ -454,6 +454,8 @@
 - [x] Reforçar isolamento por professor na API de turmas externas (`/api/professor/external-classes`), garantindo que docentes vejam apenas suas turmas (e administradores vejam todas).
 - [x] Garantir validação rigorosa server-side em uploads e exclusões de ativos de mídia na biblioteca do CMS.
 
-- [ ] Aprimorar o sistema de cursos e turmas externas (SIMAL, Megaworks, UFBA, etc.) com painel acadêmico expandido, status de matrícula, controle de progresso e estatísticas de frequência.
+- [x] Aprimorar o sistema de cursos e turmas externas (SIMAL, Megaworks, UFBA, etc.) com painel acadêmico expandido, status de matrícula, controle de progresso e estatísticas de frequência.
 
 - [x] Aprimorar o sistema de cursos e turmas externas (incluindo IsF, PROFICI, SIMAL, Megaworks, UFBA) com painel acadêmico expandido, status de matrícula, controle de progresso e estatísticas de frequência.
+
+- [x] Aprimorar o sistema de cursos e turmas externas com prevenção de duplicidade de matrículas, edição de alunos, importação real via CSV e painel consolidado por instituição.
