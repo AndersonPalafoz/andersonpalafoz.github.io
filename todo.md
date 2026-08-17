@@ -674,3 +674,9 @@
 - [x] Reforçar o modo de alto contraste com sublinhados em links e bordas espessas em botões para acessibilidade
 - [x] Implementar atalho de teclado `Alt+C` para alternar instantaneamente o modo de alto contraste
 - [x] Aprimorar o sistema de gamificação, tornando o cálculo de ofensiva diária (Streak) robusto e confiável
+
+## Celebração de XP, Persistência de Vídeo, Tutorial de Temas e Gamificação Presencial — 17/08/2026
+- [x] Adicionar animação de celebração visual e barra de progresso animada ao ganhar XP ou subir de ofensiva
+- [x] Implementar salvamento automático do progresso de reprodução do vídeo para retomada exata na próxima sessão
+- [x] Criar tutorial em tooltip (onboarding) destacando o novo menu de temas e o atalho Alt+C para novos usuários
+- [x] Ampliar a gamificação para contemplar aulas presenciais e tarefas offline com registro de presença e XP auditável
