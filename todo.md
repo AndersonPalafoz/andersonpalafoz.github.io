@@ -357,3 +357,7 @@
 - [ ] Implementar paginação nos resultados do motor de busca administrativo (`AdminSearchWidget`).
 
 - [x] Implementar paginação nos resultados do motor de busca administrativo (`AdminSearchWidget`).
+
+- [ ] Adicionar skeleton loader na paginação e nas trocas de filtro do motor de busca administrativo (`AdminSearchWidget`).
+
+- [x] Adicionar skeleton loader na paginação e nas trocas de filtro do motor de busca administrativo (`AdminSearchWidget`).
