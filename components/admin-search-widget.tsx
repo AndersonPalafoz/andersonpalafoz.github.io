@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Search, BookOpen, Users, GraduationCap, ArrowRight, X, Loader2 } from "lucide-react";
+import { Search, BookOpen, Users, GraduationCap, ArrowRight, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface CourseItem {
@@ -21,12 +21,19 @@ interface UserItem {
   lastSignedIn: string | Date;
 }
 
+const ITEMS_PER_PAGE = 5;
+
 export function AdminSearchWidget() {
   const [query, setQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState<"all" | "teachers" | "students" | "courses">("all");
   const [courses, setCourses] = useState<CourseItem[]>([]);
   const [usersList, setUsersList] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination states per section
+  const [teacherPage, setTeacherPage] = useState(1);
+  const [studentPage, setStudentPage] = useState(1);
+  const [coursePage, setCoursePage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,7 +63,7 @@ export function AdminSearchWidget() {
   const filteredTeachers = useMemo(() => {
     if (filterCategory === "students" || filterCategory === "courses") return [];
     const q = query.toLowerCase().trim();
-    if (!q) return teachers.slice(0, 5);
+    if (!q) return teachers;
     return teachers.filter(
       (t) => (t.name && t.name.toLowerCase().includes(q)) || (t.email && t.email.toLowerCase().includes(q))
     );
@@ -65,7 +72,7 @@ export function AdminSearchWidget() {
   const filteredStudents = useMemo(() => {
     if (filterCategory === "teachers" || filterCategory === "courses") return [];
     const q = query.toLowerCase().trim();
-    if (!q) return students.slice(0, 5);
+    if (!q) return students;
     return students.filter(
       (s) => (s.name && s.name.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q))
     );
@@ -74,15 +81,34 @@ export function AdminSearchWidget() {
   const filteredCourses = useMemo(() => {
     if (filterCategory === "teachers" || filterCategory === "students") return [];
     const q = query.toLowerCase().trim();
-    if (!q) return courses.slice(0, 5);
+    if (!q) return courses;
     return courses.filter(
       (c) => c.title.toLowerCase().includes(q) || c.level.toLowerCase().includes(q) || (c.category && c.category.toLowerCase().includes(q))
     );
   }, [courses, query, filterCategory]);
 
+  // Paginated slices
+  const paginatedTeachers = useMemo(() => {
+    const start = (teacherPage - 1) * ITEMS_PER_PAGE;
+    return filteredTeachers.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredTeachers, teacherPage]);
+
+  const paginatedStudents = useMemo(() => {
+    const start = (studentPage - 1) * ITEMS_PER_PAGE;
+    return filteredStudents.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredStudents, studentPage]);
+
+  const paginatedCourses = useMemo(() => {
+    const start = (coursePage - 1) * ITEMS_PER_PAGE;
+    return filteredCourses.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredCourses, coursePage]);
+
   const clearSearch = () => {
     setQuery("");
     setFilterCategory("all");
+    setTeacherPage(1);
+    setStudentPage(1);
+    setCoursePage(1);
   };
 
   const hasActiveFilters = query || filterCategory !== "all";
@@ -101,33 +127,33 @@ export function AdminSearchWidget() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-            <Search className="text-red-600" size={20} /> Motor de Busca Ampliado (Professores, Alunos e Cursos)
+            <Search className="text-red-600" size={20} /> Motor de Busca Ampliado (Pag الجهado)
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Pesquise instantaneamente em todo o banco de dados institucional.
+            Pesquise por professores, alunos e cursos com paginação inteligente por categoria.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setFilterCategory("all")}
+            onClick={() => { setFilterCategory("all"); setTeacherPage(1); setStudentPage(1); setCoursePage(1); }}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "all" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Todos
           </button>
           <button
-            onClick={() => setFilterCategory("teachers")}
+            onClick={() => { setFilterCategory("teachers"); setTeacherPage(1); }}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "teachers" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Professores ({teachers.length})
           </button>
           <button
-            onClick={() => setFilterCategory("students")}
+            onClick={() => { setFilterCategory("students"); setStudentPage(1); }}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "students" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Alunos ({students.length})
           </button>
           <button
-            onClick={() => setFilterCategory("courses")}
+            onClick={() => { setFilterCategory("courses"); setCoursePage(1); }}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${filterCategory === "courses" ? "bg-red-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
           >
             Cursos ({courses.length})
@@ -142,7 +168,12 @@ export function AdminSearchWidget() {
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setTeacherPage(1);
+            setStudentPage(1);
+            setCoursePage(1);
+          }}
           placeholder="Digite o nome/email do professor ou aluno, ou título do curso..."
           className="w-full rounded-2xl border border-border bg-background pl-11 pr-10 py-3.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600 shadow-sm"
         />
@@ -167,28 +198,51 @@ export function AdminSearchWidget() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Professores */}
         {filterCategory !== "students" && filterCategory !== "courses" && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <GraduationCap size={14} className="text-red-600" /> Professores ({filteredTeachers.length})
-            </h3>
-            {filteredTeachers.length === 0 ? (
-              <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum professor encontrado.</p>
-            ) : (
-              <div className="space-y-2">
-                {filteredTeachers.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
-                    <div>
-                      <h4 className="text-xs font-black text-foreground">{t.name || "Professor"}</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{t.email}</p>
+          <div className="space-y-3 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+                <GraduationCap size={14} className="text-red-600" /> Professores ({filteredTeachers.length})
+              </h3>
+              {filteredTeachers.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum professor encontrado.</p>
+              ) : (
+                <div className="space-y-2">
+                  {paginatedTeachers.map((t) => (
+                    <div key={t.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
+                      <div>
+                        <h4 className="text-xs font-black text-foreground">{t.name || "Professor"}</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{t.email}</p>
+                      </div>
+                      <Link
+                        href="/admin/usuarios"
+                        className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white transition text-[11px] font-bold"
+                      >
+                        Gerenciar
+                      </Link>
                     </div>
-                    <Link
-                      href="/admin/usuarios"
-                      className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 hover:bg-amber-500 hover:text-white transition text-[11px] font-bold"
-                    >
-                      Gerenciar
-                    </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+            {filteredTeachers.length > ITEMS_PER_PAGE && (
+              <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs">
+                <span className="text-muted-foreground">Pág. {teacherPage} de {Math.ceil(filteredTeachers.length / ITEMS_PER_PAGE)}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setTeacherPage((p) => Math.max(1, p - 1))}
+                    disabled={teacherPage === 1}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={() => setTeacherPage((p) => (p * ITEMS_PER_PAGE < filteredTeachers.length ? p + 1 : p))}
+                    disabled={teacherPage * ITEMS_PER_PAGE >= filteredTeachers.length}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -196,28 +250,51 @@ export function AdminSearchWidget() {
 
         {/* Alunos */}
         {filterCategory !== "teachers" && filterCategory !== "courses" && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Users size={14} className="text-red-600" /> Alunos ({filteredStudents.length})
-            </h3>
-            {filteredStudents.length === 0 ? (
-              <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum aluno encontrado.</p>
-            ) : (
-              <div className="space-y-2">
-                {filteredStudents.map((s) => (
-                  <div key={s.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
-                    <div>
-                      <h4 className="text-xs font-black text-foreground">{s.name || "Aluno"}</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{s.email}</p>
+          <div className="space-y-3 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+                <Users size={14} className="text-red-600" /> Alunos ({filteredStudents.length})
+              </h3>
+              {filteredStudents.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum aluno encontrado.</p>
+              ) : (
+                <div className="space-y-2">
+                  {paginatedStudents.map((s) => (
+                    <div key={s.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
+                      <div>
+                        <h4 className="text-xs font-black text-foreground">{s.name || "Aluno"}</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">{s.email}</p>
+                      </div>
+                      <Link
+                        href="/admin/usuarios"
+                        className="px-2.5 py-1 rounded-lg bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold"
+                      >
+                        Gerenciar
+                      </Link>
                     </div>
-                    <Link
-                      href="/admin/usuarios"
-                      className="px-2.5 py-1 rounded-lg bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold"
-                    >
-                      Gerenciar
-                    </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+            {filteredStudents.length > ITEMS_PER_PAGE && (
+              <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs">
+                <span className="text-muted-foreground">Pág. {studentPage} de {Math.ceil(filteredStudents.length / ITEMS_PER_PAGE)}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setStudentPage((p) => Math.max(1, p - 1))}
+                    disabled={studentPage === 1}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={() => setStudentPage((p) => (p * ITEMS_PER_PAGE < filteredStudents.length ? p + 1 : p))}
+                    disabled={studentPage * ITEMS_PER_PAGE >= filteredStudents.length}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -225,28 +302,51 @@ export function AdminSearchWidget() {
 
         {/* Cursos */}
         {filterCategory !== "teachers" && filterCategory !== "students" && (
-          <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <BookOpen size={14} className="text-red-600" /> Cursos ({filteredCourses.length})
-            </h3>
-            {filteredCourses.length === 0 ? (
-              <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum curso encontrado.</p>
-            ) : (
-              <div className="space-y-2">
-                {filteredCourses.map((c) => (
-                  <div key={c.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
-                    <div>
-                      <h4 className="text-xs font-black text-foreground">{c.title}</h4>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">Nível {c.level}</p>
+          <div className="space-y-3 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mb-3">
+                <BookOpen size={14} className="text-red-600" /> Cursos ({filteredCourses.length})
+              </h3>
+              {filteredCourses.length === 0 ? (
+                <p className="text-xs text-muted-foreground p-4 bg-muted/30 rounded-xl border border-border/50">Nenhum curso encontrado.</p>
+              ) : (
+                <div className="space-y-2">
+                  {paginatedCourses.map((c) => (
+                    <div key={c.id} className="p-3.5 rounded-xl border border-border/70 bg-muted/40 flex items-center justify-between hover:border-red-300 transition">
+                      <div>
+                        <h4 className="text-xs font-black text-foreground">{c.title}</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">Nível {c.level}</p>
+                      </div>
+                      <Link
+                        href={`/cursos/${c.id}`}
+                        className="px-2.5 py-1 rounded-lg bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold flex items-center gap-1"
+                      >
+                        Ver <ArrowRight size={12} />
+                      </Link>
                     </div>
-                    <Link
-                      href={`/cursos/${c.id}`}
-                      className="px-2.5 py-1 rounded-lg bg-red-600/10 text-red-600 hover:bg-red-600 hover:text-white transition text-[11px] font-bold flex items-center gap-1"
-                    >
-                      Ver <ArrowRight size={12} />
-                    </Link>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+            {filteredCourses.length > ITEMS_PER_PAGE && (
+              <div className="flex items-center justify-between pt-3 border-t border-border/50 text-xs">
+                <span className="text-muted-foreground">Pág. {coursePage} de {Math.ceil(filteredCourses.length / ITEMS_PER_PAGE)}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCoursePage((p) => Math.max(1, p - 1))}
+                    disabled={coursePage === 1}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button
+                    onClick={() => setCoursePage((p) => (p * ITEMS_PER_PAGE < filteredCourses.length ? p + 1 : p))}
+                    disabled={coursePage * ITEMS_PER_PAGE >= filteredCourses.length}
+                    className="p-1.5 rounded-lg border border-border bg-background disabled:opacity-40"
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
