@@ -6,6 +6,7 @@ import { ProfileForm } from "@/components/profile-form";
 import { ProfileBillingSection } from "@/components/profile-billing-section";
 import { ProfileNotesSection } from "@/components/profile-notes-section";
 import { ProfileInactivitySettings } from "@/components/profile-inactivity-settings";
+import { ProfileMedalsGallery } from "@/components/profile-medals-gallery";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -21,7 +22,7 @@ export default async function PerfilPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Perfil</h1>
-        <p className="text-gray-600">Gerencie suas informações pessoais</p>
+        <p className="text-gray-600">Gerencie suas informações pessoais e visualize suas conquistas</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -80,6 +81,7 @@ export default async function PerfilPage() {
               initialAvatarUrl={dbUser?.avatarUrl ?? session?.user?.image ?? ""}
             />
           </div>
+          <ProfileMedalsGallery />
           <ProfileNotesSection />
           <ProfileBillingSection />
         </div>

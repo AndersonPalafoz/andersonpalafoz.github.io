@@ -335,3 +335,5 @@
 - [x] Adicionar gráfico de progresso semanal em tempo real no painel do aluno (`WeeklyProgressChart`) atualizado conforme as aulas são concluídas
 
 - [x] Adicionar sistema de conquistas e medalhas no gráfico de progresso semanal para recompensar metas de estudo reais, respeitando o Modo Tradicional
+
+- [x] Criar seção de galeria de medalhas na página de perfil do aluno (`ProfileMedalsGallery`) para exibir conquistas acumuladas com base no progresso real, com respeito automático ao Modo Tradicional
