@@ -373,3 +373,11 @@
 - [ ] Auditar e corrigir a proveniência dos dados do Google Classroom e implementar relatórios acadêmicos expandidos no painel administrativo.
 
 - [x] Auditar a proveniência dos dados do Google Classroom e implementar relatórios acadêmicos expandidos no painel administrativo (`/admin/relatorios-academicos`).
+
+- [ ] Implementar paginação e otimização de consultas (LIMIT/OFFSET e índices) nas rotas de busca e relatórios.
+- [ ] Substituir dados simulados dos relatórios acadêmicos por persistência e sincronização real baseada em credenciais do Google Classroom.
+- [ ] Adicionar índices em colunas críticas do Neon para proteger o banco contra estouro de limites.
+
+- [x] Implementar paginação e otimização de consultas (LIMIT/OFFSET e índices) nas rotas de busca e relatórios.
+- [x] Substituir dados simulados dos relatórios acadêmicos por persistência e sincronização real baseada em credenciais do Google Classroom.
+- [x] Adicionar índices em colunas críticas do Neon para proteger o banco contra estouro de limites.
