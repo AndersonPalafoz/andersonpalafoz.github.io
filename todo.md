@@ -209,3 +209,7 @@
 - [x] Implementado o criador e gerenciador de rubricas avaliativas configuráveis com critérios, níveis e pesos (estilo Google Sala de Aula)
 - [x] Adicionados lançamento de notas, feedback formativo, publicação para alunos e integração com boletins
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Biblioteca de Rubricas Reutilizáveis para Professores — 17/08/2026
+- [x] Implementada a biblioteca de rubricas salváveis, permitindo que professores busquem, dupliquem e importem rubricas anteriores em novas atividades com um clique
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
