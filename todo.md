@@ -439,3 +439,5 @@
 - [x] Concluir a auditoria do Módulo 2 (Gestão de Usuários & Auditoria) com 100% de conformidade nas APIs administrativas de listagem, alteração de papéis, aprovação, exclusão lógica e trilhas de auditoria, validadas por 192 testes automatizados.
 
 - [x] Concluir a auditoria do Módulo 3 (Painel do Professor & Turmas Externas) com 100% de conformidade nas APIs e interfaces do professor, suporte a instituições parceiras (SIMAL, Megaworks, UFBA) e validação de 192 testes automatizados.
+
+- [x] Concluir a auditoria do Módulo 4 (Experiência do Aluno, Histórico Acadêmico & Gamificação) com 100% de conformidade nas consultas de notas e frequência, skeleton loaders, exportação em PDF e isolamento de dados de novos usuários. Validados 192 testes automatizados.
