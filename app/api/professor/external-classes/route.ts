@@ -18,6 +18,7 @@ export async function GET() {
     const teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
     if (!teacher) return NextResponse.json({ error: "Professor não encontrado." }, { status: 404 });
 
+    // Se for admin, pode ver todas as turmas externas; se for professor, vê as suas (ou todas se docente principal)
     const classes = await db.select().from(externalClasses).orderBy(desc(externalClasses.createdAt));
     
     const result = [];
@@ -67,6 +68,26 @@ export async function POST(request: NextRequest) {
       }).returning();
 
       return NextResponse.json({ success: true, classItem: inserted[0] }, { status: 201 });
+    }
+
+    if (action === "updateClass") {
+      if (!classId || !institution || !className || !courseName || !academicTerm) {
+        return NextResponse.json({ error: "ID da turma e campos obrigatórios são necessários." }, { status: 400 });
+      }
+
+      const updated = await db.update(externalClasses)
+        .set({
+          institution: institution.trim(),
+          className: className.trim(),
+          courseName: courseName.trim(),
+          academicTerm: academicTerm.trim(),
+          description: description ? description.trim() : null,
+          updatedAt: new Date(),
+        })
+        .where(eq(externalClasses.id, Number(classId)))
+        .returning();
+
+      return NextResponse.json({ success: true, classItem: updated[0] });
     }
 
     if (action === "addStudent") {

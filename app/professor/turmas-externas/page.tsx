@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -29,7 +29,14 @@ export default function TurmasExternasPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form states for creating class
+  // Search and filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
+
+  // Edit class mode
+  const [editingClassId, setEditingClassId] = useState<number | null>(null);
+
+  // Form states for creating/editing class
   const [institution, setInstitution] = useState("SIMAL");
   const [className, setClassName] = useState("");
   const [courseName, setCourseName] = useState("");
@@ -61,7 +68,21 @@ export default function TurmasExternasPage() {
     void loadClasses();
   }, []);
 
-  const handleCreateClass = async (e: React.FormEvent) => {
+  const filteredClasses = useMemo(() => {
+    return classes.filter((c) => {
+      const matchesInstitution = selectedInstitutionFilter === "all" || c.institution.toLowerCase() === selectedInstitutionFilter.toLowerCase();
+      const term = searchTerm.toLowerCase();
+      const matchesSearch =
+        !term ||
+        c.className.toLowerCase().includes(term) ||
+        c.courseName.toLowerCase().includes(term) ||
+        c.institution.toLowerCase().includes(term) ||
+        c.students.some((s) => s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)));
+      return matchesInstitution && matchesSearch;
+    });
+  }, [classes, selectedInstitutionFilter, searchTerm]);
+
+  const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!className || !courseName || !academicTerm) {
       toast.error("Preencha todos os campos obrigatórios da turma.");
@@ -69,30 +90,44 @@ export default function TurmasExternasPage() {
     }
     try {
       setSubmitting(true);
+      const action = editingClassId ? "updateClass" : "createClass";
+      const body = editingClassId
+        ? { action, classId: editingClassId, institution, className, courseName, academicTerm, description }
+        : { action, institution, className, courseName, academicTerm, description };
+
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "createClass",
-          institution,
-          className,
-          courseName,
-          academicTerm,
-          description,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao criar turma.");
-      toast.success("Turma externa criada com sucesso!");
-      setClassName("");
-      setCourseName("");
-      setDescription("");
+      if (!res.ok) throw new Error(data.error || "Erro ao salvar turma.");
+      toast.success(editingClassId ? "Turma atualizada com sucesso!" : "Turma externa criada com sucesso!");
+      resetClassForm();
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao criar turma.");
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar turma.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const startEditClass = (cls: ExternalClassItem) => {
+    setEditingClassId(cls.id);
+    setInstitution(cls.institution);
+    setClassName(cls.className);
+    setCourseName(cls.courseName);
+    setAcademicTerm(cls.academicTerm);
+    setDescription(cls.description || "");
+  };
+
+  const resetClassForm = () => {
+    setEditingClassId(null);
+    setInstitution("SIMAL");
+    setClassName("");
+    setCourseName("");
+    setAcademicTerm("2026.1");
+    setDescription("");
   };
 
   const handleAddStudent = async (e: React.FormEvent) => {
@@ -187,15 +222,59 @@ export default function TurmasExternasPage() {
           </div>
         </header>
 
+        {/* Barra de Busca e Filtros Globais */}
+        <section className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Buscar por turma, curso, instituição ou aluno..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Filtrar Instituição:</span>
+            {["all", "SIMAL", "Megaworks", "UFBA"].map((inst) => (
+              <button
+                key={inst}
+                type="button"
+                onClick={() => setSelectedInstitutionFilter(inst)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                  selectedInstitutionFilter === inst
+                    ? "bg-red-600 text-white shadow-xs"
+                    : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {inst === "all" ? "Todas" : inst}
+              </button>
+            ))}
+          </div>
+        </section>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulários de Cadastro */}
+          {/* Formulários de Cadastro / Edição */}
           <div className="space-y-6 lg:col-span-1">
-            {/* Criar Turma */}
+            {/* Criar / Editar Turma */}
             <section className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
-              <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
-                <BookOpen size={18} className="text-red-600" /> Nova Turma Externa
-              </h2>
-              <form onSubmit={handleCreateClass} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
+                  <BookOpen size={18} className="text-red-600" /> {editingClassId ? "Editar Turma Externa" : "Nova Turma Externa"}
+                </h2>
+                {editingClassId && (
+                  <button
+                    type="button"
+                    onClick={resetClassForm}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-lg"
+                    title="Cancelar Edição"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <form onSubmit={handleSaveClass} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Projeto</label>
                   <select
@@ -249,13 +328,25 @@ export default function TurmasExternasPage() {
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-red-600 hover:bg-red-700 text-white font-black text-xs p-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  {submitting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />} Cadastrar Turma
-                </button>
+                <div className="flex gap-2">
+                  {editingClassId && (
+                    <button
+                      type="button"
+                      onClick={resetClassForm}
+                      className="w-1/3 bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 text-gray-800 dark:text-gray-200 font-black text-xs p-3.5 rounded-xl transition"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className={`${editingClassId ? "w-2/3" : "w-full"} bg-red-600 hover:bg-red-700 text-white font-black text-xs p-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50`}
+                  >
+                    {submitting ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+                    {editingClassId ? "Salvar Alterações" : "Cadastrar Turma"}
+                  </button>
+                </div>
               </form>
             </section>
 
@@ -330,7 +421,7 @@ export default function TurmasExternasPage() {
                   <p className="text-xs text-gray-500">Visualização consolidada por instituição e turma.</p>
                 </div>
                 <span className="bg-gray-100 dark:bg-slate-800 text-gray-800 dark:text-gray-200 font-bold text-xs px-3 py-1 rounded-full">
-                  {classes.length} Turma(s)
+                  {filteredClasses.length} de {classes.length} Turma(s)
                 </span>
               </div>
 
@@ -338,15 +429,15 @@ export default function TurmasExternasPage() {
                 <div className="flex justify-center items-center py-16">
                   <Loader2 className="animate-spin text-red-600" size={32} />
                 </div>
-              ) : classes.length === 0 ? (
+              ) : filteredClasses.length === 0 ? (
                 <div className="text-center py-16 space-y-3">
                   <AlertCircle className="mx-auto text-gray-400" size={40} />
-                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Nenhuma turma externa cadastrada.</p>
-                  <p className="text-xs text-gray-500 max-w-sm mx-auto">Utilize o formulário ao lado para cadastrar sua primeira turma do Projeto SIMAL, Megaworks ou UFBA.</p>
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-200">Nenhuma turma externa encontrada com os filtros atuais.</p>
+                  <p className="text-xs text-gray-500 max-w-sm mx-auto">Tente ajustar a busca ou cadastrar uma nova turma na barra lateral.</p>
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {classes.map((cls) => (
+                  {filteredClasses.map((cls) => (
                     <div key={cls.id} className="border border-gray-200 dark:border-slate-800 rounded-2xl p-5 space-y-4 bg-gray-50/50 dark:bg-slate-800/40">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div>
@@ -360,14 +451,24 @@ export default function TurmasExternasPage() {
                           <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">{cls.courseName}</p>
                           {cls.description && <p className="text-xs text-gray-500 mt-1 italic">{cls.description}</p>}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => void handleRemoveClass(cls.id)}
-                          className="self-start sm:self-center text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold"
-                          title="Excluir Turma"
-                        >
-                          <Trash2 size={16} /> Excluir Turma
-                        </button>
+                        <div className="flex items-center gap-2 self-start sm:self-center">
+                          <button
+                            type="button"
+                            onClick={() => startEditClass(cls)}
+                            className="text-gray-700 dark:text-gray-300 hover:text-red-600 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold shadow-xs"
+                            title="Editar Turma"
+                          >
+                            <Edit3 size={15} /> Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleRemoveClass(cls.id)}
+                            className="text-red-600 hover:text-red-700 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 p-2.5 rounded-xl transition flex items-center gap-1.5 text-xs font-bold"
+                            title="Excluir Turma"
+                          >
+                            <Trash2 size={16} /> Excluir
+                          </button>
+                        </div>
                       </div>
 
                       {/* Alunos da Turma */}
