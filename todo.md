@@ -235,3 +235,8 @@
 ## Ícone de Notificações na Barra Inferior Mobile para Professores — 17/08/2026
 - [x] Adicionado ícone de notificações com badge dinâmico de tarefas pendentes de correção na barra inferior mobile para professores, com redirecionamento direto
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Autorização de Google Calendar e Google Workspace (`palafozanderson@gmail.com`) — 17/08/2026
+- [x] Conectores Google Calendar e Google Workspace identificados na sessão para `palafozanderson@gmail.com`
+- [ ] Conclusão do fluxo de consentimento OAuth pelo usuário para ativar a conta nos conectores
+- [ ] Validação das permissões de leitura/escrita em prazos e arquivos
