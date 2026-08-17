@@ -304,3 +304,8 @@
 - [x] Adicionar seção de guias de gramática em PDF na biblioteca pública (`/materiais`)
 - [x] Criar sistema visual de metas semanais de estudo no dashboard do aluno (`/dashboard`)
 - [x] Revisar descrições e títulos na página inicial (`/`) destacando a metodologia exclusiva e interativa do professor
+
+- [x] Adicionar animação de celebração visual no dashboard quando o aluno atingir 100% das metas semanais
+- [x] Implementar recurso de pré-visualização do sumário dos guias de gramática em PDF antes do download
+- [x] Criar seção no dashboard para exibir o histórico de metas semanais alcançadas nos meses anteriores
+- [x] Atualizar o cabeçalho lateral do perfil (DashboardLayout) para suportar foto de perfil e upload direto com fallback para iniciais

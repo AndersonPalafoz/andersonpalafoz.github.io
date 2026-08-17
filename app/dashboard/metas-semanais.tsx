@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from "react";
-import { Target, CheckCircle2, Plus, Trophy } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Target, CheckCircle2, Plus, Trophy, History, Calendar } from "lucide-react";
 import { toast } from "sonner";
 
 interface WeeklyGoal {
@@ -9,6 +9,13 @@ interface WeeklyGoal {
   title: string;
   completed: boolean;
   targetMinutes: number;
+}
+
+interface MonthlyHistory {
+  period: string;
+  completedGoals: number;
+  totalGoals: number;
+  status: string;
 }
 
 export function WeeklyGoalsWidget() {
@@ -20,13 +27,32 @@ export function WeeklyGoalsWidget() {
   ]);
 
   const [newGoalTitle, setNewGoalTitle] = useState("");
+  const [showCelebration, setShowCelebration] = useState(false);
+
+  const [history] = useState<MonthlyHistory[]>([
+    { period: "Julho / 2026", completedGoals: 18, totalGoals: 20, status: "Excelente (90%)" },
+    { period: "Junho / 2026", completedGoals: 16, totalGoals: 20, status: "Muito Bom (80%)" },
+    { period: "Maio / 2026", completedGoals: 19, totalGoals: 20, status: "Excelente (95%)" }
+  ]);
+
+  const completedCount = goals.filter(g => g.completed).length;
+  const progressPercentage = Math.round((completedCount / goals.length) * 100);
+
+  useEffect(() => {
+    if (progressPercentage === 100) {
+      setShowCelebration(true);
+      toast.success("Incrível! Você atingiu 100% das metas semanais! 🏆🎉");
+      const timer = setTimeout(() => setShowCelebration(false), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [progressPercentage]);
 
   const toggleGoal = (id: string) => {
     setGoals(goals.map(g => {
       if (g.id === id) {
         const nextState = !g.completed;
         if (nextState) {
-          toast.success("Parabéns! Meta semanal concluída com sucesso.");
+          toast.success("Meta semanal concluída!");
         }
         return { ...g, completed: nextState };
       }
@@ -50,11 +76,27 @@ export function WeeklyGoalsWidget() {
     toast.success("Nova meta semanal adicionada!");
   };
 
-  const completedCount = goals.filter(g => g.completed).length;
-  const progressPercentage = Math.round((completedCount / goals.length) * 100);
-
   return (
-    <div className="surface-card p-6 sm:p-8 space-y-6">
+    <div className="surface-card p-6 sm:p-8 space-y-6 relative overflow-hidden">
+      {showCelebration && (
+        <div className="absolute inset-0 bg-red-600/10 dark:bg-red-950/40 backdrop-blur-xs z-20 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 border-2 border-red-500 p-6 rounded-3xl shadow-2xl max-w-md w-full space-y-4">
+            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center animate-bounce">
+              <Trophy size={32} />
+            </div>
+            <h3 className="text-2xl font-black text-foreground">Parabéns, Aluno(a)!</h3>
+            <p className="text-sm text-muted-foreground">Você concluiu 100% das suas metas semanais de estudo. Seu empenho está gerando grandes resultados na fluência!</p>
+            <button
+              type="button"
+              onClick={() => setShowCelebration(false)}
+              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold text-sm shadow transition"
+            >
+              Continuar Jornada
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <span className="eyebrow inline-flex items-center gap-1.5">
@@ -121,6 +163,25 @@ export function WeeklyGoalsWidget() {
           <Plus size={16} /> Adicionar Meta
         </button>
       </form>
+
+      {/* Histórico de Metas Alcançadas em Meses Anteriores */}
+      <div className="pt-6 border-t border-border/70 space-y-4">
+        <div className="flex items-center gap-2">
+          <History size={18} className="text-red-600" />
+          <h3 className="text-base font-black text-foreground">Histórico de Metas Alcançadas (Meses Anteriores)</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {history.map((item, idx) => (
+            <div key={idx} className="bg-muted/50 border border-border p-4 rounded-2xl space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
+                <span className="flex items-center gap-1"><Calendar size={13} /> {item.period}</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-black">{item.completedGoals}/{item.totalGoals}</span>
+              </div>
+              <p className="text-sm font-bold text-foreground">{item.status}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
