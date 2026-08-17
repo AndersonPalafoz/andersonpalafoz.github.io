@@ -25,9 +25,19 @@ export async function GET() {
     const result = [];
     for (const cls of classes) {
       const students = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, cls.id));
+      
+      const totalStudents = students.length;
+      const activeStudents = students.filter(s => s.status === "active").length;
+      const completedStudents = students.filter(s => s.status === "completed").length;
+
       result.push({
         ...cls,
         students,
+        stats: {
+          total: totalStudents,
+          active: activeStudents,
+          completed: completedStudents,
+        }
       });
     }
 
@@ -52,7 +62,7 @@ export async function POST(request: NextRequest) {
     if (!teacher) return NextResponse.json({ error: "Professor não encontrado." }, { status: 404 });
 
     const body = await request.json();
-    const { action, institution, className, courseName, academicTerm, description, classId, studentName, studentEmail, studentIdNumber, studentNotes, studentId } = body;
+    const { action, institution, className, courseName, academicTerm, description, classId, studentName, studentEmail, studentIdNumber, studentNotes, studentStatus, studentId } = body;
 
     if (action === "createClass") {
       if (!institution || !className || !courseName || !academicTerm) {
@@ -113,10 +123,35 @@ export async function POST(request: NextRequest) {
         name: studentName.trim(),
         email: studentEmail ? studentEmail.trim() : null,
         studentIdNumber: studentIdNumber ? studentIdNumber.trim() : null,
+        status: studentStatus ? studentStatus.trim() : "active",
         notes: studentNotes ? studentNotes.trim() : null,
       }).returning();
 
       return NextResponse.json({ success: true, student: inserted[0] });
+    }
+
+    if (action === "updateStudentStatus") {
+      if (!studentId || !studentStatus) {
+        return NextResponse.json({ error: "ID do aluno e status são obrigatórios." }, { status: 400 });
+      }
+
+      const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      if (!student) return NextResponse.json({ error: "Aluno não encontrado." }, { status: 404 });
+
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
+      if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      const updated = await db.update(externalStudents)
+        .set({
+          status: studentStatus.trim(),
+          updatedAt: new Date(),
+        })
+        .where(eq(externalStudents.id, Number(studentId)))
+        .returning();
+
+      return NextResponse.json({ success: true, student: updated[0] });
     }
 
     if (action === "deleteStudent") {
