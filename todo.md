@@ -261,3 +261,7 @@
 ## Filtros por Turma do Google Classroom nos Relatórios do Professor — 17/08/2026
 - [x] Adicionados seletores e filtros por turma importada do Google Classroom no painel de relatórios do professor, filtrando dinamicamente indicadores, gráficos, tabelas e exportações com dados reais
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Exportação de Turmas e Atividades para o Google Sala de Aula (Google Classroom) — 17/08/2026
+- [x] Implementada a funcionalidade de exportação de turmas e atividades locais da plataforma diretamente para o Google Classroom, com confirmação, tratamento de erros e mapeamento persistente
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
