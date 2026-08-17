@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyPassword } from "./password";
 import { db } from "./db";
-import { users, enrollments } from "@/drizzle/schema";
+import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -13,7 +13,7 @@ export const authOptions: NextAuthOptions = {
     ...(process.env.GOOGLE_CLIENT_ID ? [GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: false, // Endurecido contra vinculação indevida de contas
+      allowDangerousEmailAccountLinking: false,
       authorization: {
         params: {
           prompt: "consent",
@@ -39,10 +39,8 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       if (!user.email) return false;
 
-      // Se for login via Google, validar rigorosamente se o email é válido
       if (account?.provider === "google") {
         const email = user.email.trim().toLowerCase();
-        // Proteção adicional: apenas contas válidas e verificadas
         if (!email) return false;
       }
 
@@ -56,7 +54,8 @@ export const authOptions: NextAuthOptions = {
           const userRole = isAdminUser ? "admin" : "user";
           const initialApprovalStatus = isAdminUser ? "approved" : "pending";
 
-          const newUser = await db
+          // Nova conta criada sem nenhuma matrícula ou progresso automático (vazia por padrão)
+          await db
             .insert(users)
             .values({
               openId: account?.providerAccountId || "",
@@ -68,19 +67,6 @@ export const authOptions: NextAuthOptions = {
               avatarUrl: user.image || null,
             })
             .returning();
-
-          if (!isAdminUser && newUser.length > 0) {
-            const allCourses = await db.query.courses.findMany();
-            for (const course of allCourses) {
-              await db.insert(enrollments).values({
-                userId: newUser[0].id,
-                courseId: course.id,
-                progress: 0,
-                currentModule: 0,
-                status: "active",
-              });
-            }
-          }
         } else {
           if (existingUser.email === ADMIN_EMAIL) {
             if (existingUser.role !== "admin" || existingUser.approvalStatus !== "approved" || existingUser.deletedAt !== null) {
@@ -170,7 +156,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 7 * 24 * 60 * 60, // 7 dias para maior segurança contra sequestro de sessão
+    maxAge: 7 * 24 * 60 * 60,
     updateAge: 12 * 60 * 60,
   },
   jwt: {

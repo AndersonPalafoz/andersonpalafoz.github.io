@@ -327,3 +327,5 @@
 
 - [x] Consolidar integração real do Google Workspace (Drive, Docs, Sheets, Slides, Forms, Calendar e Classroom) com metadados e sincronização verificável
 - [x] Aplicar polimento visual completo na plataforma (tipografia Poppins universal, espaçamentos refinados, cartões e paleta consistente)
+
+- [x] Garantir que novas contas criadas venham totalmente sem progresso, matrículas ou dados pré-existentes (zeradas por padrão)
