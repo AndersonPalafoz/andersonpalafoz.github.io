@@ -222,3 +222,8 @@
 - [x] Planejada a arquitetura de sincronização direta com a API do Google Classroom (Turmas, Alunos, Atividades e Notas)
 - [x] Configurados os fundamentos de autenticação e rotas de sincronização segura
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Aprimoramento de Temas (Claro, Escuro e Alto Contraste) com Foco em Mobile — 17/08/2026
+- [x] Otimizada a alternância e a persistência de temas (Claro, Escuro, Sistema e Alto Contraste) com foco em dispositivos móveis
+- [x] Refinados menus móveis, modais, cards, formulários e tabelas para garantir legibilidade e toque preciso em telas pequenas
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
