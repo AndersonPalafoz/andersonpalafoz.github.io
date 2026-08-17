@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Gauge, Bookmark, Youtube, Sparkles, Clock, Trash2, Edit3, PlayCircle, Check, X } from "lucide-react";
+import { Gauge, Bookmark, Sparkles, Clock, Trash2, Edit3, PlayCircle, Check, X, Film, ExternalLink } from "lucide-react";
 
 interface UniversalVideoPlayerProps {
   url: string;
@@ -14,7 +14,7 @@ interface VideoNote {
 
 export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVideoPlayerProps) {
   const [playbackRate, setPlaybackRate] = useState<number>(1);
-  const currentTimeSeconds = 45; // fixed mock active playback timestamp
+  const currentTimeSeconds = 45; // timestamp de referência para anotações
   const [currentNote, setCurrentNote] = useState<string>("");
   const [jumpedTime, setJumpedTime] = useState<number | null>(null);
   const [savedNotes, setSavedNotes] = useState<VideoNote[]>([
@@ -27,16 +27,21 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
 
   const getEmbedUrl = (rawUrl: string, jumpTo?: number | null) => {
     if (!rawUrl) return "";
-    const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    
+    // Suporte robusto a múltiplos formatos do YouTube (youtu.be, watch?v=, embed/, shorts/)
+    const ytMatch = rawUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
     if (ytMatch && ytMatch[1]) {
       const startParam = jumpTo ? `&start=${jumpTo}` : "";
-      return `https://www.youtube.com/embed/${ytMatch[1]}?enablejsapi=1&autoplay=0${startParam}`;
+      return `https://www.youtube.com/embed/${ytMatch[1]}?enablejsapi=1&autoplay=0&rel=0&modestbranding=1${startParam}`;
     }
+
+    // Suporte a Vimeo
     const vimeoMatch = rawUrl.match(/(?:vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/(?:\w+\/)?videos\/|video\/|)(\d+)(?:|\/\?))/);
     if (vimeoMatch && vimeoMatch[1]) {
       const timeParam = jumpTo ? `#t=${jumpTo}s` : "";
       return `https://player.vimeo.com/video/${vimeoMatch[1]}${timeParam}`;
     }
+
     return rawUrl;
   };
 
@@ -99,9 +104,22 @@ export function UniversalVideoPlayer({ url, title = "Videoaula" }: UniversalVide
               allowFullScreen
             />
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-2">
-              <Youtube size={36} className="text-red-500" />
-              <span className="text-xs font-bold">Nenhum vídeo compatível carregado. Insira um link válido do YouTube ou Vimeo.</span>
+            <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 gap-3 p-6 text-center">
+              <Film size={42} className="text-red-500 animate-bounce" />
+              <div>
+                <p className="text-xs font-bold text-slate-200">Nenhum link de vídeo válido fornecido.</p>
+                <p className="text-[11px] text-slate-400 mt-1">Insira uma URL do YouTube ou Vimeo para iniciar a videoaula.</p>
+              </div>
+              {url && (
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-300 underline font-bold mt-2"
+                >
+                  Abrir link original <ExternalLink size={13} />
+                </a>
+              )}
             </div>
           )}
         </div>
