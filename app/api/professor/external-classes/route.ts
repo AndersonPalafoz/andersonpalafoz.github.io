@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { externalClasses, externalStudents, users } from "@/drizzle/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -62,7 +62,22 @@ export async function POST(request: NextRequest) {
     if (!teacher) return NextResponse.json({ error: "Professor não encontrado." }, { status: 404 });
 
     const body = await request.json();
-    const { action, institution, className, courseName, academicTerm, description, classId, studentName, studentEmail, studentIdNumber, studentNotes, studentStatus, studentId } = body;
+    const {
+      action,
+      institution,
+      className,
+      courseName,
+      academicTerm,
+      description,
+      classId,
+      studentName,
+      studentEmail,
+      studentIdNumber,
+      studentNotes,
+      studentStatus,
+      studentId,
+      csvData,
+    } = body;
 
     if (action === "createClass") {
       if (!institution || !className || !courseName || !academicTerm) {
@@ -118,10 +133,35 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Acesso negado para gerenciar alunos desta turma." }, { status: 403 });
       }
 
+      // Prevenir duplicidade por email ou número de matrícula na mesma turma
+      if (studentEmail) {
+        const existingByEmail = await db.query.externalStudents.findFirst({
+          where: and(
+            eq(externalStudents.externalClassId, Number(classId)),
+            eq(externalStudents.email, studentEmail.trim().toLowerCase())
+          )
+        });
+        if (existingByEmail) {
+          return NextResponse.json({ error: "Já existe um aluno matriculado com este e-mail nesta turma." }, { status: 400 });
+        }
+      }
+
+      if (studentIdNumber) {
+        const existingByIdNum = await db.query.externalStudents.findFirst({
+          where: and(
+            eq(externalStudents.externalClassId, Number(classId)),
+            eq(externalStudents.studentIdNumber, studentIdNumber.trim())
+          )
+        });
+        if (existingByIdNum) {
+          return NextResponse.json({ error: "Já existe um aluno matriculado com este número de ID/matrícula nesta turma." }, { status: 400 });
+        }
+      }
+
       const inserted = await db.insert(externalStudents).values({
         externalClassId: Number(classId),
         name: studentName.trim(),
-        email: studentEmail ? studentEmail.trim() : null,
+        email: studentEmail ? studentEmail.trim().toLowerCase() : null,
         studentIdNumber: studentIdNumber ? studentIdNumber.trim() : null,
         status: studentStatus ? studentStatus.trim() : "active",
         notes: studentNotes ? studentNotes.trim() : null,
@@ -130,9 +170,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, student: inserted[0] });
     }
 
-    if (action === "updateStudentStatus") {
-      if (!studentId || !studentStatus) {
-        return NextResponse.json({ error: "ID do aluno e status são obrigatórios." }, { status: 400 });
+    if (action === "updateStudent") {
+      if (!studentId || !studentName) {
+        return NextResponse.json({ error: "ID do aluno e nome são obrigatórios." }, { status: 400 });
       }
 
       const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
@@ -145,13 +185,59 @@ export async function POST(request: NextRequest) {
 
       const updated = await db.update(externalStudents)
         .set({
-          status: studentStatus.trim(),
+          name: studentName.trim(),
+          email: studentEmail ? studentEmail.trim().toLowerCase() : null,
+          studentIdNumber: studentIdNumber ? studentIdNumber.trim() : null,
+          status: studentStatus ? studentStatus.trim() : student.status,
+          notes: studentNotes !== undefined ? studentNotes.trim() : student.notes,
           updatedAt: new Date(),
         })
         .where(eq(externalStudents.id, Number(studentId)))
         .returning();
 
       return NextResponse.json({ success: true, student: updated[0] });
+    }
+
+    if (action === "importCsvStudents") {
+      if (!classId || !csvData || !Array.isArray(csvData)) {
+        return NextResponse.json({ error: "Dados CSV inválidos ou turma não informada." }, { status: 400 });
+      }
+
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      let importedCount = 0;
+      for (const row of csvData) {
+        const name = row.name || row.nome;
+        if (!name) continue;
+        const email = row.email || row.e_mail || null;
+        const studentIdNumber = row.studentIdNumber || row.matricula || row.id || null;
+
+        // Evitar duplicados
+        if (email) {
+          const exists = await db.query.externalStudents.findFirst({
+            where: and(
+              eq(externalStudents.externalClassId, Number(classId)),
+              eq(externalStudents.email, String(email).trim().toLowerCase())
+            )
+          });
+          if (exists) continue;
+        }
+
+        await db.insert(externalStudents).values({
+          externalClassId: Number(classId),
+          name: String(name).trim(),
+          email: email ? String(email).trim().toLowerCase() : null,
+          studentIdNumber: studentIdNumber ? String(studentIdNumber).trim() : null,
+          status: "active",
+        });
+        importedCount++;
+      }
+
+      return NextResponse.json({ success: true, importedCount });
     }
 
     if (action === "deleteStudent") {

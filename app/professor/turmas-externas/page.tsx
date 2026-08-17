@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -36,12 +36,16 @@ export default function TurmasExternasPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Search and filter
+  // Search and filters
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
+  const [studentStatusFilter, setStudentStatusFilter] = useState("all");
 
   // Edit class mode
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
+
+  // Edit student mode
+  const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
 
   // Form states for creating/editing class
   const [institution, setInstitution] = useState("SIMAL");
@@ -50,7 +54,7 @@ export default function TurmasExternasPage() {
   const [academicTerm, setAcademicTerm] = useState("2026.1");
   const [description, setDescription] = useState("");
 
-  // Form states for adding student
+  // Form states for adding/editing student
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
@@ -76,19 +80,42 @@ export default function TurmasExternasPage() {
     void loadClasses();
   }, []);
 
+  // Visão consolidada por instituição
+  const institutionSummary = useMemo(() => {
+    const summary: Record<string, { classesCount: number; studentsCount: number; activeCount: number }> = {};
+    for (const cls of classes) {
+      if (!summary[cls.institution]) {
+        summary[cls.institution] = { classesCount: 0, studentsCount: 0, activeCount: 0 };
+      }
+      summary[cls.institution].classesCount += 1;
+      summary[cls.institution].studentsCount += cls.students.length;
+      summary[cls.institution].activeCount += cls.students.filter(s => s.status === "active").length;
+    }
+    return summary;
+  }, [classes]);
+
   const filteredClasses = useMemo(() => {
-    return classes.filter((c) => {
-      const matchesInstitution = selectedInstitutionFilter === "all" || c.institution.toLowerCase() === selectedInstitutionFilter.toLowerCase();
+    return classes.map((cls) => {
+      // Filtrar alunos da turma com base no status e termo de busca
+      const filteredStudents = cls.students.filter((s) => {
+        const matchesStatus = studentStatusFilter === "all" || s.status === studentStatusFilter;
+        const term = searchTerm.toLowerCase();
+        const matchesTerm = !term || s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)) || (s.studentIdNumber && s.studentIdNumber.toLowerCase().includes(term));
+        return matchesStatus && matchesTerm;
+      });
+
+      return {
+        ...cls,
+        filteredStudents,
+      };
+    }).filter((cls) => {
+      const matchesInstitution = selectedInstitutionFilter === "all" || cls.institution.toLowerCase() === selectedInstitutionFilter.toLowerCase();
       const term = searchTerm.toLowerCase();
-      const matchesSearch =
-        !term ||
-        c.className.toLowerCase().includes(term) ||
-        c.courseName.toLowerCase().includes(term) ||
-        c.institution.toLowerCase().includes(term) ||
-        c.students.some((s) => s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)));
-      return matchesInstitution && matchesSearch;
+      const matchesClassSearch = !term || cls.className.toLowerCase().includes(term) || cls.courseName.toLowerCase().includes(term) || cls.institution.toLowerCase().includes(term);
+      const hasMatchingStudents = cls.filteredStudents.length > 0;
+      return matchesInstitution && (matchesClassSearch || hasMatchingStudents);
     });
-  }, [classes, selectedInstitutionFilter, searchTerm]);
+  }, [classes, selectedInstitutionFilter, studentStatusFilter, searchTerm]);
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,7 +183,7 @@ export default function TurmasExternasPage() {
     }
   };
 
-  const handleAddStudent = async (e: React.FormEvent) => {
+  const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClassId || !studentName) {
       toast.error("Selecione uma turma e informe o nome do aluno.");
@@ -164,33 +191,47 @@ export default function TurmasExternasPage() {
     }
     try {
       setSubmitting(true);
+      const action = editingStudentId ? "updateStudent" : "addStudent";
+      const body = editingStudentId
+        ? { action, studentId: editingStudentId, studentName, studentEmail, studentIdNumber, studentStatus, studentNotes }
+        : { action, classId: selectedClassId, studentName, studentEmail, studentIdNumber, studentStatus, studentNotes };
+
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "addStudent",
-          classId: selectedClassId,
-          studentName,
-          studentEmail,
-          studentIdNumber,
-          studentStatus,
-          studentNotes,
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao matricular aluno.");
-      toast.success("Aluno matriculado com sucesso na turma externa!");
-      setStudentName("");
-      setStudentEmail("");
-      setStudentIdNumber("");
-      setStudentNotes("");
-      setSelectedClassId(null);
+      if (!res.ok) throw new Error(data.error || "Erro ao salvar aluno.");
+      toast.success(editingStudentId ? "Dados do aluno atualizados!" : "Aluno matriculado com sucesso!");
+      resetStudentForm();
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao matricular aluno.");
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar aluno.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const startEditStudent = (student: ExternalStudentItem, classId: number) => {
+    setEditingStudentId(student.id);
+    setSelectedClassId(classId);
+    setStudentName(student.name);
+    setStudentEmail(student.email || "");
+    setStudentIdNumber(student.studentIdNumber || "");
+    setStudentStatus(student.status);
+    setStudentNotes(student.notes || "");
+    window.scrollTo({ top: 400, behavior: "smooth" });
+  };
+
+  const resetStudentForm = () => {
+    setEditingStudentId(null);
+    setSelectedClassId(null);
+    setStudentName("");
+    setStudentEmail("");
+    setStudentIdNumber("");
+    setStudentStatus("active");
+    setStudentNotes("");
   };
 
   const handleDeleteStudent = async (studentId: number) => {
@@ -218,12 +259,68 @@ export default function TurmasExternasPage() {
         body: JSON.stringify({ action: "updateStudentStatus", studentId, studentStatus: newStatus }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao atualizar status do aluno.");
+      if (!res.ok) throw new Error(data.error || "Erro ao atualizar status.");
       toast.success("Status do aluno atualizado.");
       void loadClasses();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao atualizar status.");
     }
+  };
+
+  // Importação CSV em lote
+  const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (!text) return;
+
+        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+        if (lines.length < 2) {
+          toast.error("O arquivo CSV precisa de um cabeçalho e ao menos uma linha de dados.");
+          return;
+        }
+
+        const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/['"]+/g, ""));
+        const csvData = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map(v => v.trim().replace(/['"]+/g, ""));
+          const row: Record<string, string> = {};
+          headers.forEach((header, index) => {
+            row[header] = values[index] || "";
+          });
+          if (row.name || row.nome) {
+            csvData.push(row);
+          }
+        }
+
+        if (csvData.length === 0) {
+          toast.error("Nenhum aluno válido encontrado no arquivo CSV.");
+          return;
+        }
+
+        setSubmitting(true);
+        const res = await fetch("/api/professor/external-classes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "importCsvStudents", classId, csvData }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao importar CSV.");
+        toast.success(`${data.importedCount} alunos importados com sucesso via CSV!`);
+        void loadClasses();
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Erro ao processar arquivo CSV.");
+      } finally {
+        setSubmitting(false);
+        e.target.value = "";
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -241,44 +338,90 @@ export default function TurmasExternasPage() {
                 <ArrowLeft size={18} />
               </Link>
               <h1 className="text-2xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
-                <Building2 className="text-red-600" size={26} /> Gestão de Cursos e Turmas Externas
+                <Building2 className="text-red-600" size={26} /> Gestão Avançada de Cursos e Turmas Externas
               </h1>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 pl-13">
-              Gerencie turmas, alunos e matrículas em projetos e programas educacionais externos (SIMAL, Megaworks, UFBA, IsF, PROFICI).
+              Controle turmas, matrículas, importação CSV em lote e acompanhamento acadêmico por instituição (IsF, PROFICI, SIMAL, Megaworks, UFBA).
             </p>
           </div>
         </header>
 
+        {/* Resumo Consolidado por Instituição */}
+        {Object.keys(institutionSummary).length > 0 && (
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {Object.entries(institutionSummary).map(([inst, summary]) => (
+              <div key={inst} className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+                    {inst}
+                  </span>
+                  <BarChart3 size={16} className="text-gray-400" />
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">Turmas</p>
+                    <p className="text-sm font-black text-gray-900 dark:text-white">{summary.classesCount}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
+                    <p className="text-[10px] text-gray-500 font-bold uppercase">Alunos</p>
+                    <p className="text-sm font-black text-gray-900 dark:text-white">{summary.studentsCount}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
+                    <p className="text-[10px] text-green-600 font-bold uppercase">Ativos</p>
+                    <p className="text-sm font-black text-green-600">{summary.activeCount}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </section>
+        )}
+
         {/* Barra de Busca e Filtros Globais */}
         <section className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
+          <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="text"
-              placeholder="Buscar por turma, curso, instituição ou aluno..."
+              placeholder="Buscar por turma, curso ou aluno..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Filtrar Instituição:</span>
-            {["all", "SIMAL", "Megaworks", "UFBA", "IsF", "PROFICI"].map((inst) => (
-              <button
-                key={inst}
-                type="button"
-                onClick={() => setSelectedInstitutionFilter(inst)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
-                  selectedInstitutionFilter === inst
-                    ? "bg-red-600 text-white shadow-xs"
-                    : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
-                }`}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status Aluno:</span>
+              <select
+                value={studentStatusFilter}
+                onChange={(e) => setStudentStatusFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
               >
-                {inst === "all" ? "Todas" : inst}
-              </button>
-            ))}
+                <option value="all">Todos os Status</option>
+                <option value="active">Ativos</option>
+                <option value="completed">Concluídos</option>
+                <option value="inactive">Inativos</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Instituição:</span>
+              {["all", "IsF", "PROFICI", "SIMAL", "Megaworks", "UFBA"].map((inst) => (
+                <button
+                  key={inst}
+                  type="button"
+                  onClick={() => setSelectedInstitutionFilter(inst)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                    selectedInstitutionFilter === inst
+                      ? "bg-red-600 text-white shadow-xs"
+                      : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700"
+                  }`}
+                >
+                  {inst === "all" ? "Todas" : inst}
+                </button>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -304,42 +447,42 @@ export default function TurmasExternasPage() {
               </div>
               <form onSubmit={handleSaveClass} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Projeto</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Programa</label>
                   <select
                     value={institution}
                     onChange={(e) => setInstitution(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   >
-                    <option value="SIMAL">Projeto SIMAL</option>
-                    <option value="Megaworks">Megaworks</option>
-                    <option value="UFBA">UFBA (Universidade Federal da Bahia)</option>
                     <option value="IsF">IsF (Idioma sem Fronteiras)</option>
                     <option value="PROFICI">PROFICI</option>
-                    <option value="Outro">Outra Instituição / Projeto</option>
+                    <option value="SIMAL">Projeto SIMAL</option>
+                    <option value="Megaworks">Megaworks</option>
+                    <option value="UFBA">UFBA (Universidade)</option>
+                    <option value="Outro">Outra Instituição</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome da Turma</label>
                   <input
                     type="text"
-                    placeholder="Ex: Turma Avançada Sábado"
+                    placeholder="Ex: Turma Leitura Instrumental A"
                     value={className}
                     onChange={(e) => setClassName(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome do Curso / Disciplina</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Curso / Disciplina</label>
                   <input
                     type="text"
-                    placeholder="Ex: English Grammar & Speaking"
+                    placeholder="Ex: Inglês Instrumental para Pós-Graduação"
                     value={courseName}
                     onChange={(e) => setCourseName(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Período / Semestre</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Período Letivo</label>
                   <input
                     type="text"
                     placeholder="Ex: 2026.1"
@@ -349,9 +492,9 @@ export default function TurmasExternasPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Descrição / Observações</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Observações / Descrição</label>
                   <textarea
-                    placeholder="Detalhes opcionais da turma..."
+                    placeholder="Informações adicionais..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={2}
@@ -364,17 +507,29 @@ export default function TurmasExternasPage() {
                   className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
                 >
                   {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                  {editingClassId ? "Salvar Alterações" : "Criar Turma Externa"}
+                  {editingClassId ? "Salvar Alterações da Turma" : "Criar Turma"}
                 </button>
               </form>
             </section>
 
-            {/* Matricular Aluno */}
+            {/* Matricular ou Editar Aluno */}
             <section className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
-              <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
-                <Users size={18} className="text-red-600" /> Matricular Aluno na Turma
-              </h2>
-              <form onSubmit={handleAddStudent} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
+                  <Users size={18} className="text-red-600" /> {editingStudentId ? "Editar Aluno" : "Matricular Aluno"}
+                </h2>
+                {editingStudentId && (
+                  <button
+                    type="button"
+                    onClick={resetStudentForm}
+                    className="text-gray-400 hover:text-gray-600 p-1"
+                    title="Cancelar Edição"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+              <form onSubmit={handleSaveStudent} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Selecionar Turma</label>
                   <select
@@ -391,17 +546,17 @@ export default function TurmasExternasPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome Completo do Aluno</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome Completo</label>
                   <input
                     type="text"
-                    placeholder="Ex: João da Silva"
+                    placeholder="Nome do aluno..."
                     value={studentName}
                     onChange={(e) => setStudentName(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-mail (Opcional)</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">E-mail</label>
                   <input
                     type="email"
                     placeholder="aluno@email.com"
@@ -411,25 +566,25 @@ export default function TurmasExternasPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Matrícula / ID Institucional</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Matrícula / ID</label>
                   <input
                     type="text"
-                    placeholder="Ex: 202612345"
+                    placeholder="Nº de matrícula..."
                     value={studentIdNumber}
                     onChange={(e) => setStudentIdNumber(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Status da Matrícula</label>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
                     value={studentStatus}
                     onChange={(e) => setStudentStatus(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   >
-                    <option value="active">Ativo (Cursando)</option>
+                    <option value="active">Ativo</option>
                     <option value="completed">Concluído</option>
-                    <option value="inactive">Inativo / Desistente</option>
+                    <option value="inactive">Inativo</option>
                   </select>
                 </div>
                 <button
@@ -438,23 +593,23 @@ export default function TurmasExternasPage() {
                   className="w-full py-3 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                  Matricular Aluno
+                  {editingStudentId ? "Salvar Aluno" : "Matricular Aluno"}
                 </button>
               </form>
             </section>
           </div>
 
-          {/* Listagem de Turmas e Alunos */}
+          {/* Listagem de Turmas, Alunos e Importação CSV */}
           <div className="lg:col-span-2 space-y-6">
             {loading ? (
               <div className="py-24 text-center text-gray-400 text-xs font-semibold flex flex-col items-center justify-center gap-3">
-                <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e alunos externos...
+                <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e dados acadêmicos...
               </div>
             ) : filteredClasses.length === 0 ? (
               <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3">
                 <AlertCircle size={32} className="mx-auto text-gray-400" />
-                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">Nenhuma turma externa encontrada</h3>
-                <p className="text-xs text-gray-500">Cadastre uma nova turma ao lado para começar a gerenciar seus alunos e cursos externos.</p>
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">Nenhum registro encontrado</h3>
+                <p className="text-xs text-gray-500">Ajuste os filtros de busca ou cadastre uma nova turma externa.</p>
               </div>
             ) : (
               filteredClasses.map((cls) => (
@@ -471,7 +626,16 @@ export default function TurmasExternasPage() {
                       <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
                       {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                        <FileSpreadsheet size={14} className="text-green-600" /> Importar CSV
+                        <input
+                          type="file"
+                          accept=".csv"
+                          className="hidden"
+                          onChange={(e) => void handleCsvImport(cls.id, e)}
+                        />
+                      </label>
                       <button
                         type="button"
                         onClick={() => startEditClass(cls)}
@@ -493,7 +657,7 @@ export default function TurmasExternasPage() {
                   {cls.stats && (
                     <div className="grid grid-cols-3 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
                       <div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total de Alunos</p>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total</p>
                         <p className="text-sm font-black text-gray-900 dark:text-white mt-0.5">{cls.stats.total}</p>
                       </div>
                       <div>
@@ -507,28 +671,28 @@ export default function TurmasExternasPage() {
                     </div>
                   )}
 
-                  {/* Lista de Alunos Matriculados */}
+                  {/* Lista de Alunos Filtrados */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-black uppercase tracking-wider text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                        <Users size={14} /> Alunos Matriculados ({cls.students.length})
+                        <Users size={14} /> Alunos ({cls.filteredStudents.length} de {cls.students.length})
                       </h4>
                       <button
                         type="button"
                         onClick={() => setSelectedClassId(cls.id)}
                         className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
                       >
-                        <Plus size={14} /> Matricular aluno aqui
+                        <Plus size={14} /> Matricular aluno
                       </button>
                     </div>
 
-                    {cls.students.length === 0 ? (
+                    {cls.filteredStudents.length === 0 ? (
                       <p className="text-xs text-gray-400 italic py-3 bg-gray-50/50 dark:bg-slate-800/30 rounded-xl px-4 text-center">
-                        Nenhum aluno matriculado nesta turma externa ainda.
+                        Nenhum aluno encontrado com os filtros atuais nesta turma.
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {cls.students.map((student) => (
+                        {cls.filteredStudents.map((student) => (
                           <div key={student.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/60 hover:border-gray-300 transition">
                             <div className="space-y-0.5">
                               <div className="flex items-center gap-2">
@@ -551,7 +715,7 @@ export default function TurmasExternasPage() {
                             <div className="flex items-center gap-2">
                               <select
                                 value={student.status}
-                                onChange={(e) => handleUpdateStudentStatus(student.id, e.target.value)}
+                                onChange={(e) => void handleUpdateStudentStatus(student.id, e.target.value)}
                                 className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1 text-[11px] font-bold text-gray-700 dark:text-gray-300 focus:outline-none"
                               >
                                 <option value="active">Ativo</option>
@@ -560,7 +724,15 @@ export default function TurmasExternasPage() {
                               </select>
                               <button
                                 type="button"
-                                onClick={() => handleDeleteStudent(student.id)}
+                                onClick={() => startEditStudent(student, cls.id)}
+                                className="p-1.5 rounded-xl text-gray-500 hover:text-red-600 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+                                title="Editar aluno"
+                              >
+                                <Edit3 size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => void handleDeleteStudent(student.id)}
                                 className="p-1.5 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition"
                                 title="Remover aluno"
                               >
