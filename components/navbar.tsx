@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
-import { Heart, Shield, GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check } from "lucide-react";
+import { Heart, Shield, GraduationCap, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check, Palette, Laptop } from "lucide-react";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -20,19 +20,21 @@ export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { data: session } = useSession();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const themeDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isHighContrast, setIsHighContrast] = useState(false);
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system" | "contrast">("system");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setIsOpen(false);
     setUserDropdownOpen(false);
+    setThemeDropdownOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -48,69 +50,64 @@ export function Navbar() {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setUserDropdownOpen(false);
       }
+      if (themeDropdownRef.current && !themeDropdownRef.current.contains(e.target as Node)) {
+        setThemeDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Inicializar Dark Mode e Alto Contraste com detecção do sistema
+  // Atalho de teclado Alt+C para Alto Contraste
   useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    const storedContrast = localStorage.getItem("highContrast");
-
-    let initialDark = false;
-    if (storedTheme) {
-      initialDark = storedTheme === "dark";
-    } else {
-      // Detecção automática do sistema
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      initialDark = prefersDark;
-      localStorage.setItem("theme", prefersDark ? "dark" : "light");
-      setToastMessage(`Tema ajustado automaticamente para o modo ${prefersDark ? "escuro" : "claro"} com base nas preferências do seu sistema.`);
-      const t = setTimeout(() => setToastMessage(null), 5000);
-      return () => clearTimeout(t);
-    }
-
-    setIsDarkMode(initialDark);
-    if (initialDark) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-
-    if (storedContrast === "true") {
-      setIsHighContrast(true);
-      document.documentElement.classList.add("high-contrast");
-    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        setThemeMode((prev) => {
+          const next = prev === "contrast" ? "system" : "contrast";
+          applyTheme(next);
+          return next;
+        });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const toggleDarkMode = () => {
-    const nextDark = !isDarkMode;
-    setIsDarkMode(nextDark);
-    if (nextDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
-  };
+  const applyTheme = (mode: "light" | "dark" | "system" | "contrast") => {
+    setThemeMode(mode);
+    localStorage.setItem("themeMode", mode);
 
-  const toggleHighContrast = () => {
-    const nextContrast = !isHighContrast;
-    setIsHighContrast(nextContrast);
-    if (nextContrast) {
-      document.documentElement.classList.add("high-contrast");
-      localStorage.setItem("highContrast", "true");
-      setToastMessage("Modo de alto contraste ativado para melhor acessibilidade.");
+    const root = document.documentElement;
+    root.classList.remove("dark", "high-contrast");
+
+    if (mode === "contrast") {
+      root.classList.add("high-contrast", "dark");
+      setToastMessage("Modo de Alto Contraste ativado (Atalho: Alt+C).");
+    } else if (mode === "dark") {
+      root.classList.add("dark");
+      setToastMessage("Modo Escuro ativado.");
+    } else if (mode === "light") {
+      setToastMessage("Modo Claro ativado.");
     } else {
-      document.documentElement.classList.remove("high-contrast");
-      localStorage.setItem("highContrast", "false");
-      setToastMessage("Modo de alto contraste desativado.");
+      // System
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) root.classList.add("dark");
+      setToastMessage(`Tema ajustado automaticamente para o modo ${prefersDark ? "escuro" : "claro"} (Preferência do Sistema).`);
     }
+
     const t = setTimeout(() => setToastMessage(null), 4000);
     return () => clearTimeout(t);
   };
+
+  useEffect(() => {
+    const storedMode = localStorage.getItem("themeMode") as "light" | "dark" | "system" | "contrast" | null;
+    if (storedMode) {
+      applyTheme(storedMode);
+    } else {
+      applyTheme("system");
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -147,7 +144,6 @@ export function Navbar() {
 
   return (
     <>
-      {/* Toast sutil para tema automático / contraste */}
       {toastMessage && (
         <aside aria-label="Notificação do sistema" className="fixed bottom-6 right-6 z-50 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 border border-slate-800 dark:border-slate-200">
           <Check size={16} className="text-emerald-400 dark:text-emerald-600 shrink-0" />
@@ -167,27 +163,53 @@ export function Navbar() {
             </div>
 
             <div className="hidden items-center gap-2 lg:flex">
-              {/* Botão de Alto Contraste */}
-              <button
-                type="button"
-                onClick={toggleHighContrast}
-                className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border transition hover:scale-105 ${isHighContrast ? "bg-amber-400 text-slate-950 border-amber-500 font-bold" : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"}`}
-                aria-label="Ativar alto contraste"
-                title="Modo de alto contraste (Acessibilidade)"
-              >
-                <Eye size={17} />
-              </button>
+              {/* Dropdown de Temas (Claro, Escuro, Sistema, Alto Contraste) */}
+              <div className="relative" ref={themeDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+                  className="inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800 px-3.5 text-xs font-bold text-gray-700 dark:text-gray-200 transition hover:border-red-300 hover:shadow-sm"
+                  aria-expanded={themeDropdownOpen}
+                  aria-label="Opções de tema e acessibilidade"
+                  title="Alterar tema visual"
+                >
+                  <Palette size={16} className="text-red-600 dark:text-red-400" />
+                  <span className="capitalize">{themeMode === "contrast" ? "Alto Contraste" : themeMode}</span>
+                </button>
 
-              {/* Botão de Dark Mode */}
-              <button
-                type="button"
-                onClick={toggleDarkMode}
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 transition hover:scale-105 hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"
-                aria-label="Alternar modo escuro"
-                title="Alternar tema claro/escuro"
-              >
-                {isDarkMode ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
-              </button>
+                {themeDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50 animate-in fade-in zoom-in-95 space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => { applyTheme("light"); setThemeDropdownOpen(false); }}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${themeMode === "light" ? "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    >
+                      <Sun size={15} /> Modo Claro
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { applyTheme("dark"); setThemeDropdownOpen(false); }}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${themeMode === "dark" ? "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    >
+                      <Moon size={15} /> Modo Escuro
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { applyTheme("system"); setThemeDropdownOpen(false); }}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${themeMode === "system" ? "bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    >
+                      <Laptop size={15} /> Automático (Sistema)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { applyTheme("contrast"); setThemeDropdownOpen(false); }}
+                      className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${themeMode === "contrast" ? "bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-200" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-800"}`}
+                    >
+                      <Eye size={15} /> Alto Contraste (Alt+C)
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {session ? <>
                 <Link href="/dashboard/desejos" aria-label={`Abrir Lista de Desejos${wishlistCount ? `, ${wishlistCount} cursos salvos` : ""}`} className={`relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600 ${wishlistPulse ? "animate-pulse" : ""}`}>
@@ -256,19 +278,19 @@ export function Navbar() {
             <div className="flex items-center gap-2 lg:hidden">
               <button
                 type="button"
-                onClick={toggleHighContrast}
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${isHighContrast ? "bg-amber-400 text-slate-950 border-amber-500" : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200"}`}
+                onClick={() => applyTheme(themeMode === "contrast" ? "system" : "contrast")}
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition ${themeMode === "contrast" ? "bg-amber-400 text-slate-950 border-amber-500" : "border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200"}`}
                 aria-label="Alto contraste"
               >
                 <Eye size={17} />
               </button>
               <button
                 type="button"
-                onClick={toggleDarkMode}
+                onClick={() => applyTheme(themeMode === "dark" ? "light" : "dark")}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200"
                 aria-label="Alternar tema"
               >
-                {isDarkMode ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
+                {themeMode === "dark" ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
               </button>
               <button type="button" onClick={() => setIsOpen((open) => !open)} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600" aria-label={isOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={isOpen} aria-controls="mobile-navigation">
                 {isOpen ? <X size={21} /> : <Menu size={21} />}

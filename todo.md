@@ -667,3 +667,10 @@
 - [x] Implementar detecção automática da preferência do sistema operacional no primeiro acesso do usuário
 - [x] Adicionar transições suaves de cores e fundos em todos os elementos ao alternar entre os modos claro e escuro
 - [x] Revisar e aprimorar estados de hover e focus em botões, links e componentes interativos para garantir contraste perfeito em ambos os temas
+
+## Player de Vídeo, Dropdown de Temas, Alto Contrast Refinado com Alt+C e Gamificação Aprimorada — 17/08/2026
+- [x] Aprimorar incorporação de vídeo com suporte robusto a URLs curtas e longas do YouTube e parâmetros seguros
+- [x] Agrupar opções de tema (Claro, Escuro, Sistema e Alto Contraste) em um menu dropdown elegante na Navbar
+- [x] Reforçar o modo de alto contraste com sublinhados em links e bordas espessas em botões para acessibilidade
+- [x] Implementar atalho de teclado `Alt+C` para alternar instantaneamente o modo de alto contraste
+- [x] Aprimorar o sistema de gamificação, tornando o cálculo de ofensiva diária (Streak) robusto e confiável
