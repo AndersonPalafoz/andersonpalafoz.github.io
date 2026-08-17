@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Download, FileText, BookOpen, Zap, Headphones, PenTool, Search, Filter, Loader2, CheckCircle2 } from "lucide-react";
+import { GrammarGuidesSection } from "./guias-gramatica";
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
   Worksheets: FileText,
@@ -57,25 +58,26 @@ export default function MateriaisPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16"><div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
+      <section className="relative overflow-hidden bg-white dark:bg-slate-950 px-4 py-20 md:px-8 lg:px-16 border-b border-slate-200 dark:border-slate-800">
+        <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-red-100/60 dark:bg-red-950/20 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
                 Biblioteca Acadêmica
               </span>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900">
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900 dark:text-white">
                 Materiais
                 <br />
                 <span className="text-red-600">Didáticos Exclusivos</span>
               </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, que podem alcançar os níveis C1 e C2, cobrindo do nível A1-C2.
               </p>
             </div>
 
             {/* Barra de Busca e Filtros */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="relative">
                 <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
                 <input
@@ -83,7 +85,7 @@ export default function MateriaisPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Pesquisar material por título ou tema..."
-                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 text-sm transition bg-gray-50/50"
+                  className="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 text-sm transition bg-gray-50/50 dark:bg-slate-800 dark:text-white"
                 />
               </div>
 
@@ -95,7 +97,7 @@ export default function MateriaisPage() {
                   <button
                     onClick={() => setSelectedLevel("all")}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      selectedLevel === "all" ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      selectedLevel === "all" ? "bg-red-600 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
                     }`}
                   >
                     Todos
@@ -105,7 +107,7 @@ export default function MateriaisPage() {
                       key={niv}
                       onClick={() => setSelectedLevel(niv)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                        selectedLevel === niv ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        selectedLevel === niv ? "bg-red-600 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
                       }`}
                     >
                       {niv}
@@ -118,7 +120,7 @@ export default function MateriaisPage() {
                   <button
                     onClick={() => setSelectedCategory("all")}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                      selectedCategory === "all" ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      selectedCategory === "all" ? "bg-gray-900 dark:bg-slate-700 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
                     }`}
                   >
                     Todas
@@ -128,7 +130,7 @@ export default function MateriaisPage() {
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
-                        selectedCategory === cat ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        selectedCategory === cat ? "bg-gray-900 dark:bg-slate-700 text-white" : "bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
                       }`}
                     >
                       {cat}
@@ -141,11 +143,11 @@ export default function MateriaisPage() {
         </div>
       </section>
 
-      {/* Lista de Materiais com Animação e Hover Refinados */}
-      <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50">
+      {/* Lista de Materiais */}
+      <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
               {filteredMaterials.length} materiais disponíveis
             </h2>
           </div>
@@ -156,9 +158,9 @@ export default function MateriaisPage() {
               <span className="text-lg font-medium">Carregando biblioteca de recursos...</span>
             </div>
           ) : filteredMaterials.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-gray-200">
-              <FileText size={48} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-600 font-medium text-lg">Nenhum material encontrado para esta busca.</p>
+            <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
+              <FileText size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+              <p className="text-gray-600 dark:text-gray-400 font-medium text-lg">Nenhum material encontrado para esta busca.</p>
               <button
                 onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); }}
                 className="mt-4 text-xs font-bold uppercase text-red-600 hover:underline"
@@ -173,25 +175,25 @@ export default function MateriaisPage() {
                 return (
                   <div
                     key={material.id}
-                    className="interactive-card flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-8 shadow-sm group"
+                    className="interactive-card flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm group"
                   >
                     <div>
                       <div className="flex items-start justify-between mb-4 gap-3">
-                        <div className="w-12 h-12 bg-red-50 text-red-600 rounded-xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
+                        <div className="w-12 h-12 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
                           <Icon size={24} />
                         </div>
                         <div className="flex flex-wrap justify-end gap-2">
-                          {completedMaterialIds.includes(Number(material.id)) && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"><CheckCircle2 size={13} /> Concluído</span>}
-                          <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">
+                          {completedMaterialIds.includes(Number(material.id)) && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300"><CheckCircle2 size={13} /> Concluído</span>}
+                          <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-xs font-bold">
                             {material.level}
                           </span>
                         </div>
                       </div>
                       <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{material.category}</span>
-                      <h3 className="text-xl font-bold text-gray-900 mt-1 mb-2 group-hover:text-red-600 transition-colors">
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-1 mb-2 group-hover:text-red-600 transition-colors">
                         {material.title}
                       </h3>
-                      <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-3">
+                      <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 line-clamp-3">
                         {material.description || "Recurso didático autoral desenvolvido para prática em sala e estudo autônomo."}
                       </p>
                     </div>
@@ -209,6 +211,9 @@ export default function MateriaisPage() {
           )}
         </div>
       </section>
+
+      {/* Seção de Guias de Gramática em PDF */}
+      <GrammarGuidesSection />
     </div>
   );
 }
