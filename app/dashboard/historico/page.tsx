@@ -65,11 +65,13 @@ export default function HistoricoAcademicoPage() {
   const [grades, setGrades] = useState<GradeRecord[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedSemester, setSelectedSemester] = useState<string>("all");
 
   useEffect(() => {
     const loadHistory = async () => {
       try {
+        setLoadError(null);
         const response = await fetch("/api/dashboard/historico", { cache: "no-store" });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o histórico.");
@@ -78,7 +80,9 @@ export default function HistoricoAcademicoPage() {
         setGrades(payload.grades);
         setAttendance(payload.attendance);
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Não foi possível carregar o histórico.");
+        const msg = error instanceof Error ? error.message : "Não foi possível carregar o histórico.";
+        setLoadError(msg);
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -181,8 +185,30 @@ export default function HistoricoAcademicoPage() {
     }
   };
 
+
+
   if (loading) {
     return <div className="flex min-h-64 items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>;
+  }
+
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 space-y-4 bg-white dark:bg-slate-900 rounded-3xl border border-red-200 dark:border-red-900/50 shadow-sm">
+        <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 rounded-2xl">
+          <AlertTriangle size={32} />
+        </div>
+        <div>
+          <h2 className="text-lg font-black text-gray-950 dark:text-white">Não foi possível carregar o histórico acadêmico.</h2>
+          <p className="mt-1 text-xs text-gray-500 max-w-md">{loadError}</p>
+        </div>
+        <button
+          onClick={() => window.location.reload()}
+          className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-3 rounded-2xl shadow-md transition"
+        >
+          Tentar Novamente
+        </button>
+      </div>
+    );
   }
 
   return (
