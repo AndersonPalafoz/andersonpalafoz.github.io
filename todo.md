@@ -407,3 +407,5 @@
 
 - [x] Adicionar skeleton loaders independentes para gráficos e tabelas nos relatórios acadêmicos.
 - [x] Implementar modal de detalhes individuais do aluno com progresso e notas estritamente reais extraídas do banco de dados Neon.
+
+- [x] Investigar e eliminar notificações de notas estáticas/falsas do Google Classroom na interface do aluno (`classroom-notifications.tsx`), exigindo conexão real e proveniência verificada.
