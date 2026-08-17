@@ -269,3 +269,7 @@
 ## Indicador Visual de Exportação para o Google Classroom e Prevenção de Duplicidades — 17/08/2026
 - [x] Adicionado indicador visual de status de exportação nas atividades, com prevenção de envios duplicados e links diretos para o Google Classroom
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Sincronização Incremental Automática de Atividades no Google Classroom — 17/08/2026
+- [x] Implementada a função de sincronização incremental para atualizar automaticamente no Google Classroom as atividades que já foram exportadas quando houver alterações na plataforma
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
