@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, BookOpen, FileText, Users, Loader, Mail, UserPlus, Calendar, MessageCircle, Globe } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Users, Loader, Mail, UserPlus, Calendar, MessageCircle, Globe, Award } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Stats {
@@ -140,11 +140,16 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="page-container py-8 sm:py-12">
         {/* Atalhos e Gerenciamento */}
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <h2 className="text-xl font-bold text-foreground">Atalhos Operacionais</h2>
-          <Link href="/admin/usuarios" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90">
-            <Users size={16} /> Gerenciar Usuários & Permissões
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/admin/medalhas" className="inline-flex items-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition hover:-translate-y-0.5">
+              <Award size={16} /> Gestão de Medalhas
+            </Link>
+            <Link href="/admin/usuarios" className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-primary/90">
+              <Users size={16} /> Gerenciar Usuários & Permissões
+            </Link>
+          </div>
         </div>
 
         {/* Stats Grid Detalhado por Função e Cursos Publicados */}

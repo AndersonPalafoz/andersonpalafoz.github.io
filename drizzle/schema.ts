@@ -599,3 +599,36 @@ export const speakingAssistantHistory = pgTable("speaking_assistant_history", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 export type SpeakingAssistantHistory = typeof speakingAssistantHistory.$inferSelect;
+
+/**
+ * Medal/Achievement Catalog table
+ */
+export const medalsCatalog = pgTable("medals_catalog", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  title: varchar("title", { length: 120 }).notNull(),
+  description: text("description").notNull(),
+  icon: varchar("icon", { length: 32 }).notNull(), // emoji or icon name
+  category: varchar("category", { length: 50 }).default("achievement").notNull(), // standard, manual, streak, academic
+  requirement: text("requirement").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MedalCatalog = typeof medalsCatalog.$inferSelect;
+export type InsertMedalCatalog = typeof medalsCatalog.$inferInsert;
+
+/**
+ * User Earned Medals table (supporting both automatic unlocks and manual grants)
+ */
+export const userMedals = pgTable("user_medals", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  medalCode: varchar("medalCode", { length: 64 }).notNull(),
+  awardedBy: integer("awardedBy").references(() => users.id), // null if automatic, admin userId if manual
+  grantType: varchar("grantType", { length: 32 }).default("automatic").notNull(), // automatic, manual
+  notes: text("notes"), // optional justification when awarded manually
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserMedal = typeof userMedals.$inferSelect;
+export type InsertUserMedal = typeof userMedals.$inferInsert;
