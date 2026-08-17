@@ -369,3 +369,7 @@
 - [ ] Conduzir auditoria integral do site e redigir relatório estruturado de melhorias (arquitetura, segurança, performance, UX mobile e integrações).
 
 - [x] Conduzir auditoria integral do site e redigir relatório estruturado de melhorias (`docs/audit-report.md`).
+
+- [ ] Auditar e corrigir a proveniência dos dados do Google Classroom e implementar relatórios acadêmicos expandidos no painel administrativo.
+
+- [x] Auditar a proveniência dos dados do Google Classroom e implementar relatórios acadêmicos expandidos no painel administrativo (`/admin/relatorios-academicos`).
