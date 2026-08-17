@@ -248,3 +248,12 @@
 ## Anexos de Arquivos do Google Drive nas Tarefas — 17/08/2026
 - [x] Implementada a funcionalidade para anexar arquivos do Google Drive diretamente nas tarefas criadas, com persistência de referências, seletor integrado, controle de acesso e visualização contextual
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Anexos do Google Drive nas Entregas de Atividades dos Alunos — 17/08/2026
+- [x] Habilitada a opção para os alunos anexarem documentos do Google Drive diretamente nas entregas de suas atividades, com persistência de referências e revisão integrada pelo professor
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Sincronização Completa com o Google Sala de Aula (Google Classroom) — 17/08/2026
+- [x] Implementada a sincronização bidirecional e importação de turmas, alunos, professores, atividades, prazos e notas do Google Classroom
+- [x] Criado painel dedicado de sincronização com o Google Classroom para professores e administradores
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
