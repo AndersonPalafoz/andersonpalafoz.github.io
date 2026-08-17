@@ -686,3 +686,8 @@
 - [x] Implementar painel de gestão de alunos externos (adicionar, editar, vincular a instituições e turmas específicas)
 - [x] Integrar alunos externos aos módulos de chamada, notas, atribuição de tarefas e relatórios de progresso do professor
 - [x] Garantir isolamento de dados e filtros específicos para que o professor acompanhe alunos internos e externos sem conflitos
+
+## Painel Comparativo de Instituições Externas, Exportação e Selos Visuais — 17/08/2026
+- [x] Criar painel de controle comparativo de desempenho e frequência entre diferentes instituições parceiras (Megaworks, SIMAL, UFBA)
+- [x] Implementar exportação em PDF e CSV para relatórios de presença e progresso das turmas de projetos parceiros
+- [x] Inserir selos e tags visuais coloridas ao lado do nome dos alunos na lista geral para identificação rápida de sua instituição
