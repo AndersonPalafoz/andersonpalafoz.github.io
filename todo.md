@@ -217,3 +217,8 @@
 ## Modal de Visualização Rápida de Rubricas — 17/08/2026
 - [x] Adicionado modal de visualização rápida para professores revisarem critérios, níveis e pesos de qualquer rubrica salva antes de importá-la
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
+
+## Integração com Google Sala de Aula (Fase 1: Estrutura e Sincronização) — 17/08/2026
+- [x] Planejada a arquitetura de sincronização direta com a API do Google Classroom (Turmas, Alunos, Atividades e Notas)
+- [x] Configurados os fundamentos de autenticação e rotas de sincronização segura
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
