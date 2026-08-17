@@ -316,3 +316,5 @@
 - [x] Criar botão de sincronização em lote de todos os prazos do semestre com o Google Calendar em um único clique (`/dashboard/calendario`)
 - [x] Implementar alertas visuais no painel para notificar o aluno quando novas notas forem importadas do Google Classroom (`/dashboard`)
 - [x] Ampliar e consolidar a integração com o ecossistema Google (YouTube, Docs, Calendar, Classroom, Forms e Drive)
+
+- [x] Endurecer a segurança de autenticação Google (desativação de auto-linking perigoso, restrição de cookies httpOnly/sameSite/secure, rota restrita de admin e validação estrita de tokens)
