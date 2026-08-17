@@ -65,3 +65,15 @@
 - [x] Adicionar gráfico de pizza no painel do Google Drive para distribuição de armazenamento por tipo de arquivo
 - [x] Incluir histórico de sincronização detalhado abaixo do botão "Sincronizar Agora" no calendário
 - [x] Validação completa com 190 testes automatizados (Vitest) e build de produção Next.js 15
+
+## Refinamento de IA, Gráficos e Histórico — 17/08/2026
+- [x] Adicionar botão "Aceitar Todas" no modal de sugestões de prazos da IA para aprovação em massa
+- [x] Incluir tooltips interativos no gráfico de pizza do Google Drive exibindo o tamanho exato de cada tipo de arquivo
+- [x] Adicionar paginação e limite de exibição no histórico de sincronização do calendário
+- [x] Validar 190 testes automatizados e build de produção do Next.js 15
+
+## Aprimoramentos Finais de IA, Google Drive e Sincronização — 17/08/2026
+- [x] Adicionar botão "Aceitar Todas" no modal de sugestões da IA para aprovação em massa com feedback visual
+- [x] Incluir tooltips interativos no gráfico de pizza do Google Drive para exibir o tamanho exato de cada tipo de arquivo
+- [x] Adicionar paginação e limite ajustável no histórico de sincronização do calendário
+- [x] Validação completa com 190 testes automatizados e build de produção Next.js 15
