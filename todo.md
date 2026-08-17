@@ -96,3 +96,17 @@
 - [x] Atalhos rápidos de alternância entre os painéis de Professor e Administrador no dashboard
 - [x] Tour guiado interativo de primeiro acesso explicando a nova localização dos painéis docentes
 - [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15
+
+## Novas Solicitações do Usuário — 17/08/2026
+- [x] Permitir que o administrador personalize as cores dos indicadores de cargo no painel de configurações do sistema
+- [x] Desenvolver e aprimorar o CMS administrativo em `/admin/cms` (edição visual, histórico, pré-visualização e mídias)
+- [x] Adicionar badge com contagem de tarefas pendentes de correção diretamente nos atalhos do painel do professor
+- [x] Incluir opção no menu de perfil do usuário para reiniciar o tour guiado a qualquer momento
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15
+
+## Conclusão de Personalização, CMS, Badges e Tour — 17/08/2026
+- [x] Implementada personalização administrativa das cores dos cargos no sistema com persistência
+- [x] Desenvolvido e aprimorado o CMS em `/admin/cms` com recursos visuais avançados
+- [x] Adicionado badge com contagem de tarefas pendentes de correção nos atalhos do painel do professor
+- [x] Incluída opção no menu de perfil do usuário para reiniciar o tour guiado a qualquer momento
+- [x] Validação com 190 testes automatizados Vitest e build de produção Next.js 15 aprovados
