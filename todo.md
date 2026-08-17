@@ -324,3 +324,6 @@
 
 - [x] Adicionar opção de escanear QR Code para configurar o Google Authenticator no painel administrativo (`AdminTwoFactorSection`)
 - [x] Permitir que os alunos configurem o tempo limite de inatividade nas preferências do seu perfil (`ProfileInactivitySettings`)
+
+- [x] Consolidar integração real do Google Workspace (Drive, Docs, Sheets, Slides, Forms, Calendar e Classroom) com metadados e sincronização verificável
+- [x] Aplicar polimento visual completo na plataforma (tipografia Poppins universal, espaçamentos refinados, cartões e paleta consistente)
