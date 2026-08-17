@@ -293,3 +293,10 @@
 - [x] Criar visualização detalhada agrupando notas e frequência por disciplina específica
 - [x] Aprimorar o painel de integração com ferramentas Google (Drive, Calendar, Classroom)
 - [x] Validar 190 testes automatizados e build de produção sem erros
+
+## Teste de IA de Pronúncia, Envio de PDF por E-mail, Metas e Frequência por Curso — 17/08/2026
+- [x] Criar laboratório interativo de teste de análise de pronúncia por IA com feedback detalhado de fonemas e entonação
+- [x] Adicionar funcionalidade para enviar o PDF do histórico acadêmico diretamente para o e-mail do aluno com um clique
+- [x] Implementar sistema de metas de notas por disciplina com acompanhamento visual de progresso
+- [x] Expandir gráficos do histórico para incluir comparativo detalhado de frequência e faltas por curso
+- [x] Validar 190 testes automatizados e build de produção sem erros
