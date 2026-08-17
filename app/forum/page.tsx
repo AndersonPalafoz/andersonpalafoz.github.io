@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { MessageSquare, ThumbsUp, Search, PlusCircle, Sparkles, Tag, Send, Mic, Play, Square, Check, Activity } from "lucide-react";
+import { MessageSquare, ThumbsUp, Search, PlusCircle, Tag, Send, Mic, Play, Square, Check, Activity } from "lucide-react";
 import { analyzeForumAudioPronunciation, PronunciationFeedback } from "@/lib/ai-forum-pronunciation";
 
 interface DiscussionPost {
@@ -25,7 +25,7 @@ export default function ForumPage() {
   const [newCategory, setNewCategory] = useState("Gramática");
   const [newContent, setNewContent] = useState("");
   
-  // Estado para gravação de áudio e feedback de IA
+  // Estado para gravação de áudio e feedback automatizado
   const [isRecording, setIsRecording] = useState(false);
   const [audioRecorded, setAudioRecorded] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
@@ -102,7 +102,7 @@ export default function ForumPage() {
       setAudioRecorded(true);
       const feedback = analyzeForumAudioPronunciation();
       setActiveFeedback(feedback);
-      setToastMessage("Áudio gravado e analisado pela IA com sucesso!");
+      setToastMessage("Áudio gravado com sucesso!");
       setTimeout(() => setToastMessage(null), 3500);
     }, 2500);
   };
@@ -112,7 +112,7 @@ export default function ForumPage() {
     setAudioRecorded(true);
     const feedback = analyzeForumAudioPronunciation();
     setActiveFeedback(feedback);
-    setToastMessage("Gravação de áudio concluída e avaliada pela IA!");
+    setToastMessage("Gravação de áudio concluída!");
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -139,7 +139,7 @@ export default function ForumPage() {
     setAudioRecorded(false);
     setActiveFeedback(null);
     setIsModalOpen(false);
-    setToastMessage("Discussão publicada com feedback de IA integrado!");
+    setToastMessage("Discussão publicada com sucesso!");
     setTimeout(() => setToastMessage(null), 3500);
   };
 
@@ -161,9 +161,9 @@ export default function ForumPage() {
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider">
             <MessageSquare size={15} /> Comunidade Acadêmica
           </div>
-          <h1 className="text-3xl font-black tracking-tight">Fórum de Discussão com Feedback de IA</h1>
+          <h1 className="text-3xl font-black tracking-tight">Fórum de Discussão e Prática</h1>
           <p className="text-white/90 text-sm max-w-xl leading-relaxed">
-            Tire dúvidas, compartilhe dicas e envie clipes de áudio com análise instantânea de pronúncia por inteligência artificial pedagógica.
+            Tire dúvidas, compartilhe dicas e envie clipes de áudio para prática de pronúncia com acompanhamento pedagógico.
           </p>
         </div>
         <button
@@ -246,7 +246,7 @@ export default function ForumPage() {
                   <div className="bg-gradient-to-r from-red-50/60 to-amber-50/60 dark:from-red-950/30 dark:to-amber-950/30 border border-red-200/80 dark:border-red-900/40 p-4 rounded-2xl space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black text-red-700 dark:text-red-300 flex items-center gap-1.5">
-                        <Activity size={15} /> Feedback de Pronúncia por IA
+                        <Activity size={15} /> Feedback de Pronúncia (Beta)
                       </span>
                       <span className="bg-red-600 text-white px-2.5 py-0.5 rounded-full text-[10px] font-black">
                         Nota: {post.pronunciation.score}/100 ({post.pronunciation.clarity})
@@ -286,7 +286,7 @@ export default function ForumPage() {
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="text-red-600" size={18} /> Nova Discussão com Áudio e IA
+                <MessageSquare className="text-red-600" size={18} /> Nova Discussão com Áudio
               </h3>
               <button
                 type="button"
@@ -303,7 +303,7 @@ export default function ForumPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Como pronunciar correctly 'comfortable'?"
+                  placeholder="Ex: Como pronunciar corretamente 'comfortable'?"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600"
@@ -325,30 +325,31 @@ export default function ForumPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Mensagem ou Explicação</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Conteúdo</label>
                 <textarea
+                  rows={4}
                   required
-                  rows={3}
-                  placeholder="Escreva sua dúvida ou contexto..."
+                  placeholder="Escreva sua dúvida ou compartilhe sua dica..."
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600 resize-none"
                 />
               </div>
 
-              <div className="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3">
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Mic size={15} className="text-red-600" /> Gravar Áudio para Análise de Pronúncia por IA
+                  <span className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Mic size={15} className="text-red-600" /> Gravar Clipe de Áudio
                   </span>
-                  {audioRecorded && <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-0.5 rounded-full">Analisado ✓</span>}
+                  {audioRecorded && <span className="text-[10px] font-bold text-emerald-600">Áudio gravado</span>}
                 </div>
-                <div className="flex items-center gap-3">
+
+                <div className="flex items-center gap-2">
                   {!isRecording ? (
                     <button
                       type="button"
                       onClick={startRecording}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs transition"
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
                     >
                       <Mic size={14} /> Gravar Áudio
                     </button>
@@ -356,43 +357,31 @@ export default function ForumPage() {
                     <button
                       type="button"
                       onClick={stopRecording}
-                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs animate-pulse transition"
+                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-pulse"
                     >
-                      <Square size={14} /> Processando Áudio com IA...
-                    </button>
-                  )}
-                  {audioRecorded && (
-                    <button
-                      type="button"
-                      onClick={() => { setAudioRecorded(false); setActiveFeedback(null); }}
-                      className="text-xs font-bold text-slate-500 hover:text-red-600"
-                    >
-                      Regravar
+                      <Square size={13} /> Parar Gravação
                     </button>
                   )}
                 </div>
 
                 {activeFeedback && (
-                  <div className="bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-900/40 p-3 rounded-xl space-y-1 text-xs text-slate-800 dark:text-slate-200">
-                    <p className="font-bold text-red-700 dark:text-red-300 flex items-center gap-1">
-                      <Activity size={13} /> IA: Nota {activeFeedback.score}/100 ({activeFeedback.clarity})
-                    </p>
-                    <p className="text-[11px] text-slate-600 dark:text-slate-400">{activeFeedback.encouragement}</p>
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200 text-[11px] font-bold">
+                    Áudio gravado com sucesso!
                   </div>
                 )}
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-xs font-black shadow-sm flex items-center gap-2"
+                  className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md transition flex items-center gap-1.5"
                 >
                   <Send size={14} /> Publicar Tópico
                 </button>

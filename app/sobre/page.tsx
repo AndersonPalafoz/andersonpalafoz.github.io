@@ -57,8 +57,8 @@ const researchInterests = [
     descricao: "Integração de representatividade e inclusão social na prática de ensino de línguas.",
   },
   {
-    titulo: "Tecnologia e IA na Educação",
-    descricao: "Uso inteligente de ferramentas digitais e agentes de inteligência artificial para personalização de estudos.",
+    titulo: "Tecnologia e Ferramentas Digitais na Educação",
+    descricao: "Uso inteligente de ferramentas digitais e recursos digitais avançados para personalização de estudos.",
   },
   {
     titulo: "Quadrinhos como Ferramenta Pedagógica",
@@ -246,7 +246,7 @@ export default function SobrePage() {
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="h-2 w-2 rounded-full bg-red-600" />
-                  <span>Integração de tecnologia, IA e ferramentas de produtividade acadêmica.</span>
+                  <span>Integração de tecnologia e ferramentas de produtividade acadêmica.</span>
                 </li>
               </ul>
             </div>
