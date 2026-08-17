@@ -734,3 +734,9 @@
 - [x] Implementar botão de exportação do boletim de notas e presença em formato PDF no painel do modo tradicional
 - [x] Permitir que o professor defina um modo padrão (Tradicional ou Gamificado) para turmas inteiras de instituições externas na Minha Área
 - [x] Retirar os links de Professor e Administrador do menu superior (header) e centralizá-los exclusivamente no dashboard de Minha Área com base no papel do usuário
+
+## Cartões Clicáveis de Correção, Boletim PDF Personalizado e Menu Lateral de Acesso Rápido — 17/08/2026
+- [x] Tornar os cartões de tarefas pendentes na "Minha Área" clicáveis, direcionando o professor diretamente para a tela de correção
+- [x] Personalizar o boletim em PDF exportado pelos alunos com a tag da instituição externa e cabeçalho com informações do curso
+- [x] Criar um menu lateral de acesso rápido no dashboard para facilitar a navegação fluida entre as áreas exclusivas de professor e administrador
+- [x] Conduzir auditoria detalhada do todo.md para listar o status real de todas as funcionalidades implementadas
