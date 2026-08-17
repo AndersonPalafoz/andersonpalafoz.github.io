@@ -238,8 +238,8 @@
 
 ## Autorização de Google Calendar e Google Workspace (`palafozanderson@gmail.com`) — 17/08/2026
 - [x] Conectores Google Calendar e Google Workspace identificados na sessão para `palafozanderson@gmail.com`
-- [ ] Conclusão do fluxo de consentimento OAuth pelo usuário para ativar a conta nos conectores
-- [ ] Validação das permissões de leitura/escrita em prazos e arquivos
+- [x] Conclusão do fluxo de consentimento OAuth pelo usuário para ativar a conta nos conectores
+- [x] Validação das permissões de leitura/escrita em prazos e arquivos
 
 ## Sincronização Automática de Prazos com o Google Calendar — 17/08/2026
 - [x] Implementada a sincronização automática de prazos de tarefas reais com o Google Calendar, incluindo vínculo persistente, prevenção de duplicidades, atualizações e exclusão segura
