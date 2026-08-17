@@ -691,3 +691,9 @@
 - [x] Criar painel de controle comparativo de desempenho e frequência entre diferentes instituições parceiras (Megaworks, SIMAL, UFBA)
 - [x] Implementar exportação em PDF e CSV para relatórios de presença e progresso das turmas de projetos parceiros
 - [x] Inserir selos e tags visuais coloridas ao lado do nome dos alunos na lista geral para identificação rápida de sua instituição
+
+## Filtros por Instituição, Personalização de Tags, Gráficos Temporais e Evolução do Sistema de IA — 17/08/2026
+- [x] Adicionar filtros por instituição parceira na lista geral de alunos para visualização segmentada
+- [x] Implementar painel de customização de cores e nomes das tags institucionais nas configurações do professor
+- [x] Integrar gráficos interativos de evolução temporal de desempenho ao painel comparativo de turmas
+- [x] Aprimorar o sistema de IA com diretrizes rigorosas, feedback de pronúncia detalhado e trilhas adaptativas inteligentes
