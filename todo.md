@@ -309,3 +309,6 @@
 - [x] Implementar recurso de pré-visualização do sumário dos guias de gramática em PDF antes do download
 - [x] Criar seção no dashboard para exibir o histórico de metas semanais alcançadas nos meses anteriores
 - [x] Atualizar o cabeçalho lateral do perfil (DashboardLayout) para suportar foto de perfil e upload direto com fallback para iniciais
+
+- [x] Criar filtros interativos por nível de proficiência (A1-C2) na seção de guias de gramática em PDF (`/materiais`)
+- [x] Aprimorar a integração operacional com as ferramentas do Google Workspace (Calendar, Drive e Classroom)
