@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Download, Loader2, ShieldCheck } from "lucide-react";
 
 type AccessEvent = {
   id: number;
@@ -29,6 +29,7 @@ function formatDate(value: string) {
 export default function AdminAccessAuditPage() {
   const [events, setEvents] = useState<AccessEvent[]>([]);
   const [eventType, setEventType] = useState("");
+  const [userSearch, setUserSearch] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [offset, setOffset] = useState(0);
@@ -42,6 +43,7 @@ export default function AdminAccessAuditPage() {
       setError(null);
       const params = new URLSearchParams({ limit: "50", offset: String(offset) });
       if (eventType) params.set("eventType", eventType);
+      if (userSearch.trim()) params.set("userSearch", userSearch.trim());
       if (from) params.set("from", from);
       if (to) params.set("to", to);
       const response = await fetch(`/api/admin/access-logs?${params.toString()}`, { cache: "no-store" });
@@ -56,13 +58,24 @@ export default function AdminAccessAuditPage() {
     } finally {
       setLoading(false);
     }
-  }, [eventType, from, offset, to]);
+  }, [eventType, from, offset, to, userSearch]);
 
   useEffect(() => { void loadEvents(); }, [loadEvents]);
 
   function applyFilters(event: React.FormEvent) {
     event.preventDefault();
     setOffset(0);
+  }
+
+  function exportCSV() {
+    if (events.length === 0) return;
+    const escapeCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const csv = ["Data,Usuario,Evento,IP,Detalhes", ...events.map((event) => [formatDate(event.createdAt), event.userEmail || "Usuário não identificado", eventLabels[event.eventType] || event.eventType, event.ipAddress || "Não registrado", event.details || "Sem detalhes"].map(escapeCell).join(","))].join("\\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([`\\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
+    link.download = `auditoria-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   }
 
   return (
@@ -73,12 +86,14 @@ export default function AdminAccessAuditPage() {
         <p className="text-sm text-muted-foreground mt-2">Exibe somente eventos persistidos em `event_logs`; ausência de eventos permanece vazia.</p>
       </div>
 
-      <form onSubmit={applyFilters} className="surface-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <form onSubmit={applyFilters} className="surface-card p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+        <label className="text-xs font-bold text-muted-foreground">Usuário ou email<input value={userSearch} onChange={(event) => setUserSearch(event.target.value)} placeholder="Buscar email" className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground" /></label>
         <select value={eventType} onChange={(event) => setEventType(event.target.value)} className="rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground"><option value="">Todos os eventos</option><option value="login">Login</option><option value="material_submission">Envio de material</option><option value="activity_complete">Atividade concluída</option><option value="course_enroll">Matrícula</option><option value="role_change">Alteração de papel</option></select>
         <label className="text-xs font-bold text-muted-foreground">De<input type="date" value={from} onChange={(event) => setFrom(event.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground" /></label>
         <label className="text-xs font-bold text-muted-foreground">Até<input type="date" value={to} onChange={(event) => setTo(event.target.value)} className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground" /></label>
         <button type="submit" className="self-end rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700">Aplicar filtros</button>
-        <button type="button" onClick={() => { setEventType(""); setFrom(""); setTo(""); setOffset(0); }} className="self-end rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted">Limpar</button>
+        <button type="button" onClick={() => { setEventType(""); setUserSearch(""); setFrom(""); setTo(""); setOffset(0); }} className="self-end rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted">Limpar</button>
+        <button type="button" onClick={exportCSV} disabled={loading || events.length === 0} className="inline-flex items-center justify-center gap-2 self-end rounded-xl border border-border px-4 py-2.5 text-sm font-bold text-foreground hover:bg-muted disabled:opacity-50"><Download size={15} /> CSV da página</button>
       </form>
 
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-800">{error}</div>}

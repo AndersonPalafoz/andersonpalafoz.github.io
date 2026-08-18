@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, BookOpen, TrendingUp, Download, FileText, ChevronLeft } from "lucide-react";
+import { Users, BookOpen, TrendingUp, Download, FileText, ChevronLeft, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -29,6 +29,7 @@ export default function AdminRelatoriosPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [detailedReports, setDetailedReports] = useState<DetailedReports | null>(null);
   const [reportTab, setReportTab] = useState<"students" | "teachers" | "courses">("students");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [detailsLoading, setDetailsLoading] = useState(true);
 
@@ -59,12 +60,29 @@ export default function AdminRelatoriosPage() {
 
   useEffect(() => {
     if (!authLoading && user?.role === "admin") {
-      void fetch("/api/admin/reports", { cache: "no-store" }).then(async (res) => {
+      const params = new URLSearchParams();
+      if (search.trim()) params.set("search", search.trim());
+      void fetch(`/api/admin/reports?${params.toString()}`, { cache: "no-store" }).then(async (res) => {
         if (!res.ok) throw new Error("Falha ao carregar relatórios detalhados");
         setDetailedReports(await res.json());
       }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios.")).finally(() => setDetailsLoading(false));
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, search]);
+
+  const exportDetailedCSV = () => {
+    if (!detailedReports) return;
+    const rows = reportTab === "students" ? detailedReports.studentReports.map((item) => ["Aluno", item.name, item.email || "", item.enrollments, item.completed, `${item.averageProgress}%`]) : reportTab === "teachers" ? detailedReports.teacherReports.map((item) => ["Professor", item.name, item.email || "", item.students, item.enrollments, `${item.averageProgress}%`]) : detailedReports.courseReports.map((item) => ["Curso", item.title, item.level, item.enrollments, item.completed, `${item.averageProgress}%`]);
+    const escapeCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const csv = ["Tipo,Nome ou Curso,Email ou Nivel,Indicador 1,Indicador 2,Progresso Medio", ...rows.map((row) => row.map(escapeCell).join(","))].join("\\n");
+    const blob = new Blob([`\\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio-${reportTab}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast.success("Relatório detalhado exportado com os filtros atuais.");
+  };
 
   const exportCSV = () => {
     if (!stats) return;
@@ -198,6 +216,10 @@ export default function AdminRelatoriosPage() {
         <section className="surface-card p-5 sm:p-6 space-y-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div><h2 className="text-lg font-black text-foreground">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-muted-foreground">Acompanhamento operacional para o super-admin.</p></div>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <label className="relative block"><Search size={15} className="absolute left-3 top-3 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar aluno, professor ou curso" aria-label="Buscar nos relatórios" className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-xs text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 sm:w-64" /></label>
+              <Button type="button" variant="outline" onClick={exportDetailedCSV} disabled={detailsLoading || !detailedReports} className="h-10 gap-2 text-xs font-bold"><Download size={14} /> Exportar aba</Button>
+            </div>
             <div className="flex gap-2">
               {([['students', 'Alunos'], ['teachers', 'Professores'], ['courses', 'Cursos']] as const).map(([value, label]) => <button key={value} type="button" aria-pressed={reportTab === value} onClick={() => setReportTab(value)} className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${reportTab === value ? 'bg-red-600 text-white' : 'bg-muted text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}>{label}</button>)}
             </div>

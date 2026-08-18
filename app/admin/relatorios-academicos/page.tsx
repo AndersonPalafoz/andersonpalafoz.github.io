@@ -57,6 +57,7 @@ export default function AcademicReportsPage() {
   const { user, isLoading } = useAuth();
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<"all" | "classroom" | "local">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [startDate, setStartDate] = useState("");
@@ -73,6 +74,7 @@ export default function AcademicReportsPage() {
   const fetchReports = async () => {
     try {
       setLoading(true);
+      setErrorMessage(null);
       const params = new URLSearchParams({
         source: sourceFilter,
         status: statusFilter,
@@ -87,6 +89,7 @@ export default function AcademicReportsPage() {
       setData(json);
     } catch (err) {
       console.error("Error loading real academic reports:", err);
+      setErrorMessage(err instanceof Error ? err.message : "Não foi possível carregar os relatórios acadêmicos reais.");
     } finally {
       setLoading(false);
     }
@@ -179,6 +182,7 @@ export default function AcademicReportsPage() {
 
   return (
     <div className="site-shell">
+      {errorMessage && <div role="alert" aria-live="polite" className="mx-auto mt-4 flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700 dark:text-red-200"><span>{errorMessage}</span><button type="button" onClick={() => void fetchReports()} className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-bold hover:bg-red-500/10">Tentar novamente</button></div>}
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${

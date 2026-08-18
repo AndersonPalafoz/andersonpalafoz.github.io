@@ -636,9 +636,9 @@
 - [x] `/admin/artigos` — Gestão de artigos (redirecionamento seguro para a gestão unificada do blog)
 - [x] `/admin/blog` — Gestão do blog (editor Markdown, gerador de slug, feedback toast e tokens de tema)
 - [x] `/admin/cms` — Sistema de gerenciamento de conteúdo (biblioteca de mídia com paginação server-side, busca, filtros e upload S3 persistido)
-- [ ] `/admin/relatorios` — Relatórios administrativos gerais
-- [ ] `/admin/relatorios-academicos` — Relatórios acadêmicos
-- [ ] `/admin/auditoria` — Auditoria de acessos e atividades
+- [x] `/admin/relatorios` — Relatórios administrativos gerais (busca server-side, exportação de aba e KPIs persistidos)
+- [x] `/admin/relatorios-academicos` — Relatórios acadêmicos (filtros reais, sincronização Classroom, exportações e erro recuperável)
+- [x] `/admin/auditoria` — Auditoria de acessos e atividades (filtro por usuário/email, tipo, datas, paginação defensiva e CSV da página)
 - [ ] `/admin/cupons` — Gestão de cupons e descontos Stripe
 - [ ] `/admin/liberacao-acesso` — Concessão e revogação de acesso pago pelo super administrador
 
@@ -651,3 +651,6 @@
 - [x] Consolidar o documento de Design System e o cronograma modular de entrega para Admin, Professor e Aluno (`docs/design-system-and-rollout-schedule.md`).
 
 - [x] Consolidar a especificação técnica detalhada para os módulos de relatórios e auditoria (`docs/admin-reports-and-audit-specification.md`).
+
+- [x] Implementar preview Markdown em tempo real e seguro na gestão de artigos do blog.
+- [x] Continuar o aprimoramento de `/admin/relatorios`, `/admin/relatorios-academicos` e `/admin/auditoria` com dados reais, filtros, segurança e exportações.

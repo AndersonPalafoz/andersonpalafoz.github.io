@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, gte, lte } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, lte } from "drizzle-orm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(parseInteger(params.get("limit"), 25) || 25, 1), MAX_LIMIT);
     const offset = parseInteger(params.get("offset"), 0);
     const eventType = params.get("eventType")?.trim() || "";
+    const userSearch = params.get("userSearch")?.trim().slice(0, 120) || "";
     const from = parseDate(params.get("from"));
     const to = parseDate(params.get("to"), true);
 
@@ -43,6 +44,7 @@ export async function GET(request: NextRequest) {
 
     const filters = [
       ...(eventType ? [eq(eventLogs.eventType, eventType as (typeof EVENT_TYPES)[number])] : []),
+      ...(userSearch ? [ilike(eventLogs.userEmail, `%${userSearch}%`)] : []),
       ...(from ? [gte(eventLogs.createdAt, from)] : []),
       ...(to ? [lte(eventLogs.createdAt, to)] : []),
     ];
@@ -53,7 +55,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
 
-    return NextResponse.json({ events, pagination: { limit, offset, hasMore: events.length === limit }, eventTypes: EVENT_TYPES });
+    return NextResponse.json({ events, pagination: { limit, offset, hasMore: events.length === limit }, eventTypes: EVENT_TYPES, filters: { eventType, userSearch, from: params.get("from") || "", to: params.get("to") || "" } });
   } catch (error) {
     console.error("Error loading access audit logs:", error);
     return NextResponse.json({ error: "Não foi possível carregar os logs reais de acesso." }, { status: 500 });
