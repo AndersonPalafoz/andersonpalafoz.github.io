@@ -31,31 +31,51 @@ export function ProfessorSummaryDashboard() {
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<PendingQuestion[]>([]);
   const [classes, setClasses] = useState<ClassAverage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadSummary = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/professor/resumo", { cache: "no-store" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao carregar resumo do professor.");
+      setQuestions(data.pendingQuestions || []);
+      setClasses(data.classAverages || []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Falha ao carregar painel de resumo.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadSummary = async () => {
-      try {
-        const res = await fetch("/api/professor/resumo", { cache: "no-store" });
-        const data = await res.json();
-        if (res.ok) {
-          setQuestions(data.pendingQuestions || []);
-          setClasses(data.classAverages || []);
-        } else {
-          throw new Error(data.error || "Erro ao carregar resumo");
-        }
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Falha ao carregar painel de resumo.");
-      } finally {
-        setLoading(false);
-      }
-    };
     void loadSummary();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-16 rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm text-red-600">
+      <div className="flex items-center justify-center p-16 rounded-3xl border border-border bg-card shadow-sm text-primary">
         <Loader2 className="animate-spin" size={32} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-center text-red-900 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
+        <AlertCircle className="mx-auto mb-2 text-red-600" size={32} />
+        <p className="font-bold">Não foi possível carregar o resumo do professor.</p>
+        <p className="mt-1 text-xs opacity-80">{error}</p>
+        <button
+          type="button"
+          onClick={() => void loadSummary()}
+          className="mt-4 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700"
+        >
+          Tentar novamente
+        </button>
       </div>
     );
   }

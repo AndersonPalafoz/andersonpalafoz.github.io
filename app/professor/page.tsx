@@ -26,47 +26,47 @@ export default async function TeacherDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 surface-card p-5 sm:p-7">
-          <div>
-            <div className="eyebrow mb-3">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl shadow-sm border border-border/70 bg-card">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <GraduationCap size={16} />
               Área Acadêmica do Professor
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Painel do Professor</h1>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base">
-              Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub.
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do Professor</h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub com alta governança e dados em tempo real.
             </p>
           </div>
-          <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 text-sm whitespace-nowrap">
+          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
             <Link
               href="/professor/progresso-aulas"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
-              Aulas & Speaking (Prática)
+              Aulas & Speaking
             </Link>
             <Link
               href="/professor/tarefas"
-              className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted"
+              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
-              Tarefas e Deadlines
+              Tarefas & Deadlines
             </Link>
             <Link
               href="/professor/turmas-externas"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 flex items-center gap-1.5"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
-              Turmas Externas (SIMAL/UFBA)
+              Turmas Externas
             </Link>
             <Link
               href="/professor/alunos"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
               Aprovar Alunos
             </Link>
             <Link
               href="/admin/cursos"
-              className="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/15 transition hover:-translate-y-0.5 hover:bg-primary/90"
+              className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
-              Novo Curso / Material
+              Novo Curso
             </Link>
           </div>
         </div>
