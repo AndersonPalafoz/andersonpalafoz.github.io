@@ -23,7 +23,7 @@ interface ClassAverage {
   id: number;
   name: string;
   institution: string;
-  averageScore: number;
+  averageScore: number | null;
   gradesCount: number;
 }
 
@@ -150,14 +150,14 @@ export function ProfessorSummaryDashboard() {
                     <h4 className="font-black text-gray-900 dark:text-white text-sm">{cls.name}</h4>
                   </div>
                   <div className="text-right">
-                    <span className="text-2xl font-black text-gray-900 dark:text-white">{cls.averageScore}</span>
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">{cls.averageScore === null ? "—" : cls.averageScore}</span>
                     <span className="block text-[10px] text-gray-500">{cls.gradesCount} notas lançadas</span>
                   </div>
                 </div>
                 <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-slate-700 overflow-hidden">
                   <div
                     className="h-full rounded-full bg-red-600 transition-all"
-                    style={{ width: `${Math.min(Math.max((cls.averageScore / 10) * 100, 0), 100)}%` }}
+                    style={{ width: `${cls.averageScore === null ? 0 : Math.min(Math.max((cls.averageScore / 10) * 100, 0), 100)}%` }}
                   />
                 </div>
               </div>

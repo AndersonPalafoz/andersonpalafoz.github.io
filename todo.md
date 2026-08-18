@@ -526,3 +526,9 @@
 ## Regra reforçada de dados reais no dashboard — 18/08/2026
 - [x] Garantir que todos os dados exibidos no dashboard e em suas subrotas venham exclusivamente do banco de dados ou de respostas reais das integrações Google, sem localStorage acadêmico, mocks ou valores padrão.
 - [x] Remover qualquer status de sucesso, conquista, recomendação, progresso ou pagamento que não tenha confirmação persistida ou resposta real da integração.
+
+## Auditoria de Dados Reais do Painel do Professor e Subrotas — 18/08/2026
+- [x] Auditar `/professor` e todas as subrotas docentes (`/professor/alunos`, `/professor/progresso`, `/professor/progresso-aulas`, `/professor/tarefas`, `/professor/turmas-externas`, `/professor/boletim/[studentId]`) para eliminar dados simulados.
+- [x] Garantir que todas as estatísticas de turmas, médias, tarefas pendentes, chamadas e boletins venham exclusivamente do banco Neon PostgreSQL.
+- [x] Validar a fronteira das integrações Google: nenhuma rota do professor exibe sincronização concluída sem resposta real; dados Google existentes permanecem tratados pelas rotas de integração autorizadas.
+- [x] Executar suíte Vitest e build de produção Next.js 15 após as correções no painel do professor.
