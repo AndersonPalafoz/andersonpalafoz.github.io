@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { speakingAttempts, users, lessonProgress, userActivityProgress } from "@/drizzle/schema";
 import { uploadLearningAudio } from "@/lib/learning-storage";
 import { and, eq, inArray } from "drizzle-orm";
-import { analyzeSpeakingAudio } from "@/lib/ai-pronunciation";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -73,7 +72,6 @@ export async function POST(request: NextRequest) {
     const activityProgressId = Number(getValue("activityProgressId"));
     const teacherFeedback = String(getValue("teacherFeedback") || "").trim();
     const scoreValue = getValue("score");
-    const triggerAIAnalysis = String(getValue("triggerAIAnalysis")) === "true" || getValue("triggerAIAnalysis") === true;
     const attemptIdValue = getValue("attemptId");
     const teacherAudio = getValue("teacherAudio");
 
@@ -87,6 +85,10 @@ export async function POST(request: NextRequest) {
     if (!existingProgress) return NextResponse.json({ error: "Submissão não encontrada." }, { status: 404 });
 
     const teacher = session.user.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
+    if (session.user.role === "professor" && (!teacher || existingProgress.userId !== teacher.id)) {
+      const assignedStudent = await db.query.users.findFirst({ where: and(eq(users.id, existingProgress.userId), eq(users.teacherId, teacher?.id ?? -1)) });
+      if (!assignedStudent) return NextResponse.json({ error: "Você não tem acesso a esta submissão." }, { status: 403 });
+    }
     let teacherAudioFeedbackUrl: string | undefined;
     if (teacherAudio instanceof File) {
       teacherAudioFeedbackUrl = (await uploadLearningAudio(teacher?.id || 0, teacherAudio, "teacher-feedback")).url;
@@ -95,14 +97,10 @@ export async function POST(request: NextRequest) {
     const targetAttempt = attemptIdValue ? await db.query.speakingAttempts.findFirst({
       where: and(eq(speakingAttempts.id, Number(attemptIdValue)), eq(speakingAttempts.userId, existingProgress.userId), eq(speakingAttempts.activityId, existingProgress.activityId)),
     }) : null;
-    let finalScore = scoreValue !== undefined && scoreValue !== null && String(scoreValue) !== "" ? Number(scoreValue) : (existingProgress.score || 90);
-    let feedbackToSave = teacherFeedback;
-
-    if (triggerAIAnalysis) {
-      const analysis = await analyzeSpeakingAudio(targetAttempt?.audioResponseUrl || existingProgress.audioResponseUrl);
-      finalScore = analysis.score;
-      feedbackToSave = `${analysis.feedback}\n\nSugestões de Melhoria:\n${analysis.suggestions.join("\n")}${teacherFeedback ? `\n\nNota Adicional do Professor: ${teacherFeedback}` : ""}`;
-    }
+    const parsedScore = scoreValue !== undefined && scoreValue !== null && String(scoreValue) !== "" ? Number(scoreValue) : null;
+    const finalScore = parsedScore !== null && Number.isFinite(parsedScore) ? parsedScore : existingProgress.score;
+    if (finalScore === null || finalScore === undefined) return NextResponse.json({ error: "Informe uma nota do professor antes de concluir a avaliação." }, { status: 400 });
+    const feedbackToSave = teacherFeedback;
 
     const updated = await db
       .update(userActivityProgress)

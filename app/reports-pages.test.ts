@@ -20,7 +20,7 @@ describe("academic report pages", () => {
     expect(source).toContain("db.select().from(users)");
     expect(source).toContain("db.select().from(progress)");
     expect(source).toContain("db.select().from(enrollments)");
-    expect(source).toContain("courseTitles.get(enr.courseId)");
+    expect(source).toContain("courseTitles.get(enrollment.courseId)");
     expect(source).toContain("session.user.role !== \"professor\"");
   });
 

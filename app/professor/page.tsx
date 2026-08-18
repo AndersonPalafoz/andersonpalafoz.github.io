@@ -1,8 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth/next";
 import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, UserCheck } from "lucide-react";
 import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents } from "@/lib/teacher";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
+import { authOptions } from "@/lib/auth";
 
 export const metadata = {
   title: "Painel do Professor | Anderson Palafoz",
@@ -10,10 +13,13 @@ export const metadata = {
 };
 
 export default async function TeacherDashboardPage() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) redirect("/login?callbackUrl=/professor");
+  const teacherEmail = session.user.email ?? undefined;
   const [data, allCourses, allStudents] = await Promise.all([
-    getTeacherDashboardData(),
-    getTeacherCourses(),
-    getTeacherStudents(),
+    getTeacherDashboardData(teacherEmail),
+    getTeacherCourses(teacherEmail),
+    getTeacherStudents(teacherEmail),
   ]);
 
   return (

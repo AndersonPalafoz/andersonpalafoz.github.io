@@ -27,10 +27,10 @@ interface Activity {
   type: string;
   dueDate: string | null;
   tag?: string;
-  status?: "pending" | "completed";
+  status?: "pending" | "completed" | null;
   order?: number;
-  subtasks?: SubTask[];
-  attachments?: Attachment[];
+  subtasks?: SubTask[] | null;
+  attachments?: Attachment[] | null;
   course: {
     id: number;
     title: string;
@@ -92,7 +92,7 @@ export default function TeacherTasksPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const coursesRes = await fetch("/api/courses");
+      const coursesRes = await fetch("/api/professor/courses");
       const coursesJson = await coursesRes.json();
       if (coursesRes.ok) {
         setCourses(coursesJson);
@@ -103,10 +103,10 @@ export default function TeacherTasksPage() {
         const actJson = await actRes.json();
         const list = (actJson.activities || actJson || []).map((a: any) => ({
           ...a,
-          tag: a.tag || "Gramática",
-          status: a.status || "pending",
-          subtasks: Array.isArray(a.subtasks) ? a.subtasks : [],
-          attachments: Array.isArray(a.attachments) ? a.attachments : [],
+          tag: typeof a.tag === "string" ? a.tag : null,
+          status: a.status === "pending" || a.status === "completed" ? a.status : null,
+          subtasks: Array.isArray(a.subtasks) ? a.subtasks : null,
+          attachments: Array.isArray(a.attachments) ? a.attachments : null,
         }));
         setActivitiesList(list);
         const initialExpanded: Record<number, boolean> = {};
@@ -207,7 +207,7 @@ export default function TeacherTasksPage() {
     setEditingId(act.id);
     setEditTitle(act.title);
     setEditDueDate(act.dueDate ? new Date(act.dueDate).toISOString().slice(0, 16) : "");
-    setEditTag(act.tag || "Gramática");
+    setEditTag(act.tag || "");
     setEditStatus(act.status === "completed" ? "completed" : "pending");
   };
 

@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { externalClasses, externalStudents, users } from "@/drizzle/schema";
-import { eq, or, ilike } from "drizzle-orm";
+import { and, eq, or, ilike } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,18 +56,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Buscar todas as matrículas deste aluno pelo nome ou email em turmas do mesmo professor
-    const allStudentEnrollments = await db.select({
-      student: externalStudents,
-      classItem: externalClasses,
-    })
-    .from(externalStudents)
-    .innerJoin(externalClasses, eq(externalStudents.externalClassId, externalClasses.id))
-    .where(
-      or(
-        eq(externalStudents.name, studentRecord.name),
-        studentRecord.email ? eq(externalStudents.email, studentRecord.email) : eq(externalStudents.id, studentRecord.id)
-      )
+    const identityFilter = or(
+      eq(externalStudents.name, studentRecord.name),
+      studentRecord.email ? eq(externalStudents.email, studentRecord.email) : eq(externalStudents.id, studentRecord.id),
     );
+    const enrollmentFilter = session.user.role === "admin" ? identityFilter : and(identityFilter, eq(externalClasses.teacherId, teacher.id));
+    const allStudentEnrollments = await db.select({ student: externalStudents, classItem: externalClasses })
+      .from(externalStudents)
+      .innerJoin(externalClasses, eq(externalStudents.externalClassId, externalClasses.id))
+      .where(enrollmentFilter);
 
     const reportData = {
       studentInfo: {
