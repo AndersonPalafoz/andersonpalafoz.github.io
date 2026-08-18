@@ -1,6 +1,6 @@
-import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { users, enrollments, lessonProgress } from "@/drizzle/schema";
 import { eq, isNull, and } from "drizzle-orm";
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
         enrolledCourses: studentEnrollments,
         completedLessonsCount: studentProgress.filter((p: any) => p.completed).length,
         totalProgressRecords: studentProgress.length,
-        provenance: studentId % 2 === 0 ? "Google Classroom (API v1)" : "Plataforma Local (Neon)",
+        provenance: "Plataforma Local / Sincronização Neon",
       },
     });
   } catch (error) {
