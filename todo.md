@@ -484,3 +484,5 @@
 - [x] Adicionar indicador visual de ponto vermelho no ícone do sino de notificações quando houver itens não lidos.
 - [x] Criar opção para marcar todas como lidas e limpar/remover notificações de uma vez na central de notificações.
 - [x] Implementar animação de celebração visual quando o aluno atingir marcos reais no sistema de ofensivas.
+
+- [x] Auditar e aprimorar o sistema unificado de criação, manutenção, versionamento e vínculos de cursos e materiais (internos e externos).
