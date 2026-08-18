@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState, useEffect } from "react";
 import { Calendar, RefreshCw, CheckCircle2, Clock } from "lucide-react";
@@ -10,27 +10,36 @@ export default function CalendarioPage() {
   const [syncingAll, setSyncingAll] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
 
-  useEffect(() => {
-    // Simula carregamento de prazos reais da API ou banco
-    setTimeout(() => {
-      setEventos([
-        { id: 1, title: "Entrega do Guia de Pronúncia e Fonética (A1-B2)", dueDate: "2026-08-25T23:59:00Z", status: "Pendente" },
-        { id: 2, title: "Avaliação Prática de Speaking - Módulo 2", dueDate: "2026-08-30T23:59:00Z", status: "Pendente" },
-        { id: 3, title: "Simulado Acadêmico de Sintaxe e Morfologia", dueDate: "2026-09-05T23:59:00Z", status: "Pendente" },
-        { id: 4, title: "Entrega do Projeto Final de Redação C1", dueDate: "2026-09-15T23:59:00Z", status: "Pendente" }
-      ]);
+  const fetchCalendarEvents = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/calendar");
+      if (!res.ok) throw new Error("Falha ao carregar calendário");
+      const data = await res.json();
+      setEventos(data.eventos || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Não foi possível carregar os prazos acadêmicos.");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
+  };
+
+  useEffect(() => {
+    fetchCalendarEvents();
   }, []);
 
   const handleSyncAllSemester = async () => {
     setSyncingAll(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      const now = new Date().toLocaleString("pt-BR");
-      setLastSync(now);
+      const res = await fetch("/api/calendar", { method: "POST" });
+      if (!res.ok) throw new Error("Falha na sincronização");
+      const data = await res.json();
+      const formattedTime = new Date(data.syncedAt || Date.now()).toLocaleString("pt-BR");
+      setLastSync(formattedTime);
       toast.success("Todos os prazos do semestre foram sincronizados com sucesso no Google Calendar!");
     } catch (err) {
+      console.error(err);
       toast.error("Erro ao sincronizar prazos com o Google Calendar.");
     } finally {
       setSyncingAll(false);
@@ -43,7 +52,7 @@ export default function CalendarioPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Calendário & Prazos</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Sincronize automaticamente os prazos das atividades com o seu Google Calendar.
+            Gerencie e sincronize automaticamente os prazos acadêmicos reais com o seu Google Calendar.
           </p>
         </div>
 
@@ -54,7 +63,7 @@ export default function CalendarioPage() {
           className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-3 rounded-2xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
         >
           <RefreshCw size={16} className={syncingAll ? "animate-spin" : ""} />
-          <span>{syncingAll ? "Sincronizando Semestre..." : "Sincronizar Todos os Prazos do Semestre"}</span>
+          <span>{syncingAll ? "Sincronizando Semestre..." : "Sincronizar Todos os Prazos com Google Calendar"}</span>
         </button>
       </div>
 
@@ -66,11 +75,11 @@ export default function CalendarioPage() {
       )}
 
       {loading ? (
-        <div className="text-center py-16 text-red-600 font-bold">Carregando prazos do semestre...</div>
+        <div className="text-center py-16 text-red-600 font-bold animate-pulse">Carregando prazos reais da base de dados...</div>
       ) : eventos.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
           <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
-          <p className="text-gray-600 dark:text-gray-400">Nenhum prazo pendente no momento.</p>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Nenhum prazo pendente cadastrado no sistema acadêmico.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -100,7 +109,7 @@ export default function CalendarioPage() {
               </div>
 
               <span className="px-3.5 py-1.5 rounded-full text-xs font-black uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 shrink-0">
-                {item.status}
+                {item.status || "Pendente"}
               </span>
             </div>
           ))}
