@@ -1,13 +1,12 @@
-import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "@/lib/auth";
 import { db, getLessonById, getModuleById } from "@/lib/db";
 import { materials } from "@/drizzle/schema";
+import { requireTeacherOrAdmin, canManageCourse } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) {
+    const session = await requireTeacherOrAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 401 });
     }
 
@@ -17,6 +16,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const lesson = await getLessonById(lessonId);
     if (!lesson) return NextResponse.json({ error: "Aula não encontrada." }, { status: 404 });
     const module = await getModuleById(lesson.moduleId);
+    if (!module || !module.courseId) return NextResponse.json({ error: "Módulo ou curso da aula não encontrado." }, { status: 404 });
+
+    const allowed = await canManageCourse(session, module.courseId);
+    if (!allowed) {
+      return NextResponse.json({ error: "Você não possui permissão para vincular materiais a esta aula." }, { status: 403 });
+    }
 
     const body = await request.json();
     const { title, description, category, level, fileUrl, isPublic } = body;
@@ -31,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       level,
       fileUrl: fileUrl || null,
       lessonId,
-      courseId: module?.courseId || null,
+      courseId: module.courseId,
       isPublic: isPublic !== undefined ? Boolean(isPublic) : true,
       downloads: 0,
     }).returning();
