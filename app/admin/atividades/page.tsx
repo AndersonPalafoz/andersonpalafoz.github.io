@@ -39,12 +39,12 @@ const actionLabels: Record<ActivityAction, string> = {
 };
 
 const actionStyles: Record<ActivityAction, string> = {
-  approve: "bg-green-100 text-green-700",
-  reject: "bg-red-100 text-red-700",
-  role_change: "bg-blue-100 text-blue-700",
+  approve: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+  reject: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300",
+  role_change: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
   soft_delete: "bg-muted text-gray-700",
-  restore: "bg-emerald-100 text-emerald-700",
-  create: "bg-purple-100 text-purple-700",
+  restore: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+  create: "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300",
 };
 
 function ActionIcon({ action }: { action: ActivityAction }) {
@@ -106,7 +106,7 @@ export default function AdminActivitiesPage() {
           <Button type="button" variant="outline" onClick={() => void fetchActivities()} className="gap-2"><RefreshCw size={16} />Atualizar histórico</Button>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900"><div className="flex items-start gap-3"><ShieldAlert size={19} className="mt-0.5 shrink-0" /><p>Este registro é somente para consulta. Cada entrada identifica a conta afetada, o administrador responsável e o horário da ação.</p></div></div>
+        <div className="mb-6 rounded-2xl border border-blue-500/30 bg-blue-950/20 text-blue-200"><div className="flex items-start gap-3"><ShieldAlert size={19} className="mt-0.5 shrink-0" /><p>Este registro é somente para consulta. Cada entrada identifica a conta afetada, o administrador responsável e o horário da ação.</p></div></div>
 
         <div className="mb-6 flex flex-wrap gap-2">
           <select value={filter} onChange={(event) => { setFilter(event.target.value as ActivityFilter); setOffset(0); }} className="field-control h-11 max-w-xs font-medium">
