@@ -715,3 +715,16 @@ export const externalClassMaterials = pgTable("external_class_materials", {
   description: text("description"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
+
+
+export const materialComments = pgTable("material_comments", {
+  id: serial("id").primaryKey(),
+  materialId: integer("material_id").notNull().references(() => materials.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  parentId: integer("parent_id"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type MaterialComment = typeof materialComments.$inferSelect;
+export type InsertMaterialComment = typeof materialComments.$inferInsert;
