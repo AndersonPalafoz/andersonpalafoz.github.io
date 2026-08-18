@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Trash2, Edit2, Plus, ArrowLeft, Loader2, FileText, Clock, Tag } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface BlogPost {
@@ -67,7 +68,7 @@ export default function BlogPage() {
     e.preventDefault();
 
     if (!formData.title || !formData.slug || !formData.content) {
-      alert("Preencha título, slug e conteúdo do artigo.");
+      toast.error("Preencha título, slug e conteúdo do artigo.");
       return;
     }
 
@@ -101,9 +102,9 @@ export default function BlogPage() {
       setFormData({ title: "", slug: "", content: "", category: "Linguística & Ensino", readingTime: 5 });
       setEditingId(null);
       setShowForm(false);
-      alert("Artigo salvo com sucesso!");
+      toast.success("Artigo salvo com sucesso.");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar postagem");
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar postagem.");
     } finally {
       setSaving(false);
     }
@@ -144,21 +145,21 @@ export default function BlogPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
+    <div className="min-h-screen bg-background py-12 px-4 md:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card text-card-foreground p-8 rounded-2xl shadow-sm border border-border">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Link href="/admin" className="text-sm font-semibold text-green-600 hover:underline flex items-center gap-1">
                 <ArrowLeft size={16} /> Voltar ao Painel Admin
               </Link>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <FileText className="text-green-600" size={32} />
               Gerenciamento Completo do Blog & Knowledge Hub
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Publique artigos acadêmicos, ensaios sobre linguística e dicas de inglês formatados em Markdown.
             </p>
           </div>
@@ -177,8 +178,8 @@ export default function BlogPage() {
 
         {/* Formulário Completo de Blog */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 transition-all animate-fadeIn">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <div className="bg-card text-card-foreground rounded-2xl border border-border shadow-lg p-8 transition-all animate-fadeIn">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
               <FileText size={20} className="text-green-600" />
               {editingId ? "Editar Artigo" : "Criar Novo Artigo"}
             </h2>
@@ -186,76 +187,76 @@ export default function BlogPage() {
             <form onSubmit={handleSavePost} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título do Artigo *</label>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Título do Artigo *</label>
                   <input
                     type="text"
                     required
                     value={formData.title}
                     onChange={(e) => handleTitleChange(e.target.value)}
                     placeholder="Ex: Morfologia e Aquisição do Inglês para Brasileiros"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Slug (URL amigável) *</label>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Slug (URL amigável) *</label>
                   <input
                     type="text"
                     required
                     value={formData.slug}
                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                     placeholder="morfologia-e-aquisicao-ingles"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition font-mono text-sm bg-gray-50"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition font-mono text-sm bg-background"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Categoria</label>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Categoria</label>
                   <div className="relative">
-                    <Tag className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <Tag className="absolute left-3 top-3.5 text-muted-foreground" size={18} />
                     <input
                       type="text"
                       value={formData.category}
                       onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                       placeholder="Ex: Linguística Aplicada"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Tempo de Leitura (minutos)</label>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Tempo de Leitura (minutos)</label>
                   <div className="relative">
-                    <Clock className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <Clock className="absolute left-3 top-3.5 text-muted-foreground" size={18} />
                     <input
                       type="number"
                       min={1}
                       max={60}
                       value={formData.readingTime}
                       onChange={(e) => setFormData({ ...formData, readingTime: parseInt(e.target.value) || 5 })}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Conteúdo do Artigo (Markdown) *</label>
+                <label className="block text-sm font-semibold text-foreground mb-2">Conteúdo do Artigo (Markdown) *</label>
                 <textarea
                   rows={10}
                   required
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                   placeholder="Escreva seu artigo utilizando formatação Markdown (títulos ##, listas, negrito, etc.)..."
-                  className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition font-mono text-sm"
+                  className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none transition font-mono text-sm"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-4 pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
+                  className="px-6 py-3 rounded-xl border border-border text-foreground font-semibold hover:bg-background transition"
                 >
                   Cancelar
                 </button>
@@ -273,28 +274,28 @@ export default function BlogPage() {
         )}
 
         {/* Listagem de Artigos */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Artigos Publicados</h2>
+        <div className="bg-card text-card-foreground rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <h2 className="text-xl font-bold text-foreground">Artigos Publicados</h2>
             <span className="text-sm text-gray-500 font-medium">{posts.length} artigos no Knowledge Hub</span>
           </div>
 
           {loading ? (
             <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
               <Loader2 className="animate-spin text-green-600" size={32} />
-              <p className="text-gray-600 font-medium">Carregando artigos...</p>
+              <p className="text-muted-foreground font-medium">Carregando artigos...</p>
             </div>
           ) : error ? (
             <div className="p-12 text-center text-red-600 font-medium">{error}</div>
           ) : posts.length === 0 ? (
             <div className="p-12 text-center space-y-3">
               <FileText size={48} className="mx-auto text-gray-300" />
-              <p className="text-gray-600 font-medium">Nenhum artigo publicado ainda.</p>
+              <p className="text-muted-foreground font-medium">Nenhum artigo publicado ainda.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border/70">
               {posts.map((post) => (
-                <div key={post.id} className="p-6 hover:bg-gray-50 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div key={post.id} className="p-6 hover:bg-background transition flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-3">
                       <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-700">
@@ -304,7 +305,7 @@ export default function BlogPage() {
                         <Clock size={14} /> {post.readingTime || 5} min de leitura
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-gray-900">{post.title}</h3>
+                    <h3 className="text-lg font-bold text-foreground">{post.title}</h3>
                     <p className="text-sm text-gray-500 font-mono">/{post.slug}</p>
                   </div>
 
@@ -312,7 +313,7 @@ export default function BlogPage() {
                     <Link
                       href={`/blog/${post.slug}`}
                       target="_blank"
-                      className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-xs transition flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-foreground font-semibold text-xs transition flex items-center gap-1.5"
                     >
                       Ver Artigo
                     </Link>
