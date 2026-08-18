@@ -627,7 +627,7 @@
 - [x] `/admin/aulas` — Gestão de aulas (seleção de curso, criação com material de apoio, reordenação e suporte a temas)
 - [x] `/admin/atividades` — Gestão de atividades (trilha de auditoria superadmin, filtros de ação, paginação e alto contraste)
 - [x] `/admin/chamada` — Chamada e frequência (filtros avançados, ações em massa, exportação dual CSV/PDF e tokens de tema)
-- [ ] `/admin/medalhas` — Catálogo e concessão de medalhas
+- [x] `/admin/medalhas` — Catálogo e concessão de medalhas (concessão manual, listagem de concedidas e tokens de tema)
 - [ ] `/admin/forum` — Moderação do fórum
 - [ ] `/admin/reviews` — Gestão de avaliações de cursos
 - [ ] `/admin/avaliacoes` — Área administrativa de avaliações
