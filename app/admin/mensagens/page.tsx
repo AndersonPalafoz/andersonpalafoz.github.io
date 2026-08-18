@@ -31,35 +31,35 @@ export default async function AdminContactMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
+    <div className="min-h-screen bg-background py-12 px-4 md:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card text-card-foreground p-8 rounded-2xl shadow-sm border border-border">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Link href="/admin" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
                 <ArrowLeft size={16} /> Voltar ao Painel Admin
               </Link>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <Mail className="text-red-600" size={32} />
               Mensagens do Formulário de Contato
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Visualize e gerencie todas as mensagens enviadas pelos visitantes e alunos através da página de contato.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="px-4 py-2 rounded-xl bg-red-50 text-red-600 font-bold border border-red-100">
+            <span className="px-4 py-2 rounded-xl bg-red-50 text-red-600 font-bold border border-border/70">
               {messages.length} mensagens recebidas
             </span>
           </div>
         </div>
 
         {/* Lista de Mensagens */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+        <div className="bg-card text-card-foreground rounded-2xl border border-border shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <Inbox size={20} className="text-red-600" />
               Caixa de Entrada
             </h2>
@@ -68,24 +68,24 @@ export default async function AdminContactMessagesPage() {
           {messages.length === 0 ? (
             <div className="p-12 text-center space-y-3">
               <Mail size={48} className="mx-auto text-gray-300" />
-              <p className="text-gray-600 font-medium">Nenhuma mensagem de contato recebida até o momento.</p>
-              <p className="text-sm text-gray-400">As mensagens enviadas pelo formulário da página de contato aparecerão aqui.</p>
+              <p className="text-muted-foreground font-medium">Nenhuma mensagem de contato recebida até o momento.</p>
+              <p className="text-sm text-muted-foreground">As mensagens enviadas pelo formulário da página de contato aparecerão aqui.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border/70">
               {messages.map((msg) => (
-                <div key={msg.id} className="p-6 hover:bg-gray-50 transition space-y-4">
+                <div key={msg.id} className="p-6 hover:bg-background transition space-y-4">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold">
                         {msg.name ? msg.name.charAt(0).toUpperCase() : "U"}
                       </div>
                       <div>
-                        <h3 className="font-bold text-gray-900 text-base">{msg.name}</h3>
-                        <p className="text-sm text-gray-500">{msg.email}</p>
+                        <h3 className="font-bold text-foreground text-base">{msg.name}</h3>
+                        <p className="text-sm text-muted-foreground">{msg.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
                         {new Date(msg.createdAt).toLocaleString("pt-BR", {
@@ -102,11 +102,11 @@ export default async function AdminContactMessagesPage() {
                     </div>
                   </div>
 
-                  <div className="bg-gray-50 rounded-xl p-4 border border-gray-200 space-y-2">
+                  <div className="bg-background rounded-xl p-4 border border-border space-y-2">
                     <p className="text-xs font-semibold uppercase tracking-wider text-red-600">
                       Assunto: {msg.subject}
                     </p>
-                    <p className="text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+                    <p className="text-foreground whitespace-pre-wrap text-sm leading-relaxed">
                       {msg.message}
                     </p>
                   </div>
