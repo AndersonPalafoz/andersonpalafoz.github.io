@@ -1,97 +1,195 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Printer, ArrowLeft } from "lucide-react";
+import { AlertCircle, ArrowLeft, Loader2, Printer, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function ReceiptDetailPage() {
-  const params = useParams();
-  const receiptId = params.id || "ORD-98421";
-  const currentDate = new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
-
-  const handlePrint = () => {
-    window.print();
+interface ReceiptData {
+  purchase: {
+    id: number;
+    courseId: number;
+    amount: number | null;
+    currency: string | null;
+    paymentStatus: string | null;
+    checkoutStatus: string | null;
+    createdAt: string;
+    fulfilledAt: string | null;
+    stripeCheckoutSessionId: string;
+    stripePaymentIntentId: string | null;
+    receiptUrl: string | null;
   };
+  course: { id: number; title: string; level: string } | null;
+}
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 py-12">
-      <div className="max-w-2xl w-full bg-white rounded-3xl shadow-sm border border-gray-200 p-8 md:p-12 space-y-8 print:shadow-none print:border-none">
-        <div className="flex justify-between items-start border-b border-gray-200 pb-6">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-red-600 flex items-center justify-center text-white font-bold text-xl">
-              AP
-            </div>
-            <div>
-              <h2 className="font-extrabold text-lg text-gray-900">Anderson Palafoz Platform</h2>
-              <p className="text-xs text-gray-500">Ensino de Inglês & Hub Acadêmico</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-700">
-              Pago & Verificado
-            </span>
-            <p className="text-xs text-gray-400 mt-1 font-mono">Ref: {receiptId}</p>
-          </div>
+function formatAmount(amount: number | null, currency: string | null) {
+  if (amount === null || !currency) return "Valor confirmado pelo Stripe";
+  return (amount / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  });
+}
+
+export default function ReceiptDetailPage() {
+  const params = useParams<{ id: string }>();
+  const receiptId = params.id?.trim() || "";
+  const [data, setData] = useState<ReceiptData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+
+  const loadReceipt = useCallback(async (signal?: AbortSignal) => {
+    if (!receiptId) {
+      setError("Identificador de recibo inválido.");
+      setLoading(false);
+      return;
+    }
+
+    setError(null);
+    setRetrying(true);
+    try {
+      const response = await fetch(`/api/stripe/purchases/${encodeURIComponent(receiptId)}`, {
+        cache: "no-store",
+        signal,
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || "Não foi possível carregar o recibo.");
+      }
+      setData(payload as ReceiptData);
+    } catch (reason) {
+      if (reason instanceof DOMException && reason.name === "AbortError") return;
+      setData(null);
+      setError(reason instanceof Error ? reason.message : "Erro ao carregar recibo.");
+    } finally {
+      if (!signal?.aborted) {
+        setLoading(false);
+        setRetrying(false);
+      }
+    }
+  }, [receiptId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadReceipt(controller.signal);
+    return () => controller.abort();
+  }, [loadReceipt]);
+
+  const handlePrint = () => window.print();
+
+  if (loading) {
+    return (
+      <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4 p-6" role="status" aria-live="polite">
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
+          <Loader2 className="animate-spin" size={32} aria-hidden="true" />
         </div>
+        <p className="text-center text-sm font-semibold">Carregando recibo oficial da transação...</p>
+      </div>
+    );
+  }
 
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold text-gray-900">Recibo de Transação Comercial</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 p-6 rounded-2xl border border-gray-200 text-sm">
-            <div>
-              <p className="text-xs text-gray-500 font-semibold uppercase">Emitente:</p>
-              <p className="font-bold text-gray-900">Anderson Palafoz Educação Ltda</p>
-              <p className="text-xs text-gray-600">Salvador, BA — Brasil</p>
-              <p className="text-xs text-gray-600">suporte@andersonpalafoz.com</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-semibold uppercase">Data da Emissão:</p>
-              <p className="font-bold text-gray-900">{currentDate}</p>
-              <p className="text-xs text-gray-500 font-semibold uppercase mt-2">Processamento:</p>
-              <p className="font-bold text-gray-900">Stripe Secure Gateway</p>
-            </div>
+  if (error || !data) {
+    return (
+      <div className="site-shell min-h-screen bg-background text-foreground flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-3xl bg-card border border-border p-8 text-center shadow-lg space-y-4">
+          <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
+            <AlertCircle size={24} aria-hidden="true" />
           </div>
-        </div>
-
-        <div className="border border-gray-200 rounded-2xl overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold uppercase text-gray-600">
-                <th className="p-4">Item / Descrição</th>
-                <th className="p-4 text-center">Tipo</th>
-                <th className="p-4 text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 text-sm">
-              <tr>
-                <td className="p-4">
-                  <p className="font-bold text-gray-900">English Mastery A1–B2 Complete Suite</p>
-                  <p className="text-xs text-gray-500">Acesso vitalício + materiais e certificado</p>
-                </td>
-                <td className="p-4 text-center">
-                  <span className="px-2 py-1 rounded text-xs font-semibold bg-red-50 text-red-700">Curso Completo</span>
-                </td>
-                <td className="p-4 text-right font-extrabold text-gray-900">R$ 497,00</td>
-              </tr>
-            </tbody>
-          </table>
-          <div className="bg-gray-50 p-4 flex justify-between items-center border-t border-gray-200 font-extrabold text-base">
-            <span>Valor Total Pago:</span>
-            <span className="text-red-600 text-lg">R$ 497,00</span>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 print:hidden">
-          <Button onClick={handlePrint} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold h-12 rounded-xl gap-2">
-            <Printer size={18} /> Imprimir / Salvar PDF
-          </Button>
-          <Link href="/dashboard/compras" className="flex-1">
-            <Button variant="outline" className="w-full h-12 rounded-xl font-semibold border-gray-300 gap-2">
-              <ArrowLeft size={16} /> Voltar às Compras
+          <h1 className="text-xl font-black">Recibo indisponível</h1>
+          <p className="text-sm leading-6 text-muted-foreground">{error || "Não foi possível carregar os dados do recibo."}</p>
+          <div className="flex flex-col gap-2 pt-2 sm:flex-row">
+            <Button onClick={() => void loadReceipt()} disabled={retrying} className="flex-1 bg-red-600 font-bold text-white hover:bg-red-700">
+              {retrying ? <Loader2 className="animate-spin" size={15} aria-hidden="true" /> : null}
+              {retrying ? "Verificando..." : "Tentar novamente"}
             </Button>
-          </Link>
+            <Link href="/dashboard/compras" className="flex-1">
+              <Button variant="outline" className="w-full">Voltar às compras</Button>
+            </Link>
+          </div>
         </div>
       </div>
+    );
+  }
+
+  const issuedAt = new Date(data.purchase.createdAt).toLocaleString("pt-BR", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+  const amount = formatAmount(data.purchase.amount, data.purchase.currency);
+
+  return (
+    <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 py-12">
+      <article className="max-w-2xl w-full rounded-3xl bg-card border border-border p-8 shadow-xl md:p-12 space-y-8 print:shadow-none print:border-none print:p-0">
+        <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-xl font-bold text-white shadow-md">AP</div>
+            <div>
+              <h1 className="text-lg font-extrabold">Anderson Palafoz Platform</h1>
+              <p className="text-xs text-muted-foreground">Recibo de pagamento</p>
+            </div>
+          </div>
+          <div className="text-left sm:text-right">
+            <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-bold uppercase text-green-700 dark:bg-green-950/60 dark:text-green-300">Pago e verificado</span>
+            <p className="mt-1 break-all text-xs text-muted-foreground font-mono">Compra #{data.purchase.id}</p>
+          </div>
+        </header>
+
+        <section className="space-y-4" aria-labelledby="receipt-title">
+          <h2 id="receipt-title" className="text-xl font-bold">Recibo oficial da transação</h2>
+          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-border bg-muted/40 p-6 text-sm md:grid-cols-2">
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Data de emissão</p>
+              <p className="font-bold">{issuedAt}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Processamento</p>
+              <p className="flex items-center gap-1 font-bold text-green-600"><ShieldCheck size={14} aria-hidden="true" /> Stripe Secure Gateway</p>
+            </div>
+          </div>
+        </section>
+
+        <div className="overflow-hidden rounded-2xl border border-border bg-background">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[520px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-border bg-muted/50 text-xs font-bold uppercase text-muted-foreground">
+                  <th className="p-4">Item / descrição</th>
+                  <th className="p-4 text-center">Nível</th>
+                  <th className="p-4 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-sm">
+                <tr>
+                  <td className="p-4">
+                    <p className="font-bold">{data.course?.title || `Curso #${data.purchase.courseId}`}</p>
+                    <p className="text-xs text-muted-foreground">Compra registrada e vinculada à conta autenticada.</p>
+                  </td>
+                  <td className="p-4 text-center">
+                    <span className="rounded bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 dark:bg-red-950 dark:text-red-300">{data.course?.level || "Não informado"}</span>
+                  </td>
+                  <td className="p-4 text-right font-extrabold">{amount}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between border-t border-border bg-muted/40 p-4 text-base font-extrabold">
+            <span>Valor total pago</span>
+            <span className="text-lg text-red-600">{amount}</span>
+          </div>
+        </div>
+
+        <footer className="flex flex-col gap-3 pt-4 print:hidden sm:flex-row">
+          <Button onClick={handlePrint} className="h-12 flex-1 gap-2 rounded-xl bg-red-600 font-semibold text-white shadow-md hover:bg-red-700">
+            <Printer size={18} aria-hidden="true" /> Imprimir / salvar PDF
+          </Button>
+          <Link href="/dashboard/compras" className="flex-1">
+            <Button variant="outline" className="h-12 w-full gap-2 rounded-xl font-semibold">
+              <ArrowLeft size={16} aria-hidden="true" /> Voltar às compras
+            </Button>
+          </Link>
+        </footer>
+      </article>
     </div>
   );
 }
