@@ -579,7 +579,7 @@
 - [x] `/cursos/[id]` — Detalhes de um curso específico (módulos, aulas reais, progresso e matrícula validados)
 - [x] `/cursos/[id]/aulas/[lessonId]` — Aula específica dentro de um curso (reprodução de vídeo, anotações, histórico de speaking e certificado automático validados)
 - [x] `/materiais` — Biblioteca pública de materiais (busca, filtros por nível e categoria, guias de gramática e dados reais validados)
-- [ ] `/materiais/[id]` — Detalhes de um material específico
+- [x] `/materiais/[id]` — Detalhes de um material específico (visualização de PDF/imagem, downloads, comentários, progresso e dados reais validados)
 - [ ] `/blog` — Lista de artigos do blog
 - [ ] `/blog/[slug]` — Artigo específico do blog
 - [ ] `/forum` — Fórum público de discussão
