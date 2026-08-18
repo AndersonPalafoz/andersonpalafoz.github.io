@@ -489,3 +489,5 @@
 
 - [x] Integrar editor de texto rico (rich text) na criação e edição de cursos e materiais para formatação avançada.
 - [x] Implementar e aprimorar o sistema unificado de notas, avaliações, ponderação, pesos, feedback detalhado e histórico acadêmico persistido.
+
+- [x] Implementar seção de comentários persistidos nos materiais dos cursos para dúvidas de alunos e respostas de professores.

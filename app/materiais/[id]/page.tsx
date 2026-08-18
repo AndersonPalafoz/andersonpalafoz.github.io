@@ -3,6 +3,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getMaterialById } from "@/lib/db";
 import { DownloadMaterialButton } from "@/components/download-material-button";
 import { MaterialProgressButton } from "@/components/material-progress-button";
+import { MaterialCommentsSection } from "@/components/material-comments-section";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
@@ -76,6 +77,8 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
                 <p className="text-gray-500">Arquivo ainda não disponível para este material.</p>
               )}
             </div>
+
+            <MaterialCommentsSection materialId={material.id} />
           </div>
         </div>
       </div>
