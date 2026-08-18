@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Mail, Loader2 } from "lucide-react";
@@ -14,6 +14,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get("error");
+    if (!error) return;
+
+    const isGoogleConsentError = ["AccessDenied", "OAuthCallback", "OAuthSignin"].includes(error);
+    toast.error(
+      isGoogleConsentError
+        ? "O Google recusou o consentimento. O login básico não exige Calendar; se a conexão Workspace continuar bloqueada, adicione seu e-mail como usuário de teste no Google Cloud Console."
+        : "Não foi possível concluir a autenticação. Tente novamente ou use e-mail e senha.",
+      { duration: 9000 },
+    );
+    window.history.replaceState({}, "", "/login");
+  }, []);
 
   const handleGoogleSignIn = () => {
     signIn("google", { callbackUrl: "/dashboard/cursos" });

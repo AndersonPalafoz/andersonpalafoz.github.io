@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Calendar, CheckCircle2, Clock, Database, ExternalLink, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
+import { signIn } from "next-auth/react";
 
 type CalendarEvent = {
   id: string;
@@ -83,7 +84,7 @@ export default function CalendarioPage() {
       <section className={`rounded-2xl border p-4 text-sm ${googleConnected ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-200" : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"}`}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3"><span className="mt-0.5">{googleConnected ? <CheckCircle2 className="text-emerald-600" size={19} /> : <ShieldAlert className="text-amber-600" size={19} />}</span><div><p className="font-bold">{googleConnected ? "Google Calendar conectado nesta sessão" : "Google Calendar não conectado nesta sessão"}</p><p className="mt-1 text-xs opacity-80">{googleConnected ? "Os eventos abaixo incluem a resposta real do calendário principal autorizado." : payload?.google.message || "Os eventos do banco continuam disponíveis. Nenhum evento do Google será inventado."}</p></div></div>
-          {!googleConnected && <a href="/api/auth/signin/google?callbackUrl=%2Fdashboard%2Fcalendario" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-current px-3 py-2 text-xs font-black transition hover:bg-black/5"><ExternalLink size={14} /> Conectar Google</a>}
+          {!googleConnected && <button type="button" onClick={() => signIn("google", { callbackUrl: "/dashboard/calendario" }, { prompt: "consent", access_type: "offline", scope: "openid email profile https://www.googleapis.com/auth/calendar.readonly" })} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-current px-3 py-2 text-xs font-black transition hover:bg-black/5"><ExternalLink size={14} /> Autorizar Google Calendar</button>}
         </div>
       </section>
 

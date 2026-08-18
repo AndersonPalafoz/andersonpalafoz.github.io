@@ -16,10 +16,11 @@ export const authOptions: NextAuthOptions = {
       allowDangerousEmailAccountLinking: false,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
+          // Login básico não solicita escopos do Google Workspace.
+          // Calendar/Classroom devem ser autorizados em fluxos explícitos para não bloquear o acesso da conta.
+          prompt: "select_account",
           response_type: "code",
-          scope: "openid email profile https://www.googleapis.com/auth/calendar.readonly"
+          scope: "openid email profile"
         }
       }
     })] : []),
