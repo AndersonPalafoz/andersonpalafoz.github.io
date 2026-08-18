@@ -568,3 +568,86 @@
 - [x] Implementar revogação de acessos pagos concedidos diretamente pelo painel de liberação (`/admin/liberacao-acesso`).
 - [x] Corrigir falha de carregamento no painel de progresso de aulas do professor (`/professor/progresso-aulas`) e aprimorar funcionalidade e visual.
 - [x] Implementar paginação, busca por nome e filtro por categoria/tipo na API da biblioteca de mídia do CMS e atualizar a interface correspondente.
+- [ ] Aprimorar visual, segurança, usabilidade, acessibilidade e responsividade de todas as rotas administrativas e da área do aluno listadas.
+
+## Inventário Completo de Rotas e Auditoria — 18/08/2026
+
+### Rotas Públicas
+- [ ] `/` — Página inicial
+- [ ] `/sobre` — Sobre o professor e a plataforma
+- [ ] `/aulas` — Catálogo público de aulas
+- [ ] `/cursos/[id]` — Detalhes de um curso específico
+- [ ] `/cursos/[id]/aulas/[lessonId]` — Aula específica dentro de um curso
+- [ ] `/materiais` — Biblioteca pública de materiais
+- [ ] `/materiais/[id]` — Detalhes de um material específico
+- [ ] `/blog` — Lista de artigos do blog
+- [ ] `/blog/[slug]` — Artigo específico do blog
+- [ ] `/forum` — Fórum público de discussão
+- [ ] `/faq` — Perguntas frequentes
+- [ ] `/contato` — Formulário de contato
+- [ ] `/cadastro` — Cadastro de usuário
+- [ ] `/login` — Login
+- [ ] `/redefinir-senha` — Redefinição de senha
+- [ ] `/politica-privacidade` — Política de privacidade
+- [ ] `/acesso-negado` — Página de acesso negado
+- [ ] `/acesso-pendente` — Página de acesso pendente
+
+### Área do Aluno (`/dashboard`)
+- [ ] `/dashboard` — Página principal da área do aluno
+- [ ] `/dashboard/perfil` — Perfil, dados pessoais e conquistas
+- [ ] `/dashboard/meus-cursos` — Cursos do aluno
+- [ ] `/dashboard/cursos` — Catálogo ou gestão de cursos acessíveis
+- [ ] `/dashboard/atividades` — Atividades do aluno
+- [ ] `/dashboard/biblioteca` — Biblioteca de materiais do aluno
+- [ ] `/dashboard/calendario` — Calendário acadêmico
+- [ ] `/dashboard/historico` — Histórico acadêmico
+- [ ] `/dashboard/certificados` — Certificados do aluno
+- [ ] `/dashboard/compras` — Histórico de compras
+- [ ] `/dashboard/desejos` — Lista de desejos
+- [ ] `/dashboard/anotacoes` — Anotações pessoais
+- [ ] `/dashboard/notificacoes` — Central de notificações
+- [ ] `/dashboard/trilha` — Trilha de aprendizagem
+- [ ] `/dashboard/ia-teste` — Laboratório de teste acadêmico
+
+### Área do Professor (`/professor`)
+- [ ] `/professor` — Painel principal do professor
+- [ ] `/professor/alunos` — Gestão e consulta de alunos
+- [ ] `/professor/progresso` — Progresso acadêmico dos alunos
+- [ ] `/professor/progresso-aulas` — Progresso de aulas e avaliação de speaking
+- [ ] `/professor/tarefas` — Gestão e correção de tarefas
+- [ ] `/professor/turmas-externas` — Turmas de instituições externas
+- [ ] `/professor/boletim/[studentId]` — Boletim individual de um aluno
+
+### Área Administrativa (`/admin`)
+- [ ] `/admin` — Dashboard administrativo
+- [ ] `/admin/usuarios` — Gestão de usuários
+- [ ] `/admin/cursos` — Gestão de cursos
+- [ ] `/admin/cursos/[id]/modulos` — Módulos de um curso específico
+- [ ] `/admin/materiais` — Gestão de materiais
+- [ ] `/admin/aulas` — Gestão de aulas
+- [ ] `/admin/atividades` — Gestão de atividades
+- [ ] `/admin/chamada` — Chamada e frequência
+- [ ] `/admin/medalhas` — Catálogo e concessão de medalhas
+- [ ] `/admin/forum` — Moderação do fórum
+- [ ] `/admin/reviews` — Gestão de avaliações de cursos
+- [ ] `/admin/avaliacoes` — Área administrativa de avaliações
+- [ ] `/admin/matriculas` — Gestão de matrículas
+- [ ] `/admin/mensagens` — Gestão de mensagens
+- [ ] `/admin/artigos` — Gestão de artigos
+- [ ] `/admin/blog` — Gestão do blog
+- [ ] `/admin/cms` — Sistema de gerenciamento de conteúdo
+- [ ] `/admin/relatorios` — Relatórios administrativos gerais
+- [ ] `/admin/relatorios-academicos` — Relatórios acadêmicos
+- [ ] `/admin/auditoria` — Auditoria de acessos e atividades
+- [ ] `/admin/cupons` — Gestão de cupons e descontos Stripe
+- [ ] `/admin/liberacao-acesso` — Concessão e revogação de acesso pago pelo super administrador
+
+### Pagamentos e Layouts Auxiliares
+- [ ] `/pagamento/sucesso` — Confirmação de pagamento concluído
+- [ ] `/pagamento/recibo/[id]` — Recibo de uma compra específica
+- [ ] `app/admin/layout.tsx` — Layout protegido do painel administrativo
+- [ ] `app/dashboard/layout.tsx` — Layout protegido da área do aluno e docente
+
+- [x] Consolidar o documento de Design System e o cronograma modular de entrega para Admin, Professor e Aluno (`docs/design-system-and-rollout-schedule.md`).
+
+- [x] Consolidar a especificação técnica detalhada para os módulos de relatórios e auditoria (`docs/admin-reports-and-audit-specification.md`).
