@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Trash2, Edit2, Plus, ArrowLeft, Loader2, FileText, Clock, Tag } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+import BlogMarkdownPreview from "@/components/blog-markdown-preview";
 
 interface BlogPost {
   id: number;
@@ -138,9 +139,9 @@ export default function BlogPage() {
       }
 
       setPosts(posts.filter((p) => p.id !== id));
-      alert("Postagem deletada com sucesso!");
+      toast.success("Postagem deletada com sucesso.");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao deletar postagem");
+      toast.error(err instanceof Error ? err.message : "Erro ao deletar postagem.");
     }
   };
 
@@ -184,6 +185,7 @@ export default function BlogPage() {
               {editingId ? "Editar Artigo" : "Criar Novo Artigo"}
             </h2>
 
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(22rem,0.9fr)]">
             <form onSubmit={handleSavePost} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -270,6 +272,8 @@ export default function BlogPage() {
                 </button>
               </div>
             </form>
+            <BlogMarkdownPreview markdown={formData.content} title={formData.title} category={formData.category} readingTime={formData.readingTime} />
+            </div>
           </div>
         )}
 

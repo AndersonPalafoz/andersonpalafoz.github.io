@@ -5,7 +5,8 @@ import { db } from "@/lib/db";
 import { users, courses, enrollments, progress } from "@/drizzle/schema";
 import { desc } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const search = new URL(request.url).searchParams.get("search")?.trim().slice(0, 100).toLowerCase() || "";
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user || session.user.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -62,7 +63,14 @@ export async function GET() {
       };
     }).sort((a, b) => b.enrollments - a.enrollments);
 
-    return NextResponse.json({ studentReports, teacherReports, courseReports, generatedAt: new Date().toISOString() });
+    const matchesSearch = (value: string) => !search || value.toLowerCase().includes(search);
+    return NextResponse.json({
+      studentReports: studentReports.filter((item) => matchesSearch(`${item.name} ${item.email || ""}`)),
+      teacherReports: teacherReports.filter((item) => matchesSearch(`${item.name} ${item.email || ""}`)),
+      courseReports: courseReports.filter((item) => matchesSearch(`${item.title} ${item.level}`)),
+      generatedAt: new Date().toISOString(),
+      search,
+    });
   } catch (error) {
     console.error("Error fetching detailed academic reports:", error);
     return NextResponse.json({ error: "Não foi possível carregar os relatórios detalhados." }, { status: 500 });
