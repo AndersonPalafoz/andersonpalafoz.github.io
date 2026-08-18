@@ -513,3 +513,16 @@
 - [x] Exibir níveis em formato paralelo (ex: Básico [A1-A2], Intermediário [B1-B2], Avançado [C1-C2]) em todo o site.
 - [x] Revisar e padronizar a nomenclatura de níveis (Básico [A1-A2], Intermediário [B1-B2], Avançado [C1-C2]) em todas as seções, filtros e catálogos do site.
 - [x] Implementar sincronização real e persistida na página do calendário (`/dashboard/calendario`) utilizando dados acadêmicos reais do banco e integração com Google Calendar.
+
+## Auditoria de Dados Reais do Dashboard e Subrotas — 18/08/2026
+- [x] Auditar `/dashboard` e todas as subrotas do aluno para identificar mocks, dados estáticos, placeholders e chamadas incompletas.
+- [x] Substituir dados simulados por consultas persistidas e isoladas pelo usuário autenticado, com estados honestos de vazio, carregamento e erro.
+- [x] Validar e corrigir as integrações reais com Google Calendar, Google Classroom e Google Drive sem inventar eventos, notas, turmas ou arquivos.
+- [x] Garantir que sincronizações sejam idempotentes, auditáveis e nunca exibam sucesso quando a integração não foi executada.
+- [x] Criar ou atualizar testes para todas as rotas alteradas e validar build de produção do Next.js 15.
+- [x] Revisar visualmente todas as páginas do dashboard em desktop e mobile após a auditoria.
+- [x] Atualizar este checklist com a cobertura final e salvar um checkpoint revisável.
+
+## Regra reforçada de dados reais no dashboard — 18/08/2026
+- [x] Garantir que todos os dados exibidos no dashboard e em suas subrotas venham exclusivamente do banco de dados ou de respostas reais das integrações Google, sem localStorage acadêmico, mocks ou valores padrão.
+- [x] Remover qualquer status de sucesso, conquista, recomendação, progresso ou pagamento que não tenha confirmação persistida ou resposta real da integração.

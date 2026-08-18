@@ -18,7 +18,8 @@ export const authOptions: NextAuthOptions = {
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code"
+          response_type: "code",
+          scope: "openid email profile https://www.googleapis.com/auth/calendar.readonly"
         }
       }
     })] : []),
@@ -116,6 +117,12 @@ export const authOptions: NextAuthOptions = {
 
       if (account) {
         token.provider = account.provider;
+        if (account.provider === "google") {
+          token.accessToken = account.access_token;
+          token.refreshToken = account.refresh_token;
+          token.accessTokenExpires = account.expires_at ? account.expires_at * 1000 : undefined;
+          token.scope = account.scope;
+        }
       }
 
       if (token.email) {

@@ -1,51 +1,17 @@
-'use client';
+"use client";
 
 import { useState } from "react";
-import { Sparkles, RefreshCw, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink, ShieldAlert } from "lucide-react";
 
 export function ClassroomImportAction() {
-  const [isImporting, setIsImporting] = useState(false);
-  const [imported, setImported] = useState(false);
-
-  const handleImport = () => {
-    setIsImporting(true);
-    setTimeout(() => {
-      setIsImporting(false);
-      setImported(true);
-      toast.success("Turmas e atividades do Google Classroom importadas com sucesso!");
-    }, 1800);
-  };
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
-    <div className="surface-card p-6 sm:p-8 text-center space-y-4 border-dashed border-2 border-red-200 dark:border-red-900/50 bg-red-50/30 dark:bg-red-950/20">
-      <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400 mx-auto flex items-center justify-center">
-        <Sparkles size={24} />
-      </div>
-      <div className="space-y-1">
-        <h3 className="text-base font-black text-foreground">Importar do Google Classroom</h3>
-        <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed">
-          Sua conta está sem matrículas iniciais. Clique abaixo para sincronizar automaticamente suas turmas, prazos e atividades reais vinculadas ao Google Sala de Aula.
-        </p>
-      </div>
-
-      <div className="pt-2">
-        {!imported ? (
-          <button
-            type="button"
-            onClick={handleImport}
-            disabled={isImporting}
-            className="bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 rounded-xl text-xs transition shadow-sm inline-flex items-center gap-2 disabled:opacity-50"
-          >
-            {isImporting ? <RefreshCw size={15} className="animate-spin" /> : <Sparkles size={15} />}
-            <span>{isImporting ? "Sincronizando com o Classroom..." : "Importar Turmas e Atividades Reais"}</span>
-          </button>
-        ) : (
-          <div className="inline-flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-4 py-2 rounded-xl border border-emerald-200 dark:border-emerald-900">
-            <CheckCircle2 size={16} /> <span>Sincronização concluída! Suas turmas foram carregadas.</span>
-          </div>
-        )}
-      </div>
-    </div>
+    <section className="surface-card space-y-4 border-2 border-dashed border-amber-200 bg-amber-50/30 p-6 text-center dark:border-amber-900/50 dark:bg-amber-950/20 sm:p-8">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"><ShieldAlert size={24} /></div>
+      <div className="space-y-1"><h3 className="text-base font-black text-foreground">Nenhuma matrícula importada do Google Classroom</h3><p className="mx-auto max-w-md text-xs leading-relaxed text-muted-foreground">A conta está sem matrículas locais e não há uma conexão Classroom confirmada para importar dados. Nenhuma turma ou atividade será criada automaticamente.</p></div>
+      <button type="button" onClick={() => setShowDetails((value) => !value)} className="inline-flex items-center gap-2 rounded-xl border border-amber-300 px-4 py-2.5 text-xs font-black text-amber-800 transition hover:bg-amber-100 dark:border-amber-800 dark:text-amber-200 dark:hover:bg-amber-950/40">{showDetails ? "Ocultar detalhes" : "Ver status da integração"}</button>
+      {showDetails && <div className="mx-auto max-w-lg rounded-2xl border border-border bg-background p-4 text-left text-xs leading-5 text-muted-foreground"><p>O Google Classroom exige escopos OAuth específicos que não estão disponíveis nesta sessão. Para evitar dados incorretos, a plataforma mantém este estado vazio até uma autorização real ser concluída.</p><a href="/api/auth/signin/google?callbackUrl=%2Fdashboard" className="mt-3 inline-flex items-center gap-2 font-bold text-primary hover:underline"><ExternalLink size={14} /> Autorizar novamente com Google</a></div>}
+    </section>
   );
 }

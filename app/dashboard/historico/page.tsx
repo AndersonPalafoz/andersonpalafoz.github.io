@@ -119,6 +119,18 @@ export default function HistoricoAcademicoPage() {
   }, [filteredGrades]);
 
   const chartTimeline = useMemo(() => mergeAcademicTimelines(filteredTimeline, classTimeline), [filteredTimeline, classTimeline]);
+  const semesterOptions = useMemo(() => {
+    const keys = new Set<string>();
+    for (const point of timeline) if (point.monthKey) {
+      const [year, monthValue] = point.monthKey.split("-");
+      keys.add(`${year}.${Number(monthValue) <= 6 ? "1" : "2"}`);
+    }
+    for (const grade of grades) if (grade.submittedAt) {
+      const date = new Date(grade.submittedAt);
+      keys.add(`${date.getFullYear()}.${date.getMonth() + 1 <= 6 ? "1" : "2"}`);
+    }
+    return Array.from(keys).sort((a, b) => b.localeCompare(a));
+  }, [timeline, grades]);
 
   const presenceRate = useMemo(() => {
     if (!attendance.length) return "—";
@@ -256,10 +268,10 @@ export default function HistoricoAcademicoPage() {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <p className="text-xs font-bold uppercase tracking-widest text-red-600 flex items-center gap-1.5">
-            <Cloud size={14} className="text-red-600" /> Sincronizado com Google Workspace & Classroom
+            <Cloud size={14} className="text-red-600" /> Registros acadêmicos persistidos
           </p>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 dark:text-white">Histórico Acadêmico e Relatórios</h1>
-          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-gray-500 dark:text-gray-400">Acompanhe notas, frequência por disciplina, alertas inteligentes e exporte relatórios oficiais em PDF.</p>
+          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-gray-500 dark:text-gray-400">Acompanhe notas e frequência usando somente registros acadêmicos reais da sua conta.</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
@@ -270,10 +282,8 @@ export default function HistoricoAcademicoPage() {
               onChange={(e) => setSelectedSemester(e.target.value)}
               className="bg-transparent text-xs font-bold text-gray-800 dark:text-gray-200 focus:outline-none"
             >
-              <option value="all">Todos os Semestres</option>
-              <option value="2026.1">2026.1 (Jan–Jun)</option>
-              <option value="2026.2">2026.2 (Jul–Dez)</option>
-              <option value="2025.2">2025.2 (Jul–Dez)</option>
+              <option value="all">Todos os semestres registrados</option>
+              {semesterOptions.map((semester) => <option key={semester} value={semester}>{semester}</option>)}
             </select>
           </div>
 
@@ -287,7 +297,7 @@ export default function HistoricoAcademicoPage() {
         </div>
       </header>
 
-      {/* Alerta Inteligente de Desempenho */}
+      {/* Resumo calculado a partir dos registros carregados */}
       <div className={`p-4 rounded-2xl border flex items-center gap-3.5 shadow-xs ${
         performanceAlert.type === "success" ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200" :
         performanceAlert.type === "warning" ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200" :
@@ -297,7 +307,7 @@ export default function HistoricoAcademicoPage() {
          performanceAlert.type === "warning" ? <AlertTriangle size={20} className="text-amber-600 shrink-0" /> :
          <TrendingUp size={20} className="text-blue-600 shrink-0" />}
         <div className="text-xs font-bold">
-          <span className="uppercase tracking-wider block text-[10px] opacity-75 mb-0.5">Alerta Preditivo de IA</span>
+          <span className="uppercase tracking-wider block text-[10px] opacity-75 mb-0.5">Resumo do desempenho registrado</span>
           {performanceAlert.text}
         </div>
       </div>
