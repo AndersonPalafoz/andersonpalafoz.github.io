@@ -18,6 +18,9 @@ describe("Public blog usability contract", () => {
     expect(browser).toContain("aria-pressed");
     expect(browser).toContain("aria-live");
     expect(browser).toContain("Limpar filtros");
+    expect(browser).toContain("Carregar mais");
+    expect(browser).toContain("Carregando...");
+    expect(browser).toContain("visibleCount");
     expect(browser).toContain("/blog/${article.slug}");
   });
 
