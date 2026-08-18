@@ -79,3 +79,17 @@ export async function fetchGoogleWorkspaceMetadata(fileUrl: string) {
     lastSyncedAt: new Date().toISOString(),
   };
 }
+
+/**
+ * Filtra listagens de arquivos do Google Drive para retornar apenas aqueles
+ * associados à plataforma (contendo "Anderson", "Palafoz", "Inglês", "Material" ou "Curso")
+ * evitando varrer o Drive pessoal inteiro do usuário.
+ */
+export function filterPlatformDriveFiles(files: Array<{ id: string; name?: string; mimeType?: string; description?: string }>) {
+  if (!Array.isArray(files)) return [];
+  const keywords = ["anderson", "palafoz", "inglês", "ingles", "material", "curso", "aula", "simal", "ufba", "megaworks", "ws", "worksheet"];
+  return files.filter((file) => {
+    const text = `${file.name || ""} ${file.description || ""}`.toLowerCase();
+    return keywords.some((kw) => text.includes(kw));
+  });
+}

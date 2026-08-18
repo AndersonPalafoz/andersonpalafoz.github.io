@@ -90,7 +90,7 @@ export async function fetchGoogleCalendarEvents(accessToken: string, timeMin: Da
     throw new GoogleCalendarError("API_ERROR", errorMsg || "Não foi possível consultar o Google Calendar.");
   }
 
-  return (payload?.items || []).flatMap((item) => {
+  const rawEvents = (payload?.items || []).flatMap((item) => {
     const startData = (item.start || {}) as { dateTime?: string; date?: string };
     const endData = (item.end || {}) as { dateTime?: string; date?: string };
     const start = startData.dateTime || startData.date;
@@ -108,4 +108,13 @@ export async function fetchGoogleCalendarEvents(accessToken: string, timeMin: Da
       source: "google" as const,
     }];
   });
+
+  // Filtrar apenas eventos da plataforma Anderson Palafoz ou termos educacionais relevantes
+  const platformKeywords = ["anderson", "palafoz", "inglês", "ingles", "aula", "curso", "tarefa", "quiz", "speaking", "simal", "ufba", "megaworks", "deadline", "prazo"];
+  const filtered = rawEvents.filter((ev) => {
+    const text = `${ev.title} ${ev.description || ""} ${ev.location || ""}`.toLowerCase();
+    return platformKeywords.some((kw) => text.includes(kw)) || text.includes("[ap]") || text.includes("#andersonpalafoz");
+  });
+
+  return filtered;
 }
