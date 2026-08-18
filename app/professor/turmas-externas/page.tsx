@@ -241,7 +241,12 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao excluir turma.");
-      toast.success("Turma externa excluída com sucesso.");
+      const summary = data.deletedSummary;
+      if (summary) {
+        toast.success(`Turma '${summary.className}' excluída. Removidos: ${summary.students} aluno(s), ${summary.attendance} chamada(s), ${summary.grades} nota(s) e ${summary.materials} material(is).`);
+      } else {
+        toast.success("Turma externa excluída com sucesso.");
+      }
       void loadClasses();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir turma.");

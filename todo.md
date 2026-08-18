@@ -665,4 +665,4 @@
 - [ ] Pagamento: criar contratos Vitest para sessão confirmada, sessão ausente, recibo autorizado e recibo não autorizado.
 - [ ] Pagamento: executar check, testes e build de produção e salvar checkpoint do módulo.
 
-- [ ] Permitir que o professor exclua turmas externas com confirmação, validação de dependências e registro de auditoria.
+- [x] Permitir que o professor exclua turmas externas com confirmação, validação de dependências e registro de auditoria.
