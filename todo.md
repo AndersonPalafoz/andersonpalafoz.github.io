@@ -491,3 +491,7 @@
 - [x] Implementar e aprimorar o sistema unificado de notas, avaliações, ponderação, pesos, feedback detalhado e histórico acadêmico persistido.
 
 - [x] Implementar seção de comentários persistidos nos materiais dos cursos para dúvidas de alunos e respostas de professores.
+
+- [x] Adicionar suporte a edição e exclusão de comentários pelo próprio autor, além de marcação de dúvida resolvida por professores e administradores.
+
+- [x] Aprimorar robustez, usabilidade e relatórios dos sistemas de cursos externos, controle de chamadas (frequência) e lançamento de notas.
