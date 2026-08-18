@@ -501,3 +501,5 @@
 - [x] Aprimorar e unificar o sistema de avaliações, rubricas, pesos, notas e feedbacks para cursos internos e externos.
 
 - [x] Implementar sistema para alunos responderem a feedbacks de avaliações e solicitarem revisão formal de notas com análise pelos professores.
+
+- [x] Permitir que alunos anexem arquivos ou imagens como evidência ao solicitar revisão de nota, com upload seguro e exibição para o professor.
