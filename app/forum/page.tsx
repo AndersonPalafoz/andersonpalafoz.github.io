@@ -1,20 +1,25 @@
 'use client';
 
-import { useState } from "react";
-import { MessageSquare, ThumbsUp, Search, PlusCircle, Tag, Check, Mic, Play, Square, Clock } from "lucide-react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Clock, MessageSquare, PlusCircle, Search, Tag, ThumbsUp } from "lucide-react";
 
-interface DiscussionPost {
-  id: string;
+type ForumPost = {
+  id: number;
   title: string;
   author: string;
   category: string;
   content: string;
-  audioUrl?: string;
+  audioUrl: string | null;
   likes: number;
   replies: number;
   createdAt: string;
-  status: string;
+  status: "approved" | "resolved";
+};
+
+const fallbackCategories = ["Todos", "Gramática", "Pronúncia", "Dicas", "Vocabulário"];
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 export default function ForumPage() {
@@ -24,330 +29,126 @@ export default function ForumPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("Gramática");
   const [newContent, setNewContent] = useState("");
-  
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioRecorded, setAudioRecorded] = useState(false);
-  const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
+  const [categories, setCategories] = useState(fallbackCategories);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [likingId, setLikingId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const [posts, setPosts] = useState<DiscussionPost[]>([
-    {
-      id: "1",
-      title: "Como diferenciar 'Present Perfect' de 'Simple Past' de vez?",
-      author: "Mariana Souza",
-      category: "Gramática",
-      content: "Sempre me confundo quando usar 'I have visited' ou 'I visited last year'. Alguém tem uma dica prática?",
-      likes: 14,
-      replies: 5,
-      createdAt: "Há 2 horas",
-      status: "Respondido"
-    },
-    {
-      id: "2",
-      title: "Dica de ouro: expressões idiomáticas para usar no trabalho",
-      author: "Anderson Palafoz",
-      category: "Dicas",
-      content: "Pessoal, 'to touch base' e 'to keep me in the loop' são fundamentais em reuniões corporativas em inglês. Ouça meu exemplo de pronúncia abaixo!",
-      audioUrl: "sample-audio.webm",
-      likes: 32,
-      replies: 9,
-      createdAt: "Há 1 dia",
-      status: "Avaliado pelo Professor"
-    },
-    {
-      id: "3",
-      title: "Dúvida sobre pronúncia do 'th' (voiced vs unvoiced)",
-      author: "Lucas Mendes",
-      category: "Pronúncia",
-      content: "Como posicionar a língua corretamente em 'think' versus 'that'? Sinto que o som sai abafado.",
-      audioUrl: "sample-audio-2.webm",
-      likes: 8,
-      replies: 3,
-      createdAt: "Há 2 dias",
-      status: "Aguardando resposta (Prazo: até 48h)"
+  const loadPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams();
+      if (searchTerm.trim()) params.set("search", searchTerm.trim());
+      if (selectedCategory !== "Todos") params.set("category", selectedCategory);
+      const response = await fetch(`/api/forum?${params.toString()}`, { cache: "no-store" });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "Não foi possível carregar o fórum.");
+      setPosts(body.posts || []);
+      if (Array.isArray(body.categories) && body.categories.length) setCategories(["Todos", ...body.categories]);
+    } catch (cause) {
+      setPosts([]);
+      setError(cause instanceof Error ? cause.message : "Não foi possível carregar os tópicos persistidos.");
+    } finally {
+      setLoading(false);
     }
-  ]);
+  }, [searchTerm, selectedCategory]);
 
-  const categories = ["Todos", "Gramática", "Pronúncia", "Dicas", "Vocabulário"];
+  useEffect(() => {
+    const timer = window.setTimeout(loadPosts, 180);
+    return () => window.clearTimeout(timer);
+  }, [loadPosts]);
 
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) || post.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todos" || post.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const visiblePosts = useMemo(() => posts, [posts]);
 
-  const handleLike = (id: string) => {
-    setPosts(posts.map(p => p.id === id ? { ...p, likes: p.likes + 1 } : p));
-  };
+  async function handleLike(postId: number) {
+    try {
+      setLikingId(postId);
+      const response = await fetch(`/api/forum/${postId}/like`, { method: "POST" });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "Não foi possível atualizar a curtida.");
+      setPosts((current) => current.map((post) => post.id === postId ? { ...post, likes: body.likes } : post));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível atualizar a curtida.");
+    } finally {
+      setLikingId(null);
+    }
+  }
 
-  const startRecording = () => {
-    setIsRecording(true);
-    setAudioRecorded(false);
-    setTimeout(() => {
-      setIsRecording(false);
-      setAudioRecorded(true);
-      toast.success("Clipe de áudio gravado com sucesso! Pronto para envio.");
-    }, 2500);
-  };
-
-  const stopRecording = () => {
-    setIsRecording(false);
-    setAudioRecorded(true);
-    toast.success("Gravação concluída.");
-  };
-
-  const handleCreatePost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle.trim() || !newContent.trim()) return;
-
-    const created: DiscussionPost = {
-      id: Date.now().toString(),
-      title: newTitle,
-      author: "Você (Aluno)",
-      category: newCategory,
-      content: newContent,
-      audioUrl: audioRecorded ? "user-recording.webm" : undefined,
-      likes: 1,
-      replies: 0,
-      createdAt: "Agora mesmo",
-      status: "Aguardando resposta (Prazo: até 48h)"
-    };
-
-    setPosts([created, ...posts]);
-    setNewTitle("");
-    setNewContent("");
-    setAudioRecorded(false);
-    setIsModalOpen(false);
-    setToastMessage("Tópico enviado com sucesso! O professor responderá em até 48 horas.");
-    setTimeout(() => setToastMessage(null), 4000);
-  };
-
-  const togglePlayAudio = (id: string) => {
-    setPlayingAudioId(playingAudioId === id ? null : id);
-  };
+  async function handleCreatePost(event: React.FormEvent) {
+    event.preventDefault();
+    try {
+      setSubmitting(true);
+      setError(null);
+      const response = await fetch("/api/forum", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle, category: newCategory, content: newContent }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "Não foi possível publicar o tópico.");
+      setNewTitle("");
+      setNewContent("");
+      setIsModalOpen(false);
+      setNotice("Tópico enviado para moderação. Ele aparecerá publicamente após aprovação.");
+      await loadPosts();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Não foi possível publicar o tópico.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10 space-y-8 font-sans">
-      {toastMessage && (
-        <aside aria-label="Notificação" className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 border border-slate-800">
-          <Check size={16} className="text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </aside>
-      )}
-
+    <div className="page-container py-8 sm:py-10 space-y-8">
       <div className="bg-gradient-to-r from-red-600 to-slate-900 rounded-3xl p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider">
-            <MessageSquare size={15} /> Comunidade Acadêmica
-          </div>
+          <div className="inline-flex items-center gap-2 bg-white/20 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider"><MessageSquare size={15} /> Comunidade Acadêmica</div>
           <h1 className="text-3xl font-black tracking-tight">Fórum de Discussão e Prática</h1>
-          <p className="text-white/90 text-sm max-w-xl leading-relaxed">
-            Tire dúvidas, compartilhe dicas e envie clipes de áudio para prática. O professor responderá e avaliará as submissões em até 48 horas.
-          </p>
+          <p className="text-white/90 text-sm max-w-xl leading-relaxed">Tire dúvidas e compartilhe dicas. Tópicos enviados passam por moderação antes de serem publicados.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsModalOpen(true)}
-          className="bg-white text-red-600 hover:bg-slate-100 font-black text-xs px-6 py-3.5 rounded-2xl shadow-lg transition flex items-center gap-2 shrink-0"
-        >
-          <PlusCircle size={17} /> Nova Discussão
-        </button>
+        <button type="button" onClick={() => setIsModalOpen(true)} className="bg-white text-red-600 hover:bg-slate-100 font-black text-xs px-6 py-3.5 rounded-2xl shadow-lg transition flex items-center gap-2 shrink-0"><PlusCircle size={17} /> Nova Discussão</button>
       </div>
+
+      {notice && <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800">{notice}</div>}
+      {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-800">{error}</div>}
 
       <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div className="relative w-full md:w-96">
+        <label className="relative w-full md:w-96">
+          <span className="sr-only">Buscar tópicos</span>
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input
-            type="text"
-            placeholder="Buscar dúvidas, termos ou dicas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600 shadow-xs"
-          />
-        </div>
-
+          <input type="search" placeholder="Buscar dúvidas, termos ou dicas..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="w-full bg-background border border-border rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-foreground focus:outline-red-600" />
+        </label>
         <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${selectedCategory === cat ? "bg-red-600 text-white shadow-sm" : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"}`}
-            >
-              {cat}
-            </button>
+          {categories.map((category) => <button key={category} type="button" onClick={() => setSelectedCategory(category)} className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${selectedCategory === category ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}>{category}</button>)}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="surface-card p-12 text-center text-sm text-muted-foreground">Carregando tópicos persistidos…</div>
+      ) : visiblePosts.length === 0 ? (
+        <div className="surface-card p-12 text-center space-y-2"><p className="text-sm font-bold text-foreground">Nenhum tópico publicado ainda.</p><p className="text-xs text-muted-foreground">Se você tem uma dúvida, publique uma nova discussão. Ela será analisada pela moderação.</p></div>
+      ) : (
+        <div className="grid gap-4">
+          {visiblePosts.map((post) => (
+            <article key={post.id} className="surface-card p-6 space-y-4">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div><p className="text-xs font-bold text-foreground">{post.author}</p><p className="text-[10px] text-muted-foreground">{formatDate(post.createdAt)}</p></div>
+                <div className="flex items-center gap-2"><span className="rounded-full bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 text-[10px] font-bold flex items-center gap-1"><Clock size={11} /> {post.status === "resolved" ? "Resolvido" : "Publicado"}</span><span className="rounded-full bg-red-50 text-red-600 border border-red-200 px-3 py-1 text-[10px] font-bold flex items-center gap-1.5"><Tag size={12} /> {post.category}</span></div>
+              </div>
+              <h2 className="text-base font-black text-foreground">{post.title}</h2>
+              <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{post.content}</p>
+              {post.audioUrl && <audio controls preload="none" src={post.audioUrl} className="w-full" aria-label={`Áudio do tópico ${post.title}`} />}
+              <div className="flex items-center gap-6 pt-2 border-t border-border text-xs font-bold text-muted-foreground"><button type="button" disabled={likingId === post.id} onClick={() => handleLike(post.id)} className="flex items-center gap-1.5 hover:text-red-600 disabled:opacity-60"><ThumbsUp size={15} /> {post.likes} Curtidas</button><span className="flex items-center gap-1.5"><MessageSquare size={15} /> {post.replies} Respostas</span></div>
+            </article>
           ))}
         </div>
-      </div>
-
-      <div className="grid gap-4">
-        {filteredPosts.map((post) => (
-          <div key={post.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-xs hover:border-red-300 transition space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-full bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 font-black text-xs flex items-center justify-center">
-                  {post.author.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-slate-900 dark:text-white">{post.author}</p>
-                  <p className="text-[10px] text-slate-500">{post.createdAt}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 px-2.5 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
-                  <Clock size={11} /> {post.status}
-                </span>
-                <span className="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200/60 px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1.5">
-                  <Tag size={12} /> {post.category}
-                </span>
-              </div>
-            </div>
-
-            <h2 className="text-base font-black text-slate-900 dark:text-white">{post.title}</h2>
-            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{post.content}</p>
-
-            {post.audioUrl && (
-              <div className="space-y-3">
-                <div className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 p-3.5 rounded-xl flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => togglePlayAudio(post.id)}
-                    className="h-10 w-10 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md hover:bg-red-700 transition shrink-0"
-                  >
-                    {playingAudioId === post.id ? <Square size={16} /> : <Play size={16} className="ml-0.5" />}
-                  </button>
-                  <div className="flex-1 space-y-1">
-                    <p className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
-                      <Mic size={14} className="text-red-600" /> Clipe de Pronúncia em Áudio enviado para análise
-                    </p>
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                      <div className={`bg-red-600 h-full ${playingAudioId === post.id ? "w-full transition-all duration-3000" : "w-1/3"}`} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs font-bold text-slate-500">
-              <button
-                type="button"
-                onClick={() => handleLike(post.id)}
-                className="flex items-center gap-1.5 hover:text-red-600 transition"
-              >
-                <ThumbsUp size={15} /> {post.likes} Curtidas
-              </button>
-              <span className="flex items-center gap-1.5">
-                <MessageSquare size={15} /> {post.replies} Respostas do Professor / Alunos
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <MessageSquare className="text-red-600" size={18} /> Nova Discussão ou Dúvida
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white font-black"
-              >
-                ✕
-              </button>
-            </div>
-
-            <form onSubmit={handleCreatePost} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Título da Dúvida ou Dica</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Como pronunciar corretamente 'comfortable'?"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
-                <select
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600"
-                >
-                  <option value="Gramática">Gramática</option>
-                  <option value="Pronúncia">Pronúncia</option>
-                  <option value="Dicas">Dicas</option>
-                  <option value="Vocabulário">Vocabulário</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Conteúdo</label>
-                <textarea
-                  rows={4}
-                  required
-                  placeholder="Escreva sua dúvida ou compartilhe sua dica..."
-                  value={newContent}
-                  onChange={(e) => setNewContent(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600 resize-none"
-                />
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                    <Mic size={15} className="text-red-600" /> Anexar Clipe de Áudio (Opcional)
-                  </span>
-                  {audioRecorded && <span className="text-[10px] font-bold text-emerald-600">Áudio pronto</span>}
-                </div>
-
-                <div className="flex items-center gap-2">
-                  {!isRecording ? (
-                    <button
-                      type="button"
-                      onClick={startRecording}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition"
-                    >
-                      <Mic size={14} /> Gravar Áudio
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={stopRecording}
-                      className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-pulse"
-                    >
-                      <Square size={13} /> Parar Gravação
-                    </button>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-500">O professor ouvirá o áudio e responderá em até 48 horas.</p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl text-xs font-bold transition shadow-sm"
-                >
-                  Publicar Discussão
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
       )}
+
+      {isModalOpen && <div className="fixed inset-0 z-50 bg-slate-950/60 flex items-center justify-center p-4"><div className="bg-background border border-border rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6"><div className="flex items-center justify-between border-b border-border pb-4"><h3 className="text-lg font-black text-foreground">Nova Discussão ou Dúvida</h3><button type="button" onClick={() => setIsModalOpen(false)} className="text-muted-foreground hover:text-foreground">Fechar</button></div><form onSubmit={handleCreatePost} className="space-y-4"><input type="text" required minLength={3} maxLength={200} placeholder="Título da dúvida ou dica" value={newTitle} onChange={(event) => setNewTitle(event.target.value)} className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm font-bold text-foreground" /><select value={newCategory} onChange={(event) => setNewCategory(event.target.value)} className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm font-bold text-foreground">{categories.filter((category) => category !== "Todos").map((category) => <option key={category} value={category}>{category}</option>)}</select><textarea rows={5} required minLength={3} maxLength={10000} placeholder="Escreva sua dúvida ou compartilhe sua dica..." value={newContent} onChange={(event) => setNewContent(event.target.value)} className="w-full bg-muted border border-border rounded-xl px-4 py-3 text-sm font-bold text-foreground resize-none" /><p className="text-xs text-muted-foreground">O envio exige uma sessão autenticada e será encaminhado para moderação.</p><div className="flex justify-end gap-3 pt-3 border-t border-border"><button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-xl text-xs font-bold text-muted-foreground hover:bg-muted">Cancelar</button><button type="submit" disabled={submitting} className="bg-red-600 disabled:opacity-60 text-white px-6 py-2 rounded-xl text-xs font-bold">{submitting ? "Enviando…" : "Enviar para moderação"}</button></div></form></div></div>}
     </div>
   );
 }

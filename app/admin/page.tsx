@@ -83,6 +83,7 @@ export default function AdminDashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -94,12 +95,14 @@ export default function AdminDashboardPage() {
     async function fetchStats() {
       try {
         setLoading(true);
-        const res = await fetch("/api/admin/stats");
-        if (!res.ok) throw new Error("Failed to fetch admin stats");
+        setError(null);
+        const res = await fetch("/api/admin/stats", { cache: "no-store" });
         const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Não foi possível carregar as estatísticas administrativas.");
         setStats(json);
       } catch (err) {
         console.error("Error loading admin stats:", err);
+        setError(err instanceof Error ? err.message : "Não foi possível carregar as estatísticas administrativas.");
       } finally {
         setLoading(false);
       }
@@ -111,6 +114,18 @@ export default function AdminDashboardPage() {
     return (
       <div className="site-shell flex items-center justify-center px-4">
         <Loader className="animate-spin text-red-600" size={32} />
+      </div>
+    );
+  }
+
+  if (error && !stats) {
+    return (
+      <div className="site-shell page-container py-12">
+        <div role="alert" className="surface-card border border-red-200 bg-red-50 p-6 text-red-900">
+          <h1 className="text-lg font-black">Não foi possível carregar os dados administrativos</h1>
+          <p className="mt-2 text-sm">{error}</p>
+          <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">Tentar novamente</button>
+        </div>
       </div>
     );
   }
@@ -143,6 +158,12 @@ export default function AdminDashboardPage() {
               className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
             >
               CMS & Seletor de Logo
+            </Link>
+            <Link
+              href="/admin/auditoria"
+              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+            >
+              Auditoria de Acessos
             </Link>
           </div>
         </div>

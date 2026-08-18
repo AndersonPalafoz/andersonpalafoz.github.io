@@ -3,7 +3,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { verifyPassword } from "./password";
 import { db } from "./db";
-import { users } from "@/drizzle/schema";
+import { eventLogs, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -182,8 +182,25 @@ export const authOptions: NextAuthOptions = {
     },
   },
   events: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       console.log(`User signed in securely: ${user.email}`);
+      if (!user.email) return;
+      try {
+        const dbUser = await db.query.users.findFirst({ where: eq(users.email, user.email) });
+        if (!dbUser) return;
+        const signedInAt = new Date();
+        await Promise.all([
+          db.update(users).set({ lastSignedIn: signedInAt, updatedAt: signedInAt }).where(eq(users.id, dbUser.id)),
+          db.insert(eventLogs).values({
+            userId: dbUser.id,
+            userEmail: dbUser.email,
+            eventType: "login",
+            details: JSON.stringify({ provider: account?.provider || "unknown" }),
+          }),
+        ]);
+      } catch (error) {
+        console.error("Unable to persist login audit event:", error);
+      }
     },
     async signOut() {
       console.log("User signed out securely");
