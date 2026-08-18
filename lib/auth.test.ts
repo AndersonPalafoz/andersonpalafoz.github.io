@@ -104,3 +104,11 @@ describe("NextAuth role persistence", () => {
     });
   });
 });
+
+describe("Google OAuth scope separation", () => {
+  it("does not request Calendar during the basic sign-in flow", () => {
+    const googleProvider = authOptions.providers.find((provider: any) => provider.id === "google") as any;
+    expect(googleProvider).toBeDefined();
+    expect(JSON.stringify(googleProvider)).not.toContain("calendar.readonly");
+  });
+});

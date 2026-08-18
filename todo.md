@@ -671,3 +671,7 @@
 
 - [x] Incluir estado de carregamento com spinner no botão do modal de exclusão e toast de sucesso imediato.
 - [x] `/sobre` — Página sobre o professor e a plataforma (revisão de dados reais, biografia e tokens de tema).
+
+- [x] Diagnosticar e documentar a solução para o erro 403 access_denied do Google OAuth (modo de teste do console do Google Cloud requer inclusão de palafozanderson@gmail.com como testador ou publicação do aplicativo).
+
+- [ ] Google OAuth: separar o login básico (openid, email, profile) do escopo adicional do Calendar e orientar conexão explícita em caso de autorização insuficiente.
