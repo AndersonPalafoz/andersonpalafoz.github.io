@@ -475,3 +475,5 @@
 - [x] Adicionar opção para exportar relatório completo da turma (notas e frequências) em CSV e PDF.
 - [x] Criar gráfico visual interativo na página da turma para taxa de presença e desempenho médio.
 - [x] Desenvolver visão do aluno externo autenticado para acessar suas notas, frequências e materiais.
+
+- [x] Auditar e otimizar a legibilidade e o contraste das logos em todos os modos escuros da plataforma (cabeçalho, dashboards, painéis e rodapé).
