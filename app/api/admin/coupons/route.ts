@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -16,12 +16,24 @@ async function requireAdmin() {
   return user || null;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const user = await requireAdmin();
     if (!user) return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
-    const items = await db.select().from(coupons).orderBy(desc(coupons.createdAt)).limit(100);
-    return NextResponse.json({ coupons: items });
+    const params = request.nextUrl.searchParams;
+    const search = params.get("search")?.trim().slice(0, 64) || "";
+    const status = params.get("status") || "all";
+    const pageSizeValue = Number(params.get("pageSize") || 20);
+    const pageValue = Number(params.get("page") || 1);
+    const pageSize = Number.isInteger(pageSizeValue) ? Math.min(Math.max(pageSizeValue, 1), 50) : 20;
+    const page = Number.isInteger(pageValue) ? Math.max(pageValue, 1) : 1;
+    if (!["all", "active", "inactive"].includes(status)) return NextResponse.json({ error: "Status de cupom inválido." }, { status: 400 });
+    const filters = [
+      ...(search ? [ilike(coupons.code, `%${search}%`)] : []),
+      ...(status === "all" ? [] : [eq(coupons.active, status === "active")]),
+    ];
+    const items = await db.select().from(coupons).where(filters.length ? and(...filters) : undefined).orderBy(desc(coupons.createdAt)).limit(pageSize).offset((page - 1) * pageSize);
+    return NextResponse.json({ coupons: items, pagination: { page, pageSize, hasMore: items.length === pageSize }, filters: { search, status } });
   } catch (error) {
     console.error("Erro ao carregar cupons:", error);
     return NextResponse.json({ error: "Não foi possível carregar os cupons." }, { status: 500 });
