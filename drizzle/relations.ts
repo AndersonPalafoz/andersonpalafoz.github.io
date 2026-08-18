@@ -10,6 +10,8 @@ import {
   progress,
   coursePurchases,
   wishlistItems,
+  savedMaterials,
+  materials,
   lessonNotes,
   courseReviews,
   lessons,
@@ -22,6 +24,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   speakingAttempts: many(speakingAttempts),
   purchases: many(coursePurchases),
   wishlist: many(wishlistItems),
+  savedMaterialBookmarks: many(savedMaterials),
   notes: many(lessonNotes),
   reviews: many(courseReviews),
 }));
@@ -39,6 +42,11 @@ export const coursesRelations = relations(courses, ({ many }) => ({
 export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
   user: one(users, { fields: [wishlistItems.userId], references: [users.id] }),
   course: one(courses, { fields: [wishlistItems.courseId], references: [courses.id] }),
+}));
+
+export const savedMaterialsRelations = relations(savedMaterials, ({ one }) => ({
+  user: one(users, { fields: [savedMaterials.userId], references: [users.id] }),
+  material: one(materials, { fields: [savedMaterials.materialId], references: [materials.id] }),
 }));
 
 export const lessonNotesRelations = relations(lessonNotes, ({ one }) => ({
