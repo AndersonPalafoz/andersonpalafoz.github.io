@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ArrowLeft, Award, Building2, Calendar, FileText, Loader2, Mail, ShieldAlert, User } from "lucide-react";
 import { toast } from "sonner";
 
+interface GradeItem { id: number; assessmentTitle: string; score: string; maxScore: string; feedback: string | null; createdAt: string | Date; }
+interface AttendanceItem { date: string; status: string; }
 interface EnrollmentItem {
   classId: number;
   institution: string;
@@ -15,6 +17,9 @@ interface EnrollmentItem {
   status: string;
   notes: string | null;
   updatedAt: string | Date;
+  grades: GradeItem[];
+  attendance: AttendanceItem[];
+  attendanceSummary: { totalSessions: number; present: number; absent: number; late: number; attendanceRate: number | null };
 }
 
 interface StudentReport {
@@ -163,12 +168,17 @@ export default function StudentReportPage() {
                     </div>
                   </div>
 
-                  {enrol.notes && (
-                    <div className="p-3.5 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 text-xs text-gray-600 dark:text-gray-300">
-                      <strong className="text-gray-900 dark:text-white block mb-0.5">Observações Acadêmicas:</strong>
-                      {enrol.notes}
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                      <div className="mb-3 flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Notas lançadas</strong><span className="text-[10px] text-gray-500">{enrol.grades.length} registro(s)</span></div>
+                      {enrol.grades.length === 0 ? <p className="text-xs text-gray-500">Nenhuma nota lançada nesta turma.</p> : <div className="space-y-2">{enrol.grades.map((grade) => <div key={grade.id} className="flex items-start justify-between gap-3 border-b border-gray-200/70 pb-2 text-xs last:border-0 last:pb-0 dark:border-slate-700"><div><p className="font-bold text-gray-900 dark:text-white">{grade.assessmentTitle}</p>{grade.feedback && <p className="mt-0.5 text-gray-500">{grade.feedback}</p>}</div><span className="whitespace-nowrap font-black text-red-600">{grade.score} / {grade.maxScore}</span></div>)}</div>}
                     </div>
-                  )}
+                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
+                      <div className="mb-3 flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Frequência registrada</strong><span className="text-[10px] text-gray-500">{enrol.attendanceSummary.attendanceRate === null ? "—" : `${enrol.attendanceSummary.attendanceRate}%`}</span></div>
+                      {enrol.attendance.length === 0 ? <p className="text-xs text-gray-500">Nenhuma presença registrada nesta turma.</p> : <div className="grid grid-cols-3 gap-2 text-center text-[10px]"><div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"><strong className="block text-base">{enrol.attendanceSummary.present}</strong>Presenças</div><div className="rounded-xl bg-red-50 p-2 text-red-700 dark:bg-red-950/30 dark:text-red-300"><strong className="block text-base">{enrol.attendanceSummary.absent}</strong>Faltas</div><div className="rounded-xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"><strong className="block text-base">{enrol.attendanceSummary.late}</strong>Atrasos</div></div>}
+                    </div>
+                  </div>
+                  {enrol.notes && <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3.5 text-xs text-gray-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300"><strong className="mb-0.5 block text-gray-900 dark:text-white">Observações Acadêmicas:</strong>{enrol.notes}</div>}
                 </div>
               ))}
             </div>
