@@ -14,7 +14,7 @@ import {
 export const metadata = {
   title: "Sobre Anderson Bacelar Palafoz | Professor de Inglês e Pesquisador",
   description:
-    "Conheça a trajetória, formação acadêmica na UFBA e a proposta de aulas de inglês do A1 ao B2, com materiais que podem alcançar C1 e C2.",
+    "Conheça a trajetória, formação acadêmica na UFBA e a proposta de aulas de inglês Básico ao Avançado [A1-C2], com foco em Básico, Intermediário e Avançado.",
   alternates: {
     canonical: "/sobre",
   },
