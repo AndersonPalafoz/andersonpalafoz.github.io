@@ -499,3 +499,5 @@
 - [x] Criar painel de resumo para professores exibindo dúvidas pendentes em materiais e médias de notas por turma.
 
 - [x] Aprimorar e unificar o sistema de avaliações, rubricas, pesos, notas e feedbacks para cursos internos e externos.
+
+- [x] Implementar sistema para alunos responderem a feedbacks de avaliações e solicitarem revisão formal de notas com análise pelos professores.

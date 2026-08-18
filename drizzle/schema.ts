@@ -728,3 +728,18 @@ export const materialComments = pgTable("material_comments", {
 
 export type MaterialComment = typeof materialComments.$inferSelect;
 export type InsertMaterialComment = typeof materialComments.$inferInsert;
+
+
+export const gradeReviewRequests = pgTable("grade_review_requests", {
+  id: serial("id").primaryKey(),
+  gradeId: integer("gradeId").notNull().references(() => externalClassGrades.id, { onDelete: "cascade" }),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  reason: text("reason").notNull(),
+  status: varchar("status", { length: 32 }).notNull().default("pending"), // pending, reviewed, accepted, rejected
+  professorResponse: text("professorResponse"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type GradeReviewRequest = typeof gradeReviewRequests.$inferSelect;
+export type InsertGradeReviewRequest = typeof gradeReviewRequests.$inferInsert;
