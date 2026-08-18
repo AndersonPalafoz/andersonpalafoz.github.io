@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Sparkles, Undo2, Redo2, Wand2, Crop, History, Copy, Clock } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Undo2, Redo2, Wand2, Crop, History, Copy, Clock } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -404,15 +404,15 @@ export default function AdminCmsPage() {
               <ArrowLeft size={15} /> Voltar ao Painel Administrativo
             </Link>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-              <Globe className="text-red-600" size={30} /> CMS Global Avançado com IA & WYSIWYG
+              <Globe className="text-red-600" size={30} /> CMS Global & Biblioteca de Conteúdo
             </h1>
             <p className="text-xs text-slate-500 mt-1">
               Gerenciamento universal de conteúdo com histórico de revisões, editor visual rico, status, tags e duplicação em tempo real.
             </p>
           </div>
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded-2xl">
-            <Sparkles className="text-red-600" size={18} />
-            <span className="text-xs font-bold text-red-800">Editor Enterprise Ativo</span>
+            <Layers className="text-red-600" size={18} />
+            <span className="text-xs font-bold text-red-800">Banco de Dados & Supabase Storage</span>
           </div>
         </div>
       </div>
