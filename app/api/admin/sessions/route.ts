@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import { NextRequest, NextResponse } from "next/server";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -18,18 +18,24 @@ async function requireAdminOrTeacher() {
   return null;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await requireAdminOrTeacher();
     if (!session) {
       return NextResponse.json({ error: "Acesso restrito a professores e administradores." }, { status: 403 });
     }
 
+    const rawPage = Number(request.nextUrl.searchParams.get("page") || "1");
+    const rawPageSize = Number(request.nextUrl.searchParams.get("pageSize") || "50");
+    const page = Number.isFinite(rawPage) ? Math.max(1, Math.floor(rawPage)) : 1;
+    const pageSize = Number.isFinite(rawPageSize) ? Math.min(100, Math.max(1, Math.floor(rawPageSize))) : 50;
+    const offset = (page - 1) * pageSize;
+
     const [sessions, availableCourses, students, allAttendances] = await Promise.all([
-      db.select().from(classSessions).orderBy(desc(classSessions.scheduledAt)),
-      db.select({ id: courses.id, title: courses.title, level: courses.level }).from(courses).where(isNull(courses.deletedAt)),
-      db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), isNull(users.deletedAt))),
-      db.select().from(attendances),
+      db.select().from(classSessions).orderBy(desc(classSessions.scheduledAt)).limit(pageSize).offset(offset),
+      db.select({ id: courses.id, title: courses.title, level: courses.level }).from(courses).where(isNull(courses.deletedAt)).limit(500),
+      db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), isNull(users.deletedAt))).limit(500),
+      db.select().from(attendances).limit(2000),
     ]);
 
     return NextResponse.json({
@@ -37,6 +43,7 @@ export async function GET() {
       courses: availableCourses,
       students,
       attendances: allAttendances,
+      pagination: { page, pageSize, returned: sessions.length, offset },
     });
   } catch (error) {
     console.error("Erro ao carregar sessões de chamada:", error);
