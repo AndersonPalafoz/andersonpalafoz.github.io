@@ -11,7 +11,7 @@ export default function ProfessorProgressSpeakingPage() {
   const [loading, setLoading] = useState(true);
   const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
-  const [scoreVal, setScoreVal] = useState<number>(85);
+  const [scoreVal, setScoreVal] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackAudio, setFeedbackAudio] = useState<File | null>(null);
   const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
@@ -40,6 +40,7 @@ export default function ProfessorProgressSpeakingPage() {
       const payload = new FormData();
       payload.append("activityProgressId", activityProgressId);
       if (selectedAttemptId) payload.append("attemptId", selectedAttemptId);
+      if (scoreVal === null || !Number.isFinite(scoreVal)) { toast.error("Informe uma nota antes de salvar a avaliação."); return; }
       payload.append("score", String(scoreVal));
       payload.append("teacherFeedback", feedbackText);
       if (feedbackAudio) payload.append("teacherAudio", feedbackAudio);
@@ -236,7 +237,7 @@ export default function ProfessorProgressSpeakingPage() {
                             type="number"
                             min={0}
                             max={100}
-                            value={scoreVal}
+                            value={scoreVal ?? ""}
                             onChange={(e) => setScoreVal(Number(e.target.value))}
                             className="field-control w-32 text-sm"
                           />
