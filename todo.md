@@ -683,3 +683,5 @@
 - [x] Adicionar botão de "favoritar / salvar para depois" com persistência e feedback interativo nos cards de materiais relacionados.
 
 - [x] Restringir Google Calendar, Google Drive e Google Classroom para carregar exclusivamente eventos, pastas e turmas relacionados à plataforma Anderson Palafoz.
+
+- [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública do blog para otimizar a navegação.
