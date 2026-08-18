@@ -634,8 +634,8 @@
 - [x] `/admin/matriculas` — Gestão de matrículas (vínculo de alunos a cursos, filtros de busca, modal de desvinculação e suporte a temas)
 - [x] `/admin/mensagens` — Gestão de mensagens (caixa de entrada de contato, links de resposta por email e suporte a temas)
 - [x] `/admin/artigos` — Gestão de artigos (redirecionamento seguro para a gestão unificada do blog)
-- [ ] `/admin/blog` — Gestão do blog
-- [ ] `/admin/cms` — Sistema de gerenciamento de conteúdo
+- [x] `/admin/blog` — Gestão do blog (editor Markdown, gerador de slug, feedback toast e tokens de tema)
+- [x] `/admin/cms` — Sistema de gerenciamento de conteúdo (biblioteca de mídia com paginação server-side, busca, filtros e upload S3 persistido)
 - [ ] `/admin/relatorios` — Relatórios administrativos gerais
 - [ ] `/admin/relatorios-academicos` — Relatórios acadêmicos
 - [ ] `/admin/auditoria` — Auditoria de acessos e atividades
