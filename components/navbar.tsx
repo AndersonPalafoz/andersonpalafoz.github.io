@@ -154,8 +154,8 @@ export function Navbar() {
       <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-xl shadow-slate-900/[0.03] backdrop-blur-xl" : "border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 shadow-xs backdrop-blur-md"}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
-            <Link href="/" className="shrink-0 rounded-xl transition-opacity hover:opacity-80 focus-visible:outline-red-600" aria-label="Anderson Palafoz — página inicial">
-              <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-10 w-auto sm:h-11" priority />
+            <Link href="/" className="shrink-0 rounded-xl bg-white/95 dark:bg-white/95 px-2.5 py-1.5 shadow-xs transition-opacity hover:opacity-90 focus-visible:outline-red-600 flex items-center" aria-label="Anderson Palafoz — página inicial">
+              <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-9 w-auto sm:h-10 object-contain" priority />
             </Link>
 
             <div className="hidden items-center gap-1.5 lg:flex">
