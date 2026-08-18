@@ -697,3 +697,5 @@
 - [ ] Mecanismo de retry aplicado ao upload real do Google Drive (a política foi criada, mas o endpoint ainda está em modo mock)
 
 - [x] Configuração nominal da conta dedicada: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`); autorização server-side pendente
+
+- [x] Indicador de progresso visual acessível e responsivo no CMS para acompanhamento de uploads de arquivos

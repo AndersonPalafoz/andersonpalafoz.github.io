@@ -45,6 +45,8 @@ export function MediaAssetLibrary() {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadFileName, setUploadFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
 
@@ -114,8 +116,16 @@ export function MediaAssetLibrary() {
 
   const processFiles = async (files: FileList | File[]) => {
     setUploading(true);
+    setUploadProgress(0);
     try {
-      for (const file of Array.from(files)) {
+      const fileList = Array.from(files);
+      const totalFiles = fileList.length;
+
+      for (let i = 0; i < totalFiles; i++) {
+        const file = fileList[i];
+        setUploadFileName(file.name);
+        setUploadProgress(Math.round((i / totalFiles) * 100));
+
         let assetType = "image";
         if (file.type.includes("audio") || file.name.endsWith(".mp3") || file.name.endsWith(".wav")) {
           assetType = "audio";
@@ -133,6 +143,8 @@ export function MediaAssetLibrary() {
         const res = await fetch("/api/admin/media", { method: "POST", body: formData });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || "Erro no upload.");
+        
+        setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
       }
 
       toast.success("Arquivo(s) enviado(s) e persistido(s) com sucesso!");
@@ -188,16 +200,35 @@ export function MediaAssetLibrary() {
           </div>
         </div>
 
-        <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-200 ${isDragging ? "border-red-600 bg-red-50/50 dark:bg-red-950/20 scale-[1.01]" : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-red-500 dark:hover:border-red-500 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
-          <div className="max-w-xs mx-auto space-y-3">
-            <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center transition-colors ${isDragging ? "bg-red-600 text-white shadow-lg shadow-red-600/30" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"}`}><FileUp size={24} /></div>
-            <div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{isDragging ? "Solte os arquivos aqui..." : "Arraste e solte arquivos aqui para upload real"}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Imagens (.png, .jpg, .webp), áudios (.mp3, .wav) e PDF até 10 MB</p>
+        {uploading ? (
+          <div className="rounded-3xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 p-6 text-center space-y-4 shadow-inner">
+            <div className="flex items-center justify-center gap-3">
+              <Loader2 className="text-red-600 animate-spin" size={24} />
+              <div className="text-left">
+                <p className="text-sm font-bold text-slate-900 dark:text-white">Enviando arquivos...</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate max-w-md">{uploadFileName || "Preparando arquivo..."}</p>
+              </div>
             </div>
-            <span className="inline-block text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 px-3 py-1 rounded-full">{uploading ? "Enviando arquivo..." : "Ou clique para procurar no computador"}</span>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
+              <div className="bg-red-600 h-full rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} role="progressbar" aria-valuenow={uploadProgress} aria-valuemin={0} aria-valuemax={100} />
+            </div>
+            <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+              <span>Progresso do envio</span>
+              <span>{uploadProgress}%</span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-200 ${isDragging ? "border-red-600 bg-red-50/50 dark:bg-red-950/20 scale-[1.01]" : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:border-red-500 dark:hover:border-red-500 hover:bg-slate-50 dark:hover:bg-slate-800"}`}>
+            <div className="max-w-xs mx-auto space-y-3">
+              <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center transition-colors ${isDragging ? "bg-red-600 text-white shadow-lg shadow-red-600/30" : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"}`}><FileUp size={24} /></div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{isDragging ? "Solte os arquivos aqui..." : "Arraste e solte arquivos aqui para upload real"}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Imagens (.png, .jpg, .webp), áudios (.mp3, .wav) e PDF até 10 MB</p>
+              </div>
+              <span className="inline-block text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-950/50 px-3 py-1 rounded-full">Ou clique para procurar no computador</span>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
           <div className="relative flex-1 w-full">
