@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Calendar, Search, User, X } from "lucide-react";
+import { ArrowRight, Calendar, Loader2, Search, User, X } from "lucide-react";
 
 type BlogArticle = {
   id: number;
@@ -16,6 +16,8 @@ type BlogArticle = {
 export function BlogBrowser({ articles }: { articles: BlogArticle[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Todos");
+  const [visibleCount, setVisibleCount] = useState(6);
+  const [loadingMore, setLoadingMore] = useState(false);
   const categories = useMemo(() => ["Todos", ...Array.from(new Set(articles.map((article) => article.category).filter((value): value is string => Boolean(value))))], [articles]);
   const filteredArticles = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("pt-BR");
@@ -24,6 +26,21 @@ export function BlogBrowser({ articles }: { articles: BlogArticle[] }) {
       return (!normalizedQuery || searchable.includes(normalizedQuery)) && (category === "Todos" || article.category === category);
     });
   }, [articles, category, query]);
+  const visibleArticles = filteredArticles.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredArticles.length;
+
+  useEffect(() => {
+    setVisibleCount(6);
+  }, [category, query]);
+
+  function loadMore() {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    requestAnimationFrame(() => {
+      setVisibleCount((current) => current + 6);
+      setLoadingMore(false);
+    });
+  }
 
   return (
     <section aria-labelledby="published-articles-title" className="space-y-8">
@@ -37,7 +54,7 @@ export function BlogBrowser({ articles }: { articles: BlogArticle[] }) {
         </div>
       </div>
 
-      {filteredArticles.length === 0 ? <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center"><h3 className="text-lg font-bold text-gray-900">Nenhum artigo corresponde aos filtros</h3><p className="mt-2 text-sm text-gray-600">Tente outra palavra-chave ou remova o filtro de categoria.</p><button type="button" onClick={() => { setQuery(""); setCategory("Todos"); }} className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Limpar filtros</button></div> : <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">{filteredArticles.map((article) => <Link key={article.id} href={`/blog/${article.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition hover:-translate-y-1 hover:border-red-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"><div className="flex h-24 items-center bg-gradient-to-br from-red-600 to-red-700 p-6 text-white"><span className="text-sm font-semibold">{article.category || "Blog"}</span></div><div className="flex flex-1 flex-col p-8"><h3 className="mb-3 line-clamp-2 text-xl font-bold text-gray-900 group-hover:text-red-700">{article.title}</h3>{article.content && <p className="mb-6 line-clamp-2 flex-1 text-sm text-gray-600">{article.content}</p>}<div className="space-y-3 border-t border-gray-200 pt-6"><div className="flex items-center gap-2 text-sm text-gray-600"><User size={16} className="text-red-600" aria-hidden="true" /><span>Anderson Palafoz</span></div><div className="flex items-center gap-2 text-sm text-gray-600"><Calendar size={16} className="text-red-600" aria-hidden="true" /><time dateTime={article.published ? new Date(article.published).toISOString() : undefined}>{article.published ? new Date(article.published).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" }) : "Data não informada"}</time></div></div><div className="mt-6 flex items-center gap-2 font-semibold text-red-600">Ler mais <ArrowRight size={18} aria-hidden="true" /></div></div></Link>)}</div>}
+      {filteredArticles.length === 0 ? <div className="rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center"><h3 className="text-lg font-bold text-gray-900">Nenhum artigo corresponde aos filtros</h3><p className="mt-2 text-sm text-gray-600">Tente outra palavra-chave ou remova o filtro de categoria.</p><button type="button" onClick={() => { setQuery(""); setCategory("Todos"); }} className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Limpar filtros</button></div> : <><div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">{visibleArticles.map((article) => <Link key={article.id} href={`/blog/${article.slug}`} className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition hover:-translate-y-1 hover:border-red-300 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"><div className="flex h-24 items-center bg-gradient-to-br from-red-600 to-red-700 p-6 text-white"><span className="text-sm font-semibold">{article.category || "Blog"}</span></div><div className="flex flex-1 flex-col p-8"><h3 className="mb-3 line-clamp-2 text-xl font-bold text-gray-900 group-hover:text-red-700">{article.title}</h3>{article.content && <p className="mb-6 line-clamp-2 flex-1 text-sm text-gray-600">{article.content}</p>}<div className="space-y-3 border-t border-gray-200 pt-6"><div className="flex items-center gap-2 text-sm text-gray-600"><User size={16} className="text-red-600" aria-hidden="true" /><span>Anderson Palafoz</span></div><div className="flex items-center gap-2 text-sm text-gray-600"><Calendar size={16} className="text-red-600" aria-hidden="true" /><time dateTime={article.published ? new Date(article.published).toISOString() : undefined}>{article.published ? new Date(article.published).toLocaleDateString("pt-BR", { day: "numeric", month: "long", year: "numeric" }) : "Data não informada"}</time></div></div><div className="mt-6 flex items-center gap-2 font-semibold text-red-600">Ler mais <ArrowRight size={18} aria-hidden="true" /></div></div></Link>)}</div>{hasMore && <div className="flex flex-col items-center gap-2 pt-2"><button type="button" onClick={loadMore} disabled={loadingMore} className="inline-flex min-w-44 items-center justify-center gap-2 rounded-xl border border-red-600 px-5 py-3 text-sm font-bold text-red-600 transition hover:bg-red-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70">{loadingMore ? <><Loader2 size={16} className="animate-spin" aria-hidden="true" /> Carregando...</> : "Carregar mais"}</button><span className="text-xs text-gray-500" aria-live="polite">Exibindo {visibleArticles.length} de {filteredArticles.length} artigos</span></div>}</>}
     </section>
   );
 }
