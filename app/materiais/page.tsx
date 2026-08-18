@@ -173,9 +173,24 @@ export default function MateriaisPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20 text-red-600">
-              <Loader2 className="animate-spin mr-2" size={32} />
-              <span className="text-lg font-medium">Carregando biblioteca de recursos...</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" aria-busy="true" aria-label="Carregando materiais...">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm animate-pulse">
+                  <div>
+                    <div className="flex items-start justify-between mb-4 gap-3">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                      <div className="w-16 h-6 bg-gray-200 dark:bg-slate-800 rounded-full" />
+                    </div>
+                    <div className="w-24 h-4 bg-gray-200 dark:bg-slate-800 rounded mb-3" />
+                    <div className="w-3/4 h-6 bg-gray-200 dark:bg-slate-800 rounded mb-3" />
+                    <div className="space-y-2 mb-6">
+                      <div className="w-full h-4 bg-gray-200 dark:bg-slate-800 rounded" />
+                      <div className="w-5/6 h-4 bg-gray-200 dark:bg-slate-800 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-full h-12 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                </div>
+              ))}
             </div>
           ) : error && filteredMaterials.length === 0 ? (
             <div role="alert" className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900/60">
@@ -234,6 +249,27 @@ export default function MateriaisPage() {
                   </div>
                 );
               })}
+              {loadingMore && (
+                <>
+                  {[1, 2, 3].map((i) => (
+                    <div key={`skeleton-more-${i}`} className="flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm animate-pulse opacity-70">
+                      <div>
+                        <div className="flex items-start justify-between mb-4 gap-3">
+                          <div className="w-12 h-12 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                          <div className="w-16 h-6 bg-gray-200 dark:bg-slate-800 rounded-full" />
+                        </div>
+                        <div className="w-24 h-4 bg-gray-200 dark:bg-slate-800 rounded mb-3" />
+                        <div className="w-3/4 h-6 bg-gray-200 dark:bg-slate-800 rounded mb-3" />
+                        <div className="space-y-2 mb-6">
+                          <div className="w-full h-4 bg-gray-200 dark:bg-slate-800 rounded" />
+                          <div className="w-5/6 h-4 bg-gray-200 dark:bg-slate-800 rounded" />
+                        </div>
+                      </div>
+                      <div className="w-full h-12 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           )}
 

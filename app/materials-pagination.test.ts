@@ -30,11 +30,13 @@ describe("Public materials pagination contract", () => {
     expect(api).toContain('session?.user?.email ? "private, no-store"');
   });
 
-  it("offers an accessible incremental loading state in the UI", () => {
+  it("offers an accessible incremental loading state and skeleton loaders in the UI", () => {
     const page = read("app/materiais/page.tsx");
     expect(page).toContain("Carregar mais materiais");
     expect(page).toContain("loadingMore");
     expect(page).toContain("Exibindo {filteredMaterials.length} de {meta.total} materiais");
     expect(page).toContain('role="alert"');
+    expect(page).toContain("animate-pulse");
+    expect(page).toContain("aria-busy");
   });
 });
