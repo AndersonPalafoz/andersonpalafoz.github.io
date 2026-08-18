@@ -1,7 +1,5 @@
-export const dynamic = "force-dynamic";
-
 import Link from "next/link";
-import { Calendar, User, ArrowRight } from "lucide-react";
+import { BlogBrowser } from "@/components/blog-browser";
 import { getPublicArticles } from "@/lib/public-content";
 
 export const metadata = {
@@ -10,156 +8,36 @@ export const metadata = {
 };
 
 export default async function BlogPage() {
-  const { articles: todosArtigos, available: artigosDisponiveis } =
-    await getPublicArticles();
-  // Rascunhos (published == null) nao aparecem na listagem publica
-  const artigos = todosArtigos.filter((a) => a.published);
-
-  const categorias = Array.from(
-    new Set(artigos.map((a) => a.category).filter((c): c is string => !!c))
-  );
+  const { articles: allArticles, available } = await getPublicArticles();
+  const articles = allArticles.filter((article) => article.published);
 
   return (
     <div className="w-full">
-      {/* Hero Section */}
-      <section className="relative flex min-h-[62vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16"><div className="pointer-events-none absolute -right-36 top-12 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
-        <div className="max-w-7xl mx-auto w-full">
-          <div className="space-y-8 max-w-3xl">
+      <section className="relative flex min-h-[62vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16">
+        <div className="pointer-events-none absolute -right-36 top-12 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
+        <div className="mx-auto w-full max-w-7xl">
+          <div className="max-w-3xl space-y-8">
             <div className="space-y-4">
               <span className="eyebrow">Knowledge Hub</span>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
-                Blog de
-                <br />
-                <span className="text-red-600">Inglês e Educação</span>
-              </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                Artigos, dicas, insights e reflexões sobre ensino de inglês, linguística, educação e tecnologia.
-              </p>
+              <h1 className="text-5xl font-bold leading-tight md:text-6xl">Blog de<br /><span className="text-red-600">Inglês e Educação</span></h1>
+              <p className="text-lg leading-relaxed text-gray-600">Artigos, dicas, insights e reflexões sobre ensino de inglês, linguística, educação e tecnologia.</p>
             </div>
-
-            {/* Search */}
-            <div className="flex gap-4 pt-8">
-              <input
-                type="text"
-                placeholder="Buscar artigos..."
-                className="flex-1 px-6 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-red-600"
-              />
-              <button className="bg-red-600 hover:bg-red-700 text-white px-8">
-                Buscar
-              </button>
-            </div>
+            <Link href="#artigos-publicados" className="inline-flex rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Explorar artigos</Link>
           </div>
         </div>
       </section>
 
-      {/* Categorias */}
-      {categorias.length > 0 && (
-        <section className="py-8 px-4 md:px-8 lg:px-16 bg-gray-50 border-b border-gray-200">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-wrap gap-3">
-              {["Todos", ...categorias].map((cat) => (
-                <span
-                  key={cat}
-                  className="rounded-full border border-slate-200 bg-white px-5 py-2 text-sm font-bold text-slate-600 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Artigos */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {!artigosDisponiveis ? (
-            <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
-              <h2 className="text-xl font-bold text-gray-900">Conteúdo temporariamente indisponível</h2>
-              <p className="mt-3 text-gray-600">
-                Estamos atualizando o blog. Tente novamente em alguns instantes.
-              </p>
-            </div>
-          ) : artigos.length === 0 ? (
-            <p className="text-center text-gray-600">
-              Nenhum artigo publicado no momento. Volte em breve!
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {artigos.map((artigo) => (
-                <Link key={artigo.id} href={`/blog/${artigo.slug}`}>
-                  <div className="interactive-card flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
-                    {/* Header */}
-                    <div className="flex h-24 items-center bg-gradient-to-br from-red-600 to-red-700 p-6 text-white">
-                      <span className="text-sm font-semibold">
-                        {artigo.category || "Blog"}
-                      </span>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-8 flex-1 flex flex-col">
-                      <h3 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                        {artigo.title}
-                      </h3>
-                      {artigo.content && (
-                        <p className="text-gray-600 text-sm mb-6 line-clamp-2 flex-1">
-                          {artigo.content}
-                        </p>
-                      )}
-
-                      {/* Meta */}
-                      <div className="space-y-3 border-t border-gray-200 pt-6">
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <User size={16} className="text-red-600" />
-                          <span>Anderson Palafoz</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600 text-sm">
-                          <Calendar size={16} className="text-red-600" />
-                          <span>
-                            {new Date(artigo.published!).toLocaleDateString("pt-BR", {
-                              day: "numeric",
-                              month: "long",
-                              year: "numeric",
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="p-8 pt-0">
-                      <div className="flex items-center gap-2 text-red-600 font-semibold">
-                        Ler Mais
-                        <ArrowRight size={18} />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
+      <section id="artigos-publicados" className="bg-white px-4 py-20 md:px-8 lg:px-16">
+        <div className="mx-auto max-w-7xl">
+          {!available ? <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 bg-red-50 p-8 text-center"><h2 className="text-xl font-bold text-gray-900">Conteúdo temporariamente indisponível</h2><p className="mt-3 text-gray-600">Estamos atualizando o blog. Tente novamente em alguns instantes.</p></div> : articles.length === 0 ? <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center"><h2 className="text-xl font-bold text-gray-900">Nenhum artigo publicado no momento</h2><p className="mt-3 text-gray-600">Volte em breve para acompanhar novos conteúdos.</p></div> : <BlogBrowser articles={articles} />}
         </div>
       </section>
 
-      {/* Newsletter CTA */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-red-600">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-4xl md:text-5xl font-bold text-white">
-            Receba novos conteúdos para estudar melhor
-          </h2>
-          <p className="text-lg text-red-100">
-            Uma seleção de artigos sobre inglês, linguística e educação diretamente no seu e-mail.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Seu email"
-              className="flex-1 px-6 py-3 rounded-lg focus:outline-none"
-            />
-            <button className="bg-white hover:bg-gray-100 text-red-600 font-semibold">
-              Inscrever
-            </button>
-          </div>
+      <section className="bg-red-600 px-4 py-20 md:px-8 lg:px-16">
+        <div className="mx-auto max-w-4xl space-y-6 text-center">
+          <h2 className="text-4xl font-bold text-white md:text-5xl">Quer conversar sobre os conteúdos?</h2>
+          <p className="text-lg text-red-100">Envie uma mensagem para tirar dúvidas, sugerir temas ou conhecer os projetos educacionais.</p>
+          <Link href="/contato" className="inline-flex rounded-xl bg-white px-6 py-3 font-semibold text-red-600 transition hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600">Fale com Anderson</Link>
         </div>
       </section>
     </div>
