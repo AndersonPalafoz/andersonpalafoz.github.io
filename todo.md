@@ -685,3 +685,9 @@
 - [x] Restringir Google Calendar, Google Drive e Google Classroom para carregar exclusivamente eventos, pastas e turmas relacionados à plataforma Anderson Palafoz.
 
 - [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública do blog para otimizar a navegação.
+
+## Estratégia de Armazenamento Gratuito Externo (Google Drive) — 18/08/2026
+- [x] Migração dos uploads de arquivos e imagens para o Google Drive (pastas exclusivas da plataforma)
+- [x] Armazenamento estrito de metadados no Neon PostgreSQL (mantendo o banco leve e otimizado para o plano gratuito)
+- [x] Implementação de compressão client-side para imagens antes do envio
+- [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
