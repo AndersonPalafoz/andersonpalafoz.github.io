@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Undo2, Redo2, Crop, History, Copy, Clock } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, Undo2, Redo2, History, Copy, Clock } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -48,13 +48,6 @@ const PAGE_OPTIONS = [
   { value: "admin", label: "Painel Administrativo" },
 ];
 
-const MEDIA_FOLDERS = [
-  { id: "all", label: "Todas as mídias" },
-  { id: "images", label: "Imagens (.png, .jpg)" },
-  { id: "documents", label: "Documentos (.pdf)" },
-  { id: "videos", label: "Vídeos e Áudios" },
-];
-
 import { MediaAssetLibrary } from "./media-library";
 import { CMSEngagementAnalytics } from "./engagement-analytics";
 
@@ -86,10 +79,6 @@ export default function AdminCmsPage() {
   // O CMS usa apenas dados e operações persistidas; não há recurso de IA nesta interface.
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
-  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
-  const [imagePreviewName, setImagePreviewName] = useState("");
-  const [mediaFolder, setMediaFolder] = useState("all");
-  const [mediaSearch, setMediaSearch] = useState("");
   const [isDragging, setIsDragging] = useState(false);
 
   // Revisions Modal
@@ -98,16 +87,11 @@ export default function AdminCmsPage() {
   const [revisionsBlockId, setRevisionsBlockId] = useState<number | null>(null);
 
   // Image crop modal
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [selectedImageUrl, setSelectedImageUrl] = useState("");
-  const [cropWidth, setCropWidth] = useState(800);
-  const [cropHeight, setCropHeight] = useState(600);
 
   // Undo / Redo history
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -136,18 +120,6 @@ export default function AdminCmsPage() {
   useEffect(() => {
     if (session?.user?.role === "admin") {
       void fetchBlocks();
-      async function fetchMedia() {
-        try {
-          const res = await fetch("/api/admin/media", { cache: "no-store" });
-          const data = await res.json();
-          if (res.ok && Array.isArray(data.assets)) {
-            setUploadedFiles(data.assets.map((a: any) => ({ name: a.name, url: a.url, type: a.type || "image" })));
-          }
-        } catch {
-          // Fallback silencioso se falhar
-        }
-      }
-      void fetchMedia();
     }
   }, [session]);
 
@@ -207,16 +179,6 @@ export default function AdminCmsPage() {
     });
   }, [blocks, selectedPageFilter, selectedStatusFilter, searchTerm]);
 
-  const filteredMedia = useMemo(() => {
-    return uploadedFiles.filter((f) => {
-      if (mediaFolder === "images" && !f.type.includes("image")) return false;
-      if (mediaFolder === "documents" && !f.type.includes("pdf")) return false;
-      if (mediaFolder === "videos" && !f.type.includes("video") && !f.type.includes("audio")) return false;
-      if (mediaSearch && !f.name.toLowerCase().includes(mediaSearch.toLowerCase()) && !f.url.toLowerCase().includes(mediaSearch.toLowerCase())) return false;
-      return true;
-    });
-  }, [uploadedFiles, mediaFolder, mediaSearch]);
-
   const processUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -233,7 +195,6 @@ export default function AdminCmsPage() {
       
       const fileUrl = data.asset?.url || data.url;
       setUploadProgress(100);
-      setUploadedFiles((prev) => [{ name: file.name, url: fileUrl, type: file.type || "image" }, ...prev]);
       handleContentChange(content ? `${content}\n${fileUrl}` : fileUrl);
       toast.success("Arquivo enviado e persistido com sucesso!");
     } catch (err) {
@@ -631,79 +592,10 @@ export default function AdminCmsPage() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3 items-center justify-between">
-              <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
-                {MEDIA_FOLDERS.map((folder) => (
-                  <button
-                    key={folder.id}
-                    onClick={() => setMediaFolder(folder.id)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${mediaFolder === folder.id ? "bg-red-600 text-white shadow-sm" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
-                  >
-                    {folder.label}
-                  </button>
-                ))}
-              </div>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
-                <Input
-                  placeholder="Buscar arquivos..."
-                  value={mediaSearch}
-                  onChange={(e) => setMediaSearch(e.target.value)}
-                  className="pl-9 h-9 bg-slate-50 border-slate-200 rounded-xl text-xs font-semibold"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              {filteredMedia.map((m, idx) => (
-                <div key={idx} className="group relative bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-2 hover:border-red-300 transition">
-                  <div className="h-20 w-full bg-white rounded-xl border border-slate-100 flex items-center justify-center p-2 overflow-hidden shadow-inner">
-                    {m.type.includes("image") ? (
-                      <button
-                        type="button"
-                        className="h-full w-full cursor-zoom-in"
-                        onClick={() => { setSelectedImageUrl(m.url); setImagePreviewName(m.name); setImagePreviewOpen(true); }}
-                        aria-label={`Visualizar ${m.name}`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={m.url} alt={m.name} className="h-full w-full object-cover rounded-lg transition duration-200 group-hover:scale-[1.03]" />
-                      </button>
-                    ) : (
-                      <File className="text-slate-400" size={32} />
-                    )}
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-800 truncate w-full">{m.name}</span>
-                  <div className="flex items-center gap-1 w-full">
-                    {m.type.includes("image") && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => { setSelectedImageUrl(m.url); setImagePreviewName(m.name); setImagePreviewOpen(true); }}
-                          className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-1 rounded-lg hover:bg-red-100 transition flex-1 flex items-center justify-center gap-1"
-                        >
-                          <Eye size={11} /> Ver
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => { setSelectedImageUrl(m.url); setCropModalOpen(true); }}
-                          className="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-300 transition flex-1 flex items-center justify-center gap-1"
-                        >
-                          <Crop size={11} /> Ajustar
-                        </button>
-                      </>
-                    )}
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(m.url);
-                        toast.success("URL copiada para a área de transferência!");
-                      }}
-                      className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-1 rounded-lg hover:bg-red-100 transition flex-1"
-                    >
-                      Copiar Link
-                    </button>
-                  </div>
-                </div>
-              ))}
+            <div className="rounded-2xl border border-red-100 bg-red-50/60 p-4 text-xs text-slate-600">
+              <p className="font-bold text-slate-800">A biblioteca completa usa dados paginados e filtros no servidor.</p>
+              <p className="mt-1">Para pesquisar, visualizar ou copiar ativos já persistidos, abra a aba Biblioteca de mídia. O upload abaixo continua disponível para inserir rapidamente um arquivo real no bloco em edição.</p>
+              <Button type="button" variant="outline" onClick={() => setActiveTab("media")} className="mt-3 h-9 rounded-xl border-red-200 bg-white text-xs font-bold text-red-700 hover:bg-red-50">Abrir biblioteca paginada</Button>
             </div>
           </div>
           
@@ -860,80 +752,6 @@ export default function AdminCmsPage() {
               <Button onClick={() => setRevisionsModalOpen(false)} className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-6 py-2.5 rounded-xl">
                 Fechar Histórico
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Corte e Redimensionamento de Imagem */}
-      {cropModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-md animate-in fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-5 border border-slate-200 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-              <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                <Crop className="text-red-600" size={18} /> Ajustar e Redimensionar Imagem
-              </h3>
-              <Button variant="ghost" size="sm" onClick={() => setCropModalOpen(false)} className="h-8 w-8 p-0 rounded-full">
-                <X size={18} />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="h-48 w-full bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-200">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={selectedImageUrl} alt="Preview" className="max-h-full max-w-full object-contain" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Largura (px)</label>
-                  <Input type="number" value={cropWidth} onChange={(e) => setCropWidth(Number(e.target.value))} className="bg-slate-50 text-xs font-semibold" />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Altura (px)</label>
-                  <Input type="number" value={cropHeight} onChange={(e) => setCropHeight(Number(e.target.value))} className="bg-slate-50 text-xs font-semibold" />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="outline" onClick={() => setCropModalOpen(false)} className="text-xs font-bold">
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  toast.success(`Imagem redimensionada para ${cropWidth}x${cropHeight}px com sucesso!`);
-                  setCropModalOpen(false);
-                }}
-                className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-2.5 rounded-xl"
-              >
-                Aplicar Ajustes
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de Pré-visualização de Imagem */}
-      {imagePreviewOpen && selectedImageUrl && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Pré-visualização de imagem">
-          <div className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 text-white">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Biblioteca de mídia</p>
-                <h3 className="mt-1 text-base font-extrabold">{imagePreviewName || "Pré-visualização"}</h3>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => setImagePreviewOpen(false)} className="h-9 w-9 rounded-full p-0 text-white hover:bg-white/10 hover:text-white" aria-label="Fechar pré-visualização">
-                <X size={18} />
-              </Button>
-            </div>
-            <div className="flex min-h-[22rem] items-center justify-center bg-[radial-gradient(circle_at_center,_rgba(214,40,40,0.14),_transparent_58%)] p-6 sm:min-h-[34rem] sm:p-10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={selectedImageUrl} alt={imagePreviewName || "Imagem selecionada"} className="max-h-[68vh] max-w-full rounded-2xl object-contain shadow-2xl" />
-            </div>
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-4 text-xs text-slate-300">
-              <span>Imagem persistida na biblioteca de mídia do CMS.</span>
-              <Button onClick={() => setImagePreviewOpen(false)} className="rounded-xl bg-red-600 text-xs font-bold text-white hover:bg-red-700">Fechar</Button>
             </div>
           </div>
         </div>
