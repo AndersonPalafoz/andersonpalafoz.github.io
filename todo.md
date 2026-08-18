@@ -573,7 +573,7 @@
 ## Inventário Completo de Rotas e Auditoria — 18/08/2026
 
 ### Rotas Públicas
-- [ ] `/` — Página inicial
+- [x] `/` — Página inicial (indicador real de aulas, nomenclatura Básico ao Avançado, acessibilidade e responsividade revisadas)
 - [ ] `/sobre` — Sobre o professor e a plataforma
 - [ ] `/aulas` — Catálogo público de aulas
 - [ ] `/cursos/[id]` — Detalhes de um curso específico
@@ -659,10 +659,12 @@
 - [x] Revisar `/admin/liberacao-acesso` com auditoria de concessão/revogação, filtros, confirmação acessível e escopo exclusivo do super administrador.
 
 ## Layouts auxiliares de pagamento — 18/08/2026
-- [ ] Pagamento: validar em tempo real a sessão Stripe e apresentar carregamento, sucesso, erro recuperável e ausência de sessão em `/pagamento/sucesso`.
-- [ ] Pagamento: implementar `/pagamento/recibo/[id]` com dados reais, validação de identidade e autorização server-side sem dados estáticos.
-- [ ] Pagamento: revisar tokens de tema, responsividade, impressão, acessibilidade e feedback de carregamento nos layouts auxiliares.
-- [ ] Pagamento: criar contratos Vitest para sessão confirmada, sessão ausente, recibo autorizado e recibo não autorizado.
-- [ ] Pagamento: executar check, testes e build de produção e salvar checkpoint do módulo.
+- [x] Pagamento: validar em tempo real a sessão Stripe e apresentar carregamento, sucesso, erro recuperável e ausência de sessão em `/pagamento/sucesso`.
+- [x] Pagamento: implementar `/pagamento/recibo/[id]` com dados reais, validação de identidade e autorização server-side sem dados estáticos.
+- [x] Pagamento: revisar tokens de tema, responsividade, impressão, acessibilidade e feedback de carregamento nos layouts auxiliares.
+- [x] Pagamento: criar contratos Vitest para sessão confirmada, sessão ausente, recibo autorizado e recibo não autorizado.
+- [x] Pagamento: executar check, testes e build de produção e salvar checkpoint do módulo.
 
 - [x] Permitir que o professor exclua turmas externas com confirmação, validação de dependências e registro de auditoria.
+
+- [x] Adicionar modal de confirmação dedicado e acessível antes de excluir turma externa para evitar exclusões acidentais, detalhando o impacto nas dependências.
