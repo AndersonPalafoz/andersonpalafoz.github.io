@@ -486,3 +486,6 @@
 - [x] Implementar animação de celebração visual quando o aluno atingir marcos reais no sistema de ofensivas.
 
 - [x] Auditar e aprimorar o sistema unificado de criação, manutenção, versionamento e vínculos de cursos e materiais (internos e externos).
+
+- [x] Integrar editor de texto rico (rich text) na criação e edição de cursos e materiais para formatação avançada.
+- [x] Implementar e aprimorar o sistema unificado de notas, avaliações, ponderação, pesos, feedback detalhado e histórico acadêmico persistido.
