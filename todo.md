@@ -693,3 +693,5 @@
 - [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
 
 - [x] Suporte a conta Google dedicada para armazenamento no Google Drive, totalmente independente da conta administrativa (`palafozanderson@gmail.com`)
+
+- [x] Mecanismo de tentativas automáticas (retry) com backoff exponencial e tratamento de falhas para uploads no Google Drive
