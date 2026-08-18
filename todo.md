@@ -675,3 +675,5 @@
 - [x] Diagnosticar e documentar a solução para o erro 403 access_denied do Google OAuth (modo de teste do console do Google Cloud requer inclusão de palafozanderson@gmail.com como testador ou publicação do aplicativo).
 
 - [ ] Google OAuth: separar o login básico (openid, email, profile) do escopo adicional do Calendar e orientar conexão explícita em caso de autorização insuficiente.
+
+- [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública de materiais didáticos para otimizar o desempenho.
