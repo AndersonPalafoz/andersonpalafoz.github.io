@@ -581,7 +581,7 @@
 - [x] `/materiais` — Biblioteca pública de materiais (busca, filtros por nível e categoria, guias de gramática e dados reais validados)
 - [x] `/materiais/[id]` — Detalhes de um material específico (visualização de PDF/imagem, downloads, comentários, progresso e dados reais validados)
 - [x] `/blog` — Lista de artigos do blog (busca real, filtros por categoria, estados vazios/indisponíveis, foco visível e CTA acionável)
-- [ ] `/blog/[slug]` — Artigo específico do blog
+- [x] `/blog/[slug]` — Artigo específico do blog (dados reais, breadcrumbs, comentários, avaliações com estrelas, tempo de leitura e tokens de tema)
 - [ ] `/forum` — Fórum público de discussão
 - [ ] `/faq` — Perguntas frequentes
 - [ ] `/contato` — Formulário de contato
