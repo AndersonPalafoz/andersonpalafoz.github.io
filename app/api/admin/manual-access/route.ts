@@ -3,7 +3,7 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { manualAccessGrants, users, courses, materials, enrollments } from "@/drizzle/schema";
+import { adminAuditLogs, manualAccessGrants, users, courses, materials, enrollments } from "@/drizzle/schema";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -89,6 +89,14 @@ export async function POST(request: NextRequest) {
       grantedBy: admin.id,
       reason,
     }).returning();
+
+    await db.insert(adminAuditLogs).values({
+      adminEmail: SUPER_ADMIN_EMAIL,
+      action: "manual_access_grant",
+      targetName: targetUser.name,
+      targetEmail: targetUser.email,
+      details: JSON.stringify({ grantId: grant.id, userId, courseId, materialId, reason }),
+    });
 
     return NextResponse.json({ grant, message: "Acesso pago liberado com sucesso para o usuário!" }, { status: 201 });
   } catch (error) {
