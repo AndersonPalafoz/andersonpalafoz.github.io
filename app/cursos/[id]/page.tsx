@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getCourseById, getModulesByCourse, getLessonsByModule, db } from "@/lib/db";
+import { formatLevel } from "@/lib/levels";
 import { EnrollButton } from "@/components/enroll-button";
 import { CertificateModal } from "@/components/certificate-modal";
 import { CourseEngagement } from "@/components/course-engagement";
@@ -163,7 +164,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
-              {course.level}
+              {formatLevel(course.level)}
             </span>
             {user && (
               <span className="text-sm font-bold text-gray-700 bg-gray-100 px-4 py-1.5 rounded-full">

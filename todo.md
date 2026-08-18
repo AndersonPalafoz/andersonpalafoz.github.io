@@ -507,3 +507,7 @@
 - [x] Expandir o sistema de medalhas e recompensas com novas categorias de conquistas (frequência, comentários, revisões), painel de concessão administrativa e molduras de avatar.
 
 - [x] Implementar compartilhamento de medalhas/conquistas nas redes sociais, download de certificado e sistema de ranking (leaderboard) por turma com dados reais.
+
+- [x] Adicionar filtros temporais (semanal, mensal, geral) no placar de líderes.
+- [x] Criar sistema de missões semanais com recompensa em XP real.
+- [x] Exibir níveis em formato paralelo (ex: Básico [A1-A2], Intermediário [B1-B2], Avançado [C1-C2]) em todo o site.

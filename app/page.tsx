@@ -11,10 +11,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const heroTitle = await getCmsContent("home", "hero_title", "Aprenda Inglês com Anderson Palafoz");
-  const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas do A1 ao B2 e materiais que podem chegar aos níveis C1 e C2.");
+  const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas Básico a Intermediário [A1-B2] e materiais que podem chegar aos níveis Avançado [C1-C2].");
   const stat1Title = await getCmsContent("home", "stat_1_title", "100+");
   const stat1Desc = await getCmsContent("home", "stat_1_desc", "Aulas Disponíveis");
-  const stat2Title = await getCmsContent("home", "stat_2_title", "A1–B2");
+  const stat2Title = await getCmsContent("home", "stat_2_title", "Básico [A1-B2]");
   const stat2Desc = await getCmsContent("home", "stat_2_desc", "Níveis das aulas");
 
   return (
@@ -38,9 +38,9 @@ export default async function HomePage() {
             </p>
 
             <div className="hidden">
-              <span>Aulas organizadas do A1 ao B2</span>
-              <span>Cursos estruturados do A1 ao B2</span>
-              <span>materiais que podem chegar aos níveis C1 e C2</span>
+              <span>Aulas organizadas Básico a Intermediário [A1-B2]</span>
+              <span>Cursos estruturados Básico a Intermediário [A1-B2]</span>
+              <span>materiais que podem chegar aos níveis Avançado [C1-C2]</span>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
@@ -103,7 +103,7 @@ export default async function HomePage() {
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <BookOpen size={24} />
             </div>
-            <h3 className="text-xl font-black">Aulas do A1 ao C2</h3>
+            <h3 className="text-xl font-black">Aulas Básico ao Avançado [A1-C2]</h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Estrutura pedagógica completa para iniciantes e alunos avançados, com materiais complementares em PDF e áudio.
             </p>
