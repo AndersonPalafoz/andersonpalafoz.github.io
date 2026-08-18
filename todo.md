@@ -630,8 +630,8 @@
 - [x] `/admin/medalhas` — Catálogo e concessão de medalhas (concessão manual, listagem de concedidas e tokens de tema)
 - [x] `/admin/forum` — Moderação do fórum (moderação de tópicos persistidos, notas de moderação e suporte a temas)
 - [x] `/admin/reviews` — Gestão de avaliações de cursos (respostas persistidas, seleção de curso e tokens de tema)
-- [ ] `/admin/avaliacoes` — Área administrativa de avaliações
-- [ ] `/admin/matriculas` — Gestão de matrículas
+- [x] `/admin/avaliacoes` — Área administrativa de avaliações (editor rico, redimensionamento de imagens e tokens de tema)
+- [x] `/admin/matriculas` — Gestão de matrículas (vínculo de alunos a cursos, filtros de busca, modal de desvinculação e suporte a temas)
 - [ ] `/admin/mensagens` — Gestão de mensagens
 - [ ] `/admin/artigos` — Gestão de artigos
 - [ ] `/admin/blog` — Gestão do blog
