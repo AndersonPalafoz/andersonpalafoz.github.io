@@ -46,6 +46,7 @@ export default function AdminManualAccessPage() {
   const [materialsList, setMaterialsList] = useState<MaterialRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [revokingId, setRevokingId] = useState<number | null>(null);
 
   const [selectedUserId, setSelectedUserId] = useState("");
   const [itemType, setItemType] = useState<"course" | "material">("course");
@@ -109,6 +110,22 @@ export default function AdminManualAccessPage() {
 
     return list;
   }, [grants, historySearchQuery, typeFilter, sortBy]);
+
+  const handleRevoke = async (grant: GrantRecord) => {
+    if (!window.confirm(`Deseja realmente revogar a liberação de acesso para ${grant.userName || grant.userEmail || "este usuário"}?`)) return;
+    try {
+      setRevokingId(grant.id);
+      const res = await fetch(`/api/admin/manual-access/${grant.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao revogar acesso.");
+      toast.success("Acesso revogado com sucesso.");
+      await loadData();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Falha ao revogar acesso.");
+    } finally {
+      setRevokingId(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -263,25 +280,7 @@ export default function AdminManualAccessPage() {
             <div className="rounded-2xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">Nenhum registro encontrado com os filtros atuais.</div>
           ) : (
             <div className="space-y-3 pt-2">
-              {filteredGrants.map((g) => {
-                const [revoking, setRevoking] = useState(false);
-                const handleRevoke = async () => {
-                  if (!window.confirm(`Deseja realmente revogar a liberação de acesso para ${g.userName || g.userEmail}?`)) return;
-                  try {
-                    setRevoking(true);
-                    const res = await fetch(`/api/admin/manual-access/${g.id}`, { method: "DELETE" });
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || "Erro ao revogar acesso.");
-                    toast.success("Acesso revogado com sucesso!");
-                    await loadData();
-                  } catch (err) {
-                    toast.error(err instanceof Error ? err.message : "Falha ao revogar acesso.");
-                  } finally {
-                    setRevoking(false);
-                  }
-                };
-
-                return (
+              {filteredGrants.map((g) => (
                   <article key={g.id} className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -293,13 +292,12 @@ export default function AdminManualAccessPage() {
                       <p className="text-xs font-medium text-slate-700 dark:text-slate-300 italic">"{g.reason}"</p>
                       <p className="text-[10px] text-muted-foreground">Concedido em: {new Date(g.createdAt).toLocaleString("pt-BR")}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={handleRevoke} disabled={revoking} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50 text-xs font-bold shrink-0">
-                      {revoking ? <Loader2 className="animate-spin" size={13} /> : null}
+                    <Button variant="outline" size="sm" onClick={() => void handleRevoke(g)} disabled={revokingId === g.id} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50 text-xs font-bold shrink-0">
+                      {revokingId === g.id ? <Loader2 className="animate-spin" size={13} /> : null}
                       Revogar Acesso
                     </Button>
                   </article>
-                );
-              })}
+              ))}
             </div>
           )}
         </section>

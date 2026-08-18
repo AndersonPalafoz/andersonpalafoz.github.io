@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { manualAccessGrants, users } from "@/drizzle/schema";
+import { adminAuditLogs, manualAccessGrants, users } from "@/drizzle/schema";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -24,6 +24,15 @@ export async function DELETE(_request: Request, context: { params: Promise<{ id:
 
     const grant = await db.query.manualAccessGrants.findFirst({ where: eq(manualAccessGrants.id, grantId) });
     if (!grant) return NextResponse.json({ error: "Concessão não encontrada." }, { status: 404 });
+    const targetUser = await db.query.users.findFirst({ where: eq(users.id, grant.userId) });
+
+    await db.insert(adminAuditLogs).values({
+      adminEmail: SUPER_ADMIN_EMAIL,
+      action: "manual_access_revoke",
+      targetName: targetUser?.name || null,
+      targetEmail: targetUser?.email || null,
+      details: JSON.stringify({ grantId, userId: grant.userId, courseId: grant.courseId, materialId: grant.materialId, reason: grant.reason }),
+    });
 
     // Se a concessão era de um curso, removemos opcionalmente a matrícula vinculada caso não haja compra Stripe associada
     if (grant.courseId) {

@@ -639,8 +639,8 @@
 - [x] `/admin/relatorios` — Relatórios administrativos gerais (busca server-side, exportação de aba e KPIs persistidos)
 - [x] `/admin/relatorios-academicos` — Relatórios acadêmicos (filtros reais, sincronização Classroom, exportações e erro recuperável)
 - [x] `/admin/auditoria` — Auditoria de acessos e atividades (filtro por usuário/email, tipo, datas, paginação defensiva e CSV da página)
-- [ ] `/admin/cupons` — Gestão de cupons e descontos Stripe
-- [ ] `/admin/liberacao-acesso` — Concessão e revogação de acesso pago pelo super administrador
+- [x] `/admin/cupons` — Gestão de cupons e descontos Stripe (filtros server-side por código/status, paginação e guard administrativo)
+- [x] `/admin/liberacao-acesso` — Concessão e revogação de acesso pago pelo super administrador (guard exclusivo, filtros, confirmação e auditoria admin_audit_logs)
 
 ### Pagamentos e Layouts Auxiliares
 - [ ] `/pagamento/sucesso` — Confirmação de pagamento concluído
@@ -654,3 +654,6 @@
 
 - [x] Implementar preview Markdown em tempo real e seguro na gestão de artigos do blog.
 - [x] Continuar o aprimoramento de `/admin/relatorios`, `/admin/relatorios-academicos` e `/admin/auditoria` com dados reais, filtros, segurança e exportações.
+
+- [x] Revisar `/admin/cupons` com filtros server-side, paginação, estados acessíveis, tokens semânticos e validação de permissões Stripe.
+- [x] Revisar `/admin/liberacao-acesso` com auditoria de concessão/revogação, filtros, confirmação acessível e escopo exclusivo do super administrador.
