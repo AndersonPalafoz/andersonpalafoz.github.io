@@ -503,3 +503,5 @@
 - [x] Implementar sistema para alunos responderem a feedbacks de avaliações e solicitarem revisão formal de notas com análise pelos professores.
 
 - [x] Permitir que alunos anexem arquivos ou imagens como evidência ao solicitar revisão de nota, com upload seguro e exibição para o professor.
+
+- [x] Expandir o sistema de medalhas e recompensas com novas categorias de conquistas (frequência, comentários, revisões), painel de concessão administrativa e molduras de avatar.
