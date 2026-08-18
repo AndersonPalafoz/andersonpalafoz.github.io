@@ -621,8 +621,8 @@
 ### Área Administrativa (`/admin`)
 - [ ] `/admin` — Dashboard administrativo
 - [ ] `/admin/usuarios` — Gestão de usuários
-- [ ] `/admin/cursos` — Gestão de cursos
-- [ ] `/admin/cursos/[id]/modulos` — Módulos de um curso específico
+- [x] `/admin/cursos` — Gestão de cursos (busca, filtro de nível, feedback não bloqueante e suporte a temas)
+- [x] `/admin/cursos/[id]/modulos` — Módulos de um curso específico (skeleton, erro recuperável, reordenação acessível e layout responsivo)
 - [ ] `/admin/materiais` — Gestão de materiais
 - [ ] `/admin/aulas` — Gestão de aulas
 - [ ] `/admin/atividades` — Gestão de atividades
