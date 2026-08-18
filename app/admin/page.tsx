@@ -165,6 +165,18 @@ export default function AdminDashboardPage() {
             >
               Auditoria de Acessos
             </Link>
+            <Link
+              href="/admin/cupons"
+              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+            >
+              Cupons e Descontos
+            </Link>
+            <Link
+              href="/admin/liberacao-acesso"
+              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+            >
+              Liberação de Acesso Pago
+            </Link>
           </div>
         </div>
       </div>
