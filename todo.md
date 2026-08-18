@@ -471,3 +471,7 @@
 - [x] Permitir o cadastro, gerenciamento e relatórios de quaisquer instituições ou cursos externos customizados informados pelo professor, além da lista padrão (IsF, PROFICI, SIMAL, Megaworks, UFBA).
 
 - [x] Implementar sistema integrado de chamada (frequência), lançamento de notas e vinculação de materiais didáticos para todas as turmas e cursos externos (institucionais e customizados) diretamente na plataforma.
+
+- [x] Adicionar opção para exportar relatório completo da turma (notas e frequências) em CSV e PDF.
+- [x] Criar gráfico visual interativo na página da turma para taxa de presença e desempenho médio.
+- [x] Desenvolver visão do aluno externo autenticado para acessar suas notas, frequências e materiais.

@@ -860,6 +860,96 @@ export default function TurmasExternasPage() {
                         </label>
                         <button
                           type="button"
+                          onClick={() => {
+                            // Exportar CSV da Turma (Alunos, Notas e Frequência)
+                            const rows = [
+                              ["Relatorio da Turma Externa"],
+                              ["Instituição", cls.institution],
+                              ["Turma", cls.className],
+                              ["Curso", cls.courseName],
+                              ["Período", cls.academicTerm],
+                              [],
+                              ["ID Aluno", "Nome", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
+                            ];
+                            cls.students.forEach(st => {
+                              const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id).map(g => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`).join("; ");
+                              rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status, studentGrades]);
+                            });
+                            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+                            const encodedUri = encodeURI(csvContent);
+                            const link = document.createElement("a");
+                            link.setAttribute("href", encodedUri);
+                            link.setAttribute("download", `relatorio_turma_${cls.id}_${cls.className.replace(/\s+/g, "_")}.csv`);
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            toast.success("Relatório CSV exportado com sucesso!");
+                          }}
+                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                          title="Exportar CSV da Turma"
+                        >
+                          <FileSpreadsheet size={14} className="text-green-600" /> Exportar CSV
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Exportar Relatório em PDF via janela de impressão formatada
+                            const printWindow = window.open("", "_blank");
+                            if (!printWindow) {
+                              toast.error("Permita popups no navegador para gerar o PDF.");
+                              return;
+                            }
+                            const gradesHtml = (cls.grades || []).map(g => {
+                              const st = cls.students.find(s => s.id === g.studentId);
+                              return `<tr><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st ? st.name : "Aluno"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.assessmentTitle}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.score} / ${g.maxScore}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.feedback || "-"}</td></tr>`;
+                            }).join("");
+
+                            const studentsHtml = cls.students.map(st => `<tr><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.name}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.email || "-"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.studentIdNumber || "-"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.status}</td></tr>`).join("");
+
+                            printWindow.document.write(`
+                              <html>
+                                <head>
+                                  <title>Relatório Acadêmico - ${cls.className}</title>
+                                  <style>
+                                    body { font-family: Arial, sans-serif; margin: 30px; color: #111; }
+                                    h1 { color: #dc2626; font-size: 20px; margin-bottom: 4px; }
+                                    h2 { font-size: 14px; margin-top: 20px; border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
+                                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+                                    th { background: #f3f4f6; padding: 8px; text-align: left; border-bottom: 2px solid #ccc; }
+                                    .meta { background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; }
+                                  </style>
+                                </head>
+                                <body>
+                                  <h1>Plataforma Anderson Palafoz - Relatório Acadêmico</h1>
+                                  <div class="meta">
+                                    <strong>Instituição:</strong> ${cls.institution} | <strong>Turma:</strong> ${cls.className}<br/>
+                                    <strong>Curso:</strong> ${cls.courseName} | <strong>Período:</strong> ${cls.academicTerm}<br/>
+                                    <strong>Total de Alunos:</strong> ${cls.students.length} | <strong>Data de Emissão:</strong> ${new Date().toLocaleDateString("pt-BR")}
+                                  </div>
+                                  <h2>Alunos Matriculados</h2>
+                                  <table>
+                                    <thead><tr><th>Nome</th><th>E-mail</th><th>Matrícula</th><th>Status</th></tr></thead>
+                                    <tbody>${studentsHtml || '<tr><td colspan="4">Nenhum aluno cadastrado.</td></tr>'}</tbody>
+                                  </table>
+                                  <h2>Notas e Avaliações Lançadas</h2>
+                                  <table>
+                                    <thead><tr><th>Aluno</th><th>Avaliação</th><th>Nota</th><th>Feedback</th></tr></thead>
+                                    <tbody>${gradesHtml || '<tr><td colspan="4">Nenhuma nota lançada.</td></tr>'}</tbody>
+                                  </table>
+                                  <script>window.onload = function() { window.print(); }</script>
+                                </body>
+                              </html>
+                            `);
+                            printWindow.document.close();
+                            toast.success("Gerando PDF para impressão/download...");
+                          }}
+                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                          title="Exportar Relatório PDF"
+                        >
+                          <FileText size={14} className="text-red-600" /> Exportar PDF
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => startEditClass(cls)}
                           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
                         >
