@@ -54,7 +54,7 @@ export default async function CertificadosPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-500 mb-1">Número do Certificado</p>
-                  <p className="font-semibold text-gray-900">{cert.certificateCode || `CERT-${cert.id.toString().padStart(6, "0")}`}</p>
+                  <p className="font-semibold text-gray-900">{cert.certificateCode || "Código não registrado"}</p>
                 </div>
               </div>
 

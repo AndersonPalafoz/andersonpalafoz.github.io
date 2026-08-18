@@ -1,130 +1,62 @@
-'use client';
+"use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Mic, Square, Sparkles, AlertTriangle, ArrowLeft, Check, Volume2, Info } from "lucide-react";
+import { ArrowLeft, Info, Loader2, Mic, Square, Volume2 } from "lucide-react";
 
-export default function IATestLabPage() {
+type SpeakingActivity = { id: number; courseId: number; title: string; description: string | null };
+
+export default function SpeakingPracticePage() {
+  const [activities, setActivities] = useState<SpeakingActivity[]>([]);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
-  const [audioRecorded, setAudioRecorded] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [selectedPhrase, setSelectedPhrase] = useState("Could you please explain how to improve my English fluency in business meetings?");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
-  const samplePhrases = [
-    "Could you please explain how to improve my English fluency in business meetings?",
-    "Learning a new language opens up doors to global academic and professional opportunities.",
-    "The pronunciation of 'comfortable' and 'schedule' requires careful attention to syllable stress.",
-    "Intelligence artificial tools help students practice speaking with real-time feedback."
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/dashboard/speaking-practice", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as atividades.");
+        if (!cancelled) { setActivities(payload.activities || []); setSelectedId(payload.activities?.[0]?.id ?? null); }
+      })
+      .catch(() => { if (!cancelled) setActivities([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
-  const startRecording = () => {
+  const selected = activities.find((activity) => activity.id === selectedId) || null;
+
+  const startRecording = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) return;
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+    chunksRef.current = [];
+    recorder.ondataavailable = (event) => { if (event.data.size > 0) chunksRef.current.push(event.data); };
+    recorder.onstop = () => {
+      const blob = new Blob(chunksRef.current, { type: recorder.mimeType || "audio/webm" });
+      setAudioUrl(URL.createObjectURL(blob));
+      stream.getTracks().forEach((track) => track.stop());
+    };
+    mediaRecorderRef.current = recorder;
+    recorder.start();
+    setAudioUrl(null);
     setIsRecording(true);
-    setAudioRecorded(false);
-    setTimeout(() => {
-      setIsRecording(false);
-      setAudioRecorded(true);
-      setToastMessage("Áudio gravado com sucesso no modo Beta (análise automática desativada temporariamente).");
-      setTimeout(() => setToastMessage(null), 4000);
-    }, 2500);
   };
 
   const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
     setIsRecording(false);
-    setAudioRecorded(true);
-    setToastMessage("Gravação salva localmente para revisão do professor.");
-    setTimeout(() => setToastMessage(null), 4000);
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-8 font-sans">
-      {toastMessage && (
-        <aside aria-label="Notificação" className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 border border-slate-800">
-          <Check size={16} className="text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
-        </aside>
-      )}
+    <div className="mx-auto max-w-4xl space-y-8 px-4 py-10 font-sans">
+      <header><Link href="/dashboard" className="mb-2 inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:underline"><ArrowLeft size={14} /> Voltar ao dashboard</Link><h1 className="mt-3 text-3xl font-black text-foreground">Prática de speaking</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Escolha uma atividade de speaking cadastrada nos seus cursos e grave uma prévia para revisão. Esta página não atribui notas nem simula envio ao professor.</p></header>
 
-      <div>
-        <Link href="/dashboard" className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline inline-flex items-center gap-1.5 mb-2">
-          <ArrowLeft size={14} /> Voltar ao Dashboard
-        </Link>
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-black">
-            <Sparkles size={24} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white">Laboratório de Pronúncia (Modo Beta)</h1>
-              <span className="bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border border-amber-300 dark:border-amber-900">
-                Beta / Em Ajustes
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">A avaliação automática por inteligência artificial foi temporariamente desativada do fluxo principal para ajustes. Utilize este ambiente exclusivamente para testes de gravação local.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 sm:p-8 rounded-3xl shadow-xs space-y-6">
-        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 flex items-start gap-3 text-amber-900 dark:text-amber-200 text-xs">
-          <AlertTriangle size={20} className="shrink-0 text-amber-600 mt-0.5" />
-          <div>
-            <p className="font-black uppercase tracking-wider mb-0.5">Aviso Importante</p>
-            <p className="leading-relaxed">O sistema de análise automática de fonemas está em modo Beta e não emite notas automáticas válidas no momento. Suas gravações podem ser enviadas diretamente para a moderação do professor.</p>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-black text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Frase para Prática de Leitura</label>
-          <select
-            value={selectedPhrase}
-            onChange={(e) => setSelectedPhrase(e.target.value)}
-            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-red-600 mb-3"
-          >
-            {samplePhrases.map((phrase, idx) => (
-              <option key={idx} value={phrase}>{phrase}</option>
-            ))}
-          </select>
-          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-start gap-3">
-            <Volume2 className="text-red-600 shrink-0 mt-0.5" size={20} />
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">Texto Sugerido</p>
-              <p className="text-sm font-black text-slate-900 dark:text-white mt-0.5 italic">"{selectedPhrase}"</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center justify-center p-8 rounded-3xl bg-slate-50 dark:bg-slate-800/60 border border-dashed border-slate-300 dark:border-slate-700 space-y-4">
-          {!isRecording ? (
-            <button
-              type="button"
-              onClick={startRecording}
-              className="h-20 w-20 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center shadow-xl hover:scale-105 transition duration-200"
-            >
-              <Mic size={32} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={stopRecording}
-              className="h-20 w-20 rounded-full bg-amber-600 hover:bg-amber-700 text-white flex items-center justify-center shadow-xl animate-pulse"
-            >
-              <Square size={28} />
-            </button>
-          )}
-
-          <div className="text-center space-y-1">
-            <p className="text-xs font-black text-slate-800 dark:text-slate-200">
-              {isRecording ? "Gravando áudio para teste local..." : audioRecorded ? "Áudio gravado com sucesso (Modo Beta)." : "Clique no microfone para gravar"}
-            </p>
-            <p className="text-[10px] text-slate-500">Nenhuma pontuação automática será emitida neste ambiente experimental.</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300">
-          <Info size={18} className="text-slate-500 shrink-0" />
-          <span>Para feedback oficial de pronúncia, utilize o envio de áudio nas atividades de speaking avaliadas pelo professor.</span>
-        </div>
-      </div>
+      {loading ? <div className="surface-card flex items-center justify-center gap-2 p-10 text-sm text-muted-foreground"><Loader2 className="animate-spin" size={18} /> Consultando atividades reais…</div> : activities.length === 0 ? <div className="surface-card border-dashed p-10 text-center"><Info className="mx-auto text-muted-foreground" size={26} /><h2 className="mt-4 text-lg font-black text-foreground">Nenhuma atividade de speaking encontrada</h2><p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">Não há uma atividade do tipo speaking cadastrada em uma turma em que sua conta esteja matriculada. A página não cria frases ou atividades de exemplo.</p></div> : <section className="surface-card space-y-6 p-6 sm:p-8"><div><label htmlFor="speaking-activity" className="mb-2 block text-xs font-black uppercase tracking-wider text-muted-foreground">Atividade cadastrada</label><select id="speaking-activity" value={selectedId ?? ""} onChange={(event) => setSelectedId(Number(event.target.value))} className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground">{activities.map((activity) => <option key={activity.id} value={activity.id}>{activity.title}</option>)}</select></div>{selected && <div className="rounded-2xl border border-border bg-muted/30 p-4"><div className="flex items-start gap-3"><Volume2 className="mt-0.5 shrink-0 text-red-600" size={20} /><div><p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Orientação da atividade</p><p className="mt-1 text-sm font-semibold leading-6 text-foreground">{selected.description || "Esta atividade não possui orientação textual cadastrada."}</p></div></div></div>}<div className="flex flex-col items-center justify-center space-y-4 rounded-3xl border border-dashed border-border bg-muted/30 p-8"><button type="button" onClick={isRecording ? stopRecording : () => void startRecording()} className={`flex h-20 w-20 items-center justify-center rounded-full text-white shadow-xl transition ${isRecording ? "animate-pulse bg-amber-600 hover:bg-amber-700" : "bg-red-600 hover:scale-105 hover:bg-red-700"}`} aria-label={isRecording ? "Parar gravação" : "Iniciar gravação"}>{isRecording ? <Square size={28} /> : <Mic size={32} />}</button><p className="text-center text-xs font-black text-foreground">{isRecording ? "Gravando… clique para parar" : audioUrl ? "Prévia local pronta" : "Clique para gravar uma prévia"}</p>{audioUrl && <audio controls src={audioUrl} className="w-full max-w-md" />}<p className="text-center text-[11px] leading-5 text-muted-foreground">A gravação permanece apenas nesta página e não é considerada enviada, avaliada ou salva no banco.</p></div></section>}
     </div>
   );
 }

@@ -12,7 +12,8 @@ interface PurchaseItem {
   checkoutSessionId: string;
   purchasedAt: string;
   course: { id: number; title: string; level: string };
-  payment: { amountTotal: number | null; currency: string | null; paymentStatus: string | null; receiptUrl?: string | null };
+  payment: { amountTotal: number | null; currency: string | null; paymentStatus: string | null; receiptUrl?: string | null } | null;
+  paymentError?: string | null;
 }
 
 export function ProfileBillingSection() {
@@ -35,7 +36,7 @@ export function ProfileBillingSection() {
 
   const filteredPurchases = useMemo(() => {
     return purchases.filter((p) => {
-      if (statusFilter !== "all" && (p.payment.paymentStatus || "completed") !== statusFilter) return false;
+      if (statusFilter !== "all" && (p.payment?.paymentStatus || "unverified") !== statusFilter) return false;
       const purchaseDateStr = new Date(p.purchasedAt).toISOString().slice(0, 10);
       if (startDate && purchaseDateStr < startDate) return false;
       if (endDate && purchaseDateStr > endDate) return false;
@@ -50,8 +51,9 @@ export function ProfileBillingSection() {
     }
     const headers = "Curso,Data,Status,Valor,Sessão Stripe\n";
     const rows = filteredPurchases.map((p) => {
-      const amount = p.payment.amountTotal ? (p.payment.amountTotal / 100).toFixed(2) : "0.00";
-      return [`"${p.course.title}"`, `"${new Date(p.purchasedAt).toLocaleDateString("pt-BR")}"`, `"${p.payment.paymentStatus || "completed"}"`, amount, `"${p.checkoutSessionId}"`].join(",");
+      const amount = p.payment?.amountTotal != null && p.payment.currency ? (p.payment.amountTotal / 100).toFixed(2) : "não verificado";
+      const status = p.payment?.paymentStatus || "não verificado";
+      return [`"${p.course.title}"`, `"${new Date(p.purchasedAt).toLocaleDateString("pt-BR")}"`, `"${status}"`, amount, `"${p.checkoutSessionId}"`].join(",");
     }).join("\n");
 
     const url = URL.createObjectURL(new Blob([headers + rows], { type: "text/csv;charset=utf-8;" }));
@@ -72,8 +74,8 @@ export function ProfileBillingSection() {
       const bytes = await createTablePdf("Faturamento e Recibos — Anderson Palafoz", ["Curso", "Data", "Status", "Valor"], filteredPurchases.map((p) => [
         p.course.title,
         new Date(p.purchasedAt).toLocaleDateString("pt-BR"),
-        p.payment.paymentStatus || "completed",
-        p.payment.amountTotal ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency || "BRL" }) : "R$ 0,00",
+        p.payment?.paymentStatus || "não verificado",
+        p.payment?.amountTotal != null && p.payment.currency ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency }) : "Não verificado",
       ]));
       downloadPdf(bytes, `faturamento-recibos-${Date.now()}.pdf`);
       toast.success("Recibos exportados em PDF com sucesso!");
@@ -133,16 +135,16 @@ export function ProfileBillingSection() {
       ) : (
         <div className="space-y-3">
           {filteredPurchases.map((p) => {
-            const amount = p.payment.amountTotal ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency || "BRL" }) : "Gratuito/Outro";
+            const amount = p.payment?.amountTotal != null && p.payment.currency ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency }) : "Valor não verificado";
             return (
               <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-border/70 bg-muted/30">
                 <div>
                   <h4 className="font-bold text-foreground text-sm">{p.course.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">Comprado em {new Date(p.purchasedAt).toLocaleDateString("pt-BR")} • Status: <span className="font-semibold text-emerald-600 uppercase">{p.payment.paymentStatus || "Concluído"}</span></p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Comprado em {new Date(p.purchasedAt).toLocaleDateString("pt-BR")} • Status: <span className={`font-semibold uppercase ${p.payment ? "text-emerald-600" : "text-amber-600"}`}>{p.payment?.paymentStatus || "Pagamento não verificado"}</span></p>{p.paymentError && <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">{p.paymentError}</p>}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-sm font-black text-foreground">{amount}</span>
-                  {p.payment.receiptUrl ? (
+                  {p.payment?.receiptUrl ? (
                     <a href={p.payment.receiptUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
                       Recibo <ExternalLink size={13} />
                     </a>

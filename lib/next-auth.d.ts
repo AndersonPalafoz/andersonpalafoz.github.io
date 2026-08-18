@@ -29,5 +29,9 @@ declare module "next-auth/jwt" {
     deletedAt?: string | null;
     picture?: string | null;
     avatarUrl?: string | null;
+    accessToken?: string;
+    refreshToken?: string;
+    accessTokenExpires?: number;
+    scope?: string;
   }
 }
