@@ -677,3 +677,5 @@
 - [ ] Google OAuth: separar o login básico (openid, email, profile) do escopo adicional do Calendar e orientar conexão explícita em caso de autorização insuficiente.
 
 - [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública de materiais didáticos para otimizar o desempenho.
+
+- [x] Adicionar seção de materiais relacionados reais na página de detalhes `/materiais/[id]` para facilitar a navegação complementar.

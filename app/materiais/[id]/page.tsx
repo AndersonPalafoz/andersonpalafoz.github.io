@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getMaterialById } from "@/lib/db";
+import { getMaterialById, getRelatedMaterials } from "@/lib/db";
+import Link from "next/link";
 import { DownloadMaterialButton } from "@/components/download-material-button";
 import { MaterialProgressButton } from "@/components/material-progress-button";
 import { MaterialCommentsSection } from "@/components/material-comments-section";
@@ -79,9 +80,51 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
             </div>
 
             <MaterialCommentsSection materialId={material.id} />
+
+            <div className="pt-10 border-t border-gray-200 dark:border-slate-800 mt-12">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Materiais Relacionados</h2>
+              <Suspense fallback={<p className="text-sm text-gray-500">Carregando relacionados...</p>}>
+                <RelatedMaterialsList materialId={material.id} category={material.category} level={material.level} />
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+async function RelatedMaterialsList({ materialId, category, level }: { materialId: number; category: string; level: string }) {
+  const related = await getRelatedMaterials(materialId, category, level, 3);
+
+  if (related.length === 0) {
+    return (
+      <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum material complementar encontrado nesta categoria ou nível no momento.</p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {related.map((item) => (
+        <Link
+          key={item.id}
+          href={`/materiais/${item.id}`}
+          className="group block rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:border-red-600 hover:shadow-md"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 px-2.5 py-0.5 rounded-full text-xs font-bold">
+              {item.level}
+            </span>
+            <span className="text-xs text-gray-400 uppercase tracking-wider">{item.category}</span>
+          </div>
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-red-600 transition-colors line-clamp-2">
+            {item.title}
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1 font-semibold">
+            Ver detalhes &rarr;
+          </p>
+        </Link>
+      ))}
     </div>
   );
 }
