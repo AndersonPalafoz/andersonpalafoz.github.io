@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Undo2, Redo2, Wand2, Crop, History, Copy, Clock } from "lucide-react";
+import { Trash2, Edit3, Save, Search, Globe, Layers, Loader2, ArrowLeft, Eye, UploadCloud, X, Smartphone, Tablet, Monitor, Folder, File, Undo2, Redo2, Crop, History, Copy, Clock } from "lucide-react";
 import { BrandEditor } from "./brand-editor";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -83,9 +83,11 @@ export default function AdminCmsPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [aiLoading, setAiLoading] = useState(false);
+  // O CMS usa apenas dados e operações persistidas; não há recurso de IA nesta interface.
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const [imagePreviewOpen, setImagePreviewOpen] = useState(false);
+  const [imagePreviewName, setImagePreviewName] = useState("");
   const [mediaFolder, setMediaFolder] = useState("all");
   const [mediaSearch, setMediaSearch] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -179,19 +181,7 @@ export default function AdminCmsPage() {
     }
   };
 
-  const handleAiImprove = () => {
-    if (!content.trim()) {
-      toast.error("Digite algum conteúdo para a IA sugerir melhorias.");
-      return;
-    }
-    setAiLoading(true);
-    setTimeout(() => {
-      const improved = `${content.trim()}\n\n[Revisado por IA: Clareza acadêmica elevada, vocabulário refinado e formatação profissional aplicada com sucesso.]`;
-      handleContentChange(improved);
-      setAiLoading(false);
-      toast.success("Sugestões e correções aplicadas pela IA com sucesso!");
-    }, 900);
-  };
+  // A revisão de conteúdo é feita manualmente pelo administrador antes da publicação.
 
   // WYSIWYG toolbar format helper
   const applyFormatting = (tagType: string) => {
@@ -419,25 +409,35 @@ export default function AdminCmsPage() {
 
       {/* Abas Superiores do CMS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-6">
-        <div className="flex items-center gap-2 border-b border-slate-200 pb-4">
-          <Button
-            onClick={() => setActiveTab("content")}
-            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "content" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
-          >
-            📄 Blocos de Conteúdo
-          </Button>
-          <Button
-            onClick={() => setActiveTab("media")}
-            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "media" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
-          >
-            🏅 Biblioteca de Mídia (Medalhas & Áudios)
-          </Button>
-          <Button
-            onClick={() => setActiveTab("analytics")}
-            className={`rounded-xl text-xs font-bold px-5 h-10 shadow-sm transition ${activeTab === "analytics" ? "bg-red-600 hover:bg-red-700 text-white" : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"}`}
-          >
-            📊 Estatísticas de Engajamento
-          </Button>
+        <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Seções do CMS">
+            {[
+              { id: "content" as const, label: "Conteúdo", description: "Editar e publicar blocos", icon: Edit3 },
+              { id: "media" as const, label: "Biblioteca de mídia", description: "Imagens, áudio e documentos", icon: Folder },
+              { id: "analytics" as const, label: "Engajamento", description: "Consultar dados reais", icon: Layers },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const active = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition ${active ? "bg-red-600 text-white shadow-md shadow-red-600/20" : "text-slate-700 hover:bg-slate-50"}`}
+                >
+                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-white/15" : "bg-red-50 text-red-600"}`}>
+                    <Icon size={17} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-black">{tab.label}</span>
+                    <span className={`mt-0.5 block truncate text-[10px] ${active ? "text-red-100" : "text-slate-500"}`}>{tab.description}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -569,15 +569,6 @@ export default function AdminCmsPage() {
                     >
                       Link
                     </button>
-                    <button
-                      type="button"
-                      onClick={handleAiImprove}
-                      disabled={aiLoading}
-                      className="text-red-600 hover:text-red-700 flex items-center gap-1 text-[11px] font-bold bg-red-50 px-2 py-0.5 rounded-lg border border-red-200 ml-1"
-                      title="Sugerir melhorias com IA"
-                    >
-                      <Wand2 size={12} /> {aiLoading ? "IA..." : "IA"}
-                    </button>
                     <button type="button" onClick={handleUndo} disabled={historyIndex <= 0} className="text-slate-400 hover:text-slate-700 disabled:opacity-30" title="Desfazer">
                       <Undo2 size={13} />
                     </button>
@@ -668,8 +659,15 @@ export default function AdminCmsPage() {
                 <div key={idx} className="group relative bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col items-center text-center space-y-2 hover:border-red-300 transition">
                   <div className="h-20 w-full bg-white rounded-xl border border-slate-100 flex items-center justify-center p-2 overflow-hidden shadow-inner">
                     {m.type.includes("image") ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={m.url} alt={m.name} className="h-full w-full object-cover rounded-lg" />
+                      <button
+                        type="button"
+                        className="h-full w-full cursor-zoom-in"
+                        onClick={() => { setSelectedImageUrl(m.url); setImagePreviewName(m.name); setImagePreviewOpen(true); }}
+                        aria-label={`Visualizar ${m.name}`}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={m.url} alt={m.name} className="h-full w-full object-cover rounded-lg transition duration-200 group-hover:scale-[1.03]" />
+                      </button>
                     ) : (
                       <File className="text-slate-400" size={32} />
                     )}
@@ -677,12 +675,22 @@ export default function AdminCmsPage() {
                   <span className="text-[11px] font-bold text-slate-800 truncate w-full">{m.name}</span>
                   <div className="flex items-center gap-1 w-full">
                     {m.type.includes("image") && (
-                      <button
-                        onClick={() => { setSelectedImageUrl(m.url); setCropModalOpen(true); }}
-                        className="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-300 transition flex-1 flex items-center justify-center gap-1"
-                      >
-                        <Crop size={11} /> Ajustar
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedImageUrl(m.url); setImagePreviewName(m.name); setImagePreviewOpen(true); }}
+                          className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-1 rounded-lg hover:bg-red-100 transition flex-1 flex items-center justify-center gap-1"
+                        >
+                          <Eye size={11} /> Ver
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedImageUrl(m.url); setCropModalOpen(true); }}
+                          className="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-300 transition flex-1 flex items-center justify-center gap-1"
+                        >
+                          <Crop size={11} /> Ajustar
+                        </button>
+                      </>
                     )}
                     <button
                       onClick={() => {
@@ -901,6 +909,31 @@ export default function AdminCmsPage() {
               >
                 Aplicar Ajustes
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Pré-visualização de Imagem */}
+      {imagePreviewOpen && selectedImageUrl && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Pré-visualização de imagem">
+          <div className="relative w-full max-w-5xl overflow-hidden rounded-3xl border border-white/10 bg-slate-950 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 text-white">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-400">Biblioteca de mídia</p>
+                <h3 className="mt-1 text-base font-extrabold">{imagePreviewName || "Pré-visualização"}</h3>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setImagePreviewOpen(false)} className="h-9 w-9 rounded-full p-0 text-white hover:bg-white/10 hover:text-white" aria-label="Fechar pré-visualização">
+                <X size={18} />
+              </Button>
+            </div>
+            <div className="flex min-h-[22rem] items-center justify-center bg-[radial-gradient(circle_at_center,_rgba(214,40,40,0.14),_transparent_58%)] p-6 sm:min-h-[34rem] sm:p-10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={selectedImageUrl} alt={imagePreviewName || "Imagem selecionada"} className="max-h-[68vh] max-w-full rounded-2xl object-contain shadow-2xl" />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 px-5 py-4 text-xs text-slate-300">
+              <span>Imagem persistida na biblioteca de mídia do CMS.</span>
+              <Button onClick={() => setImagePreviewOpen(false)} className="rounded-xl bg-red-600 text-xs font-bold text-white hover:bg-red-700">Fechar</Button>
             </div>
           </div>
         </div>
