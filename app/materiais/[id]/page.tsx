@@ -1,11 +1,14 @@
 import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getMaterialById, getRelatedMaterials } from "@/lib/db";
+import { getMaterialById, getRelatedMaterials, getSavedMaterialIds } from "@/lib/db";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { DownloadMaterialButton } from "@/components/download-material-button";
 import { MaterialProgressButton } from "@/components/material-progress-button";
 import { MaterialCommentsSection } from "@/components/material-comments-section";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
+import { SaveMaterialButton } from "@/components/save-material-button";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
   const material = await getMaterialById(materialId);
@@ -96,6 +99,11 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
 
 async function RelatedMaterialsList({ materialId, category, level }: { materialId: number; category: string; level: string }) {
   const related = await getRelatedMaterials(materialId, category, level, 3);
+  const session = await getServerSession(authOptions);
+  const userId = Number(session?.user?.id);
+  const savedMaterialIds = Number.isInteger(userId) && userId > 0
+    ? await getSavedMaterialIds(userId, related.map((item) => item.id))
+    : [];
 
   if (related.length === 0) {
     return (
@@ -106,24 +114,28 @@ async function RelatedMaterialsList({ materialId, category, level }: { materialI
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {related.map((item) => (
-        <Link
+        <article
           key={item.id}
-          href={`/materiais/${item.id}`}
-          className="group block rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:border-red-600 hover:shadow-md"
+          className="group rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm transition hover:border-red-600 hover:shadow-md"
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 gap-2">
             <span className="bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 px-2.5 py-0.5 rounded-full text-xs font-bold">
               {item.level}
             </span>
-            <span className="text-xs text-gray-400 uppercase tracking-wider">{item.category}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400 uppercase tracking-wider">{item.category}</span>
+              <SaveMaterialButton materialId={item.id} initialSaved={savedMaterialIds.includes(item.id)} />
+            </div>
           </div>
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-red-600 transition-colors line-clamp-2">
-            {item.title}
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1 font-semibold">
-            Ver detalhes &rarr;
-          </p>
-        </Link>
+          <Link href={`/materiais/${item.id}`} className="block rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">
+            <h3 className="text-sm font-bold text-gray-900 dark:text-white group-hover:text-red-600 transition-colors line-clamp-2">
+              {item.title}
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-1 font-semibold">
+              Ver detalhes &rarr;
+            </p>
+          </Link>
+        </article>
       ))}
     </div>
   );

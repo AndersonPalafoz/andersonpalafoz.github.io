@@ -154,6 +154,17 @@ export const materialProgress = pgTable("material_progress", {
 export type MaterialProgress = typeof materialProgress.$inferSelect;
 export type InsertMaterialProgress = typeof materialProgress.$inferInsert;
 
+export const savedMaterials = pgTable("saved_materials", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  materialId: integer("materialId").notNull().references(() => materials.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userMaterialIdentity: uniqueIndex("saved_materials_user_material_idx").on(table.userId, table.materialId),
+}));
+export type SavedMaterial = typeof savedMaterials.$inferSelect;
+export type InsertSavedMaterial = typeof savedMaterials.$inferInsert;
+
 /**
  * Articles table - Blog e Knowledge Hub
  */
