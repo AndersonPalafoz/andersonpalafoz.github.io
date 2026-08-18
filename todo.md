@@ -583,7 +583,7 @@
 - [x] `/blog` — Lista de artigos do blog (busca real, filtros por categoria, estados vazios/indisponíveis, foco visível e CTA acionável)
 - [x] `/blog/[slug]` — Artigo específico do blog (dados reais, breadcrumbs, comentários, avaliações com estrelas, tempo de leitura e tokens de tema)
 - [x] `/forum` — Fórum público de discussão (tópicos persistidos, moderação admin, curtidas, cache TTL seguro com invalidação, paginação otimizada para o Neon e dados reais)
-- [ ] `/faq` — Perguntas frequentes
+- [x] `/faq` — Perguntas frequentes (central de ajuda, accordion acessível, link para contato e testes validados)
 - [ ] `/contato` — Formulário de contato
 - [ ] `/cadastro` — Cadastro de usuário
 - [ ] `/login` — Login
@@ -687,13 +687,13 @@
 - [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública do blog para otimizar a navegação.
 
 ## Estratégia de Armazenamento Gratuito Externo (Google Drive) — 18/08/2026
-- [x] Migração dos uploads de arquivos e imagens para o Google Drive (pastas exclusivas da plataforma)
-- [x] Armazenamento estrito de metadados no Neon PostgreSQL (mantendo o banco leve e otimizado para o plano gratuito)
+- [ ] Migração real dos uploads de arquivos e imagens para o Google Drive (a estrutura foi preparada, mas o upload server-side ainda usa mock)
+- [ ] Armazenamento estrito de metadados no Neon PostgreSQL após integração real do Drive (a validação final depende do upload server-side)
 - [x] Implementação de compressão client-side para imagens antes do envio
 - [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
 
-- [x] Suporte a conta Google dedicada para armazenamento no Google Drive, totalmente independente da conta administrativa (`palafozanderson@gmail.com`)
+- [x] Conta dedicada configurada no código como `andersonpalafoznupel@gmail.com`, aguardando autorização OAuth server-side real
 
-- [x] Mecanismo de tentativas automáticas (retry) com backoff exponencial e tratamento de falhas para uploads no Google Drive
+- [ ] Mecanismo de retry aplicado ao upload real do Google Drive (a política foi criada, mas o endpoint ainda está em modo mock)
 
-- [x] Configuração da conta dedicada de armazenamento no Google Drive: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`)
+- [x] Configuração nominal da conta dedicada: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`); autorização server-side pendente

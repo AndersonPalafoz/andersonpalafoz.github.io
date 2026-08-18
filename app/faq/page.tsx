@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
   title: "Perguntas Frequentes | Anderson Palafoz",
