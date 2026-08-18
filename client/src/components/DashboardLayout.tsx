@@ -33,6 +33,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navItems = [
     { href: "/dashboard", label: "Visão Geral", icon: Home },
     { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
+    { href: "/dashboard/meus-cursos", label: "Cursos Externos & Notas", icon: GraduationCap },
     { href: "/dashboard/atividades", label: "Atividades & Speaking", icon: CheckSquare },
     { href: "/dashboard/materiais", label: "Biblioteca de Materiais", icon: Library },
     { href: "/dashboard/calendario", label: "Calendário & Deadlines", icon: Calendar },
