@@ -80,10 +80,14 @@ export async function fetchGoogleCalendarEvents(accessToken: string, timeMin: Da
   });
   const payload = await response.json().catch(() => null) as { items?: Array<Record<string, unknown>>; error?: { message?: string } } | null;
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new GoogleCalendarError(response.status === 403 ? "INSUFFICIENT_SCOPE" : "NOT_CONNECTED", payload?.error?.message || "O Google Calendar recusou a consulta.");
+    const errorMsg = payload?.error?.message || "";
+    if (response.status === 403 && (errorMsg.includes("has not been used in project") || errorMsg.includes("disabled"))) {
+      throw new GoogleCalendarError("INSUFFICIENT_SCOPE", "A Google Calendar API está desativada neste projeto do Google Cloud. Ative-a em https://console.developers.google.com/apis/api/calendar-json.googleapis.com/overview");
     }
-    throw new GoogleCalendarError("API_ERROR", payload?.error?.message || "Não foi possível consultar o Google Calendar.");
+    if (response.status === 401 || response.status === 403) {
+      throw new GoogleCalendarError(response.status === 403 ? "INSUFFICIENT_SCOPE" : "NOT_CONNECTED", errorMsg || "O Google Calendar recusou a consulta.");
+    }
+    throw new GoogleCalendarError("API_ERROR", errorMsg || "Não foi possível consultar o Google Calendar.");
   }
 
   return (payload?.items || []).flatMap((item) => {
