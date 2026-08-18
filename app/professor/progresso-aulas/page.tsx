@@ -204,11 +204,11 @@ export default function ProfessorProgressSpeakingPage() {
                     {attempts.length > 0 && (
                       <div className="surface-card space-y-2 p-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-xs font-bold uppercase tracking-wide text-info">Histórico de tentativas ({attempts.length})</p>
+                          <p className="text-xs font-bold uppercase tracking-wide text-red-600">Histórico de tentativas ({attempts.length})</p>
                           <span className="text-[11px] text-muted-foreground">A mais recente aparece primeiro</span>
                         </div>
                         {attempts.map((attempt: any) => (
-                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-info/20 bg-info/5 p-3 md:flex-row md:items-center">
+                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 md:flex-row md:items-center">
                             <div className="flex-1">
                               <p className="text-xs font-bold text-foreground">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
                               <p className="text-[11px] text-muted-foreground">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
