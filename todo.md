@@ -477,3 +477,6 @@
 - [x] Desenvolver visão do aluno externo autenticado para acessar suas notas, frequências e materiais.
 
 - [x] Auditar e otimizar a legibilidade e o contraste das logos em todos os modos escuros da plataforma (cabeçalho, dashboards, painéis e rodapé).
+
+- [x] Criar sistema de notificações simples para alertar alunos sobre novas notas e novos materiais.
+- [x] Auditar e corrigir consistência, cálculo, virada de dia e idempotência no sistema de ofensivas (streaks).

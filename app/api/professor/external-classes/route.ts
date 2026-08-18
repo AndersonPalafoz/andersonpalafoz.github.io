@@ -9,6 +9,7 @@ import {
   externalClassGrades,
   externalClassMaterials,
   users,
+  notifications,
 } from "@/drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -354,6 +355,21 @@ export async function POST(request: NextRequest) {
         feedback: feedback ? String(feedback).trim() : null,
       }).returning();
 
+      // Notificar aluno se tiver usuário cadastrado com o e-mail
+      const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      if (targetStudent?.email) {
+        const userAccount = await db.query.users.findFirst({ where: eq(users.email, targetStudent.email) });
+        if (userAccount) {
+          await db.insert(notifications).values({
+            userId: userAccount.id,
+            type: "grade",
+            title: `Nova Nota: ${assessmentTitle}`,
+            message: `Você recebeu nota ${score}/${maxScore} na turma ${existingClass.className} (${existingClass.institution}).`,
+            metadata: JSON.stringify({ classId: Number(classId) }),
+          });
+        }
+      }
+
       return NextResponse.json({ success: true, grade: inserted[0] });
     }
 
@@ -389,6 +405,22 @@ export async function POST(request: NextRequest) {
         fileUrl: String(fileUrl).trim(),
         description: materialDescription ? String(materialDescription).trim() : null,
       }).returning();
+
+      // Notificar todos os alunos ativos da turma que possuem conta na plataforma
+      const classStudents = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+      for (const st of classStudents) {
+        if (!st.email) continue;
+        const userAccount = await db.query.users.findFirst({ where: eq(users.email, st.email) });
+        if (userAccount) {
+          await db.insert(notifications).values({
+            userId: userAccount.id,
+            type: "material",
+            title: `Novo Material: ${materialTitle}`,
+            message: `Um novo material didático foi disponibilizado na turma ${existingClass.className} (${existingClass.institution}).`,
+            metadata: JSON.stringify({ classId: Number(classId) }),
+          });
+        }
+      }
 
       return NextResponse.json({ success: true, material: inserted[0] });
     }
