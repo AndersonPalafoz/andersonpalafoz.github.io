@@ -632,8 +632,8 @@
 - [x] `/admin/reviews` — Gestão de avaliações de cursos (respostas persistidas, seleção de curso e tokens de tema)
 - [x] `/admin/avaliacoes` — Área administrativa de avaliações (editor rico, redimensionamento de imagens e tokens de tema)
 - [x] `/admin/matriculas` — Gestão de matrículas (vínculo de alunos a cursos, filtros de busca, modal de desvinculação e suporte a temas)
-- [ ] `/admin/mensagens` — Gestão de mensagens
-- [ ] `/admin/artigos` — Gestão de artigos
+- [x] `/admin/mensagens` — Gestão de mensagens (caixa de entrada de contato, links de resposta por email e suporte a temas)
+- [x] `/admin/artigos` — Gestão de artigos (redirecionamento seguro para a gestão unificada do blog)
 - [ ] `/admin/blog` — Gestão do blog
 - [ ] `/admin/cms` — Sistema de gerenciamento de conteúdo
 - [ ] `/admin/relatorios` — Relatórios administrativos gerais
