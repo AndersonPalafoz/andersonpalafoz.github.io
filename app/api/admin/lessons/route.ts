@@ -3,10 +3,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { lessons, materials, modules } from "@/drizzle/schema";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 function canManage(role?: string | null) {
-  return role === "professor" || role === "admin";
+  return role === "admin";
 }
 
 export async function POST(request: NextRequest) {
@@ -63,6 +63,44 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error creating lesson:", error);
     return NextResponse.json({ error: "Failed to create lesson" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || !canManage(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const body = await request.json() as { courseId?: number; lessonIds?: number[] };
+    const courseId = Number(body.courseId);
+    const lessonIds = Array.isArray(body.lessonIds) ? body.lessonIds.map(Number) : [];
+    if (!Number.isInteger(courseId) || courseId <= 0 || lessonIds.length === 0 || lessonIds.some((id) => !Number.isInteger(id) || id <= 0) || new Set(lessonIds).size !== lessonIds.length) {
+      return NextResponse.json({ error: "courseId e lessonIds válidos são obrigatórios." }, { status: 400 });
+    }
+
+    const courseModules = await db.query.modules.findMany({ where: eq(modules.courseId, courseId) });
+    const moduleIds = courseModules.map((module) => module.id);
+    if (!moduleIds.length) return NextResponse.json({ error: "Curso sem módulos persistidos." }, { status: 404 });
+
+    const existingLessons = await db.query.lessons.findMany({ where: and(inArray(lessons.id, lessonIds), inArray(lessons.moduleId, moduleIds)) });
+    if (existingLessons.length !== lessonIds.length) return NextResponse.json({ error: "A lista contém aulas que não pertencem ao curso informado." }, { status: 400 });
+
+    const lessonsById = new Map(existingLessons.map((lesson) => [lesson.id, lesson]));
+    const nextOrderByModule = new Map<number, number>();
+    await db.transaction(async (transaction) => {
+      for (const lessonId of lessonIds) {
+        const lesson = lessonsById.get(lessonId);
+        if (!lesson) continue;
+        const nextOrder = (nextOrderByModule.get(lesson.moduleId) || 0) + 1;
+        nextOrderByModule.set(lesson.moduleId, nextOrder);
+        await transaction.update(lessons).set({ order: nextOrder, updatedAt: new Date() }).where(eq(lessons.id, lessonId));
+      }
+    });
+
+    return NextResponse.json({ message: "Ordem das aulas salva no banco de dados." });
+  } catch (error) {
+    console.error("Error reordering lessons:", error);
+    return NextResponse.json({ error: "Não foi possível salvar a ordem das aulas." }, { status: 500 });
   }
 }
 

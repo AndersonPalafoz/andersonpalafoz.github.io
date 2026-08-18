@@ -743,3 +743,50 @@ export const gradeReviewRequests = pgTable("grade_review_requests", {
 
 export type GradeReviewRequest = typeof gradeReviewRequests.$inferSelect;
 export type InsertGradeReviewRequest = typeof gradeReviewRequests.$inferInsert;
+
+/**
+ * Fórum acadêmico: tópicos, respostas e curtidas persistidos no banco.
+ * Nenhum conteúdo de demonstração deve ser inserido automaticamente.
+ */
+export const forumPostStatusEnum = pgEnum("forum_post_status", ["pending", "approved", "rejected", "resolved"]);
+
+export const forumPosts = pgTable("forum_posts", {
+  id: serial("id").primaryKey(),
+  authorId: integer("authorId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 200 }).notNull(),
+  category: varchar("category", { length: 80 }).notNull(),
+  content: text("content").notNull(),
+  audioUrl: varchar("audioUrl", { length: 1000 }),
+  status: forumPostStatusEnum("status").notNull().default("pending"),
+  moderationNote: text("moderationNote"),
+  moderatedBy: integer("moderatedBy").references(() => users.id),
+  moderatedAt: timestamp("moderatedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type ForumPost = typeof forumPosts.$inferSelect;
+export type InsertForumPost = typeof forumPosts.$inferInsert;
+
+export const forumReplies = pgTable("forum_replies", {
+  id: serial("id").primaryKey(),
+  postId: integer("postId").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
+  authorId: integer("authorId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  audioUrl: varchar("audioUrl", { length: 1000 }),
+  isResolved: boolean("isResolved").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type ForumReply = typeof forumReplies.$inferSelect;
+export type InsertForumReply = typeof forumReplies.$inferInsert;
+
+export const forumPostLikes = pgTable("forum_post_likes", {
+  id: serial("id").primaryKey(),
+  postId: integer("postId").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  postUserIdentity: uniqueIndex("forum_post_likes_post_user_idx").on(table.postId, table.userId),
+}));
+export type ForumPostLike = typeof forumPostLikes.$inferSelect;
+export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
