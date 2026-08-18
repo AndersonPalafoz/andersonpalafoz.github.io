@@ -48,7 +48,7 @@ export async function GET() {
         }
       });
 
-      const attendanceRate = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 100;
+      const attendanceRate = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : null;
 
       enrollments.push({
         student: st,

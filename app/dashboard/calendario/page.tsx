@@ -1,117 +1,110 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Calendar, RefreshCw, CheckCircle2, Clock } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Calendar, CheckCircle2, Clock, Database, ExternalLink, Loader2, RefreshCw, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 
-export default function CalendarioPage() {
-  const [eventos, setEventos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [syncingAll, setSyncingAll] = useState(false);
-  const [lastSync, setLastSync] = useState<string | null>(null);
+type CalendarEvent = {
+  id: string;
+  title: string;
+  start: string;
+  end: string;
+  status: string;
+  source: "database" | "google";
+  kind: string;
+};
 
-  const fetchCalendarEvents = async () => {
+type CalendarPayload = {
+  eventos: CalendarEvent[];
+  sources: { database: number; google: number };
+  google: { connected: boolean; message?: string; code?: string };
+  fetchedAt: string;
+};
+
+export default function CalendarioPage() {
+  const [payload, setPayload] = useState<CalendarPayload | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+  const [lastFetched, setLastFetched] = useState<string | null>(null);
+
+  const loadCalendar = useCallback(async (manual = false) => {
     try {
-      setLoading(true);
-      const res = await fetch("/api/calendar");
-      if (!res.ok) throw new Error("Falha ao carregar calendário");
-      const data = await res.json();
-      setEventos(data.eventos || []);
-    } catch (err) {
-      console.error(err);
-      toast.error("Não foi possível carregar os prazos acadêmicos.");
+      manual ? setSyncing(true) : setLoading(true);
+      const response = await fetch("/api/calendar", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível carregar o calendário.");
+      setPayload(data);
+      setLastFetched(data.fetchedAt || new Date().toISOString());
+      if (manual) {
+        if (data.google?.connected) toast.success("Banco de dados e Google Calendar consultados novamente.");
+        else toast.success("Dados acadêmicos do banco atualizados. O Google Calendar não está conectado nesta sessão.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível carregar os dados do calendário.");
     } finally {
       setLoading(false);
+      setSyncing(false);
     }
-  };
-
-  useEffect(() => {
-    fetchCalendarEvents();
   }, []);
 
-  const handleSyncAllSemester = async () => {
-    setSyncingAll(true);
+  useEffect(() => { void loadCalendar(); }, [loadCalendar]);
+
+  const handleSync = async () => {
     try {
-      const res = await fetch("/api/calendar", { method: "POST" });
-      if (!res.ok) throw new Error("Falha na sincronização");
-      const data = await res.json();
-      const formattedTime = new Date(data.syncedAt || Date.now()).toLocaleString("pt-BR");
-      setLastSync(formattedTime);
-      toast.success("Todos os prazos do semestre foram sincronizados com sucesso no Google Calendar!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao sincronizar prazos com o Google Calendar.");
+      setSyncing(true);
+      const response = await fetch("/api/calendar", { method: "POST", cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível atualizar o calendário.");
+      setPayload(data);
+      setLastFetched(data.fetchedAt || new Date().toISOString());
+      if (data.google?.connected) toast.success("Consulta real ao Google Calendar concluída.");
+      else toast.success("Consulta real ao banco concluída; o Google Calendar ainda não está conectado.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o calendário.");
     } finally {
-      setSyncingAll(false);
+      setSyncing(false);
     }
   };
+
+  const events = payload?.eventos ?? [];
+  const googleConnected = payload?.google.connected ?? false;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Calendário & Prazos</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Gerencie e sincronize automaticamente os prazos acadêmicos reais com o seu Google Calendar.
-          </p>
+          <span className="eyebrow">Área do aluno</span>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Calendário e prazos</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Eventos acadêmicos persistidos no banco e eventos realmente retornados pelo Google Calendar autorizado.</p>
         </div>
+        <button type="button" onClick={handleSync} disabled={loading || syncing} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 py-3 text-xs font-black text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"><RefreshCw size={16} className={syncing ? "animate-spin" : ""} />{syncing ? "Consultando…" : "Atualizar dados reais"}</button>
+      </header>
 
-        <button
-          type="button"
-          onClick={handleSyncAllSemester}
-          disabled={syncingAll || eventos.length === 0}
-          className="bg-red-600 hover:bg-red-700 text-white font-black text-xs px-6 py-3 rounded-2xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50"
-        >
-          <RefreshCw size={16} className={syncingAll ? "animate-spin" : ""} />
-          <span>{syncingAll ? "Sincronizando Semestre..." : "Sincronizar Todos os Prazos com Google Calendar"}</span>
-        </button>
-      </div>
-
-      {lastSync && (
-        <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 p-4 rounded-2xl flex items-center gap-3 text-emerald-900 dark:text-emerald-200 text-xs font-bold">
-          <CheckCircle2 size={18} className="text-emerald-600 shrink-0" />
-          <span>Sincronização em lote com o Google Calendar realizada com sucesso em {lastSync}.</span>
+      <section className={`rounded-2xl border p-4 text-sm ${googleConnected ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-200" : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"}`}>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3"><span className="mt-0.5">{googleConnected ? <CheckCircle2 className="text-emerald-600" size={19} /> : <ShieldAlert className="text-amber-600" size={19} />}</span><div><p className="font-bold">{googleConnected ? "Google Calendar conectado nesta sessão" : "Google Calendar não conectado nesta sessão"}</p><p className="mt-1 text-xs opacity-80">{googleConnected ? "Os eventos abaixo incluem a resposta real do calendário principal autorizado." : payload?.google.message || "Os eventos do banco continuam disponíveis. Nenhum evento do Google será inventado."}</p></div></div>
+          {!googleConnected && <a href="/api/auth/signin/google?callbackUrl=%2Fdashboard%2Fcalendario" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-current px-3 py-2 text-xs font-black transition hover:bg-black/5"><ExternalLink size={14} /> Conectar Google</a>}
         </div>
-      )}
+      </section>
+
+      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="surface-card p-4"><p className="text-2xl font-black text-foreground">{events.length}</p><p className="text-xs font-semibold text-muted-foreground">Eventos exibidos</p></div>
+        <div className="surface-card p-4"><p className="text-2xl font-black text-foreground">{payload?.sources.database ?? 0}</p><p className="text-xs font-semibold text-muted-foreground">Registros do banco</p></div>
+        <div className="surface-card p-4"><p className="text-2xl font-black text-foreground">{payload?.sources.google ?? 0}</p><p className="text-xs font-semibold text-muted-foreground">Eventos do Google</p></div>
+      </section>
+
+      {lastFetched && <p className="text-xs text-muted-foreground">Última consulta real: {new Date(lastFetched).toLocaleString("pt-BR")}</p>}
 
       {loading ? (
-        <div className="text-center py-16 text-red-600 font-bold animate-pulse">Carregando prazos reais da base de dados...</div>
-      ) : eventos.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
-          <Calendar className="mx-auto text-gray-400 mb-4" size={48} />
-          <p className="text-gray-600 dark:text-gray-400 font-medium">Nenhum prazo pendente cadastrado no sistema acadêmico.</p>
-        </div>
+        <div className="surface-card flex items-center justify-center gap-2 p-12 text-sm text-muted-foreground"><Loader2 className="animate-spin text-red-600" size={20} /> Consultando dados reais…</div>
+      ) : events.length === 0 ? (
+        <div className="surface-card border-dashed p-12 text-center"><Calendar className="mx-auto text-muted-foreground" size={42} /><p className="mt-4 text-base font-black text-foreground">Nenhum evento encontrado no período consultado.</p><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Isso significa que não há prazos persistidos para seus cursos e, {googleConnected ? "neste período, o Google Calendar também não retornou eventos." : "como a conta Google não está conectada, somente os dados do banco foram consultados."}</p></div>
       ) : (
         <div className="space-y-3">
-          {eventos.map((item) => (
-            <div
-              key={item.id}
-              className="p-5 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-md transition flex items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div className="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0 font-black">
-                  <Calendar size={22} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-gray-900 dark:text-white truncate text-base">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                    <Clock size={13} />
-                    {new Date(item.dueDate).toLocaleDateString("pt-BR", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric"
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              <span className="px-3.5 py-1.5 rounded-full text-xs font-black uppercase bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 shrink-0">
-                {item.status || "Pendente"}
-              </span>
-            </div>
+          {events.map((event) => (
+            <article key={event.id} className="surface-card flex flex-col gap-4 p-5 transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-4"><div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${event.source === "google" ? "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{event.source === "google" ? <Calendar size={22} /> : <Database size={22} />}</div><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="truncate text-base font-black text-foreground">{event.title}</h2><span className="rounded-full bg-muted px-2 py-1 text-[10px] font-black uppercase text-muted-foreground">{event.source === "google" ? "Google Calendar" : "Banco"}</span></div><p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Clock size={13} /> {new Date(event.start).toLocaleString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p></div></div><span className="rounded-full bg-amber-100 px-3.5 py-1.5 text-xs font-black uppercase text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">{event.status}</span>
+            </article>
           ))}
         </div>
       )}

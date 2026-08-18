@@ -1,187 +1,124 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from "react";
-import { Target, CheckCircle2, Plus, Trophy, History, Calendar } from "lucide-react";
-import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { Activity, BookOpen, CheckCircle2, Clock3, Loader2 } from "lucide-react";
 
-interface WeeklyGoal {
-  id: string;
-  title: string;
-  completed: boolean;
-  targetMinutes: number;
+interface DaySummary {
+  key: string;
+  label: string;
+  date: string;
+  lessons: number;
+  activities: number;
 }
 
-interface MonthlyHistory {
-  period: string;
-  completedGoals: number;
-  totalGoals: number;
-  status: string;
+interface WeeklySummary {
+  weekStart: string;
+  weekEnd: string;
+  days: DaySummary[];
+  totals: { lessons: number; activities: number };
 }
 
 export function WeeklyGoalsWidget() {
-  const [goals, setGoals] = useState<WeeklyGoal[]>([
-    { id: "1", title: "Assistir a 3 videoaulas completas", completed: true, targetMinutes: 90 },
-    { id: "2", title: "Praticar 2 atividades de speaking no navegador", completed: false, targetMinutes: 30 },
-    { id: "3", title: "Baixar e ler 1 guia de gramática em PDF", completed: false, targetMinutes: 45 },
-    { id: "4", title: "Participar do fórum com 1 dúvida ou dica", completed: true, targetMinutes: 20 }
-  ]);
-
-  const [newGoalTitle, setNewGoalTitle] = useState("");
-  const [showCelebration, setShowCelebration] = useState(false);
-
-  const [history] = useState<MonthlyHistory[]>([
-    { period: "Julho / 2026", completedGoals: 18, totalGoals: 20, status: "Excelente (90%)" },
-    { period: "Junho / 2026", completedGoals: 16, totalGoals: 20, status: "Muito Bom (80%)" },
-    { period: "Maio / 2026", completedGoals: 19, totalGoals: 20, status: "Excelente (95%)" }
-  ]);
-
-  const completedCount = goals.filter(g => g.completed).length;
-  const progressPercentage = Math.round((completedCount / goals.length) * 100);
+  const [summary, setSummary] = useState<WeeklySummary | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [traditionalMode, setTraditionalMode] = useState(false);
 
   useEffect(() => {
-    if (progressPercentage === 100) {
-      setShowCelebration(true);
-      toast.success("Incrível! Você atingiu 100% das metas semanais! 🏆🎉");
-      const timer = setTimeout(() => setShowCelebration(false), 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [progressPercentage]);
+    const storedMode = window.localStorage.getItem("ap_traditional_mode");
+    setTraditionalMode(storedMode === "true");
 
-  const toggleGoal = (id: string) => {
-    setGoals(goals.map(g => {
-      if (g.id === id) {
-        const nextState = !g.completed;
-        if (nextState) {
-          toast.success("Meta semanal concluída!");
-        }
-        return { ...g, completed: nextState };
-      }
-      return g;
-    }));
-  };
+    let cancelled = false;
+    fetch("/api/dashboard/weekly-summary", { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o resumo semanal.");
+        if (!cancelled) setSummary(payload);
+      })
+      .catch((cause) => {
+        if (!cancelled) setError(cause instanceof Error ? cause.message : "Não foi possível carregar o resumo semanal.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-  const addGoal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newGoalTitle.trim()) return;
+    return () => { cancelled = true; };
+  }, []);
 
-    const created: WeeklyGoal = {
-      id: String(Date.now()),
-      title: newGoalTitle,
-      completed: false,
-      targetMinutes: 30
-    };
+  if (loading) {
+    return <div className="surface-card flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground"><Loader2 className="animate-spin" size={18} /> Carregando atividades reais da semana…</div>;
+  }
 
-    setGoals([...goals, created]);
-    setNewGoalTitle("");
-    toast.success("Nova meta semanal adicionada!");
-  };
+  if (error) {
+    return <div className="surface-card border-amber-200 bg-amber-50/60 p-6 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">Não foi possível carregar o resumo semanal. Tente atualizar a página.</div>;
+  }
+
+  if (!summary) return null;
+
+  const totalItems = summary.totals.lessons + summary.totals.activities;
+  const maxItems = Math.max(...summary.days.map((day) => day.lessons + day.activities), 1);
+
+  if (traditionalMode) {
+    return (
+      <section className="surface-card space-y-4 p-6 sm:p-8" aria-labelledby="weekly-summary-title">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <span className="eyebrow">Modo Tradicional</span>
+            <h2 id="weekly-summary-title" className="mt-1 text-xl font-black text-foreground">Registro semanal de estudo</h2>
+            <p className="mt-1 text-xs text-muted-foreground">Somente atividades concluídas que foram registradas no banco.</p>
+          </div>
+          <div className="rounded-2xl bg-muted px-4 py-3 text-center">
+            <p className="text-2xl font-black text-foreground">{totalItems}</p>
+            <p className="text-[11px] font-bold text-muted-foreground">registros reais</p>
+          </div>
+        </div>
+        <p className="text-sm text-muted-foreground">{totalItems === 0 ? "Nenhuma aula ou atividade concluída foi registrada nesta semana." : `${summary.totals.lessons} aula(s) e ${summary.totals.activities} atividade(s) concluída(s) nesta semana.`}</p>
+      </section>
+    );
+  }
 
   return (
-    <div className="surface-card p-6 sm:p-8 space-y-6 relative overflow-hidden">
-      {showCelebration && (
-        <div className="absolute inset-0 bg-red-600/10 dark:bg-red-950/40 backdrop-blur-xs z-20 flex flex-col items-center justify-center p-6 text-center animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 border-2 border-red-500 p-6 rounded-3xl shadow-2xl max-w-md w-full space-y-4">
-            <div className="w-16 h-16 bg-red-100 text-red-600 rounded-2xl mx-auto flex items-center justify-center animate-bounce">
-              <Trophy size={32} />
-            </div>
-            <h3 className="text-2xl font-black text-foreground">Parabéns, Aluno(a)!</h3>
-            <p className="text-sm text-muted-foreground">Você concluiu 100% das suas metas semanais de estudo. Seu empenho está gerando grandes resultados na fluência!</p>
-            <button
-              type="button"
-              onClick={() => setShowCelebration(false)}
-              className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold text-sm shadow transition"
-            >
-              Continuar Jornada
-            </button>
-          </div>
+    <section className="surface-card space-y-6 p-6 sm:p-8" aria-labelledby="weekly-summary-title">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <span className="eyebrow inline-flex items-center gap-1.5"><Activity size={14} /> Dados reais da semana</span>
+          <h2 id="weekly-summary-title" className="mt-1 text-xl font-black text-foreground">Seu ritmo de estudo</h2>
+          <p className="mt-1 text-xs leading-5 text-muted-foreground">Acompanhe apenas aulas e atividades concluídas e persistidas na plataforma.</p>
+        </div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-center dark:border-red-900/60 dark:bg-red-950/30">
+          <p className="text-2xl font-black text-red-700 dark:text-red-200">{totalItems}</p>
+          <p className="text-[11px] font-bold text-red-800/70 dark:text-red-200/70">conclusões na semana</p>
+        </div>
+      </div>
+
+      {totalItems === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border p-6 text-center">
+          <BookOpen className="mx-auto text-muted-foreground" size={24} />
+          <p className="mt-3 text-sm font-bold text-foreground">Ainda não há conclusões registradas nesta semana.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Quando você concluir uma aula ou atividade, ela aparecerá aqui automaticamente.</p>
+        </div>
+      ) : (
+        <div className="grid h-44 grid-cols-7 items-end gap-2 rounded-2xl border border-border bg-muted/30 p-4 sm:gap-3 sm:p-6">
+          {summary.days.map((day) => {
+            const total = day.lessons + day.activities;
+            const height = total === 0 ? 8 : Math.max(15, (total / maxItems) * 100);
+            return (
+              <div key={day.key} className="flex h-full flex-col items-center justify-end gap-2">
+                <span className="text-[10px] font-black text-foreground">{total}</span>
+                <div className="flex h-full w-full max-w-9 items-end overflow-hidden rounded-xl bg-background">
+                  <div className={`w-full rounded-xl transition-all ${total > 0 ? "bg-red-600" : "bg-muted"}`} style={{ height: `${height}%` }} />
+                </div>
+                <span className="text-[11px] font-bold text-muted-foreground">{day.label}</span>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="space-y-1">
-          <span className="eyebrow inline-flex items-center gap-1.5">
-            <Target size={14} /> Metas Semanais de Estudo
-          </span>
-          <h2 className="text-xl font-black text-foreground">Acompanhe seu Ritmo Acadêmico</h2>
-          <p className="text-xs text-muted-foreground">Defina e conclua objetivos semanais para manter sua constância de aprendizado.</p>
-        </div>
-        <div className="flex items-center gap-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 px-4 py-2.5 rounded-2xl">
-          <Trophy className="text-red-600" size={22} />
-          <div>
-            <p className="text-[10px] font-black uppercase text-red-700 dark:text-red-300">Progresso Semanal</p>
-            <p className="text-sm font-black text-red-900 dark:text-red-200">{completedCount} de {goals.length} concluídas ({progressPercentage}%)</p>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"><CheckCircle2 className="text-emerald-600" size={19} /><div><p className="text-lg font-black text-foreground">{summary.totals.lessons}</p><p className="text-xs font-semibold text-muted-foreground">Aulas concluídas</p></div></div>
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"><Clock3 className="text-blue-600" size={19} /><div><p className="text-lg font-black text-foreground">{summary.totals.activities}</p><p className="text-xs font-semibold text-muted-foreground">Atividades concluídas</p></div></div>
       </div>
-
-      <div className="space-y-2">
-        <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-          <div className="bg-red-600 h-full transition-all duration-500 rounded-full" style={{ width: `${progressPercentage}%` }} />
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {goals.map((goal) => (
-          <div
-            key={goal.id}
-            onClick={() => toggleGoal(goal.id)}
-            className={`p-4 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-4 ${
-              goal.completed 
-                ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200" 
-                : "bg-card border-border hover:border-red-300"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`h-6 w-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
-                goal.completed ? "bg-emerald-600 text-white" : "border-2 border-slate-300 dark:border-slate-600 text-transparent"
-              }`}>
-                {goal.completed && <CheckCircle2 size={14} />}
-              </div>
-              <span className={`text-xs sm:text-sm font-bold ${goal.completed ? "line-through opacity-80" : "text-foreground"}`}>
-                {goal.title}
-              </span>
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-wider bg-muted px-2.5 py-1 rounded-full text-muted-foreground shrink-0">
-              {goal.targetMinutes} min
-            </span>
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={addGoal} className="flex gap-2 pt-2 border-t border-border/70">
-        <input
-          type="text"
-          placeholder="Adicionar nova meta semanal..."
-          value={newGoalTitle}
-          onChange={(e) => setNewGoalTitle(e.target.value)}
-          className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-xs font-bold text-foreground focus:outline-red-600 shadow-xs"
-        />
-        <button
-          type="submit"
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm shrink-0"
-        >
-          <Plus size={16} /> Adicionar Meta
-        </button>
-      </form>
-
-      {/* Histórico de Metas Alcançadas em Meses Anteriores */}
-      <div className="pt-6 border-t border-border/70 space-y-4">
-        <div className="flex items-center gap-2">
-          <History size={18} className="text-red-600" />
-          <h3 className="text-base font-black text-foreground">Histórico de Metas Alcançadas (Meses Anteriores)</h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {history.map((item, idx) => (
-            <div key={idx} className="bg-muted/50 border border-border p-4 rounded-2xl space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                <span className="flex items-center gap-1"><Calendar size={13} /> {item.period}</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-black">{item.completedGoals}/{item.totalGoals}</span>
-              </div>
-              <p className="text-sm font-bold text-foreground">{item.status}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    </section>
   );
 }
