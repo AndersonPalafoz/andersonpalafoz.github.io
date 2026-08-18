@@ -2,6 +2,7 @@ import Link from "next/link";
 import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, UserCheck } from "lucide-react";
 import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents } from "@/lib/teacher";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
+import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
 
 export const metadata = {
   title: "Painel do Professor | Anderson Palafoz",
@@ -66,6 +67,9 @@ export default async function TeacherDashboardPage() {
 
         {/* Motor de Busca Acadêmica do Professor */}
         <TeacherSearchWidget courses={allCourses} students={allStudents} />
+
+        {/* Painel de Resumo: Dúvidas Pendentes e Médias por Turma */}
+        <ProfessorSummaryDashboard />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
