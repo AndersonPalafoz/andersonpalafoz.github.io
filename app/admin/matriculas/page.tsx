@@ -150,14 +150,14 @@ export default function AdminEnrollmentsPage() {
   };
 
   if (authLoading || loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="animate-spin text-red-600" size={32} /></div>;
   }
 
   if (!user || user.role !== "admin") return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card text-card-foreground">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
           <div>
             <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
@@ -174,7 +174,7 @@ export default function AdminEnrollmentsPage() {
         {/* Modal de Confirmação de Desvinculação com Progresso Atual */}
         {confirmingEnrollment && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fadeIn">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4">
+            <div className="w-full max-w-md rounded-2xl bg-card text-card-foreground p-6 shadow-xl space-y-4">
               <div className="flex items-center gap-3 text-red-600">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50"><AlertTriangle size={24} /></div>
                 <div>
@@ -183,10 +183,10 @@ export default function AdminEnrollmentsPage() {
                 </div>
               </div>
 
-              <div className="rounded-xl bg-gray-50 p-4 border border-gray-200 space-y-2 text-sm">
+              <div className="rounded-xl bg-background p-4 border border-border space-y-2 text-sm">
                 <p><strong className="text-gray-900">Aluno:</strong> {confirmingEnrollment.student.name || confirmingEnrollment.student.email}</p>
                 <p><strong className="text-gray-900">Curso:</strong> {confirmingEnrollment.course.title}</p>
-                <div className="pt-2 border-t border-gray-200">
+                <div className="pt-2 border-t border-border">
                   <div className="flex justify-between text-xs font-semibold mb-1">
                     <span className="text-gray-600">Progresso atual do aluno:</span>
                     <span className="text-red-600 font-bold">{confirmingEnrollment.progress}% concluído</span>
@@ -209,7 +209,7 @@ export default function AdminEnrollmentsPage() {
           </div>
         )}
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-border bg-card text-card-foreground p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600"><UserPlus size={20} /></div>
             <div>
@@ -220,14 +220,14 @@ export default function AdminEnrollmentsPage() {
           <form onSubmit={handleEnroll} className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
             <label className="block text-sm font-semibold text-gray-700">
               Aluno
-              <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
+              <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
                 <option value="">Selecione um aluno</option>
                 {data?.students.map((student) => <option key={student.id} value={student.id}>{student.name || student.email || `Usuário #${student.id}`} — {student.approvalStatus === "approved" ? "Aprovado" : "Acesso pendente"}</option>)}
               </select>
             </label>
             <label className="block text-sm font-semibold text-gray-700">
               Curso
-              <select value={courseId} onChange={(event) => setCourseId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
+              <select value={courseId} onChange={(event) => setCourseId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
                 <option value="">Selecione um curso</option>
                 {data?.courses.map((course) => <option key={course.id} value={course.id}>{course.title} — {course.level}</option>)}
               </select>
@@ -239,7 +239,7 @@ export default function AdminEnrollmentsPage() {
           </form>
         </section>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+        <section className="rounded-2xl border border-border bg-card text-card-foreground p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-900">Matrículas registradas</h2>
@@ -250,7 +250,7 @@ export default function AdminEnrollmentsPage() {
                 <Search size={16} className="absolute left-3 top-3 text-gray-400" />
                 <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar aluno ou curso" className="h-10 w-full rounded-xl border border-gray-300 pl-9 pr-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 sm:w-64" />
               </label>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | Enrollment["status"])} className="h-10 rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-500">
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | Enrollment["status"])} className="h-10 rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm text-gray-700 outline-none focus:border-red-500">
                 <option value="active">Ativas</option>
                 <option value="all">Todas</option>
                 <option value="completed">Concluídas</option>
@@ -261,7 +261,7 @@ export default function AdminEnrollmentsPage() {
           </div>
 
           {filteredEnrollments.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 px-5 py-12 text-center">
+            <div className="rounded-xl border border-dashed border-gray-300 bg-background px-5 py-12 text-center">
               <UserRound className="mx-auto text-gray-400" size={28} />
               <p className="mt-3 text-sm font-semibold text-gray-700">Nenhuma matrícula encontrada</p>
               <p className="mt-1 text-xs text-gray-500">Ajuste os filtros ou crie uma nova matrícula acima.</p>
@@ -271,7 +271,7 @@ export default function AdminEnrollmentsPage() {
               {filteredEnrollments.map((enrollment) => {
                 const isCancelled = enrollment.status === "cancelled";
                 return (
-                  <div key={enrollment.id} className={`flex flex-col gap-4 rounded-xl border p-4 transition sm:flex-row sm:items-center sm:justify-between ${isCancelled ? "border-gray-200 bg-gray-50 opacity-75" : "border-gray-200 bg-white hover:border-red-200"}`}>
+                  <div key={enrollment.id} className={`flex flex-col gap-4 rounded-xl border p-4 transition sm:flex-row sm:items-center sm:justify-between ${isCancelled ? "border-border bg-background opacity-75" : "border-border bg-card text-card-foreground hover:border-red-200"}`}>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="font-bold text-gray-900">{enrollment.student.name || "Aluno sem nome"}</h3>
