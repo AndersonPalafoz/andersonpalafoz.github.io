@@ -1,0 +1,4 @@
+Anderson Palafoz Platform - Teste de Upload sem dados pessoais.
+Data: 2026-08-18
+Conta de Armazenamento: andersonpalafoznupel@gmail.com
+Status: Arquivo de validação controlado.
