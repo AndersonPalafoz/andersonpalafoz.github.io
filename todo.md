@@ -574,8 +574,8 @@
 
 ### Rotas Públicas
 - [x] `/` — Página inicial (indicador real de aulas, nomenclatura Básico ao Avançado, acessibilidade e responsividade revisadas)
-- [ ] `/sobre` — Sobre o professor e a plataforma
-- [ ] `/aulas` — Catálogo público de aulas
+- [x] `/sobre` — Sobre o professor e a plataforma (trajetória UFBA, pesquisa, design tokens e responsividade validados)
+- [x] `/aulas` — Catálogo público de aulas (filtros, dados reais do Neon, ordenação por nível e tokens de tema validados)
 - [ ] `/cursos/[id]` — Detalhes de um curso específico
 - [ ] `/cursos/[id]/aulas/[lessonId]` — Aula específica dentro de um curso
 - [ ] `/materiais` — Biblioteca pública de materiais
@@ -668,3 +668,6 @@
 - [x] Permitir que o professor exclua turmas externas com confirmação, validação de dependências e registro de auditoria.
 
 - [x] Adicionar modal de confirmação dedicado e acessível antes de excluir turma externa para evitar exclusões acidentais, detalhando o impacto nas dependências.
+
+- [x] Incluir estado de carregamento com spinner no botão do modal de exclusão e toast de sucesso imediato.
+- [x] `/sobre` — Página sobre o professor e a plataforma (revisão de dados reais, biografia e tokens de tema).
