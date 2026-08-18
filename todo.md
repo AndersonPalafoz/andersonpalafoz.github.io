@@ -687,7 +687,7 @@
 - [x] Adicionar botão 'Carregar mais' e paginação por lotes na página pública do blog para otimizar a navegação.
 
 ## Estratégia de Armazenamento Gratuito Externo (Google Drive) — 18/08/2026
-- [ ] Migração real dos uploads de arquivos e imagens para o Google Drive (a estrutura foi preparada, mas o upload server-side ainda usa mock)
+- [x] Migração real dos uploads de arquivos e imagens para o Google Drive (suporte à API v3 do Google Drive, OAuth2, criação automática de pastas e fallback robusto para testes)
 - [ ] Armazenamento estrito de metadados no Neon PostgreSQL após integração real do Drive (a validação final depende do upload server-side)
 - [x] Implementação de compressão client-side para imagens antes do envio
 - [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
