@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, enrollments } from "@/drizzle/schema";
+import { users } from "@/drizzle/schema";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 const VALID_ROLES = ["user", "professor", "admin"] as const;
@@ -48,19 +48,6 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
-    if (role === "user" && newUser.length > 0) {
-      const allCourses = await db.query.courses.findMany();
-
-      for (const course of allCourses) {
-        await db.insert(enrollments).values({
-          userId: newUser[0].id,
-          courseId: course.id,
-          progress: 0,
-          currentModule: 0,
-          status: "active",
-        });
-      }
-    }
 
     return NextResponse.json({
       message: "Usuário criado com acesso aprovado e progresso inicial zerado.",

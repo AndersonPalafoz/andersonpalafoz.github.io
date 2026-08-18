@@ -66,14 +66,19 @@ export default function AdminActivitiesPage() {
   const [filter, setFilter] = useState<ActivityFilter>("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   const fetchActivities = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/activity", { cache: "no-store" });
+      const params = new URLSearchParams({ limit: "25", offset: String(offset) });
+      if (filter !== "all") params.set("action", filter);
+      const response = await fetch(`/api/admin/activity?${params.toString()}`, { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Não foi possível carregar o histórico.");
-      setActivities(data.activities);
+      setActivities(data.activities || []);
+      setHasMore(Boolean(data.pagination?.hasMore));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível carregar o histórico.");
@@ -84,12 +89,9 @@ export default function AdminActivitiesPage() {
 
   useEffect(() => {
     void fetchActivities();
-  }, []);
+  }, [filter, offset]);
 
-  const filteredActivities = useMemo(
-    () => filter === "all" ? activities : activities.filter((activity) => activity.action === filter),
-    [activities, filter],
-  );
+  const filteredActivities = useMemo(() => activities, [activities]);
 
   return (
     <div className="site-shell min-h-screen">
@@ -107,7 +109,7 @@ export default function AdminActivitiesPage() {
         <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-900"><div className="flex items-start gap-3"><ShieldAlert size={19} className="mt-0.5 shrink-0" /><p>Este registro é somente para consulta. Cada entrada identifica a conta afetada, o administrador responsável e o horário da ação.</p></div></div>
 
         <div className="mb-6 flex flex-wrap gap-2">
-          <select value={filter} onChange={(event) => setFilter(event.target.value as ActivityFilter)} className="field-control h-11 max-w-xs font-medium">
+          <select value={filter} onChange={(event) => { setFilter(event.target.value as ActivityFilter); setOffset(0); }} className="field-control h-11 max-w-xs font-medium">
             <option value="all">Todas as atividades</option>
             <option value="approve">Aprovações</option>
             <option value="reject">Recusas</option>
@@ -141,6 +143,7 @@ export default function AdminActivitiesPage() {
             </ol>
           )}
         </section>
+        <div className="mt-4 flex items-center justify-between gap-3"><button type="button" disabled={offset === 0 || loading} onClick={() => setOffset((current) => Math.max(0, current - 25))} className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground disabled:opacity-50">Anterior</button><span className="text-xs text-muted-foreground">Página {Math.floor(offset / 25) + 1}</span><button type="button" disabled={!hasMore || loading} onClick={() => setOffset((current) => current + 25)} className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground disabled:opacity-50">Próxima</button></div>
       </div>
     </div>
   );

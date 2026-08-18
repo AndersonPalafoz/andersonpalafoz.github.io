@@ -546,3 +546,18 @@
 - [x] Produzir relatório técnico detalhado com achados e recomendações.
 - [x] Corrigido o erro de importação em `/admin/artigos`.
 - [x] Concluída a validação de todas as páginas do painel do professor sem erros de compilação ou falhas de tipo.
+
+## Auditoria Técnica de Erros do Painel Administrativo — 18/08/2026
+- [x] Mapear todas as páginas e rotas de API do painel administrativo (`/admin/*`).
+- [x] Auditar permissões RBAC, segurança das mutações, tratamento de erros HTTP e tipagem.
+- [x] Executar validação de testes e build de produção.
+- [x] Produzir relatório técnico detalhado de auditoria administrativa.
+- [x] Remover os três tópicos, autores, métricas, áudios e timestamps estáticos de `app/admin/forum/page.tsx`; conectar a moderação a registros persistidos e mutações reais.
+- [x] Impedir que `app/admin/page.tsx` converta falhas da API de estatísticas em zeros silenciosos; exibir erro recuperável e distinguir ausência real de dados de indisponibilidade.
+- [x] Corrigir `app/api/admin/users/create/route.ts`: novos usuários devem iniciar sem matrículas automáticas, mantendo o onboarding vazio conforme a regra de dados reais.
+- [x] Revisar `app/api/admin/activity/route.ts` e a tela de auditoria avançada para garantir paginação e escopo explícito de super-admin.
+- [x] Criar auditoria avançada de logs de acesso baseada em `event_logs`, com gravação real de login, paginação, filtros de evento e período e visão administrativa.
+- [ ] Corrigir a rota de sessões administrativas para evitar carregamento sem limite de sessões, alunos, cursos e presenças.
+- [x] Remover a persistência simulada de reordenação em `app/admin/aulas/page.tsx` e criar mutação real para salvar a ordem das aulas.
+- [x] Auditar `app/admin/reviews/page.tsx`: substituir o autor de resposta hardcoded e o consumo de APIs públicas por resposta persistida do backend com escopo administrativo.
+- [ ] Projetar e implementar o módulo de cupons/descontos com schema persistido, RBAC administrativo, validação de Stripe e testes; não há página, tabela ou rota real existente no momento.

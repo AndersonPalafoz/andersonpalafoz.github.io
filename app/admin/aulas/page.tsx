@@ -125,20 +125,28 @@ export default function AdminAulasPage() {
 
   const moveLesson = async (index: number, direction: "up" | "down") => {
     const newIndex = direction === "up" ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= lessons.length) return;
+    if (!selectedCourseId || newIndex < 0 || newIndex >= lessons.length) return;
+    const previous = lessons;
     const updated = [...lessons];
     const temp = updated[index];
     updated[index] = updated[newIndex];
     updated[newIndex] = temp;
-    const reindexed = updated.map((l, idx) => ({ ...l, order: idx + 1 }));
+    const reindexed = updated.map((lesson, orderIndex) => ({ ...lesson, order: orderIndex + 1 }));
     setLessons(reindexed);
 
     try {
       toast.loading("Salvando nova ordem das aulas...", { id: "reorder-lesson" });
-      await new Promise((r) => setTimeout(r, 400));
+      const response = await fetch("/api/admin/lessons", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId: selectedCourseId, lessonIds: reindexed.map((lesson) => lesson.id) }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Erro ao salvar ordem das aulas.");
       toast.success("Ordem das aulas alterada e salva com sucesso!", { id: "reorder-lesson" });
-    } catch {
-      toast.error("Erro ao salvar ordem das aulas.", { id: "reorder-lesson" });
+    } catch (error) {
+      setLessons(previous);
+      toast.error(error instanceof Error ? error.message : "Erro ao salvar ordem das aulas.", { id: "reorder-lesson" });
     }
   };
 
