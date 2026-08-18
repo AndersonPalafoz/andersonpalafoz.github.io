@@ -1,18 +1,5 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-export default function AdminArtigosRedirect() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace("/admin/blog");
-  }, [router]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
-      <p className="text-gray-600">Redirecionando para o gerenciador de blog...</p>
-    </div>
-  );
+export default function AdminArtigosPage() {
+  redirect("/admin/blog");
 }
