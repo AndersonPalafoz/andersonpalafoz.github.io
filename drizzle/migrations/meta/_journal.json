@@ -288,6 +288,13 @@
       "when": 1787023497677,
       "tag": "0040_mixed_doorman",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1787045111943,
+      "tag": "0041_mature_tyrannus",
+      "breakpoints": true
     }
   ]
 }

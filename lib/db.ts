@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, asc, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
 // usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
@@ -63,6 +63,15 @@ export async function getRelatedMaterials(materialId: number, category: string, 
   return all
     .filter((m) => m.id !== materialId && (m.category === category || m.level === level))
     .slice(0, limit);
+}
+
+export async function getSavedMaterialIds(userId: number, materialIds: number[]) {
+  if (materialIds.length === 0) return [];
+  const rows = await db
+    .select({ materialId: schema.savedMaterials.materialId })
+    .from(schema.savedMaterials)
+    .where(and(eq(schema.savedMaterials.userId, userId), inArray(schema.savedMaterials.materialId, materialIds)));
+  return rows.map((row) => row.materialId);
 }
 
 export async function getArticles() {
