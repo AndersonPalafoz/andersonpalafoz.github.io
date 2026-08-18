@@ -538,3 +538,11 @@
 - [x] Garantir que estatísticas globais, logs de atividades, relatórios acadêmicos e métricas de armazenamento Google venham estritamente de consultas reais no Neon PostgreSQL e APIs autenticadas.
 - [x] Validar o isolamento de permissões administrativas (palafozanderson@gmail.com / role admin) e a integridade das mutações no banco de dados.
 - [x] Executar suíte Vitest e build de produção Next.js 15 após as correções no painel administrativo.
+
+## Auditoria Técnica de Erros do Painel do Professor — 18/08/2026
+- [x] Mapear todas as páginas e rotas de API do painel do professor.
+- [x] Auditar isolamento de dados, verificações de sessão, tratamento de erros HTTP e integridade de tipos.
+- [x] Executar validação de testes e build.
+- [x] Produzir relatório técnico detalhado com achados e recomendações.
+- [x] Corrigido o erro de importação em `/admin/artigos`.
+- [x] Concluída a validação de todas as páginas do painel do professor sem erros de compilação ou falhas de tipo.
