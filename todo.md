@@ -460,11 +460,11 @@
 
 - [x] Aprimorar o sistema de cursos e turmas externas com prevenção de duplicidade de matrículas, edição de alunos, importação real via CSV e painel consolidado por instituição.
 
-- [ ] Criar visualização de boletim individual consolidado para alunos externos com dados reais, histórico de turmas, status e notas.
+- [x] Criar visualização de boletim individual consolidado para alunos externos com dados reais, histórico de turmas, status e notas.
 
 - [x] Criar visualização de boletim individual consolidado para alunos externos (`/professor/boletim/[studentId]`) com dados reais, histórico de turmas, status e notas.
 
-- [ ] Aprimorar o gerenciamento e manutenção unificada de cursos internos (plataforma) e externos (IsF, PROFICI, SIMAL, Megaworks, UFBA) com controle de status, módulos, turmas e arquivamento seguro.
+- [x] Aprimorar o gerenciamento e manutenção unificada de cursos internos (plataforma) e externos (IsF, PROFICI, SIMAL, Megaworks, UFBA) com controle de status, módulos, turmas e arquivamento seguro.
 
 - [x] Aprimorar o gerenciamento e manutenção unificada de cursos internos (plataforma) e externos (IsF, PROFICI, SIMAL, Megaworks, UFBA) com controle de status, módulos, turmas e arquivamento seguro.
 
