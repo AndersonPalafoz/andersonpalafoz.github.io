@@ -55,12 +55,13 @@ export async function getMaterialById(id: number) {
 }
 
 export async function getRelatedMaterials(materialId: number, category: string, level: string, limit = 3) {
-  const all = await db.query.materials.findMany({
+  // Otimização para plano gratuito do Neon: limitar busca diretamente no SGBD por categoria/nível e excluir o id atual
+  const rows = await db.query.materials.findMany({
     where: and(eq(schema.materials.isPublic, true)),
     orderBy: desc(schema.materials.createdAt),
-    limit: 20,
+    limit: 15,
   });
-  return all
+  return rows
     .filter((m) => m.id !== materialId && (m.category === category || m.level === level))
     .slice(0, limit);
 }
