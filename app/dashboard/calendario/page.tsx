@@ -84,7 +84,18 @@ export default function CalendarioPage() {
       <section className={`rounded-2xl border p-4 text-sm ${googleConnected ? "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-200" : "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"}`}>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3"><span className="mt-0.5">{googleConnected ? <CheckCircle2 className="text-emerald-600" size={19} /> : <ShieldAlert className="text-amber-600" size={19} />}</span><div><p className="font-bold">{googleConnected ? "Google Calendar conectado nesta sessão" : "Google Calendar não conectado nesta sessão"}</p><p className="mt-1 text-xs opacity-80">{googleConnected ? "Os eventos abaixo incluem a resposta real do calendário principal autorizado." : payload?.google.message || "Os eventos do banco continuam disponíveis. Nenhum evento do Google será inventado."}</p></div></div>
-          {!googleConnected && <button type="button" onClick={() => signIn("google", { callbackUrl: "/dashboard/calendario" }, { prompt: "consent", access_type: "offline", scope: "openid email profile https://www.googleapis.com/auth/calendar.readonly" })} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-current px-3 py-2 text-xs font-black transition hover:bg-black/5"><ExternalLink size={14} /> Autorizar Google Calendar</button>}
+          {!googleConnected && (
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => signIn("google", { callbackUrl: "/dashboard/calendario" }, { prompt: "consent", access_type: "offline", scope: "openid email profile https://www.googleapis.com/auth/calendar.readonly" })} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-current px-3 py-2 text-xs font-black transition hover:bg-black/5">
+                <ExternalLink size={14} /> Autorizar Google Calendar
+              </button>
+              {payload?.google.code === "INSUFFICIENT_SCOPE" && (
+                <a href="https://console.developers.google.com/apis/api/calendar-json.googleapis.com/overview?project=248382742983" target="_blank" rel="noreferrer" className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-600 px-3 py-2 text-xs font-black text-white transition hover:bg-amber-700">
+                  Ativar API no Google Cloud
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
