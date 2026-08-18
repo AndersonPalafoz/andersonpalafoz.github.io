@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import { Heart, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check, Palette, Laptop } from "lucide-react";
+import { NotificationBell } from "@/components/notification-bell";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -216,6 +217,7 @@ export function Navbar() {
                   <Heart size={17} className={wishlistCount > 0 || wishlistPulse ? "fill-red-500 text-red-500" : ""} />
                   {wishlistCount > 0 && <span className="absolute -right-1 -top-1 min-w-5 rounded-full bg-red-600 px-1.5 py-0.5 text-center text-[10px] font-black leading-5 text-white">{wishlistCount > 99 ? "99+" : wishlistCount}</span>}
                 </Link>
+                <NotificationBell />
                 {/* Links de Professor e Admin movidos estritamente para o dashboard conforme solicitado */}
                 <Link href="/dashboard" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-600 px-4 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><LayoutDashboard size={15} /> Minha área</Link>
                 
