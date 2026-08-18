@@ -628,8 +628,8 @@
 - [x] `/admin/atividades` — Gestão de atividades (trilha de auditoria superadmin, filtros de ação, paginação e alto contraste)
 - [x] `/admin/chamada` — Chamada e frequência (filtros avançados, ações em massa, exportação dual CSV/PDF e tokens de tema)
 - [x] `/admin/medalhas` — Catálogo e concessão de medalhas (concessão manual, listagem de concedidas e tokens de tema)
-- [ ] `/admin/forum` — Moderação do fórum
-- [ ] `/admin/reviews` — Gestão de avaliações de cursos
+- [x] `/admin/forum` — Moderação do fórum (moderação de tópicos persistidos, notas de moderação e suporte a temas)
+- [x] `/admin/reviews` — Gestão de avaliações de cursos (respostas persistidas, seleção de curso e tokens de tema)
 - [ ] `/admin/avaliacoes` — Área administrativa de avaliações
 - [ ] `/admin/matriculas` — Gestão de matrículas
 - [ ] `/admin/mensagens` — Gestão de mensagens
