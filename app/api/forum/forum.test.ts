@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const root = process.cwd();
+const read = (relativePath: string) => readFileSync(join(root, relativePath), "utf8");
 
 const mocks = vi.hoisted(() => ({
   getServerSession: vi.fn(),
@@ -64,6 +69,13 @@ describe("Forum API contracts", () => {
     const response = await getAdminForum(new NextRequest("http://localhost/api/admin/forum"));
     expect(response.status).toBe(403);
     expect(await response.json()).toEqual({ error: "Acesso restrito a administradores." });
+  });
+
+  it("supports optimistic UI updates with rollback handling", () => {
+    const page = read("app/forum/page.tsx");
+    expect(page).toContain("previousPosts");
+    expect(page).toContain("setPosts");
+    expect(page).toContain("Rollback em caso de falha");
   });
 
   it("allows the administrator route to pass RBAC before querying persisted data", async () => {

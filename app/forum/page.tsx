@@ -65,13 +65,22 @@ export default function ForumPage() {
   const visiblePosts = useMemo(() => posts, [posts]);
 
   async function handleLike(postId: number) {
+    // Atualização otimista imediata para feedback instantâneo (Optimistic UI)
+    const previousPosts = posts;
+    setPosts((current) =>
+      current.map((post) => (post.id === postId ? { ...post, likes: post.likes + 1 } : post))
+    );
     try {
       setLikingId(postId);
       const response = await fetch(`/api/forum/${postId}/like`, { method: "POST" });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "Não foi possível atualizar a curtida.");
-      setPosts((current) => current.map((post) => post.id === postId ? { ...post, likes: body.likes } : post));
+      setPosts((current) =>
+        current.map((post) => (post.id === postId ? { ...post, likes: body.likes } : post))
+      );
     } catch (cause) {
+      // Rollback em caso de falha de rede ou validação
+      setPosts(previousPosts);
       setError(cause instanceof Error ? cause.message : "Não foi possível atualizar a curtida.");
     } finally {
       setLikingId(null);
