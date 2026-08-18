@@ -63,6 +63,8 @@ export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [classPendingDeletion, setClassPendingDeletion] = useState<ExternalClassItem | null>(null);
+  const [deletingClassId, setDeletingClassId] = useState<number | null>(null);
 
   // Search and filters
   const [searchTerm, setSearchTerm] = useState("");
@@ -231,9 +233,20 @@ export default function TurmasExternasPage() {
     setDescription("");
   };
 
-  const handleDeleteClass = async (classId: number) => {
-    if (!window.confirm("Deseja realmente excluir esta turma, seus alunos, chamadas, notas e materiais?")) return;
+  const handleDeleteClass = (classId: number) => {
+    const selectedClass = classes.find((item) => item.id === classId);
+    if (!selectedClass) {
+      toast.error("Turma externa não encontrada. Atualize a página e tente novamente.");
+      return;
+    }
+    setClassPendingDeletion(selectedClass);
+  };
+
+  const confirmDeleteClass = async () => {
+    if (!classPendingDeletion) return;
+    const classId = classPendingDeletion.id;
     try {
+      setDeletingClassId(classId);
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -247,9 +260,12 @@ export default function TurmasExternasPage() {
       } else {
         toast.success("Turma externa excluída com sucesso.");
       }
+      setClassPendingDeletion(null);
       void loadClasses();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir turma.");
+    } finally {
+      setDeletingClassId(null);
     }
   };
 
@@ -963,6 +979,8 @@ export default function TurmasExternasPage() {
                         <button
                           type="button"
                           onClick={() => handleDeleteClass(cls.id)}
+                          aria-haspopup="dialog"
+                          aria-label={`Abrir confirmação para excluir a turma ${cls.className}`}
                           className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1.5"
                         >
                           <Trash2 size={14} /> Excluir
@@ -1406,6 +1424,76 @@ export default function TurmasExternasPage() {
           </div>
         </div>
       </div>
+
+      {classPendingDeletion && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && deletingClassId === null) setClassPendingDeletion(null);
+          }}
+        >
+          <section
+            className="w-full max-w-lg rounded-3xl border border-gray-200 bg-white p-6 text-gray-950 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white sm:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-external-class-title"
+            aria-describedby="delete-external-class-description"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+                  <Trash2 size={20} aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 id="delete-external-class-title" className="text-lg font-black">Excluir turma externa?</h2>
+                  <p id="delete-external-class-description" className="mt-1 text-sm leading-6 text-gray-600 dark:text-gray-300">Esta ação é permanente e remove os registros acadêmicos associados.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setClassPendingDeletion(null)}
+                disabled={deletingClassId !== null}
+                className="rounded-xl p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 disabled:opacity-50 dark:hover:bg-slate-800 dark:hover:text-white"
+                aria-label="Fechar confirmação"
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900/60 dark:bg-red-950/30">
+              <p className="font-bold text-red-900 dark:text-red-100">{classPendingDeletion.className}</p>
+              <p className="mt-1 text-xs font-semibold text-red-800 dark:text-red-200">{classPendingDeletion.institution} · {classPendingDeletion.courseName} · {classPendingDeletion.academicTerm}</p>
+              <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-red-900 dark:text-red-100 sm:grid-cols-4">
+                <span><strong>{classPendingDeletion.students.length}</strong> aluno(s)</span>
+                <span><strong>{classPendingDeletion.attendance?.length || 0}</strong> chamada(s)</span>
+                <span><strong>{classPendingDeletion.grades?.length || 0}</strong> nota(s)</span>
+                <span><strong>{classPendingDeletion.materials?.length || 0}</strong> material(is)</span>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setClassPendingDeletion(null)}
+                disabled={deletingClassId !== null}
+                className="rounded-xl border border-gray-300 px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 dark:border-slate-600 dark:text-gray-200 dark:hover:bg-slate-800"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmDeleteClass()}
+                disabled={deletingClassId !== null}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+              >
+                {deletingClassId !== null ? <Loader2 className="animate-spin" size={16} aria-hidden="true" /> : <Trash2 size={16} aria-hidden="true" />}
+                {deletingClassId !== null ? "Excluindo..." : "Excluir definitivamente"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

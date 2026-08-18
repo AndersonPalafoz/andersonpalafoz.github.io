@@ -1,6 +1,25 @@
 import Link from "next/link";
+import { count } from "drizzle-orm";
 import { getCmsContent } from "@/lib/public-cms";
+import { db } from "@/lib/db";
+import { lessons } from "@/drizzle/schema";
 import { Sparkles, ArrowRight, BookOpen, Award } from "lucide-react";
+
+async function getPublishedLessonCount() {
+  try {
+    const [result] = await db.select({ value: count() }).from(lessons);
+    return Number(result?.value ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+function normalizeLevelCopy(value: string) {
+  return value
+    .replace(/Aulas organizadas do A1 ao B2 e materiais que podem chegar aos níveis C1 e C2\.?/gi, "Aulas organizadas do Básico ao Avançado [A1-C2].")
+    .replace(/Aulas organizadas Básico a Intermediário \[A1-B2\] e materiais que podem chegar aos níveis Avançado \[C1-C2\]\.?/gi, "Aulas organizadas do Básico ao Avançado [A1-C2].")
+    .replace(/Aulas organizadas do Básico ao Avançado \./gi, "Aulas organizadas do Básico ao Avançado [A1-C2].");
+}
 
 export const metadata = {
   title: "Anderson Palafoz | Professor de Inglês",
@@ -11,11 +30,14 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const heroTitle = await getCmsContent("home", "hero_title", "Aprenda Inglês com Anderson Palafoz");
-  const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas Básico a Intermediário [A1-B2] e materiais que podem chegar aos níveis Avançado [C1-C2].");
-  const stat1Title = await getCmsContent("home", "stat_1_title", "100+");
-  const stat1Desc = await getCmsContent("home", "stat_1_desc", "Aulas Disponíveis");
-  const stat2Title = await getCmsContent("home", "stat_2_title", "Básico ao Avançado");
-  const stat2Desc = await getCmsContent("home", "stat_2_desc", "Níveis das aulas");
+  const heroSubtitle = normalizeLevelCopy(await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas Básico a Intermediário [A1-B2] e materiais que podem chegar aos níveis Avançado [C1-C2]."));
+  const [stat1Desc, stat2Title, stat2Desc, lessonCount] = await Promise.all([
+    getCmsContent("home", "stat_1_desc", "Aulas cadastradas"),
+    getCmsContent("home", "stat_2_title", "Básico ao Avançado"),
+    getCmsContent("home", "stat_2_desc", "Níveis das aulas"),
+    getPublishedLessonCount(),
+  ]);
+  const stat1Title = String(lessonCount);
 
   return (
     <div className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-red-600 selection:text-white">
@@ -36,12 +58,6 @@ export default async function HomePage() {
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl font-normal">
               {heroSubtitle}
             </p>
-
-            <div className="hidden">
-              <span>Aulas organizadas Básico a Intermediário [A1-B2]</span>
-              <span>Cursos estruturados Básico a Intermediário [A1-B2]</span>
-              <span>materiais que podem chegar aos níveis Avançado [C1-C2]</span>
-            </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link href="/aulas">
@@ -66,8 +82,8 @@ export default async function HomePage() {
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat2Desc}</p>
               </div>
               <div className="space-y-1 col-span-2 sm:col-span-1">
-                <p className="text-3xl font-black text-red-600 dark:text-red-400">100%</p>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Interativo & Moderno</p>
+                <p className="text-3xl font-black text-red-600 dark:text-red-400">{lessonCount > 0 ? "Ativo" : "Em preparação"}</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Conteúdo real disponível</p>
               </div>
             </div>
           </div>
@@ -115,7 +131,7 @@ export default async function HomePage() {
             </div>
             <h3 className="text-xl font-black">Prática de Speaking Guiada</h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Gravação de voz no navegador com feedback instantâneo sobre pronúncia, entonação e precisão.
+              Práticas de speaking e atividades de produção oral organizadas para acompanhar seu desenvolvimento com clareza.
             </p>
           </div>
 
