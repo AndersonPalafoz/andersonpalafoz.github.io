@@ -578,7 +578,7 @@
 - [x] `/aulas` — Catálogo público de aulas (filtros, dados reais do Neon, ordenação por nível e tokens de tema validados)
 - [x] `/cursos/[id]` — Detalhes de um curso específico (módulos, aulas reais, progresso e matrícula validados)
 - [x] `/cursos/[id]/aulas/[lessonId]` — Aula específica dentro de um curso (reprodução de vídeo, anotações, histórico de speaking e certificado automático validados)
-- [ ] `/materiais` — Biblioteca pública de materiais
+- [x] `/materiais` — Biblioteca pública de materiais (busca, filtros por nível e categoria, guias de gramática e dados reais validados)
 - [ ] `/materiais/[id]` — Detalhes de um material específico
 - [ ] `/blog` — Lista de artigos do blog
 - [ ] `/blog/[slug]` — Artigo específico do blog
