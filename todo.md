@@ -695,3 +695,5 @@
 - [x] Suporte a conta Google dedicada para armazenamento no Google Drive, totalmente independente da conta administrativa (`palafozanderson@gmail.com`)
 
 - [x] Mecanismo de tentativas automáticas (retry) com backoff exponencial e tratamento de falhas para uploads no Google Drive
+
+- [x] Configuração da conta dedicada de armazenamento no Google Drive: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`)

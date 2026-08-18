@@ -13,7 +13,7 @@ export async function uploadToGoogleDrive(
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   
-  const targetAccount = storageAccountEmail || process.env.GOOGLE_STORAGE_ACCOUNT || "armazenamento-dedicado@gmail.com";
+  const targetAccount = storageAccountEmail || process.env.GOOGLE_STORAGE_ACCOUNT || "andersonpalafoznupel@gmail.com";
   
   let attempts = 0;
   let lastError: Error | null = null;
