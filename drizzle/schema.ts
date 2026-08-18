@@ -790,3 +790,5 @@ export const forumPostLikes = pgTable("forum_post_likes", {
 }));
 export type ForumPostLike = typeof forumPostLikes.$inferSelect;
 export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
+
+
