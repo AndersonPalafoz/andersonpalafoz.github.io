@@ -582,7 +582,7 @@
 - [x] `/materiais/[id]` — Detalhes de um material específico (visualização de PDF/imagem, downloads, comentários, progresso e dados reais validados)
 - [x] `/blog` — Lista de artigos do blog (busca real, filtros por categoria, estados vazios/indisponíveis, foco visível e CTA acionável)
 - [x] `/blog/[slug]` — Artigo específico do blog (dados reais, breadcrumbs, comentários, avaliações com estrelas, tempo de leitura e tokens de tema)
-- [ ] `/forum` — Fórum público de discussão
+- [x] `/forum` — Fórum público de discussão (tópicos persistidos, moderação admin, curtidas, paginação por lotes otimizada para o Neon e dados reais)
 - [ ] `/faq` — Perguntas frequentes
 - [ ] `/contato` — Formulário de contato
 - [ ] `/cadastro` — Cadastro de usuário

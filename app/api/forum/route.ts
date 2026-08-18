@@ -15,6 +15,8 @@ function parsePositiveInt(value: string | null, fallback: number) {
 
 async function getCounts(postIds: number[]) {
   if (postIds.length === 0) return { replies: new Map<number, number>(), likes: new Map<number, number>() };
+  // Otimização para plano gratuito do Neon: agrupar contagens em uma única passagem se possível ou limitar lote
+  if (postIds.length > 50) postIds = postIds.slice(0, 50);
 
   const [replyRows, likeRows] = await Promise.all([
     db.select({ postId: forumReplies.postId, total: count() })
