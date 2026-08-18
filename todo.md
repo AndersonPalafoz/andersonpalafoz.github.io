@@ -623,10 +623,10 @@
 - [ ] `/admin/usuarios` — Gestão de usuários
 - [x] `/admin/cursos` — Gestão de cursos (busca, filtro de nível, feedback não bloqueante e suporte a temas)
 - [x] `/admin/cursos/[id]/modulos` — Módulos de um curso específico (skeleton, erro recuperável, reordenação acessível e layout responsivo)
-- [ ] `/admin/materiais` — Gestão de materiais
+- [x] `/admin/materiais` — Gestão de materiais (upload persistente, formulário completo, busca e suporte a temas)
 - [ ] `/admin/aulas` — Gestão de aulas
 - [ ] `/admin/atividades` — Gestão de atividades
-- [ ] `/admin/chamada` — Chamada e frequência
+- [x] `/admin/chamada` — Chamada e frequência (filtros avançados, ações em massa, exportação dual CSV/PDF e tokens de tema)
 - [ ] `/admin/medalhas` — Catálogo e concessão de medalhas
 - [ ] `/admin/forum` — Moderação do fórum
 - [ ] `/admin/reviews` — Gestão de avaliações de cursos
