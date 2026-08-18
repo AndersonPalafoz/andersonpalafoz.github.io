@@ -512,3 +512,4 @@
 - [x] Criar sistema de missões semanais com recompensa em XP real.
 - [x] Exibir níveis em formato paralelo (ex: Básico [A1-A2], Intermediário [B1-B2], Avançado [C1-C2]) em todo o site.
 - [x] Revisar e padronizar a nomenclatura de níveis (Básico [A1-A2], Intermediário [B1-B2], Avançado [C1-C2]) em todas as seções, filtros e catálogos do site.
+- [x] Implementar sincronização real e persistida na página do calendário (`/dashboard/calendario`) utilizando dados acadêmicos reais do banco e integração com Google Calendar.
