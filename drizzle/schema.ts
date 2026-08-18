@@ -792,3 +792,45 @@ export type ForumPostLike = typeof forumPostLikes.$inferSelect;
 export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
 
 
+
+/**
+ * Cupons de desconto administrados pelo painel e sincronizados com Stripe.
+ * O código local mantém a auditoria e o estado de ativação; o desconto é validado pelo Stripe no checkout.
+ */
+export const coupons = pgTable("coupons", {
+  id: serial("id").primaryKey(),
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  stripeCouponId: varchar("stripeCouponId", { length: 255 }).notNull().unique(),
+  percentOff: varchar("percentOff", { length: 32 }),
+  amountOff: varchar("amountOff", { length: 32 }),
+  currency: varchar("currency", { length: 3 }).notNull().default("brl"),
+  maxRedemptions: integer("maxRedemptions"),
+  redeemBy: timestamp("redeemBy"),
+  active: boolean("active").notNull().default(true),
+  createdBy: integer("createdBy").notNull().references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type Coupon = typeof coupons.$inferSelect;
+export type InsertCoupon = typeof coupons.$inferInsert;
+
+/**
+ * Concessões manuais de acesso a conteúdos pagos (cursos/materiais) pelo Super Administrador.
+ * Garante que o administrador (palafozanderson@gmail.com) possa liberar acesso pago a qualquer conta.
+ */
+export const manualAccessGrants = pgTable("manual_access_grants", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  courseId: integer("courseId").references(() => courses.id, { onDelete: "cascade" }),
+  materialId: integer("materialId").references(() => materials.id, { onDelete: "cascade" }),
+  grantedBy: integer("grantedBy").notNull().references(() => users.id),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  userCourseUnique: uniqueIndex("manual_access_user_course_idx").on(table.userId, table.courseId),
+  userMaterialUnique: uniqueIndex("manual_access_user_material_idx").on(table.userId, table.materialId),
+}));
+
+export type ManualAccessGrant = typeof manualAccessGrants.$inferSelect;
+export type InsertManualAccessGrant = typeof manualAccessGrants.$inferInsert;

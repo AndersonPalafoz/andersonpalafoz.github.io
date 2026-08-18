@@ -14,7 +14,7 @@ export default async function HomePage() {
   const heroSubtitle = await getCmsContent("home", "hero_subtitle", "Plataforma educacional completa com aulas, materiais exclusivos e conteúdo acadêmico de alta qualidade. Aulas organizadas Básico a Intermediário [A1-B2] e materiais que podem chegar aos níveis Avançado [C1-C2].");
   const stat1Title = await getCmsContent("home", "stat_1_title", "100+");
   const stat1Desc = await getCmsContent("home", "stat_1_desc", "Aulas Disponíveis");
-  const stat2Title = await getCmsContent("home", "stat_2_title", "Básico [A1-B2]");
+  const stat2Title = await getCmsContent("home", "stat_2_title", "Básico ao Avançado");
   const stat2Desc = await getCmsContent("home", "stat_2_desc", "Níveis das aulas");
 
   return (

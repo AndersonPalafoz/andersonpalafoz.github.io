@@ -560,6 +560,8 @@
 - [x] Corrigir a rota de sessões administrativas para evitar carregamento sem limite de sessões, alunos, cursos e presenças.
 - [x] Remover a persistência simulada de reordenação em `app/admin/aulas/page.tsx` e criar mutação real para salvar a ordem das aulas.
 - [x] Auditar `app/admin/reviews/page.tsx`: substituir o autor de resposta hardcoded e o consumo de APIs públicas por resposta persistida do backend com escopo administrativo.
-- [ ] Projetar e implementar o módulo de cupons/descontos com schema persistido, RBAC administrativo, validação de Stripe e testes; não há página, tabela ou rota real existente no momento.
+- [x] Projetar e implementar o módulo de cupons/descontos com schema persistido, RBAC administrativo, validação de Stripe e testes.
+- [x] Atualizar a nomenclatura dos níveis na homepage para "Básico ao Avançado" conforme solicitado.
+- [x] Implementar a funcionalidade de liberação administrativa de acesso pago a quaisquer conteúdos para quaisquer contas pelo perfil de super admin.
 - [x] Corrigir a causa real da falha em `/api/professor/resumo`, garantindo no Neon as tabelas de comentários e turmas externas exigidas pela consulta, sem inserir dados simulados.
 - [x] Reorganizar visualmente o CMS em abas mais claras e adicionar pré-visualização real de imagens da biblioteca de mídia.
