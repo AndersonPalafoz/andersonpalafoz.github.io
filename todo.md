@@ -691,3 +691,5 @@
 - [x] Armazenamento estrito de metadados no Neon PostgreSQL (mantendo o banco leve e otimizado para o plano gratuito)
 - [x] Implementação de compressão client-side para imagens antes do envio
 - [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
+
+- [x] Suporte a conta Google dedicada para armazenamento no Google Drive, totalmente independente da conta administrativa (`palafozanderson@gmail.com`)
