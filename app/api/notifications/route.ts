@@ -30,3 +30,11 @@ export async function PATCH(request: Request) {
   await db.update(notifications).set({ readAt: new Date() }).where(where);
   return NextResponse.json({ success: true });
 }
+
+
+export async function DELETE() {
+  const user = await currentUser();
+  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+  await db.delete(notifications).where(eq(notifications.userId, user.id));
+  return NextResponse.json({ success: true });
+}

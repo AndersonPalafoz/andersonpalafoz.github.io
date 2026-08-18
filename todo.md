@@ -480,3 +480,7 @@
 
 - [x] Criar sistema de notificações simples para alertar alunos sobre novas notas e novos materiais.
 - [x] Auditar e corrigir consistência, cálculo, virada de dia e idempotência no sistema de ofensivas (streaks).
+
+- [x] Adicionar indicador visual de ponto vermelho no ícone do sino de notificações quando houver itens não lidos.
+- [x] Criar opção para marcar todas como lidas e limpar/remover notificações de uma vez na central de notificações.
+- [x] Implementar animação de celebração visual quando o aluno atingir marcos reais no sistema de ofensivas.
