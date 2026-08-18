@@ -495,3 +495,5 @@
 - [x] Adicionar suporte a edição e exclusão de comentários pelo próprio autor, além de marcação de dúvida resolvida por professores e administradores.
 
 - [x] Aprimorar robustez, usabilidade e relatórios dos sistemas de cursos externos, controle de chamadas (frequência) e lançamento de notas.
+
+- [x] Criar painel de resumo para professores exibindo dúvidas pendentes em materiais e médias de notas por turma.
