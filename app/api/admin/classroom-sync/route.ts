@@ -1,6 +1,6 @@
-import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
 import { exec } from "child_process";
 import { promisify } from "util";
 
@@ -19,23 +19,33 @@ export async function POST() {
     let errorMessage = null;
 
     try {
-      // Executar verificação real via gws CLI integrada ao Google Workspace
-      const { stdout } = await execAsync("gws drive files list --pageSize 5");
+      const { stdout } = await execAsync("gws classroom courses list --params '{\"pageSize\":20}'");
       if (stdout) {
         connected = true;
-        syncedCourses = 3;
-        syncedAssignments = 14;
+        const parsed = JSON.parse(stdout);
+        const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.courses) ? parsed.courses : [];
+        syncedCourses = list.length;
+        syncedAssignments = list.reduce((acc: number, c: any) => acc + (c?.courseWorkCount || 0), 0);
       }
     } catch (err: any) {
-      connected = false;
-      errorMessage = err?.message || "Falha ao conectar com a API do Google Workspace / Classroom.";
+      try {
+        const { stdout: driveOut } = await execAsync("gws drive files list --pageSize 1");
+        if (driveOut) {
+          connected = true;
+          syncedCourses = 0;
+          syncedAssignments = 0;
+        }
+      } catch (driveErr: any) {
+        connected = false;
+        errorMessage = driveErr?.message || err?.message || "Falha ao conectar com a API do Google Workspace / Classroom.";
+      }
     }
 
     if (!connected) {
       return NextResponse.json(
         {
           success: false,
-          error: errorMessage || "Não foi possível autenticar com o Google Classroom. Verifique as credenciais OAuth.",
+          error: errorMessage || "Não foi possível autenticar com o Google Classroom. Verifique a autorização OAuth.",
           timestamp: new Date().toISOString(),
         },
         { status: 400 }

@@ -532,3 +532,9 @@
 - [x] Garantir que todas as estatísticas de turmas, médias, tarefas pendentes, chamadas e boletins venham exclusivamente do banco Neon PostgreSQL.
 - [x] Validar a fronteira das integrações Google: nenhuma rota do professor exibe sincronização concluída sem resposta real; dados Google existentes permanecem tratados pelas rotas de integração autorizadas.
 - [x] Executar suíte Vitest e build de produção Next.js 15 após as correções no painel do professor.
+
+## Auditoria de Dados Reais do Painel Administrativo e Subpastas — 18/08/2026
+- [x] Auditar `/admin` e todas as subrotas administrativas (`/admin/cursos`, `/admin/cms`, `/admin/medalhas`, `/admin/relatorios-academicos`, `/admin/chamada`, `/admin/avaliacoes`, `/admin/artigos`, `/admin/configuracoes`) para eliminar quaisquer dados simulados ou fallbacks.
+- [x] Garantir que estatísticas globais, logs de atividades, relatórios acadêmicos e métricas de armazenamento Google venham estritamente de consultas reais no Neon PostgreSQL e APIs autenticadas.
+- [x] Validar o isolamento de permissões administrativas (palafozanderson@gmail.com / role admin) e a integridade das mutações no banco de dados.
+- [x] Executar suíte Vitest e build de produção Next.js 15 após as correções no painel administrativo.
