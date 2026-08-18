@@ -565,3 +565,5 @@
 - [x] Implementar a funcionalidade de liberação administrativa de acesso pago a quaisquer conteúdos para quaisquer contas pelo perfil de super admin.
 - [x] Corrigir a causa real da falha em `/api/professor/resumo`, garantindo no Neon as tabelas de comentários e turmas externas exigidas pela consulta, sem inserir dados simulados.
 - [x] Reorganizar visualmente o CMS em abas mais claras e adicionar pré-visualização real de imagens da biblioteca de mídia.
+- [x] Implementar revogação de acessos pagos concedidos diretamente pelo painel de liberação (`/admin/liberacao-acesso`).
+- [x] Corrigir falha de carregamento no painel de progresso de aulas do professor (`/professor/progresso-aulas`) e aprimorar funcionalidade e visual.
