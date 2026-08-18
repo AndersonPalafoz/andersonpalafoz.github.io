@@ -105,10 +105,7 @@ export default function AdminCmsPage() {
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
-  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([
-    { name: "Logo Padrão", url: "/logo-horizontal.png", type: "image" },
-    { name: "Banner Principal", url: "/principal.png", type: "image" },
-  ]);
+  const [uploadedFiles, setUploadedFiles] = useState<Array<{ name: string; url: string; type: string }>>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -137,6 +134,18 @@ export default function AdminCmsPage() {
   useEffect(() => {
     if (session?.user?.role === "admin") {
       void fetchBlocks();
+      async function fetchMedia() {
+        try {
+          const res = await fetch("/api/admin/media", { cache: "no-store" });
+          const data = await res.json();
+          if (res.ok && Array.isArray(data.assets)) {
+            setUploadedFiles(data.assets.map((a: any) => ({ name: a.name, url: a.url, type: a.type || "image" })));
+          }
+        } catch {
+          // Fallback silencioso se falhar
+        }
+      }
+      void fetchMedia();
     }
   }, [session]);
 
@@ -221,20 +230,22 @@ export default function AdminCmsPage() {
   const processUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", file.type.includes("pdf") ? "document" : file.type.includes("audio") ? "audio" : "image");
+    formData.append("tag", "CMS");
 
     try {
       setUploadingMedia(true);
       setUploadProgress(25);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch("/api/admin/media", { method: "POST", body: formData });
       setUploadProgress(75);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao enviar arquivo.");
       
-      const fileUrl = data.url;
+      const fileUrl = data.asset?.url || data.url;
       setUploadProgress(100);
       setUploadedFiles((prev) => [{ name: file.name, url: fileUrl, type: file.type || "image" }, ...prev]);
       handleContentChange(content ? `${content}\n${fileUrl}` : fileUrl);
-      toast.success("Arquivo enviado com sucesso!");
+      toast.success("Arquivo enviado e persistido com sucesso!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar arquivo.");
     } finally {
