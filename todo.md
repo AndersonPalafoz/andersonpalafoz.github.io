@@ -567,3 +567,4 @@
 - [x] Reorganizar visualmente o CMS em abas mais claras e adicionar pré-visualização real de imagens da biblioteca de mídia.
 - [x] Implementar revogação de acessos pagos concedidos diretamente pelo painel de liberação (`/admin/liberacao-acesso`).
 - [x] Corrigir falha de carregamento no painel de progresso de aulas do professor (`/professor/progresso-aulas`) e aprimorar funcionalidade e visual.
+- [x] Implementar paginação, busca por nome e filtro por categoria/tipo na API da biblioteca de mídia do CMS e atualizar a interface correspondente.
