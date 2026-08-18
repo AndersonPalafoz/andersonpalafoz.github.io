@@ -10,6 +10,7 @@ import {
   externalClassMaterials,
   users,
   notifications,
+  adminAuditLogs,
 } from "@/drizzle/schema";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -287,18 +288,48 @@ export async function POST(request: NextRequest) {
       }
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
-      if (existingClass) {
-        if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
-          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
-        }
-        await db.delete(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
-        await db.delete(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, Number(classId)));
-        await db.delete(externalClassGrades).where(eq(externalClassGrades.externalClassId, Number(classId)));
-        await db.delete(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, Number(classId)));
-        await db.delete(externalClasses).where(eq(externalClasses.id, Number(classId)));
+      if (!existingClass) {
+        return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
       }
 
-      return NextResponse.json({ success: true });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      // Contar dependências para validação e auditoria
+      const studentsCount = await db.query.externalStudents.findMany({ where: eq(externalStudents.externalClassId, Number(classId)) });
+      const attendanceCount = await db.query.externalClassAttendance.findMany({ where: eq(externalClassAttendance.externalClassId, Number(classId)) });
+      const gradesCount = await db.query.externalClassGrades.findMany({ where: eq(externalClassGrades.externalClassId, Number(classId)) });
+      const materialsCount = await db.query.externalClassMaterials.findMany({ where: eq(externalClassMaterials.externalClassId, Number(classId)) });
+
+      await db.delete(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+      await db.delete(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, Number(classId)));
+      await db.delete(externalClassGrades).where(eq(externalClassGrades.externalClassId, Number(classId)));
+      await db.delete(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, Number(classId)));
+      await db.delete(externalClasses).where(eq(externalClasses.id, Number(classId)));
+
+      try {
+        await db.insert(adminAuditLogs).values({
+          adminEmail: session.user.email || "professor@andersonpalafoz.com",
+          action: "delete_external_class",
+          targetName: existingClass.className,
+          details: `Turma externa '${existingClass.className}' (${existingClass.institution}) e dependências removidas: ${studentsCount.length} alunos, ${attendanceCount.length} registros de chamada, ${gradesCount.length} notas, ${materialsCount.length} materiais.`,
+        });
+      } catch (auditErr) {
+        console.warn("Falha ao registrar auditoria de exclusão de turma externa:", auditErr);
+      }
+
+      return NextResponse.json({
+        success: true,
+        deletedSummary: {
+          className: existingClass.className,
+          institution: existingClass.institution,
+          students: studentsCount.length,
+          attendance: attendanceCount.length,
+          grades: gradesCount.length,
+          materials: materialsCount.length,
+        },
+      });
     }
 
     // Ações de Chamada (Attendance)
