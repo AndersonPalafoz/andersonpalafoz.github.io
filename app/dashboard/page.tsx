@@ -9,6 +9,7 @@ import { ClassroomGradesNotificationBanner } from "./classroom-notifications";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { ClassroomImportAction } from "@/components/classroom-import-action";
 import { WeeklyProgressChart } from "@/components/weekly-progress-chart";
+import { StreakCelebrationModal } from "@/components/streak-celebration-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,8 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10 pb-16">
+      <StreakCelebrationModal />
       <OnboardingModal />
 
       <header className="flex flex-col gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
