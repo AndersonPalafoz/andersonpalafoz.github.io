@@ -576,7 +576,7 @@
 - [x] `/` — Página inicial (indicador real de aulas, nomenclatura Básico ao Avançado, acessibilidade e responsividade revisadas)
 - [x] `/sobre` — Sobre o professor e a plataforma (trajetória UFBA, pesquisa, design tokens e responsividade validados)
 - [x] `/aulas` — Catálogo público de aulas (filtros, dados reais do Neon, ordenação por nível e tokens de tema validados)
-- [ ] `/cursos/[id]` — Detalhes de um curso específico
+- [x] `/cursos/[id]` — Detalhes de um curso específico (módulos, aulas reais, progresso e matrícula validados)
 - [ ] `/cursos/[id]/aulas/[lessonId]` — Aula específica dentro de um curso
 - [ ] `/materiais` — Biblioteca pública de materiais
 - [ ] `/materiais/[id]` — Detalhes de um material específico
