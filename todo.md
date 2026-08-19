@@ -902,3 +902,9 @@
 - [x] Validar no Neon a existência de `lessonProgress.approvalStatus`, `attendances.status`, `external_class_attendance`, `external_class_materials`, `media_assets` e `contact_messages`.
 - [x] Fazer redeploy do projeto Vercel para que `NEXTAUTH_URL` e o código atualizado entrem em vigor no deployment de produção.
 - [x] Revalidar `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/cursos/6`, `/admin/cms`, `/admin/mensagens` e `/admin/media` após o redeploy; todas responderam sem HTTP 500 para acesso anônimo.
+
+## Verificação da Variável NEON_DATABASE_URL e Conectividade no Neon — 19/08/2026
+- [x] Confirmar o projeto Vercel correto `andersonpalafoz` e inspecionar a presença e escopo da variável `NEON_DATABASE_URL` nos ambientes Production e Preview.
+- [x] Validar a conectividade atual com o banco Neon de produção usando a string configurada.
+- [x] Executar query de integridade para confirmar a existência de todas as 45 tabelas essenciais exigidas pelo schema Drizzle (`courses`, `modules`, `lessons`, `external_classes`, `external_students`, `lessonProgress`, `media_assets`, `notifications`).
+- [x] Produzir relatório conclusivo sobre o estado e a saúde do banco de dados em produção.
