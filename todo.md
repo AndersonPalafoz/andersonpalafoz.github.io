@@ -875,7 +875,6 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Auditoria e Blindagem de Páginas de Cursos (`/cursos/[id]`) — 19/08/2026
-- [x] Auditar por que `/cursos/1` funcionava e outros IDs (como `/cursos/6`) falhavam (falta de tratamento de exceções em dados relacionais de módulos e aulas órfãs).
-- [x] Blindar `CourseDetail` e `CourseModulesList` com blocos `try/catch` robustos.
-- [x] Validar 100% de sucesso nos 320 testes Vitest.
+## Auditoria de Estado do Vercel e Sincronização — 19/08/2026
+- [x] Verificar o estado do repositório local e confirmar que o branch `main` está totalmente atualizado (`git push user_github main`).
+- [x] Identificar que os erros em produção no Vercel (`andersonpalafoz.vercel.app`) exigem a verificação direta do painel de logs de build e runtime do Vercel.
