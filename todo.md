@@ -908,3 +908,10 @@
 - [x] Validar a conectividade atual com o banco Neon de produção usando a string configurada.
 - [x] Executar query de integridade para confirmar a existência de todas as 45 tabelas essenciais exigidas pelo schema Drizzle (`courses`, `modules`, `lessons`, `external_classes`, `external_students`, `lessonProgress`, `media_assets`, `notifications`).
 - [x] Produzir relatório conclusivo sobre o estado e a saúde do banco de dados em produção.
+
+## Exclusão Intuitiva e Segura de Cursos — 19/08/2026
+- [x] Auditar os componentes de listagem e exclusão de cursos em `/admin/cursos` e `/professor`.
+- [x] Criar modal de confirmação dedicado e amigável para exclusão de cursos, com aviso sobre módulos e aulas vinculados.
+- [x] Adicionar indicadores de carregamento (spinner), feedback sonoro/visual (toasts) e tratamento robusto de erros HTTP.
+- [x] Executar testes automatizados (320 testes aprovados com sucesso).
+- [x] Validar build e salvar checkpoint com a nova melhoria de UX.
