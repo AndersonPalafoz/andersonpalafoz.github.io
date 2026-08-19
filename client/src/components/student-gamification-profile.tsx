@@ -30,8 +30,22 @@ const mockBadges: Badge[] = [
 
 export function StudentGamificationProfile() {
   const [totalXp, setTotalXp] = useState(1250);
-  const currentStreak = 14;
+  const [currentStreak, setCurrentStreak] = useState(1);
+  const [levelName, setLevelName] = useState("Intermediário (B1)");
   const rankPosition = 2;
+
+  useEffect(() => {
+    fetch("/api/gamification")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          if (typeof data.points === "number") setTotalXp(data.points);
+          if (typeof data.streakDays === "number") setCurrentStreak(data.streakDays);
+          if (typeof data.level === "string") setLevelName(data.level);
+        }
+      })
+      .catch((err) => console.error("Erro ao buscar dados de gamificação:", err));
+  }, []);
   const [celebrating, setCelebrating] = useState(false);
   const [celebrationMsg, setCelebrationMsg] = useState("");
 

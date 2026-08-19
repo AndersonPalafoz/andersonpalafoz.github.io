@@ -17,10 +17,6 @@ export async function POST(request: Request) {
     if (existing) return NextResponse.json({ error: "Já existe uma conta com este e-mail. Entre ou recupere sua senha." }, { status: 409 });
 
     const created = await db.insert(users).values({ openId: `credentials_${randomUUID()}`, name, email, passwordHash: hashPassword(password), loginMethod: "credentials", role: "user", approvalStatus: "pending" }).returning();
-    const freeCourses = await db.query.courses.findMany({ where: eq(courses.isFree, true) });
-    if (created[0] && freeCourses.length > 0) {
-      await db.insert(enrollments).values(freeCourses.map((course) => ({ userId: created[0].id, courseId: course.id, progress: 0, currentModule: 0, status: "active" as const })));
-    }
     return NextResponse.json({ created: true, user: { id: created[0]?.id, email, approvalStatus: "pending" } }, { status: 201 });
   } catch (error) {
     console.error("Registration error:", error);

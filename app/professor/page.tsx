@@ -6,6 +6,7 @@ import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents, getTeac
 import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
+import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { authOptions } from "@/lib/auth";
 
 export const metadata = {
