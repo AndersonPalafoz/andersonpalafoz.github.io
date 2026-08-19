@@ -38,7 +38,7 @@ export default function AdminCursos() {
     category: "",
     modules: 4,
     instructor: "Anderson Palafoz",
-    modality: "individual" as "individual" | "group",
+    modality: "individual",
     isFree: true,
     price: 0,
     description: "",
@@ -46,6 +46,12 @@ export default function AdminCursos() {
     audioUrl: "",
     videoUrl: "",
     googleDriveLinks: "",
+    classDays: "Segundas e Quartas",
+    classTime: "19:00 - 20:30",
+    workloadHours: 40,
+    startDate: "",
+    endDate: "",
+    maxAbsencePercent: 25,
   });
 
   useEffect(() => {
@@ -420,6 +426,76 @@ export default function AdminCursos() {
                     {formData.imageUrl && <button type="button" onClick={() => setCoverRemovalPending(true)} className="inline-flex items-center justify-center rounded-xl bg-muted px-4 py-3 text-xs font-bold text-foreground transition hover:bg-muted whitespace-nowrap">Remover capa</button>}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Cole um link direto ou envie JPG, PNG, WebP ou GIF. A imagem enviada fica armazenada de forma persistente.</p>
+                </div>
+              </div>
+
+              {/* Calendário e Frequência */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border">
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Dias de Aula</label>
+                  <input
+                    type="text"
+                    value={formData.classDays}
+                    onChange={(e) => setFormData({ ...formData, classDays: e.target.value })}
+                    placeholder="Ex: Segundas e Quartas"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Horário</label>
+                  <input
+                    type="text"
+                    value={formData.classTime}
+                    onChange={(e) => setFormData({ ...formData, classTime: e.target.value })}
+                    placeholder="Ex: 19:00 - 20:30"
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Carga Horária (Horas)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={formData.workloadHours}
+                    onChange={(e) => setFormData({ ...formData, workloadHours: parseInt(e.target.value) || 40 })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Data de Início</label>
+                  <input
+                    type="date"
+                    value={formData.startDate}
+                    onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Data de Término</label>
+                  <input
+                    type="date"
+                    value={formData.endDate}
+                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground mb-2">Percentual Máximo de Faltas (%)</label>
+                  <input
+                    type="number"
+                    min={5}
+                    max={50}
+                    value={formData.maxAbsencePercent}
+                    onChange={(e) => setFormData({ ...formData, maxAbsencePercent: parseInt(e.target.value) || 25 })}
+                    className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Acima deste percentual, o aluno reprova por frequência.</p>
                 </div>
               </div>
 
