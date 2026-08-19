@@ -1074,6 +1074,19 @@ export default function TurmasExternasPage() {
               <div className="py-24 text-center text-gray-400 text-xs font-semibold flex flex-col items-center justify-center gap-3">
                 <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e dados acadêmicos...
               </div>
+            ) : loadError ? (
+              <div className="rounded-3xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 p-8 text-center space-y-2">
+                <AlertCircle size={28} className="mx-auto text-red-500" />
+                <h3 className="text-sm font-bold text-red-900 dark:text-red-200">Não foi possível carregar as turmas</h3>
+                <p className="text-xs text-red-700 dark:text-red-300 max-w-sm mx-auto">{loadError.message}</p>
+                <button
+                  type="button"
+                  onClick={() => void loadClasses()}
+                  className="mt-2 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
+                >
+                  Tentar novamente
+                </button>
+              </div>
             ) : filteredClasses.length === 0 ? (
               <div
                 role="status"

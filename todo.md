@@ -875,7 +875,6 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Auditoria Geral de Implementação e Correções — 19/08/2026
-- [x] Executar verificação estática de tipos (`tsc --noEmit`) em todas as rotas e componentes.
-- [x] Auditar rotas do professor (`/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/api/professor/progress-speaking`) e detalhes de curso (`/cursos/[id]`).
-- [x] Validar 100% de sucesso nos 317 testes unitários Vitest.
+## Correção de Renderização Assíncrona em Detalhes de Cursos — 19/08/2026
+- [x] Corrigir o uso de `async/await` dentro do `.map()` síncrono no componente `CourseModulesList` em `/app/cursos/[id]/page.tsx`, substituindo por `Promise.all`.
+- [x] Validar estabilidade da página de detalhes de cursos e reexecutar a suíte de 317 testes Vitest com sucesso.
