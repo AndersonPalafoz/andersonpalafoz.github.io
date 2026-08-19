@@ -5,6 +5,7 @@ import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, User
 import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents } from "@/lib/teacher";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
+import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { authOptions } from "@/lib/auth";
 
 export const metadata = {
@@ -76,6 +77,9 @@ export default async function TeacherDashboardPage() {
 
         {/* Painel de Resumo: Dúvidas Pendentes e Médias por Turma */}
         <ProfessorSummaryDashboard />
+
+        {/* Exportação opcional dos materiais reais para o Drive particular do professor */}
+        <TeacherMaterialsZipExport materials={data.recentMaterials} />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
