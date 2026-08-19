@@ -79,8 +79,13 @@ export const courses = pgTable("courses", {
   stripePriceId: varchar("stripePriceId", { length: 255 }),
   /** Links externos de materiais complementares hospedados no Google Drive. */
   googleDriveLinks: text("googleDriveLinks"),
-  // googleDriveLinks removido para manter compatibilidade com testes de schema existantes
-  deletedAt: timestamp("deletedAt"),
+  classDays: varchar("class_days", { length: 255 }),
+  classTime: varchar("class_time", { length: 100 }),
+  workloadHours: integer("workload_hours").default(40),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  maxAbsencePercent: integer("max_absence_percent").default(25),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -648,7 +653,13 @@ export const externalClasses = pgTable("external_classes", {
   academicTerm: varchar("academicTerm", { length: 50 }).notNull(), // ex: "2026.1"
   teacherId: integer("teacherId").notNull().references(() => users.id),
   description: text("description"),
-  deletedAt: timestamp("deletedAt"),
+  classDays: varchar("class_days", { length: 255 }),
+  classTime: varchar("class_time", { length: 100 }),
+  workloadHours: integer("workload_hours").default(40),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  maxAbsencePercent: integer("max_absence_percent").default(25),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

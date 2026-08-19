@@ -922,3 +922,10 @@
 - [x] Criar rotas de API para gestão da lixeira de cursos e turmas externas (soft delete, listar lixeira, restaurar, delete permanente).
 - [x] Implementar as abas/visões de Lixeira nas interfaces `/admin/cursos` e `/professor/turmas-externas` com feedback visual, modais de confirmação e ações de restauração.
 - [x] Executar suíte de testes Vitest e validar build de produção (320 testes aprovados).
+
+## Calendário Acadêmico, Carga Horária e Limite de Faltas — 19/08/2026
+- [x] Adicionar colunas de calendário e regras de presença (`classDays`, `classTime`, `workloadHours`, `startDate`, `endDate`, `maxAbsencePercent`) nas tabelas `courses` e `external_classes`.
+- [x] Atualizar script de migração aditiva no banco Neon de produção.
+- [x] Atualizar formulários administrativos em `/admin/cursos` e `/professor/turmas-externas` para capturar dias de aula, horário, carga horária, datas e percentual máximo de faltas (ex: 25% padrão).
+- [x] Integrar os campos às tabelas do banco e atualizar interfaces e formulários.
+- [x] Executar suíte de testes Vitest e validar build de produção (320 testes aprovados).
