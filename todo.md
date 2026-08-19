@@ -875,6 +875,7 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Testes de Integração e Smoke Tests Automatizados — 19/08/2026
-- [x] Criar suíte de smoke tests e integração (`/app/api/integration-smoke.test.ts`) cobrindo as rotas críticas de turmas externas, progresso e links do Google Drive.
-- [x] Validar 100% de sucesso em todos os 320 testes Vitest.
+## Auditoria Vercel e Correção de Sessão — 19/08/2026
+- [x] Consultar documentação de Vercel e contratos de Next.js App Router para falhas de Serverless Functions (500).
+- [x] Ajustar mapeamento de papéis em `/lib/auth.ts` para suportar `super_admin` e evitar conflitos de sessão.
+- [x] Validar 100% de sucesso nos 320 testes Vitest.
