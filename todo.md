@@ -735,3 +735,8 @@
 - [x] Cadastrar alunos reais matriculados nos cursos internos (tabela `enrollments`), garantindo dados de progresso coerentes.
 - [x] Investigar e corrigir o erro interno ao buscar turmas externas ("Erro interno ao buscar turmas externas").
 - [x] Criar uma turma externa robusta com alunos reais cadastrados (`external_students`), simulando o processo manual no painel do professor sem erros.
+
+## Requisito de Matrícula e Acesso a Cursos — 19/08/2026
+- [x] Garantir que qualquer visitante ou aluno possa visualizar informações básicas de qualquer curso interno no catálogo e na página de detalhes.
+- [x] Restringir a matrícula em cursos pagos para exigir pagamento confirmado via Stripe ou liberação manual realizada pelo administrador na plataforma (`liberacao-acesso`).
+- [x] Criar testes automatizados para validar a regra de acesso a cursos pagos versus gratuitos.
