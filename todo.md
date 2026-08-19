@@ -834,3 +834,10 @@
 - [x] Implementar exportação em lote de boletins em PDF para todos os alunos de uma turma externa.
 - [x] Adicionar suporte a atalhos de teclado (ex: `Ctrl+Enter`) no envio do formulário de turmas externas.
 - [x] Criar histórico de alterações e auditoria de ações docentes no painel do professor.
+
+## Continuação do Roadmap: Cursos Reais e Integrações Google — 19/08/2026
+- [x] Verificar dados reais oficiais e estado atual do banco Neon.
+- [ ] Ativar e estruturar apenas cursos e materiais oficiais reais (sem fabricar dados falsos).
+- [ ] Restringir integrações Google (Drive, Calendar, Classroom) estritamente aos itens relacionados à plataforma.
+- [ ] Configurar observabilidade e auditoria contínua de erros no painel de administração.
+- [ ] Executar suíte Vitest e validar build de produção.
