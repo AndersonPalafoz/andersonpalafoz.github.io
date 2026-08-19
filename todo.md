@@ -728,3 +728,4 @@
 - [x] Adicionar indicador de carregamento, bloquear cliques duplicados e exibir mensagem de sucesso acessível ao exportar o histórico ZIP em CSV; 284 testes Vitest aprovados.
 - [x] Implementar e testar o registro manual e persistente de notas e frequências para turmas externas no painel do professor (`/app/api/professor/external-classes/route.ts`), com validação de propriedade, armazenamento real no Neon e notificações automáticas para alunos.
 - [x] Implementar lançamento em lote de notas e presenças para turmas externas com validação de pertencimento, relatório de processamento e testes automatizados (`saveBatchGrades`).
+- [ ] Corrigir e validar o fluxo de acesso aos cursos e aulas recém-criados: separar falha de autenticação da renderização, tratar 401/500 com feedback acionável e comparar com cursos existentes.

@@ -8,12 +8,14 @@ import { and, eq } from "drizzle-orm";
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user?.email) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
     const lessonId = Number((await params).id);
     if (!Number.isInteger(lessonId) || lessonId <= 0) return NextResponse.json({ error: "ID de aula inválido." }, { status: 400 });
 
-    const user = await db.query.users.findFirst({ where: eq(users.email, session.user.email) });
-    if (!user) return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+    // O conteúdo da aula pode ser pré-visualizado sem login. Progresso e dados pessoais
+    // continuam condicionados à conta autenticada logo abaixo.
+    const user = session?.user?.email
+      ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) })
+      : null;
 
     const lesson = await getLessonById(lessonId);
     if (!lesson) return NextResponse.json({ error: "Aula não encontrada." }, { status: 404 });
@@ -29,13 +31,17 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       where: eq(activities.courseId, module?.courseId || 0),
     });
 
-    const progressRecord = await db.query.lessonProgress.findFirst({
-      where: and(eq(lessonProgress.userId, user.id), eq(lessonProgress.lessonId, lessonId)),
-    });
+    const progressRecord = user
+      ? await db.query.lessonProgress.findFirst({
+          where: and(eq(lessonProgress.userId, user.id), eq(lessonProgress.lessonId, lessonId)),
+        })
+      : null;
 
-    const activityProgress = await db.query.userActivityProgress.findMany({
-      where: eq(userActivityProgress.userId, user.id),
-    });
+    const activityProgress = user
+      ? await db.query.userActivityProgress.findMany({
+          where: eq(userActivityProgress.userId, user.id),
+        })
+      : [];
 
     return NextResponse.json({
       lesson,
