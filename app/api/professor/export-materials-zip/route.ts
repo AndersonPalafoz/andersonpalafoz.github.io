@@ -4,6 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { getTeacherMaterials } from "@/lib/teacher";
 import { createMaterialsZip, MAX_ZIP_ENTRIES, MAX_ZIP_INPUT_BYTES } from "@/lib/materials-zip";
 import { fetchMaterialBytes } from "@/lib/material-download";
+import { db } from "@/lib/db";
+import { teacherZipExports, users } from "@/drizzle/schema";
+import { eq, and, isNull } from "drizzle-orm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -52,6 +55,26 @@ export async function POST(request: Request) {
 
     const zip = createMaterialsZip(entries);
     const date = new Date().toISOString().slice(0, 10);
+    const filename = `materiais-anderson-palafoz-${date}.zip`;
+
+    // Persistir histórico real da exportação para o professor autenticado
+    try {
+      const dbUser = await db.query.users.findFirst({
+        where: and(eq(users.email, session.user.email ?? ""), isNull(users.deletedAt)),
+      });
+      if (dbUser) {
+        await db.insert(teacherZipExports).values({
+          userId: dbUser.id,
+          filename,
+          materialCount: entries.length,
+          totalBytes,
+          createdAt: new Date(),
+        });
+      }
+    } catch (historyErr) {
+      console.error("Failed to record teacher ZIP export history:", historyErr);
+    }
+
     return new NextResponse(Buffer.from(zip), {
       status: 200,
       headers: {
