@@ -20,6 +20,15 @@ describe("teacher materials ZIP selector", () => {
     expect(source).toContain("selectedIds.size === 0");
   });
 
+  it("filters materials by name without discarding the active selection", () => {
+    const source = read("components/teacher-materials-zip-export.tsx");
+    expect(source).toContain('type="search"');
+    expect(source).toContain("searchQuery");
+    expect(source).toContain("filteredMaterials");
+    expect(source).toContain("Nenhum material encontrado.");
+    expect(source).toContain("Selecionar resultados");
+  });
+
   it("previews the selected size and blocks selections over 40 MB", () => {
     const source = read("components/teacher-materials-zip-export.tsx");
     expect(source).toContain('"/api/professor/materials-size"');
