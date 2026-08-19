@@ -874,3 +874,7 @@
 - [x] Executar suíte de testes e salvar checkpoint.
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
+
+## Correção do Deployment Vercel — 19/08/2026
+- [x] Remover importações não utilizadas de `authOptions` e `getServerSession` em `app/api/admin/materials/route.ts`, conforme erro do build.
+- [x] Executar testes e build de produção e verificar se o deployment fica liberado para publicação.
