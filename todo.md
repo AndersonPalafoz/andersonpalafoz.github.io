@@ -785,3 +785,8 @@
 - [x] Implementar tratamento detalhado de erros HTTP (401, 403, 404, 500) com botões de tentativa e orientações na página `/professor/turmas-externas`.
 - [x] Adicionar indicadores visuais de sucesso, aviso e falha nas operações de criação de turmas, matrícula de alunos e lançamento de notas.
 - [x] Cobrir os novos estados de erro e feedback com testes automatizados e validar responsividade.
+
+## Auditoria de Cursos, Materiais e Visualização no Site — 19/08/2026
+- [x] Auditar fluxos de criação, edição e exclusão de cursos e materiais (internos e externos) no backend e frontend.
+- [x] Auditar a visualização pública e autenticada de cursos, módulos, aulas e materiais no site, garantindo integridade e ausência de erros 404/500.
+- [x] Cobrir com testes automatizados de contrato e persistência no banco Neon.
