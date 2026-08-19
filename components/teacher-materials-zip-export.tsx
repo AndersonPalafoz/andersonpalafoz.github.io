@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Download, FileArchive, Loader2, Search, SquareCheck, SquareMousePointer, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { TeacherZipHistory } from "./teacher-zip-history";
 
 export type TeacherMaterialZipOption = {
   id: number;
@@ -123,6 +124,8 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
     });
   }
 
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+
   async function generateZip() {
     if (selectedIds.size === 0) {
       toast.error("Selecione pelo menos um material antes de gerar o ZIP.");
@@ -147,6 +150,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
       const filename = response.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] || "materiais-anderson-palafoz.zip";
       downloadBlob(blob, filename);
       toast.success(`${selectedIdList.length} material(is) compactado(s) com sucesso.`);
+      setHistoryRefreshKey((k) => k + 1);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível gerar o arquivo ZIP.");
     } finally {
@@ -300,6 +304,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
           </div>
         </>
       )}
+      <TeacherZipHistory refreshTrigger={historyRefreshKey} />
     </section>
   );
 }

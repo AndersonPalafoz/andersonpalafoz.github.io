@@ -792,6 +792,20 @@ export const forumPostLikes = pgTable("forum_post_likes", {
 export type ForumPostLike = typeof forumPostLikes.$inferSelect;
 export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
 
+/**
+ * Teacher ZIP Exports table - Histórico de exportações de materiais em ZIP pelo professor
+ */
+export const teacherZipExports = pgTable("teacher_zip_exports", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  filename: varchar("filename", { length: 255 }).notNull(),
+  materialCount: integer("materialCount").notNull(),
+  totalBytes: integer("totalBytes").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type TeacherZipExport = typeof teacherZipExports.$inferSelect;
+export type InsertTeacherZipExport = typeof teacherZipExports.$inferInsert;
+
 
 
 /**
