@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, FileArchive, RefreshCw } from "lucide-react";
+import { Clock, Download, FileArchive, RefreshCw } from "lucide-react";
 
 type ZipExportItem = {
   id: number;
@@ -41,22 +41,52 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
     loadHistory();
   }, [refreshTrigger]);
 
+  const exportCsv = async () => {
+    try {
+      const response = await fetch("/api/professor/zip-history/csv", { cache: "no-store" });
+      if (!response.ok) throw new Error("Falha ao exportar CSV.");
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `historico-exportacoes-zip-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch {
+      alert("Não foi possível exportar o histórico em CSV.");
+    }
+  };
+
   return (
     <div className="mt-8 rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
         <div className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold">Histórico de Exportações ZIP</h3>
         </div>
-        <button
-          onClick={loadHistory}
-          disabled={loading}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-muted"
-          title="Atualizar histórico"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-          Atualizar
-        </button>
+        <div className="flex items-center gap-2">
+          {items.length > 0 && (
+            <button
+              onClick={exportCsv}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors px-2.5 py-1.5 rounded-md border border-primary/30 hover:bg-primary/5"
+              title="Baixar relatório completo em CSV"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Exportar CSV
+            </button>
+          )}
+          <button
+            onClick={loadHistory}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-md hover:bg-muted"
+            title="Atualizar histórico"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            Atualizar
+          </button>
+        </div>
       </div>
 
       {loading && items.length === 0 ? (

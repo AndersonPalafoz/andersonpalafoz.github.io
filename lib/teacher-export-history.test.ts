@@ -25,4 +25,12 @@ describe("Teacher ZIP Export History Feature Contract", () => {
     expect(content).toContain("Histórico de Exportações ZIP");
     expect(content).toContain("RefreshCw");
   });
+
+  it("implements the zip-history CSV export endpoint", () => {
+    const csvRoutePath = path.join(process.cwd(), "app/api/professor/zip-history/csv/route.ts");
+    expect(fs.existsSync(csvRoutePath)).toBe(true);
+    const content = fs.readFileSync(csvRoutePath, "utf8");
+    expect(content).toContain("text/csv");
+    expect(content).toContain("bom");
+  });
 });
