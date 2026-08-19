@@ -701,3 +701,6 @@
 - [x] Indicador de progresso visual acessível e responsivo no CMS para acompanhamento de uploads de arquivos
 
 - [x] Botão de cancelar upload em andamento no gerenciador de mídias (CMS) com AbortController e interrupção segura de lotes
+
+- [x] Validação client-side de tamanho (limite de 10 MB) e tipo de arquivo (imagens, áudios e PDF) antes do upload no CMS
+- [x] Verificação e correção do contador de ofensivas na área do aluno e perfil (removido valor hardcoded de 14 dias e integrado ao endpoint `/api/gamification` com dados reais do banco de dados)
