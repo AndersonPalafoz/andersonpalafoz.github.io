@@ -101,6 +101,8 @@ export async function POST(request: NextRequest) {
       teacher = inserted[0];
     }
 
+    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userRole === "professor" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
+
     const body = await request.json();
     const {
       action,
@@ -155,7 +157,7 @@ export async function POST(request: NextRequest) {
 
       const existing = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existing) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existing.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existing.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado para editar esta turma." }, { status: 403 });
       }
 
@@ -181,7 +183,7 @@ export async function POST(request: NextRequest) {
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado para gerenciar alunos desta turma." }, { status: 403 });
       }
 
@@ -230,7 +232,7 @@ export async function POST(request: NextRequest) {
       if (!student) return NextResponse.json({ error: "Aluno não encontrado." }, { status: 404 });
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
-      if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -256,7 +258,7 @@ export async function POST(request: NextRequest) {
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -298,7 +300,7 @@ export async function POST(request: NextRequest) {
       const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
       if (student) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
-        if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalStudents).where(eq(externalStudents.id, Number(studentId)));
@@ -323,7 +325,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Turma associada não encontrada." }, { status: 404 });
       }
 
-      if (session.user.role !== "admin" && session.user.role !== "super_admin" && userEmail !== "palafozanderson@gmail.com" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && session.user.role !== "super_admin" && userEmail !== "palafozanderson@gmail.com" && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -367,7 +369,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
       }
 
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -414,7 +416,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -450,7 +452,7 @@ export async function POST(request: NextRequest) {
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -513,7 +515,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -551,7 +553,7 @@ export async function POST(request: NextRequest) {
       const grade = await db.query.externalClassGrades.findFirst({ where: eq(externalClassGrades.id, Number(gradeId)) });
       if (grade) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, grade.externalClassId) });
-        if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalClassGrades).where(eq(externalClassGrades.id, Number(gradeId)));
@@ -566,7 +568,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -603,7 +605,7 @@ export async function POST(request: NextRequest) {
       const mat = await db.query.externalClassMaterials.findFirst({ where: eq(externalClassMaterials.id, Number(materialId)) });
       if (mat) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, mat.externalClassId) });
-        if (existingClass && session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalClassMaterials).where(eq(externalClassMaterials.id, Number(materialId)));
