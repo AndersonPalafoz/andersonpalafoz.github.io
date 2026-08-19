@@ -764,3 +764,14 @@
 ## Filtros por Período Acadêmico em Turmas Externas — 19/08/2026
 - [x] Adicionar seletores de ano letivo e semestre no painel do professor para filtrar turmas externas com precisão.
 - [x] Cobrir com testes automatizados de filtragem combinada.
+
+## E-mail de Boas-vindas para Alunos de Turmas Externas — 19/08/2026
+- [ ] Implementar endpoint protegido para enviar e-mail real de boas-vindas aos alunos com endereço cadastrado.
+- [ ] Adicionar botão, confirmação, estados de carregamento, sucesso e erro na interface de turmas externas.
+- [ ] Cobrir permissões, destinatários válidos e prevenção de envio duplicado com testes automatizados.
+
+## Envio de Boas-vindas via Gmail API OAuth — 19/08/2026
+- [ ] Configurar escopo restrito `https://www.googleapis.com/auth/gmail.send` no fluxo OAuth.
+- [ ] Implementar serviço de envio de e-mails usando a biblioteca `googleapis` autenticada pelo token do professor/admin.
+- [ ] Adicionar botão de boas-vindas na interface de turmas externas com confirmação, spinner e feedback de sucesso ou erro.
+- [ ] Cobrir com testes automatizados e validar build.
