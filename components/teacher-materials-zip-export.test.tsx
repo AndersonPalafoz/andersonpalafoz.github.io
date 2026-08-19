@@ -29,6 +29,17 @@ describe("teacher materials ZIP selector", () => {
     expect(source).toContain("Selecionar resultados");
   });
 
+  it("offers quick difficulty filters and combines them with the name search", () => {
+    const source = read("components/teacher-materials-zip-export.tsx");
+    expect(source).toContain('id="teacher-materials-zip-level"');
+    expect(source).toContain('value="basic">Básico');
+    expect(source).toContain('value="intermediate">Intermediário');
+    expect(source).toContain('value="advanced">Avançado');
+    expect(source).toContain("difficultyFilter");
+    expect(source).toContain("matchesDifficulty");
+    expect(source).toContain("Ajuste o nome ou o nível de dificuldade");
+  });
+
   it("previews the selected size and blocks selections over 40 MB", () => {
     const source = read("components/teacher-materials-zip-export.tsx");
     expect(source).toContain('"/api/professor/materials-size"');

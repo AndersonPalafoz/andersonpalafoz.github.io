@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { medalsCatalog, userMedals, userNotifications, users } from "@/drizzle/schema";
-import { eq, desc } from "drizzle-orm";
+import { medalsCatalog, notifications, userMedals, users } from "@/drizzle/schema";
+import { and, desc, eq, isNull } from "drizzle-orm";
 
 export async function GET() {
   try {
@@ -29,7 +29,7 @@ export async function GET() {
       .orderBy(desc(userMedals.createdAt))
       .limit(100);
 
-    const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(eq(users.role, "user"));
+    const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt)));
 
     return NextResponse.json({ catalog, grantedList, allUsers });
   } catch (error) {
@@ -45,37 +45,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const adminId = parseInt(session.user.id || "1");
-    const body = await request.json();
-    const { userId, medalCode, notes } = body;
+    const adminId = Number.parseInt(session.user.id || "", 10);
+    const body = await request.json().catch(() => ({}));
+    const userId = Number(body.userId);
+    const medalCode = typeof body.medalCode === "string" ? body.medalCode.trim() : "";
+    const notes = typeof body.notes === "string" ? body.notes.trim() : "";
 
-    if (!userId || !medalCode) {
-      return NextResponse.json({ error: "Missing required fields: userId and medalCode" }, { status: 400 });
+    if (!Number.isInteger(adminId) || adminId <= 0 || !Number.isInteger(userId) || userId <= 0 || !medalCode) {
+      return NextResponse.json({ error: "Dados inválidos para concessão da medalha." }, { status: 400 });
     }
 
-    // Inserir medalha
+    const [targetUser, medalMeta, existingGrant] = await Promise.all([
+      db.query.users.findFirst({ where: and(eq(users.id, userId), eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt)) }),
+      db.query.medalsCatalog.findFirst({ where: eq(medalsCatalog.code, medalCode) }),
+      db.query.userMedals.findFirst({ where: and(eq(userMedals.userId, userId), eq(userMedals.medalCode, medalCode)) }),
+    ]);
+
+    if (!targetUser) return NextResponse.json({ error: "Aluno não encontrado ou não aprovado." }, { status: 404 });
+    if (!medalMeta) return NextResponse.json({ error: "Medalha não encontrada no catálogo." }, { status: 404 });
+    if (existingGrant) return NextResponse.json({ error: "Esta medalha já foi concedida a este aluno." }, { status: 409 });
+
     await db.insert(userMedals).values({
-      userId: Number(userId),
+      userId,
       medalCode,
       awardedBy: adminId,
       grantType: "manual",
-      notes: notes || "Concedido manualmente pelo painel administrativo.",
+      notes: notes || null,
     });
 
-    // Buscar detalhes da medalha para notificação bonita
-    const [medalMeta] = await db.select().from(medalsCatalog).where(eq(medalsCatalog.code, medalCode));
-    const medalTitle = medalMeta ? `${medalMeta.icon} ${medalMeta.title}` : "Nova Medalha Conquistada";
-
-    // Criar notificação persistente para o aluno
-    await db.insert(userNotifications).values({
-      userId: Number(userId),
-      title: `🏆 Conquista Desbloqueada: ${medalTitle}`,
-      message: notes ? `Você recebeu uma nova medalha! Justificativa: "${notes}"` : "Você recebeu uma nova medalha por seu desempenho na plataforma!",
+    await db.insert(notifications).values({
+      userId,
+      title: `Conquista desbloqueada: ${medalMeta.title}`,
+      message: notes ? `Você recebeu uma nova medalha. Justificativa: ${notes}` : "Você recebeu uma nova medalha por seu desempenho na plataforma.",
       type: "achievement",
-      isRead: false,
+      metadata: JSON.stringify({ medalCode, grantType: "manual" }),
+      readAt: null,
     });
 
-    return NextResponse.json({ success: true, message: "Medalha concedida e notificação enviada ao aluno com sucesso!" });
+    return NextResponse.json({ success: true, message: "Medalha concedida e notificação enviada ao aluno com sucesso." });
   } catch (error) {
     console.error("Error granting medal manually:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
