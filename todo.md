@@ -704,3 +704,5 @@
 
 - [x] Validação client-side de tamanho (limite de 10 MB) e tipo de arquivo (imagens, áudios e PDF) antes do upload no CMS
 - [x] Verificação e correção do contador de ofensivas na área do aluno e perfil (removido valor hardcoded de 14 dias e integrado ao endpoint `/api/gamification` com dados reais do banco de dados)
+
+- [x] Suporte completo e acessível a arrastar e soltar (drag-and-drop) na área de upload do CMS com realce visual interativo
