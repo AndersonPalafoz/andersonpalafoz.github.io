@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Clock, Download, FileArchive, RefreshCw } from "lucide-react";
+import { Clock, Download, FileArchive, Loader2, RefreshCw } from "lucide-react";
 
 type ZipExportItem = {
   id: number;
@@ -21,6 +21,8 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
   const [items, setItems] = useState<ZipExportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [csvLoading, setCsvLoading] = useState(false);
+  const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
 
   const loadHistory = async () => {
     setLoading(true);
@@ -42,6 +44,10 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
   }, [refreshTrigger]);
 
   const exportCsv = async () => {
+    if (csvLoading) return;
+    setCsvLoading(true);
+    setCsvStatus("idle");
+
     try {
       const response = await fetch("/api/professor/zip-history/csv", { cache: "no-store" });
       if (!response.ok) throw new Error("Falha ao exportar CSV.");
@@ -54,8 +60,12 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
       anchor.click();
       anchor.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      setCsvStatus("success");
+      window.setTimeout(() => setCsvStatus("idle"), 5000);
     } catch {
-      alert("Não foi possível exportar o histórico em CSV.");
+      setCsvStatus("error");
+    } finally {
+      setCsvLoading(false);
     }
   };
 
@@ -70,11 +80,13 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
           {items.length > 0 && (
             <button
               onClick={exportCsv}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors px-2.5 py-1.5 rounded-md border border-primary/30 hover:bg-primary/5"
-              title="Baixar relatório completo em CSV"
+              disabled={csvLoading}
+              aria-busy={csvLoading}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:text-primary/80 transition-colors px-2.5 py-1.5 rounded-md border border-primary/30 hover:bg-primary/5 disabled:cursor-wait disabled:opacity-60"
+              title={csvLoading ? "Gerando relatório CSV" : "Baixar relatório completo em CSV"}
             >
-              <Download className="h-3.5 w-3.5" />
-              Exportar CSV
+              {csvLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Download className="h-3.5 w-3.5" aria-hidden="true" />}
+              {csvLoading ? "Gerando CSV…" : "Exportar CSV"}
             </button>
           )}
           <button
@@ -88,6 +100,17 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
           </button>
         </div>
       </div>
+
+      {csvStatus === "success" && (
+        <p className="mb-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-800 dark:border-green-900/50 dark:bg-green-950/30 dark:text-green-300" role="status" aria-live="polite">
+          Relatório CSV baixado com sucesso.
+        </p>
+      )}
+      {csvStatus === "error" && (
+        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300" role="alert">
+          Não foi possível exportar o histórico em CSV. Tente novamente.
+        </p>
+      )}
 
       {loading && items.length === 0 ? (
         <div className="space-y-3 py-4">
