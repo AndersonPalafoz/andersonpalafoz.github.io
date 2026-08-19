@@ -915,3 +915,10 @@
 - [x] Adicionar indicadores de carregamento (spinner), feedback sonoro/visual (toasts) e tratamento robusto de erros HTTP.
 - [x] Executar testes automatizados (320 testes aprovados com sucesso).
 - [x] Validar build e salvar checkpoint com a nova melhoria de UX.
+
+## Lixeira para Cursos e Turmas Externas — 19/08/2026
+- [x] Adicionar coluna `deleted_at` (timestamp) nas tabelas `courses` e `external_classes` no schema Drizzle e Neon DB.
+- [x] Atualizar as funções de consulta em `server/db.ts` / `lib/db.ts` para excluir logicamente, listar lixeira, restaurar e excluir permanentemente.
+- [x] Criar rotas de API para gestão da lixeira de cursos e turmas externas (soft delete, listar lixeira, restaurar, delete permanente).
+- [x] Implementar as abas/visões de Lixeira nas interfaces `/admin/cursos` e `/professor/turmas-externas` com feedback visual, modais de confirmação e ações de restauração.
+- [x] Executar suíte de testes Vitest e validar build de produção (320 testes aprovados).

@@ -20,12 +20,12 @@ describe("external class deletion safeguards", () => {
     expect(deletionHandler).not.toContain("window.confirm(");
   });
 
-  it("keeps server-side ownership and dependency summary for destructive deletion", () => {
+  it("keeps server-side ownership and trash/permanent deletion for external classes", () => {
     expect(route).toContain('action === "deleteClass"');
+    expect(route).toContain('action === "restoreClass"');
+    expect(route).toContain('action === "permanentDeleteClass"');
     expect(route).toContain("existingClass.teacherId !== teacher.id");
-    expect(route).toContain("deletedSummary");
-    expect(route).toContain("delete_external_class");
-    expect(route).toContain("adminAuditLogs");
+    expect(route).toContain("deletedAt");
   });
 });
 
