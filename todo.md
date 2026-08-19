@@ -710,3 +710,5 @@
 ## Publicação do Professor no Google Drive Particular e Classroom — 19/08/2026
 - [x] Permissão RBAC para professores exportarem e salvarem suas próprias publicações de cursos e materiais no Google Drive particular
 - [x] Integração com Google Classroom do professor para exportar atividades e materiais para turmas próprias com escopos mínimos e rastreabilidade
+
+- [x] Adicionar compactação opcional dos materiais do professor em um arquivo ZIP antes da exportação para o Google Drive, preservando os arquivos originais, aplicando limite de tamanho e mantendo isolamento por proprietário

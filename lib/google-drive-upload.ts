@@ -8,6 +8,29 @@
 
 import { google } from "googleapis";
 
+export async function downloadFromGoogleDriveStorage(fileId: string): Promise<{ data: Uint8Array; name: string; mimeType: string }> {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  if (!clientId || !clientSecret || !refreshToken) {
+    throw new Error("A conta dedicada de armazenamento do Google Drive ainda não está configurada para leitura server-side.");
+  }
+
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
+  const drive = google.drive({ version: "v3", auth: oauth2Client });
+  const metadata = await drive.files.get({ fileId, fields: "id,name,mimeType,trashed" });
+  if (metadata.data.trashed) {
+    throw new Error("O arquivo de origem foi enviado para a lixeira do Google Drive.");
+  }
+  const response = await drive.files.get({ fileId, alt: "media" }, { responseType: "arraybuffer" });
+  return {
+    data: new Uint8Array(response.data as ArrayBuffer),
+    name: metadata.data.name || `material-${fileId}`,
+    mimeType: metadata.data.mimeType || "application/octet-stream",
+  };
+}
+
 export async function uploadToGoogleDrive(
   file: File,
   folderName = "Anderson Palafoz Platform",
