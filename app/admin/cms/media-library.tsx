@@ -49,6 +49,15 @@ export function MediaAssetLibrary() {
   const [uploadFileName, setUploadFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
+
+  const cancelUpload = () => {
+    uploadControllerRef.current?.abort();
+    setUploading(false);
+    setUploadProgress(0);
+    setUploadFileName("");
+    toast.info("Upload cancelado pelo usuário.");
+  };
 
   const fetchAssets = async (page = 1) => {
     requestControllerRef.current?.abort();
@@ -115,6 +124,10 @@ export function MediaAssetLibrary() {
   };
 
   const processFiles = async (files: FileList | File[]) => {
+    uploadControllerRef.current?.abort();
+    const controller = new AbortController();
+    uploadControllerRef.current = controller;
+
     setUploading(true);
     setUploadProgress(0);
     try {
@@ -122,6 +135,7 @@ export function MediaAssetLibrary() {
       const totalFiles = fileList.length;
 
       for (let i = 0; i < totalFiles; i++) {
+        if (controller.signal.aborted) break;
         const file = fileList[i];
         setUploadFileName(file.name);
         setUploadProgress(Math.round((i / totalFiles) * 100));
@@ -140,20 +154,31 @@ export function MediaAssetLibrary() {
         formData.append("type", assetType);
         formData.append("tag", assetType === "medal" ? "Conquista" : assetType === "audio" ? "Speaking" : "Geral");
 
-        const res = await fetch("/api/admin/media", { method: "POST", body: formData });
+        const res = await fetch("/api/admin/media", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
         const data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || "Erro no upload.");
         
         setUploadProgress(Math.round(((i + 1) / totalFiles) * 100));
       }
 
-      toast.success("Arquivo(s) enviado(s) e persistido(s) com sucesso!");
-      await fetchAssets(1);
+      if (!controller.signal.aborted) {
+        toast.success("Arquivo(s) enviado(s) e persistido(s) com sucesso!");
+        await fetchAssets(1);
+      }
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       console.error("Erro no upload:", error);
       toast.error(error instanceof Error ? error.message : "Erro ao enviar arquivos.");
     } finally {
-      setUploading(false);
+      if (!controller.signal.aborted) {
+        setUploading(false);
+        setUploadProgress(0);
+        setUploadFileName("");
+      }
     }
   };
 
@@ -212,9 +237,14 @@ export function MediaAssetLibrary() {
             <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden">
               <div className="bg-red-600 h-full rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }} role="progressbar" aria-valuenow={uploadProgress} aria-valuemin={0} aria-valuemax={100} />
             </div>
-            <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
+            <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 items-center">
               <span>Progresso do envio</span>
-              <span>{uploadProgress}%</span>
+              <div className="flex items-center gap-3">
+                <span>{uploadProgress}%</span>
+                <Button type="button" variant="outline" size="sm" onClick={cancelUpload} className="h-7 text-xs font-bold border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 px-3 rounded-lg">
+                  Cancelar
+                </Button>
+              </div>
             </div>
           </div>
         ) : (
