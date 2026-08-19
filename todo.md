@@ -747,8 +747,8 @@
 - [x] Validar com testes automatizados e navegação simulada (292 testes aprovados).
 
 ## Indicadores Visuais de Cursos — 19/08/2026
-- [ ] Adicionar etiquetas visuais claras (ex: "Curso Interno" vs "Turma Externa / Institucional") nas listagens de cursos, cards e catálogos.
-- [ ] Validar a consistência visual em todo o site e cobrir com testes automatizados.
+- [x] Adicionar etiquetas visuais claras (ex: "Curso Interno" vs "Turma Externa / Institucional") nas listagens de cursos, cards e catálogos.
+- [x] Validar a consistência visual em todo o site e cobrir com testes automatizados.
 
 ## Auditoria de Exclusões (Materiais, Turmas, Artigos, Módulos e Cursos) — 19/08/2026
 - [x] Auditar exclusão de materiais (`deleteMaterial` disponível).
