@@ -366,6 +366,71 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: "Chamada salva com sucesso!" });
     }
 
+    // Ações em Lote para Notas (Batch Grades)
+    if (action === "saveBatchGrades") {
+      const { assessmentTitle, maxScore, gradesList } = body;
+      if (!classId || !assessmentTitle || !Array.isArray(gradesList) || gradesList.length === 0) {
+        return NextResponse.json({ error: "Turma, título da avaliação e lista de notas são obrigatórios." }, { status: 400 });
+      }
+
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (session.user.role !== "admin" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      const classStudents = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+      const validStudentIds = new Set(classStudents.map(s => s.id));
+
+      let processedCount = 0;
+      const errors = [];
+
+      for (const item of gradesList) {
+        const studentIdNum = Number(item.studentId);
+        const scoreVal = String(item.score ?? "").trim();
+        if (!validStudentIds.has(studentIdNum)) {
+          errors.push(`Aluno ID ${studentIdNum} não pertence a esta turma.`);
+          continue;
+        }
+        if (!scoreVal) {
+          continue; // Pular notas vazias
+        }
+
+        await db.insert(externalClassGrades).values({
+          externalClassId: Number(classId),
+          studentId: studentIdNum,
+          assessmentTitle: String(assessmentTitle).trim(),
+          score: scoreVal,
+          maxScore: maxScore ? String(maxScore).trim() : "10.0",
+          feedback: item.feedback ? String(item.feedback).trim() : null,
+        });
+
+        processedCount++;
+
+        // Notificar aluno se houver conta vinculada
+        const targetStudent = classStudents.find(s => s.id === studentIdNum);
+        if (targetStudent?.email) {
+          const userAccount = await db.query.users.findFirst({ where: eq(users.email, targetStudent.email) });
+          if (userAccount) {
+            await db.insert(notifications).values({
+              userId: userAccount.id,
+              type: "grade",
+              title: `Nova Nota em Lote: ${assessmentTitle}`,
+              message: `Você recebeu nota ${scoreVal}/${maxScore || "10.0"} na turma ${existingClass.className} (${existingClass.institution}).`,
+              metadata: JSON.stringify({ classId: Number(classId) }),
+            });
+          }
+        }
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `Lote de notas processado: ${processedCount} registradas com sucesso.`,
+        processedCount,
+        errors,
+      });
+    }
+
     // Ações de Notas (Grades)
     if (action === "saveGrade") {
       if (!classId || !studentId || !assessmentTitle || !score) {

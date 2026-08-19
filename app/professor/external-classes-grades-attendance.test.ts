@@ -3,10 +3,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("External Classes Grades and Attendance Feature Contract", () => {
-  it("implements saveGrade action in external-classes API route with security checks and notifications", () => {
+  it("implements saveBatchGrades and saveGrade actions in external-classes API route with validation and notifications", () => {
     const routePath = path.join(process.cwd(), "app/api/professor/external-classes/route.ts");
     expect(fs.existsSync(routePath)).toBe(true);
     const content = fs.readFileSync(routePath, "utf8");
+    expect(content).toContain('action === "saveBatchGrades"');
     expect(content).toContain('action === "saveGrade"');
     expect(content).toContain("externalClassGrades");
     expect(content).toContain("notifications");
