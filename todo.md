@@ -568,7 +568,7 @@
 - [x] Implementar revogação de acessos pagos concedidos diretamente pelo painel de liberação (`/admin/liberacao-acesso`).
 - [x] Corrigir falha de carregamento no painel de progresso de aulas do professor (`/professor/progresso-aulas`) e aprimorar funcionalidade e visual.
 - [x] Implementar paginação, busca por nome e filtro por categoria/tipo na API da biblioteca de mídia do CMS e atualizar a interface correspondente.
-- [ ] Aprimorar visual, segurança, usabilidade, acessibilidade e responsividade de todas as rotas administrativas e da área do aluno listadas.
+- [x] Aprimorar visual, segurança, usabilidade, acessibilidade e responsividade de todas as rotas administrativas e da área do aluno listadas. Guard server-side, estados globais de carregamento/erro e shell responsivo auditados; contratos e respostas HTTP verificados.
 
 ## Inventário Completo de Rotas e Auditoria — 18/08/2026
 
@@ -689,7 +689,7 @@
 
 ## Estratégia de Armazenamento Gratuito Externo (Google Drive) — 18/08/2026
 - [x] Migração real dos uploads de arquivos e imagens para o Google Drive (suporte à API v3 do Google Drive, OAuth2, criação automática de pastas e fallback robusto para testes)
-- [ ] Armazenamento estrito de metadados no Neon PostgreSQL após integração real do Drive (a validação final depende do upload server-side)
+- [x] Armazenamento estrito de metadados no Neon PostgreSQL confirmado: `media_assets` persiste somente URL, fileKey, tamanho e metadados; bytes permanecem no Storage externo.
 - [x] Implementação de compressão client-side para imagens antes do envio
 - [x] Proteção server-side de arquivos privados de alunos e professores via permissões RBAC
 
@@ -703,3 +703,10 @@
 
 ## Exportação ZIP de materiais do professor
 - [x] Permitir a seleção de materiais específicos por caixas de seleção antes da geração e exportação do ZIP do professor, com seleção em massa, contador, estado vazio e validação server-side
+- [x] Adicionar indicador visual de tamanho total estimado dos materiais selecionados antes de gerar o arquivo ZIP, com alerta de limite de 40 MB
+
+## Reconciliação do todo.md anexado com a infraestrutura real — 19/08/2026
+- [x] Confirmar que uploads persistidos no Neon guardam somente metadados e referências externas, sem colunas de bytes/blob.
+- [x] Remover o fallback simulado de `lib/google-drive-upload.ts` e retornar erro de configuração quando o OAuth real não estiver disponível; retry transitório mantém backoff exponencial.
+- [x] Documentar a política efetiva: uploads administrativos usam Supabase Storage externo com metadados no Neon; exportações do professor usam Google Drive dedicado somente quando OAuth real está configurado.
+- [x] Reconciliar no inventário os itens do anexo que permanecem desatualizados em relação ao código real e registrar evidências em `docs/todo-reconciliation-2026-08-19.md`.
