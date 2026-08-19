@@ -875,6 +875,6 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Relatório Detalhado de Incidentes e Correções — 19/08/2026
-- [x] Consolidar o relatório técnico completo em `/relatorio_incidentes.md` detalhando sintomas, causas raiz e correções implementadas.
-- [x] Validar 100% de sucesso nos 317 testes Vitest e verificação de tipos.
+## Testes de Integração e Smoke Tests Automatizados — 19/08/2026
+- [x] Criar suíte de smoke tests e integração (`/app/api/integration-smoke.test.ts`) cobrindo as rotas críticas de turmas externas, progresso e links do Google Drive.
+- [x] Validar 100% de sucesso em todos os 320 testes Vitest.
