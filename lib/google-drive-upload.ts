@@ -1,28 +1,53 @@
 /**
- * Módulo de Integração Server-Side com Google Drive para Uploads Gratuitos.
- * Suporta conta de armazenamento dedicada (andersonpalafoznupel@gmail.com)
- * separada da conta administrativa (palafozanderson@gmail.com).
- * Realiza upload real via Google Drive API v3 quando credenciais OAuth2 estão presentes,
- * com fallback seguro para simulação em ambiente de testes ou ausência de tokens.
+ * Integração server-side com Google Drive para a conta dedicada de armazenamento.
+ * O Neon recebe apenas metadados; os bytes permanecem no Drive/Supabase Storage.
  */
 
 import { google } from "googleapis";
 
-export async function downloadFromGoogleDriveStorage(fileId: string): Promise<{ data: Uint8Array; name: string; mimeType: string }> {
+const DEFAULT_STORAGE_ACCOUNT = "andersonpalafoznupel@gmail.com";
+const DEFAULT_MAX_RETRIES = 3;
+
+function requiredCredentials() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
   if (!clientId || !clientSecret || !refreshToken) {
-    throw new Error("A conta dedicada de armazenamento do Google Drive ainda não está configurada para leitura server-side.");
+    throw new Error("Google Drive não está configurado para upload real. Autorize a conta dedicada e configure GOOGLE_REFRESH_TOKEN.");
   }
+  return { clientId, clientSecret, refreshToken };
+}
 
-  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-  oauth2Client.setCredentials({ refresh_token: refreshToken });
-  const drive = google.drive({ version: "v3", auth: oauth2Client });
+export function getGoogleDriveStorageAccount() {
+  return process.env.GOOGLE_STORAGE_ACCOUNT || DEFAULT_STORAGE_ACCOUNT;
+}
+
+function createDriveClient() {
+  const credentials = requiredCredentials();
+  const oauth2Client = new google.auth.OAuth2(credentials.clientId, credentials.clientSecret);
+  oauth2Client.setCredentials({ refresh_token: credentials.refreshToken });
+  return google.drive({ version: "v3", auth: oauth2Client });
+}
+
+function isRetryableDriveError(error: unknown) {
+  const candidate = error as { code?: number | string; response?: { status?: number } };
+  const status = Number(candidate?.response?.status ?? candidate?.code ?? 0);
+  return status === 408 || status === 429 || status >= 500 || ["ECONNRESET", "ETIMEDOUT", "ENOTFOUND"].includes(String(candidate?.code));
+}
+
+function retryDelay(attempt: number) {
+  return Math.min(500 * 2 ** Math.max(0, attempt - 1), 4_000);
+}
+
+async function sleep(ms: number) {
+  await new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+export async function downloadFromGoogleDriveStorage(fileId: string): Promise<{ data: Uint8Array; name: string; mimeType: string }> {
+  if (!fileId.trim()) throw new Error("ID do arquivo do Google Drive inválido.");
+  const drive = createDriveClient();
   const metadata = await drive.files.get({ fileId, fields: "id,name,mimeType,trashed" });
-  if (metadata.data.trashed) {
-    throw new Error("O arquivo de origem foi enviado para a lixeira do Google Drive.");
-  }
+  if (metadata.data.trashed) throw new Error("O arquivo de origem foi enviado para a lixeira do Google Drive.");
   const response = await drive.files.get({ fileId, alt: "media" }, { responseType: "arraybuffer" });
   return {
     data: new Uint8Array(response.data as ArrayBuffer),
@@ -34,100 +59,51 @@ export async function downloadFromGoogleDriveStorage(fileId: string): Promise<{ 
 export async function uploadToGoogleDrive(
   file: File,
   folderName = "Anderson Palafoz Platform",
-  storageAccountEmail?: string,
-  maxRetries = 3
+  storageAccountEmail = getGoogleDriveStorageAccount(),
+  maxRetries = DEFAULT_MAX_RETRIES,
 ): Promise<{ fileId: string; webViewLink: string; size: number; account: string; attempts: number; realUpload: boolean }> {
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  
-  const targetAccount = storageAccountEmail || process.env.GOOGLE_STORAGE_ACCOUNT || "andersonpalafoznupel@gmail.com";
-  
-  let attempts = 0;
+  if (!file || file.size <= 0) throw new Error("Não é possível enviar um arquivo vazio para o Google Drive.");
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const attemptsLimit = Math.max(1, Math.min(Number(maxRetries) || DEFAULT_MAX_RETRIES, 5));
   let lastError: Error | null = null;
 
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
-
-  const useRealApi = Boolean(clientId && clientSecret && refreshToken);
-
-  while (attempts < maxRetries) {
-    attempts++;
+  for (let attempts = 1; attempts <= attemptsLimit; attempts += 1) {
     try {
-      if (useRealApi) {
-        const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
-        oauth2Client.setCredentials({ refresh_token: refreshToken });
+      const drive = createDriveClient();
+      const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${folderName.replace(/'/g, "\\'")}' and trashed=false`;
+      const folderRes = await drive.files.list({ q: folderQuery, spaces: "drive", fields: "files(id, name)" });
+      let folderId = folderRes.data.files?.[0]?.id;
 
-        const drive = google.drive({ version: "v3", auth: oauth2Client });
-
-        // Verificar ou criar pasta de destino
-        const folderQuery = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
-        const folderRes = await drive.files.list({ q: folderQuery, spaces: "drive", fields: "files(id, name)" });
-
-        let folderId = folderRes.data.files?.[0]?.id;
-        if (!folderId) {
-          const folderMetadata = {
-            name: folderName,
-            mimeType: "application/vnd.google-apps.folder",
-          };
-          const createdFolder = await drive.files.create({
-            requestBody: folderMetadata,
-            fields: "id",
-          });
-          folderId = createdFolder.data.id;
-        }
-
-        const fileMetadata = {
-          name: file.name,
-          parents: folderId ? [folderId] : undefined,
-        };
-
-        const media = {
-          mimeType: file.type || "application/octet-stream",
-          body: Buffer.from(buffer),
-        };
-
-        const response = await drive.files.create({
-          requestBody: fileMetadata,
-          media: media,
-          fields: "id, webViewLink",
+      if (!folderId) {
+        const createdFolder = await drive.files.create({
+          requestBody: { name: folderName, mimeType: "application/vnd.google-apps.folder" },
+          fields: "id",
         });
-
-        return {
-          fileId: response.data.id || `gdrive_${Date.now()}`,
-          webViewLink: response.data.webViewLink || `https://drive.google.com/file/d/${response.data.id}/view`,
-          size: buffer.length,
-          account: targetAccount,
-          attempts,
-          realUpload: true,
-        };
-      } else {
-        // Fallback simulado robusto para testes e ambientes sem credenciais OAuth completas
-        if (attempts < maxRetries && Math.random() < 0.05) {
-          throw new Error("Erro transitório de rede simulado (503 Service Unavailable)");
-        }
-
-        const mockFileId = `gdrive_real_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        const mockWebViewLink = `https://drive.google.com/file/d/${mockFileId}/view?usp=platform_api`;
-
-        return {
-          fileId: mockFileId,
-          webViewLink: mockWebViewLink,
-          size: buffer.length,
-          account: targetAccount,
-          attempts,
-          realUpload: false,
-        };
+        folderId = createdFolder.data.id;
       }
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      if (attempts >= maxRetries) {
-        break;
-      }
-      const delay = Math.min(500 * Math.pow(2, attempts - 1), 4000);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (!folderId) throw new Error("O Google Drive não retornou o ID da pasta de destino.");
+
+      const response = await drive.files.create({
+        requestBody: { name: file.name, parents: [folderId] },
+        media: { mimeType: file.type || "application/octet-stream", body: buffer },
+        fields: "id, webViewLink",
+      });
+      if (!response.data.id) throw new Error("O Google Drive não retornou o ID do arquivo enviado.");
+
+      return {
+        fileId: response.data.id,
+        webViewLink: response.data.webViewLink || `https://drive.google.com/file/d/${response.data.id}/view`,
+        size: buffer.length,
+        account: storageAccountEmail,
+        attempts,
+        realUpload: true,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempts >= attemptsLimit || !isRetryableDriveError(error)) break;
+      await sleep(retryDelay(attempts));
     }
   }
 
-  throw new Error(`Falha no upload para o Google Drive após ${maxRetries} tentativas. Último erro: ${lastError?.message || "Erro desconhecido"}`);
+  throw new Error(`Falha no upload real para o Google Drive após ${attemptsLimit} tentativa(s). Último erro: ${lastError?.message || "Erro desconhecido"}`);
 }

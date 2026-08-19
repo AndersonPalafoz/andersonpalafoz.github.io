@@ -13,6 +13,14 @@ export type TeacherMaterialZipOption = {
   fileUrl: string | null;
 };
 
+const ZIP_LIMIT_BYTES = 40 * 1024 * 1024;
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -29,15 +37,54 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
   const selectableMaterials = useMemo(() => materials.filter((material) => Boolean(material.fileUrl)), [materials]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(() => new Set());
   const [loading, setLoading] = useState(false);
+  const [estimating, setEstimating] = useState(false);
+  const [sizeEstimate, setSizeEstimate] = useState({ totalBytes: 0, unknownCount: 0, exceedsLimit: false });
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const selectedCount = selectedIds.size;
+  const selectedIdList = useMemo(() => Array.from(selectedIds).sort((a, b) => a - b), [selectedIds]);
   const allSelected = selectableMaterials.length > 0 && selectedCount === selectableMaterials.length;
   const someSelected = selectedCount > 0 && !allSelected;
 
   useEffect(() => {
     if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected;
   }, [someSelected]);
+
+  useEffect(() => {
+    if (selectedIdList.length === 0) {
+      setSizeEstimate({ totalBytes: 0, unknownCount: 0, exceedsLimit: false });
+      setEstimating(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    setEstimating(true);
+    fetch("/api/professor/materials-size", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ materialIds: selectedIdList }),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload?.error || "Não foi possível estimar o tamanho.");
+        return payload;
+      })
+      .then((payload) => setSizeEstimate({
+        totalBytes: Number(payload.totalBytes) || 0,
+        unknownCount: Number(payload.unknownCount) || 0,
+        exceedsLimit: Boolean(payload.exceedsLimit),
+      }))
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setSizeEstimate({ totalBytes: 0, unknownCount: selectedIdList.length, exceedsLimit: false });
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setEstimating(false);
+      });
+
+    return () => controller.abort();
+  }, [selectedIdList]);
 
   function toggleMaterial(materialId: number) {
     setSelectedIds((current) => {
@@ -66,7 +113,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
       const response = await fetch("/api/professor/export-materials-zip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ materialIds: Array.from(selectedIds) }),
+        body: JSON.stringify({ materialIds: selectedIdList }),
       });
 
       const contentType = response.headers.get("content-type") || "";
@@ -78,7 +125,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
       const blob = await response.blob();
       const filename = response.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] || "materiais-anderson-palafoz.zip";
       downloadBlob(blob, filename);
-      toast.success(`${selectedIds.size} material(is) compactado(s) com sucesso.`);
+      toast.success(`${selectedIdList.length} material(is) compactado(s) com sucesso.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível gerar o arquivo ZIP.");
     } finally {
@@ -155,12 +202,37 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
             })}
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 text-muted-foreground">Limite de segurança: até 50 materiais e 40 MB por ZIP.</p>
-            <Button type="button" onClick={generateZip} disabled={loading || selectedCount === 0} className="min-h-11 gap-2 bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
-              {loading ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <Download size={17} aria-hidden="true" />}
-              {loading ? "Gerando ZIP…" : "Gerar ZIP selecionado"}
-            </Button>
+          <div className="flex flex-col gap-4 border-t border-border pt-5">
+            <div
+              className={`rounded-2xl border p-4 ${sizeEstimate.exceedsLimit ? "border-red-500 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200" : "border-border bg-muted/30 text-foreground"}`}
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-sm font-bold">Tamanho total estimado</span>
+                <span className="text-sm font-black tabular-nums">
+                  {estimating ? "Calculando…" : `${formatBytes(sizeEstimate.totalBytes)} / ${formatBytes(ZIP_LIMIT_BYTES)}`}
+                </span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10" aria-hidden="true">
+                <div className={`h-full rounded-full transition-[width] duration-200 ${sizeEstimate.exceedsLimit ? "bg-red-600" : "bg-green-600"}`} style={{ width: `${Math.min((sizeEstimate.totalBytes / ZIP_LIMIT_BYTES) * 100, 100)}%` }} />
+              </div>
+              <p className="mt-2 text-xs leading-5 opacity-80">
+                {sizeEstimate.exceedsLimit
+                  ? "A seleção ultrapassa o limite de 40 MB. Remova materiais antes de gerar o ZIP."
+                  : sizeEstimate.unknownCount > 0
+                    ? `${sizeEstimate.unknownCount} arquivo(s) não permitiram estimativa; o servidor validará o tamanho real antes de compactar.`
+                    : "Estimativa baseada no tamanho dos arquivos de origem; o ZIP pode variar alguns bytes após a compactação."}
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs leading-5 text-muted-foreground">Limite de segurança: até 50 materiais e 40 MB por ZIP.</p>
+              <Button type="button" onClick={generateZip} disabled={loading || estimating || selectedCount === 0 || sizeEstimate.exceedsLimit} className="min-h-11 gap-2 bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
+                {loading ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <Download size={17} aria-hidden="true" />}
+                {loading ? "Gerando ZIP…" : "Gerar ZIP selecionado"}
+              </Button>
+            </div>
           </div>
         </>
       )}

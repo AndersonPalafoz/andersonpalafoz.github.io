@@ -2,56 +2,13 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getTeacherMaterials } from "@/lib/teacher";
-import { extractGoogleDriveFileId } from "@/lib/google-drive";
 import { createMaterialsZip, MAX_ZIP_ENTRIES, MAX_ZIP_INPUT_BYTES } from "@/lib/materials-zip";
+import { fetchMaterialBytes } from "@/lib/material-download";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const MAX_DOWNLOAD_BYTES = MAX_ZIP_INPUT_BYTES;
-
-function getDownloadUrl(fileUrl: string) {
-  const driveFileId = extractGoogleDriveFileId(fileUrl);
-  if (driveFileId && fileUrl.includes("drive.google.com")) {
-    return `https://drive.google.com/uc?export=download&id=${encodeURIComponent(driveFileId)}`;
-  }
-  return fileUrl;
-}
-
-function isAllowedRemoteUrl(rawUrl: string) {
-  try {
-    const url = new URL(rawUrl);
-    if (url.protocol !== "https:") return false;
-    const hostname = url.hostname.toLowerCase();
-    if (["localhost", "127.0.0.1", "::1"].includes(hostname)) return false;
-    if (hostname === "drive.google.com" || hostname === "docs.google.com" || hostname === "storage.googleapis.com") return true;
-    if (hostname.endsWith(".googleusercontent.com") || hostname.endsWith(".storage.googleapis.com")) return true;
-    const configuredHost = process.env.GOOGLE_STORAGE_HOST?.toLowerCase();
-    return Boolean(configuredHost && hostname === configuredHost);
-  } catch {
-    return false;
-  }
-}
-
-async function fetchMaterialBytes(fileUrl: string) {
-  if (!isAllowedRemoteUrl(fileUrl)) throw new Error("A origem deste material não é autorizada para exportação.");
-
-  const response = await fetch(getDownloadUrl(fileUrl), {
-    headers: { Accept: "application/pdf,image/*,audio/*,video/*,application/octet-stream" },
-    redirect: "follow",
-    signal: AbortSignal.timeout(20_000),
-  });
-  if (!response.ok) throw new Error(`O arquivo respondeu com HTTP ${response.status}.`);
-
-  const contentLength = Number(response.headers.get("content-length") || 0);
-  if (contentLength > MAX_DOWNLOAD_BYTES) throw new Error("Um dos materiais excede o limite de 40 MB.");
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("text/html")) throw new Error("O link do material não retornou o arquivo original.");
-
-  const buffer = new Uint8Array(await response.arrayBuffer());
-  if (buffer.byteLength === 0) throw new Error("Um dos materiais retornou um arquivo vazio.");
-  return buffer;
-}
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -85,7 +42,7 @@ export async function POST(request: Request) {
       if (!material?.fileUrl) {
         return NextResponse.json({ error: `O material “${material?.title ?? "sem título"}” não possui arquivo disponível.` }, { status: 422 });
       }
-      const data = await fetchMaterialBytes(material.fileUrl);
+      const data = await fetchMaterialBytes(material.fileUrl, MAX_DOWNLOAD_BYTES);
       totalBytes += data.byteLength;
       if (totalBytes > MAX_DOWNLOAD_BYTES) {
         return NextResponse.json({ error: "A seleção excede o limite seguro de 40 MB." }, { status: 413 });
