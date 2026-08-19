@@ -81,21 +81,28 @@ export default function AdminCursos() {
     });
   }, [courses, levelFilter, searchTerm]);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja deletar este curso?")) return;
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [deletingCourse, setDeletingCourse] = useState(false);
+
+  const confirmDeleteCourse = async () => {
+    if (!courseToDelete) return;
     try {
-      const response = await fetch(`/api/admin/courses?id=${id}`, { method: "DELETE" });
+      setDeletingCourse(true);
+      const response = await fetch(`/api/admin/courses?id=${courseToDelete.id}`, { method: "DELETE" });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         const details = describeHttpError(response.status, data.error);
         setErrorDetails(details);
         throw new Error(details.message);
       }
-      setCourses(courses.filter((c) => c.id !== id));
+      setCourses(courses.filter((c) => c.id !== courseToDelete.id));
       setErrorDetails(null);
       toast.success("Curso excluído com sucesso.");
+      setCourseToDelete(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir curso.");
+    } finally {
+      setDeletingCourse(false);
     }
   };
 
@@ -500,8 +507,8 @@ export default function AdminCursos() {
                       <Edit2 size={14} /> Editar
                     </button>
                     <button
-                      onClick={() => handleDelete(course.id)}
-                      className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-semibold text-xs transition flex items-center gap-1.5"
+                      onClick={() => setCourseToDelete(course)}
+                      className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-semibold text-xs transition flex items-center gap-1.5"
                     >
                       <Trash2 size={14} /> Excluir
                     </button>
@@ -518,6 +525,44 @@ export default function AdminCursos() {
             <h2 id="remove-cover-title" className="text-xl font-black text-foreground">Remover imagem de capa?</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">A capa será retirada deste formulário. Para persistir a remoção, confirme salvando o curso.</p>
             <div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setCoverRemovalPending(false)} className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-foreground hover:bg-muted/60">Cancelar</button><button type="button" onClick={confirmCoverRemoval} className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700">Remover imagem</button></div>
+          </div>
+        </div>
+      )}
+
+      {courseToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="delete-course-title">
+          <div className="w-full max-w-md rounded-2xl bg-card text-card-foreground p-6 shadow-2xl border border-border space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40">
+                <Trash2 size={24} />
+              </div>
+              <div>
+                <h2 id="delete-course-title" className="text-lg font-bold text-foreground">Excluir curso permanentemente?</h2>
+                <p className="text-xs text-muted-foreground">Esta ação não pode ser desfeita.</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Você está prestes a excluir o curso <strong className="text-foreground">{courseToDelete.title}</strong>. Todos os módulos, aulas e registros associados também serão removidos do sistema.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                disabled={deletingCourse}
+                onClick={() => setCourseToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-border text-foreground font-semibold text-xs hover:bg-muted/60 transition disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deletingCourse}
+                onClick={confirmDeleteCourse}
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
+              >
+                {deletingCourse && <Loader2 className="animate-spin" size={14} />}
+                {deletingCourse ? "Excluindo..." : "Sim, excluir curso"}
+              </button>
+            </div>
           </div>
         </div>
       )}
