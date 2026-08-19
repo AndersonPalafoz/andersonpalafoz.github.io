@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 export default function ProfessorProgressSpeakingPage() {
   const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
   const [selectedAttemptId, setSelectedAttemptId] = useState<string | null>(null);
   const [scoreVal, setScoreVal] = useState<number | null>(null);
@@ -17,21 +18,25 @@ export default function ProfessorProgressSpeakingPage() {
   const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/professor/progress-speaking");
-        if (!res.ok) throw new Error("Erro ao carregar dados");
-        const json = await res.json();
-        setData(json);
-      } catch (err) {
-        console.error("Error loading progress & speaking:", err);
-        toast.error("Não foi possível carregar os dados de progresso.");
-      } finally {
-        setLoading(false);
-      }
+  async function loadData() {
+    try {
+      setLoading(true);
+      setErrorMessage(null);
+      const res = await fetch("/api/professor/progress-speaking");
+      if (!res.ok) throw new Error(`Erro HTTP ${res.status}: falha ao carregar progresso`);
+      const json = await res.json();
+      setData(json);
+    } catch (err: any) {
+      console.error("Error loading progress & speaking:", err);
+      const msg = err?.message || "Não foi possível carregar os dados de progresso.";
+      setErrorMessage(msg);
+      toast.error(msg);
+    } finally {
+      setLoading(false);
     }
+  }
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -66,11 +71,36 @@ export default function ProfessorProgressSpeakingPage() {
     }
   };
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="site-shell flex items-center justify-center p-12" aria-busy="true">
         <div className="surface-card h-64 animate-pulse flex items-center justify-center">
           <p className="text-sm font-bold text-muted-foreground">Carregando painel de progresso...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMessage && !data) {
+    return (
+      <div className="site-shell px-4 py-16 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto surface-card p-8 rounded-3xl border border-red-200 bg-red-50/50 text-center space-y-4 shadow-sm">
+          <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 mx-auto font-bold text-xl">
+            ⚠️
+          </div>
+          <h2 className="text-2xl font-black text-gray-900">Falha ao carregar progresso</h2>
+          <p className="text-sm text-gray-600 leading-relaxed">{errorMessage}</p>
+          <div className="pt-2 flex justify-center gap-3">
+            <Link href="/professor" className="px-4 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-bold text-xs hover:bg-gray-50 transition">
+              Voltar ao Painel
+            </Link>
+            <button
+              onClick={() => loadData()}
+              className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition shadow-md"
+            >
+              Tentar Novamente
+            </button>
+          </div>
         </div>
       </div>
     );
