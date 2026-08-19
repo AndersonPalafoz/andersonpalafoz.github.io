@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TrendingUp, Zap, Target, ShieldCheck, Sparkles, Lightbulb, Flame } from "lucide-react";
+import { TrendingUp, Zap, Target, Sparkles, Flame } from "lucide-react";
 
 export function PredictiveAnalyticsWidget() {
   const [streakDays, setStreakDays] = useState(1);

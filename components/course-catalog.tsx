@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Filter, Layers, Search } from "lucide-react";
+import { ArrowRight, Filter, Layers, Search, BookOpen } from "lucide-react";
 import { WishlistToggle } from "@/components/course-engagement";
 
 type CatalogCourse = {

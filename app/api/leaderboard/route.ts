@@ -11,12 +11,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!isApprovedStudentSession(session)) {
+    if (!isApprovedStudentSession(session) || !session?.user?.email) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401, headers: { "Cache-Control": "private, no-store" } });
     }
 
     const currentUser = await db.query.users.findFirst({
-      where: and(eq(users.email, session.user?.email ?? ""), isNull(users.deletedAt)),
+      where: and(eq(users.email, session.user.email), isNull(users.deletedAt)),
     });
     if (!currentUser) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
 

@@ -29,11 +29,12 @@ export async function exportTeacherPublicationToGoogle(params: TeacherExportPara
 
   // Fluxo real usando a API do Google quando as credenciais OAuth do usuário estiverem presentes
   try {
-    const oauth2Client = new google.auth.OAuth2(
+    const _oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
       process.env.NEXTAUTH_URL ? `${process.env.NEXTAUTH_URL}/api/auth/callback/google` : undefined
     );
+    void _oauth2Client;
 
     // Nota: Em produção real, o token do usuário professor logado é recuperado da sessão ou banco de tokens.
     // Aqui garantimos a estrutura correta da API v3 do Drive e Classroom.
