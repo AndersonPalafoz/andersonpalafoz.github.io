@@ -4,8 +4,9 @@ import { and, eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { analyzeSpeakingAudio } from "@/lib/ai-pronunciation";
 import { createSpeakingAttempt, db, getSpeakingAttempts } from "@/lib/db";
-import { activities, userActivityProgress, users } from "@/drizzle/schema";
+import { activities, eventLogs, userActivityProgress, users } from "@/drizzle/schema";
 import { uploadLearningAudio } from "@/lib/learning-storage";
+import { ACTIVITY_COMPLETION_XP, awardCompletionXp } from "@/lib/gamification";
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,6 +59,14 @@ export async function POST(request: NextRequest) {
     const currentProgress = await db.query.userActivityProgress.findFirst({
       where: (table) => and(eq(table.userId, user.id), eq(table.activityId, activityId)),
     });
+    const existingCompletionEvent = await db.query.eventLogs.findFirst({
+      where: (table) => and(
+        eq(table.userId, user.id),
+        eq(table.eventType, "activity_complete"),
+        eq(table.details, JSON.stringify({ source: "activity", activityId })),
+      ),
+    });
+    const shouldAwardCompletionXp = currentProgress?.status !== "completed" && !existingCompletionEvent;
     if (currentProgress) {
       await db.update(userActivityProgress).set({
         audioResponseUrl: uploaded.url,
@@ -78,8 +87,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    let pointsAwarded = 0;
+    if (shouldAwardCompletionXp) {
+      await awardCompletionXp(user.id, ACTIVITY_COMPLETION_XP);
+      pointsAwarded = ACTIVITY_COMPLETION_XP;
+      await db.insert(eventLogs).values({
+        userId: user.id,
+        userEmail: user.email,
+        eventType: "activity_complete",
+        details: JSON.stringify({ source: "activity", activityId }),
+      });
+    }
+
     return NextResponse.json({
       success: true,
+      pointsAwarded,
       attempt,
       comparison: previous ? { previousScore: previous.aiScore, improvement: analysis.score - (previous.aiScore || 0) } : null,
     });

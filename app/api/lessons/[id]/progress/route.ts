@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import { getLessonById, getModuleById, updateLessonProgress } from "@/lib/db";
+import { and, eq, like } from "drizzle-orm";
+import { getLessonById, getModuleById, getUserLessonProgress, updateLessonProgress, db } from "@/lib/db";
 import { issueCertificateIfEligible } from "@/lib/certificate-service";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { awardLessonCompletionXp, LESSON_COMPLETION_XP } from "@/lib/gamification";
+import { eventLogs } from "@/drizzle/schema";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -21,7 +24,31 @@ export async function POST(
       return NextResponse.json({ error: "Identificador inválido." }, { status: 400 });
     }
 
+    const previousProgress = await getUserLessonProgress(userId, lessonId);
+    const existingCompletionEvent = completed
+      ? await db.query.eventLogs.findFirst({
+        where: and(
+          eq(eventLogs.userId, userId),
+          eq(eventLogs.eventType, "activity_complete"),
+          like(eventLogs.details, `%\"lessonId\":${lessonId}%`),
+        ),
+      })
+      : null;
+
     await updateLessonProgress(userId, lessonId, completed ? 1 : 0);
+
+    let pointsAwarded = 0;
+    if (completed && previousProgress?.completed !== 1 && !existingCompletionEvent) {
+      await awardLessonCompletionXp(userId);
+      pointsAwarded = LESSON_COMPLETION_XP;
+      await db.insert(eventLogs).values({
+        userId,
+        userEmail: session.user.email ?? null,
+        eventType: "activity_complete",
+        details: JSON.stringify({ source: "lesson", lessonId }),
+      });
+    }
+
     let certificate = null;
     if (completed) {
       const lesson = await getLessonById(lessonId);
@@ -31,7 +58,7 @@ export async function POST(
         certificate = result.certificate;
       }
     }
-    return NextResponse.json({ success: true, certificate });
+    return NextResponse.json({ success: true, certificate, pointsAwarded });
   } catch (error) {
     console.error("Error updating lesson progress:", error);
     return NextResponse.json({ error: "Não foi possível atualizar o progresso da aula." }, { status: 500 });
