@@ -307,6 +307,56 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === "sendWelcomeEmail") {
+      const { studentId } = body;
+      if (!studentId) {
+        return NextResponse.json({ error: "ID do aluno não informado." }, { status: 400 });
+      }
+
+      const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      if (!student || !student.email) {
+        return NextResponse.json({ error: "Aluno não encontrado ou sem e-mail cadastrado." }, { status: 404 });
+      }
+
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
+      if (!existingClass) {
+        return NextResponse.json({ error: "Turma associada não encontrada." }, { status: 404 });
+      }
+
+      if (session.user.role !== "admin" && session.user.role !== "super_admin" && userEmail !== "palafozanderson@gmail.com" && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      // Tenta obter o token do Google associado ao admin/professor na sessão
+      // Se a conta for Google, o token pode estar disponível na sessão ou usamos notificação padrão.
+      // Como a chave GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET está ativa, disparamos a notificação por e-mail:
+      const subject = `Boas-vindas à Turma: ${existingClass.className} (${existingClass.institution})`;
+      const htmlBody = `
+        <div style="font-family: Arial, sans-serif; color: #111; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px;">
+          <h2 style="color: #dc2626; margin-top: 0;">Bem-vindo(a) ao Curso, ${student.name}!</h2>
+          <p>Você foi cadastrado(a) com sucesso na turma <strong>${existingClass.className}</strong> (${existingClass.courseName}), vinculada à instituição <strong>${existingClass.institution}</strong> para o período <strong>${existingClass.academicTerm}</strong>.</p>
+          <p>O professor <strong>Anderson Palafoz</strong> gerencia este espaço com materiais didáticos, chamadas e notas integradas em nossa plataforma acadêmica.</p>
+          <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px;"><strong>Seus Dados de Cadastro:</strong></p>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: #4b5563;">E-mail: ${student.email}<br/>Matrícula/ID: ${student.studentIdNumber || 'Não informada'}</p>
+          </div>
+          <p>Acesse a plataforma para acompanhar suas aulas, materiais e notas oficiais.</p>
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
+          <p style="font-size: 11px; color: #9ca3af; text-align: center;">Anderson Palafoz Platform - Sistema Acadêmico Integrado</p>
+        </div>
+      `;
+
+      // Dispara via serviço de email padrão com suporte a Gmail/Resend
+      const { sendEmailNotification } = await import("@/lib/email");
+      await sendEmailNotification({
+        to: student.email,
+        subject,
+        htmlContent: htmlBody,
+      });
+
+      return NextResponse.json({ success: true, message: `E-mail de boas-vindas enviado com sucesso para ${student.email}` });
+    }
+
     if (action === "deleteClass") {
       if (!classId) {
         return NextResponse.json({ error: "ID da turma não informado." }, { status: 400 });
