@@ -12,10 +12,11 @@ import {
   notifications,
   adminAuditLogs,
 } from "@/drizzle/schema";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, isNull, isNotNull } from "drizzle-orm";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
     const session = await getServerSession(authOptions);
     const userRole = session?.user?.role;
     const userEmail = session?.user?.email;
@@ -40,9 +41,20 @@ export async function GET() {
     }
 
     const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
-    const classes = isGlobalAdmin
-      ? await db.select().from(externalClasses).orderBy(desc(externalClasses.createdAt))
-      : await db.select().from(externalClasses).where(eq(externalClasses.teacherId, teacher.id)).orderBy(desc(externalClasses.createdAt));
+    const mode = searchParams.get("mode");
+
+    let classesQuery;
+    if (mode === "trash") {
+      classesQuery = isGlobalAdmin
+        ? db.select().from(externalClasses).where(isNotNull(externalClasses.deletedAt)).orderBy(desc(externalClasses.deletedAt))
+        : db.select().from(externalClasses).where(and(eq(externalClasses.teacherId, teacher.id), isNotNull(externalClasses.deletedAt))).orderBy(desc(externalClasses.deletedAt));
+    } else {
+      classesQuery = isGlobalAdmin
+        ? db.select().from(externalClasses).where(isNull(externalClasses.deletedAt)).orderBy(desc(externalClasses.createdAt))
+        : db.select().from(externalClasses).where(and(eq(externalClasses.teacherId, teacher.id), isNull(externalClasses.deletedAt))).orderBy(desc(externalClasses.createdAt));
+    }
+
+    const classes = await classesQuery;
     
     const result = [];
     for (const cls of classes) {
@@ -359,6 +371,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: `E-mail de boas-vindas enviado com sucesso para ${student.email}` });
     }
 
+    if (action === "restoreClass") {
+      if (!classId) {
+        return NextResponse.json({ error: "ID da turma não informado." }, { status: 400 });
+      }
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) {
+        return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
+      }
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      const [restored] = await db.update(externalClasses).set({ deletedAt: null }).where(eq(externalClasses.id, Number(classId))).returning();
+      return NextResponse.json({ success: true, class: restored });
+    }
+
+    if (action === "permanentDeleteClass") {
+      if (!classId) {
+        return NextResponse.json({ error: "ID da turma não informado." }, { status: 400 });
+      }
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) {
+        return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
+      }
+      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      }
+
+      await db.delete(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+      await db.delete(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, Number(classId)));
+      await db.delete(externalClassGrades).where(eq(externalClassGrades.externalClassId, Number(classId)));
+      await db.delete(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, Number(classId)));
+      await db.delete(externalClasses).where(eq(externalClasses.id, Number(classId)));
+
+      return NextResponse.json({ success: true, message: "Turma externa excluída permanentemente." });
+    }
+
     if (action === "deleteClass") {
       if (!classId) {
         return NextResponse.json({ error: "ID da turma não informado." }, { status: 400 });
@@ -373,39 +422,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
-      // Contar dependências para validação e auditoria
-      const studentsCount = await db.query.externalStudents.findMany({ where: eq(externalStudents.externalClassId, Number(classId)) });
-      const attendanceCount = await db.query.externalClassAttendance.findMany({ where: eq(externalClassAttendance.externalClassId, Number(classId)) });
-      const gradesCount = await db.query.externalClassGrades.findMany({ where: eq(externalClassGrades.externalClassId, Number(classId)) });
-      const materialsCount = await db.query.externalClassMaterials.findMany({ where: eq(externalClassMaterials.externalClassId, Number(classId)) });
-
-      await db.delete(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
-      await db.delete(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, Number(classId)));
-      await db.delete(externalClassGrades).where(eq(externalClassGrades.externalClassId, Number(classId)));
-      await db.delete(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, Number(classId)));
-      await db.delete(externalClasses).where(eq(externalClasses.id, Number(classId)));
-
-      try {
-        await db.insert(adminAuditLogs).values({
-          adminEmail: session.user.email || "professor@andersonpalafoz.com",
-          action: "delete_external_class",
-          targetName: existingClass.className,
-          details: `Turma externa '${existingClass.className}' (${existingClass.institution}) e dependências removidas: ${studentsCount.length} alunos, ${attendanceCount.length} registros de chamada, ${gradesCount.length} notas, ${materialsCount.length} materiais.`,
-        });
-      } catch (auditErr) {
-        console.warn("Falha ao registrar auditoria de exclusão de turma externa:", auditErr);
-      }
+      const [softDeleted] = await db.update(externalClasses).set({ deletedAt: new Date() }).where(eq(externalClasses.id, Number(classId))).returning();
 
       return NextResponse.json({
         success: true,
-        deletedSummary: {
-          className: existingClass.className,
-          institution: existingClass.institution,
-          students: studentsCount.length,
-          attendance: attendanceCount.length,
-          grades: gradesCount.length,
-          materials: materialsCount.length,
-        },
+        message: "Turma externa movida para a lixeira.",
+        class: softDeleted,
       });
     }
 

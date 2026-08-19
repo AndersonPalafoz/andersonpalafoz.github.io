@@ -648,6 +648,7 @@ export const externalClasses = pgTable("external_classes", {
   academicTerm: varchar("academicTerm", { length: 50 }).notNull(), // ex: "2026.1"
   teacherId: integer("teacherId").notNull().references(() => users.id),
   description: text("description"),
+  deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

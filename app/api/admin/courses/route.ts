@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCourses, createCourse, updateCourse, deleteCourse } from "@/lib/db";
+import { getCourses, getTrashCourses, createCourse, updateCourse, softDeleteCourse, restoreCourse, deleteCourse } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode");
+
+    if (mode === "trash") {
+      const trash = await getTrashCourses();
+      return NextResponse.json(trash);
     }
 
     const courses = await getCourses();
@@ -58,12 +66,27 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const permanent = searchParams.get("permanent") === "true";
+    const restore = searchParams.get("restore") === "true";
+
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    const course = await deleteCourse(parseInt(id));
-    return NextResponse.json(course);
+    const courseId = parseInt(id);
+
+    if (restore) {
+      const restored = await restoreCourse(courseId);
+      return NextResponse.json(restored);
+    }
+
+    if (permanent) {
+      const deleted = await deleteCourse(courseId);
+      return NextResponse.json(deleted);
+    }
+
+    const softDeleted = await softDeleteCourse(courseId);
+    return NextResponse.json(softDeleted);
   } catch (error) {
     console.error("Error deleting course:", error);
     return NextResponse.json({ error: "Failed to delete course" }, { status: 500 });

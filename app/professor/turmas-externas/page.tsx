@@ -214,8 +214,62 @@ export default function TurmasExternasPage() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState<"classes" | "trash">("classes");
+  const [trashClasses, setTrashClasses] = useState<ExternalClassItem[]>([]);
+  const [loadingTrash, setLoadingTrash] = useState(false);
+
+  const loadTrash = async () => {
+    try {
+      setLoadingTrash(true);
+      const res = await fetch("/api/professor/external-classes?mode=trash", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setTrashClasses(Array.isArray(data.classes) ? data.classes : []);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar lixeira de turmas:", err);
+    } finally {
+      setLoadingTrash(false);
+    }
+  };
+
+  const handleRestoreClass = async (classId: number) => {
+    try {
+      const res = await fetch(`/api/professor/external-classes`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "restoreClass", classId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao restaurar turma.");
+      notifySuccess("Turma externa restaurada com sucesso!");
+      void loadClasses();
+      void loadTrash();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Erro ao restaurar turma.");
+    }
+  };
+
+  const handlePermanentDeleteClass = async (classId: number) => {
+    if (!confirm("Tem certeza que deseja excluir permanentemente esta turma e seus dados? Esta ação não pode ser desfeita.")) return;
+    try {
+      const res = await fetch(`/api/professor/external-classes`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "permanentDeleteClass", classId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao excluir permanentemente.");
+      notifySuccess("Turma externa excluída permanentemente.");
+      void loadTrash();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Erro ao excluir.");
+    }
+  };
+
   useEffect(() => {
     void loadClasses();
+    void loadTrash();
   }, []);
 
   // Visão consolidada por instituição

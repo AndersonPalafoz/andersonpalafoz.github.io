@@ -29,6 +29,9 @@ export default function AdminCursos() {
   const [levelFilter, setLevelFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState<"courses" | "trash">("courses");
+  const [trashCourses, setTrashCourses] = useState<Course[]>([]);
+  const [loadingTrash, setLoadingTrash] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     level: "A1",
@@ -47,6 +50,7 @@ export default function AdminCursos() {
 
   useEffect(() => {
     fetchCourses();
+    fetchTrash();
   }, []);
 
   const fetchCourses = async () => {
@@ -66,6 +70,45 @@ export default function AdminCursos() {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTrash = async () => {
+    try {
+      setLoadingTrash(true);
+      const response = await fetch("/api/admin/courses?mode=trash", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok) {
+        setTrashCourses(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar lixeira de cursos:", err);
+    } finally {
+      setLoadingTrash(false);
+    }
+  };
+
+  const handleRestore = async (id: number) => {
+    try {
+      const response = await fetch(`/api/admin/courses?id=${id}&restore=true`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao restaurar curso.");
+      toast.success("Curso restaurado com sucesso!");
+      fetchCourses();
+      fetchTrash();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao restaurar.");
+    }
+  };
+
+  const handlePermanentDelete = async (id: number) => {
+    if (!confirm("Tem certeza que deseja excluir permanentemente este curso? Esta ação não pode ser desfeita.")) return;
+    try {
+      const response = await fetch(`/api/admin/courses?id=${id}&permanent=true`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Falha ao excluir permanentemente.");
+      toast.success("Curso excluído permanentemente do sistema.");
+      fetchTrash();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao excluir.");
     }
   };
 
@@ -434,10 +477,28 @@ export default function AdminCursos() {
           <div className="p-5 sm:p-6 border-b border-border space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-xl font-bold text-foreground">Cursos Disponíveis</h2>
-                <p className="mt-1 text-xs text-muted-foreground">Consulte, filtre e acesse a estrutura pedagógica de cada curso.</p>
+                <h2 className="text-xl font-bold text-foreground">{activeTab === "courses" ? "Cursos Disponíveis" : "Lixeira de Cursos"}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">{activeTab === "courses" ? "Consulte, filtre e acesse a estrutura pedagógica de cada curso." : "Cursos arquivados que podem ser restaurados ou excluídos permanentemente."}</p>
               </div>
-              <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground" aria-live="polite">{filteredCourses.length} de {courses.length} curso(s)</span>
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-xl bg-muted p-1 border border-border">
+                  <button
+                    onClick={() => setActiveTab("courses")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeTab === "courses" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Ativos ({courses.length})
+                  </button>
+                  <button
+                    onClick={() => { setActiveTab("trash"); fetchTrash(); }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${activeTab === "trash" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Lixeira ({trashCourses.length})
+                  </button>
+                </div>
+                {activeTab === "courses" && (
+                  <span className="rounded-full bg-muted px-3 py-1 text-xs font-bold text-muted-foreground" aria-live="polite">{filteredCourses.length} de {courses.length} curso(s)</span>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
               <label className="relative block">
@@ -460,62 +521,110 @@ export default function AdminCursos() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
-              <Loader2 className="animate-spin text-red-600" size={32} />
-              <p className="text-muted-foreground font-medium">Carregando cursos...</p>
-            </div>
-          ) : error ? (
-            <div className="p-12 text-center text-red-600 font-medium">{error}</div>
-          ) : filteredCourses.length === 0 ? (
-            <div className="p-12 text-center space-y-3">
-              <BookOpen size={48} className="mx-auto text-muted-foreground/60" />
-              <p className="text-muted-foreground font-medium">{courses.length === 0 ? "Nenhum curso cadastrado ainda." : "Nenhum curso corresponde aos filtros atuais."}</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border/70">
-              {filteredCourses.map((course) => (
-                <div key={course.id} className="p-6 hover:bg-muted/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300">
-                        Nível {course.level}
-                      </span>
-                      <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                        <Layers size={14} /> {course.modules} Módulos
-                      </span>
-                      {course.instructor && (
-                        <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
-                          <User size={14} /> {course.instructor}
+          {activeTab === "courses" ? (
+            loading ? (
+              <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+                <Loader2 className="animate-spin text-red-600" size={32} />
+                <p className="text-muted-foreground font-medium">Carregando cursos...</p>
+              </div>
+            ) : error ? (
+              <div className="p-12 text-center text-red-600 font-medium">{error}</div>
+            ) : filteredCourses.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <BookOpen size={48} className="mx-auto text-muted-foreground/60" />
+                <p className="text-muted-foreground font-medium">{courses.length === 0 ? "Nenhum curso cadastrado ainda." : "Nenhum curso corresponde aos filtros atuais."}</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/70">
+                {filteredCourses.map((course) => (
+                  <div key={course.id} className="p-6 hover:bg-muted/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                          Nível {course.level}
                         </span>
-                      )}
+                        <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                          <Layers size={14} /> {course.modules} Módulos
+                        </span>
+                        {course.instructor && (
+                          <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
+                            <User size={14} /> {course.instructor}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
                     </div>
-                    <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
-                  </div>
 
-                  <div className="flex items-center gap-3">
-                    <Link href={`/admin/cursos/${course.id}/modulos`}>
-                      <button className="px-4 py-2 bg-red-50 hover:bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
-                        <Layers size={14} /> Gerenciar Módulos
+                    <div className="flex items-center gap-3">
+                      <Link href={`/admin/cursos/${course.id}/modulos`}>
+                        <button className="px-4 py-2 bg-red-50 hover:bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-bold text-xs rounded-xl transition flex items-center gap-1.5">
+                          <Layers size={14} /> Gerenciar Módulos
+                        </button>
+                      </Link>
+                      <button
+                        onClick={() => handleEdit(course)}
+                        className="px-4 py-2 rounded-xl bg-muted hover:bg-muted text-foreground font-semibold text-xs transition flex items-center gap-1.5"
+                      >
+                        <Edit2 size={14} /> Editar
                       </button>
-                    </Link>
-                    <button
-                      onClick={() => handleEdit(course)}
-                      className="px-4 py-2 rounded-xl bg-muted hover:bg-muted text-foreground font-semibold text-xs transition flex items-center gap-1.5"
-                    >
-                      <Edit2 size={14} /> Editar
-                    </button>
-                    <button
-                      onClick={() => setCourseToDelete(course)}
-                      className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-semibold text-xs transition flex items-center gap-1.5"
-                    >
-                      <Trash2 size={14} /> Excluir
-                    </button>
+                      <button
+                        onClick={() => setCourseToDelete(course)}
+                        className="px-4 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 font-semibold text-xs transition flex items-center gap-1.5"
+                      >
+                        <Trash2 size={14} /> Excluir
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
+          ) : (
+            loadingTrash ? (
+              <div className="p-12 text-center flex flex-col items-center justify-center gap-3">
+                <Loader2 className="animate-spin text-red-600" size={32} />
+                <p className="text-muted-foreground font-medium">Carregando lixeira...</p>
+              </div>
+            ) : trashCourses.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <BookOpen size={48} className="mx-auto text-muted-foreground/60" />
+                <p className="text-muted-foreground font-medium">A lixeira de cursos está vazia.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border/70">
+                {trashCourses.map((course) => (
+                  <div key={course.id} className="p-6 hover:bg-muted/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                          Excluído Lógico
+                        </span>
+                        <span className="text-xs text-muted-foreground font-semibold">
+                          Nível {course.level}
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => handleRestore(course.id)}
+                        className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold text-xs transition flex items-center gap-1.5"
+                      >
+                        Restaurar
+                      </button>
+                      <button
+                        onClick={() => handlePermanentDelete(course.id)}
+                        className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                      >
+                        Excluir Permanentemente
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           )}
         </div>
       </div>

@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, isNotNull } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
@@ -34,13 +34,40 @@ export type Database = typeof db;
 
 // Query Helpers
 export async function getCourses() {
-  return await db.query.courses.findMany();
+  return await db.query.courses.findMany({
+    where: isNull(schema.courses.deletedAt),
+  });
+}
+
+export async function getTrashCourses() {
+  return await db.query.courses.findMany({
+    where: isNotNull(schema.courses.deletedAt),
+    orderBy: desc(schema.courses.deletedAt),
+  });
 }
 
 export async function getCourseById(id: number) {
   return await db.query.courses.findFirst({
-    where: eq(schema.courses.id, id),
+    where: and(eq(schema.courses.id, id), isNull(schema.courses.deletedAt)),
   });
+}
+
+export async function restoreCourse(id: number) {
+  const [updated] = await db
+    .update(schema.courses)
+    .set({ deletedAt: null, updatedAt: new Date() })
+    .where(eq(schema.courses.id, id))
+    .returning();
+  return updated;
+}
+
+export async function softDeleteCourse(id: number) {
+  const [updated] = await db
+    .update(schema.courses)
+    .set({ deletedAt: new Date(), updatedAt: new Date() })
+    .where(eq(schema.courses.id, id))
+    .returning();
+  return updated;
 }
 
 export async function getMaterials() {
