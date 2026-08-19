@@ -1,0 +1,17 @@
+{
+  "projectId": "dark-unit-46507184",
+  "sqlStatements": [
+    "CREATE TYPE \"public\".\"lesson_progress_approval_status\" AS ENUM ('pending', 'approved', 'rejected');",
+    "CREATE TYPE \"public\".\"attendance_status\" AS ENUM ('present', 'absent', 'justified');",
+    "ALTER TABLE \"public\".\"lessonProgress\" ADD COLUMN IF NOT EXISTS \"approvalStatus\" \"public\".\"lesson_progress_approval_status\" NOT NULL DEFAULT 'pending';",
+    "ALTER TABLE \"public\".\"lessonProgress\" ADD COLUMN IF NOT EXISTS \"approvedBy\" integer;",
+    "ALTER TABLE \"public\".\"lessonProgress\" ADD COLUMN IF NOT EXISTS \"approvedAt\" timestamp;",
+    "ALTER TABLE \"public\".\"lessonProgress\" ADD COLUMN IF NOT EXISTS \"approvalNote\" text;",
+    "ALTER TABLE \"public\".\"attendances\" ADD COLUMN IF NOT EXISTS \"status\" \"public\".\"attendance_status\" NOT NULL DEFAULT 'present';",
+    "CREATE TABLE IF NOT EXISTS \"public\".\"external_class_attendance\" (\"id\" serial PRIMARY KEY NOT NULL, \"externalClassId\" integer NOT NULL REFERENCES \"public\".\"external_classes\"(\"id\") ON DELETE CASCADE, \"date\" varchar(32) NOT NULL, \"attendanceData\" text NOT NULL, \"createdAt\" timestamp DEFAULT now() NOT NULL);",
+    "CREATE TABLE IF NOT EXISTS \"public\".\"external_class_materials\" (\"id\" serial PRIMARY KEY NOT NULL, \"externalClassId\" integer NOT NULL REFERENCES \"public\".\"external_classes\"(\"id\") ON DELETE CASCADE, \"title\" varchar(180) NOT NULL, \"fileUrl\" text NOT NULL, \"description\" text, \"createdAt\" timestamp DEFAULT now() NOT NULL);",
+    "CREATE TABLE IF NOT EXISTS \"public\".\"media_assets\" (\"id\" serial PRIMARY KEY NOT NULL, \"name\" varchar(255) NOT NULL, \"type\" varchar(64) NOT NULL, \"url\" text NOT NULL, \"fileKey\" varchar(500) NOT NULL, \"size\" varchar(64) NOT NULL, \"tag\" varchar(64) DEFAULT 'Geral' NOT NULL, \"uploaderId\" integer REFERENCES \"public\".\"users\"(\"id\"), \"createdAt\" timestamp DEFAULT now() NOT NULL);",
+    "CREATE TABLE IF NOT EXISTS \"public\".\"contact_messages\" (\"id\" serial PRIMARY KEY NOT NULL, \"name\" varchar(160) NOT NULL, \"email\" varchar(320) NOT NULL, \"subject\" varchar(160) NOT NULL, \"message\" text NOT NULL, \"is_read\" boolean DEFAULT false NOT NULL, \"readAt\" timestamp, \"deletedAt\" timestamp, \"createdAt\" timestamp DEFAULT now() NOT NULL);",
+    "ALTER TABLE \"public\".\"lessonProgress\" ADD CONSTRAINT \"lessonProgress_approvedBy_users_id_fk\" FOREIGN KEY (\"approvedBy\") REFERENCES \"public\".\"users\"(\"id\");"
+  ]
+}
