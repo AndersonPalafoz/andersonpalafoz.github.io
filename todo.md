@@ -740,3 +740,8 @@
 - [x] Garantir que qualquer visitante ou aluno possa visualizar informações básicas de qualquer curso interno no catálogo e na página de detalhes.
 - [x] Restringir a matrícula em cursos pagos para exigir pagamento confirmado via Stripe ou liberação manual realizada pelo administrador na plataforma (`liberacao-acesso`).
 - [x] Criar testes automatizados para validar a regra de acesso a cursos pagos versus gratuitos.
+
+## Auditoria de Comandos e Correção de Erros de Acesso — 19/08/2026
+- [x] Auditar os últimos comandos executados e o histórico de requisições do servidor para identificar a causa exata dos erros de acesso aos cursos internos e externos.
+- [x] Corrigir qualquer divergência entre permissões de sessão (admin/professor), rotas dinâmicas e consultas Drizzle.
+- [x] Validar com testes automatizados e navegação simulada (292 testes aprovados).
