@@ -755,7 +755,7 @@
 - [x] Auditar exclusão de turmas externas (`deleteClass` disponível).
 - [x] Auditar exclusão de artigos (`deleteArticle` disponível).
 - [x] Auditar exclusão de cursos (`deleteCourse` disponível).
-- [ ] Implementar exclusão de módulos e aulas (`deleteModule` e `deleteLesson` com cascata no Neon) e rota de API administrativa associada.
+- [x] Implementar exclusão de módulos e aulas (`deleteModule` e `deleteLesson` com cascata no Neon) e rota de API administrativa associada.
 
 ## Auditoria da Rota /professor/turmas-externas — 19/08/2026
 - [x] Auditar a rota e API de turmas externas quanto a dados reais, segurança RBAC, filtros, chamadas, notas unitárias e em lote, importação/exportação CSV e PDF.
