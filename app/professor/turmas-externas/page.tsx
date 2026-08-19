@@ -62,8 +62,28 @@ interface ExternalClassItem {
 export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<{ status?: number; title: string; message: string; action?: string } | null>(null);
+  const [operationFeedback, setOperationFeedback] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sendingEmailId, setSendingEmailId] = useState<number | null>(null);
+
+  const describeApiError = (status: number, fallback: string) => {
+    if (status === 401) return { title: "Sessão necessária", message: "Sua sessão não está ativa. Entre novamente para acessar as turmas externas.", action: "Fazer login" };
+    if (status === 403) return { title: "Acesso não autorizado", message: "Sua conta não possui permissão para gerenciar esta área. Use uma conta de professor ou administrador aprovada." };
+    if (status === 404) return { title: "Recurso não encontrado", message: "A turma ou o registro solicitado não existe mais. Atualize a página para sincronizar os dados." };
+    if (status >= 500) return { title: "Falha temporária no servidor", message: "O servidor não conseguiu concluir a consulta. Tente novamente em alguns instantes; nenhum dado foi inventado ou alterado." };
+    return { title: "Não foi possível concluir", message: fallback };
+  };
+
+  const notifySuccess = (message: string) => {
+    setOperationFeedback({ type: "success", message });
+    toast.success(message);
+  };
+
+  const notifyError = (message: string) => {
+    setOperationFeedback({ type: "error", message });
+    toast.error(message);
+  };
 
   const handleSendWelcomeEmail = async (studentId: number, studentName: string) => {
     try {
@@ -75,9 +95,9 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao enviar e-mail de boas-vindas.");
-      toast.success(`E-mail de boas-vindas enviado para ${studentName}!`);
+      notifySuccess(`E-mail de boas-vindas enviado para ${studentName}!`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao enviar e-mail.");
+      notifyError(err instanceof Error ? err.message : "Erro ao enviar e-mail.");
     } finally {
       setSendingEmailId(null);
     }
@@ -136,12 +156,20 @@ export default function TurmasExternasPage() {
   const loadClasses = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/professor/external-classes");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Erro ao carregar turmas externas.");
-      setClasses(data.classes || []);
+      setLoadError(null);
+      const res = await fetch("/api/professor/external-classes", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const description = describeApiError(res.status, data.error || "Erro ao carregar turmas externas.");
+        setLoadError({ status: res.status, ...description });
+        throw new Error(description.message);
+      }
+      setClasses(Array.isArray(data.classes) ? data.classes : []);
+      setOperationFeedback(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao carregar turmas.");
+      const message = err instanceof Error ? err.message : "Erro inesperado ao carregar turmas externas.";
+      setLoadError((current) => current ?? { title: "Não foi possível carregar as turmas", message });
+      notifyError(message);
     } finally {
       setLoading(false);
     }
@@ -180,19 +208,6 @@ export default function TurmasExternasPage() {
     return Array.from(yearSet).sort().reverse();
   }, [classes]);
 
-  const uniqueSemesters = useMemo(() => {
-    const semSet = new Set<string>();
-    classes.forEach(c => {
-      if (c.academicTerm?.includes(".1") || c.academicTerm?.includes("/1") || c.academicTerm?.includes("-1") || c.academicTerm?.toLowerCase().includes("1º")) {
-        semSet.add("1");
-      }
-      if (c.academicTerm?.includes(".2") || c.academicTerm?.includes("/2") || c.academicTerm?.includes("-2") || c.academicTerm?.toLowerCase().includes("2º")) {
-        semSet.add("2");
-      }
-    });
-    return Array.from(semSet).sort();
-  }, [classes]);
-
   const filteredClasses = useMemo(() => {
     return classes.map((cls) => {
       const filteredStudents = cls.students.filter((s) => {
@@ -218,13 +233,13 @@ export default function TurmasExternasPage() {
       const hasMatchingStudents = cls.filteredStudents.length > 0;
       return matchesInstitution && matchesYear && matchesSemester && (matchesClassSearch || hasMatchingStudents);
     });
-  }, [classes, selectedInstitutionFilter, studentStatusFilter, searchTerm]);
+  }, [classes, selectedInstitutionFilter, studentStatusFilter, selectedYearFilter, selectedSemesterFilter, searchTerm]);
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
     const finalInstitution = isCustomInstitution ? customInstitutionInput.trim() : institution;
     if (!finalInstitution || !className || !courseName || !academicTerm) {
-      toast.error("Preencha todos os campos obrigatórios e informe a instituição.");
+      notifyError("Preencha todos os campos obrigatórios e informe a instituição.");
       return;
     }
     try {
@@ -241,11 +256,11 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar turma.");
-      toast.success(editingClassId ? "Turma atualizada com sucesso!" : "Turma externa criada com sucesso!");
+      notifySuccess(editingClassId ? "Turma atualizada com sucesso!" : "Turma externa criada com sucesso!");
       resetClassForm();
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar turma.");
+      notifyError(err instanceof Error ? err.message : "Erro ao salvar turma.");
     } finally {
       setSubmitting(false);
     }
@@ -284,7 +299,7 @@ export default function TurmasExternasPage() {
   const handleDeleteClass = (classId: number) => {
     const selectedClass = classes.find((item) => item.id === classId);
     if (!selectedClass) {
-      toast.error("Turma externa não encontrada. Atualize a página e tente novamente.");
+      notifyError("Turma externa não encontrada. Atualize a página e tente novamente.");
       return;
     }
     setClassPendingDeletion(selectedClass);
@@ -304,14 +319,14 @@ export default function TurmasExternasPage() {
       if (!res.ok) throw new Error(data.error || "Erro ao excluir turma.");
       const summary = data.deletedSummary;
       if (summary) {
-        toast.success(`Turma '${summary.className}' excluída. Removidos: ${summary.students} aluno(s), ${summary.attendance} chamada(s), ${summary.grades} nota(s) e ${summary.materials} material(is).`);
+        notifySuccess(`Turma '${summary.className}' excluída. Removidos: ${summary.students} aluno(s), ${summary.attendance} chamada(s), ${summary.grades} nota(s) e ${summary.materials} material(is).`);
       } else {
-        toast.success("Turma externa excluída com sucesso.");
+        notifySuccess("Turma externa excluída com sucesso.");
       }
       setClassPendingDeletion(null);
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir turma.");
+      notifyError(err instanceof Error ? err.message : "Erro ao excluir turma.");
     } finally {
       setDeletingClassId(null);
     }
@@ -320,7 +335,7 @@ export default function TurmasExternasPage() {
   const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClassId || !studentName) {
-      toast.error("Selecione uma turma e informe o nome do aluno.");
+      notifyError("Selecione uma turma e informe o nome do aluno.");
       return;
     }
     try {
@@ -337,11 +352,11 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar aluno.");
-      toast.success(editingStudentId ? "Dados do aluno atualizados!" : "Aluno matriculado com sucesso!");
+      notifySuccess(editingStudentId ? "Dados do aluno atualizados!" : "Aluno matriculado com sucesso!");
       resetStudentForm();
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar aluno.");
+      notifyError(err instanceof Error ? err.message : "Erro ao salvar aluno.");
     } finally {
       setSubmitting(false);
     }
@@ -378,10 +393,10 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao remover aluno.");
-      toast.success("Aluno removido da turma com sucesso.");
+      notifySuccess("Aluno removido da turma com sucesso.");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao remover aluno.");
+      notifyError(err instanceof Error ? err.message : "Erro ao remover aluno.");
     }
   };
 
@@ -403,10 +418,10 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar chamada.");
-      toast.success("Chamada registrada com sucesso!");
+      notifySuccess("Chamada registrada com sucesso!");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar chamada.");
+      notifyError(err instanceof Error ? err.message : "Erro ao salvar chamada.");
     } finally {
       setSubmitting(false);
     }
@@ -420,7 +435,7 @@ export default function TurmasExternasPage() {
     const fb = gradeFeedback[classId] || "";
 
     if (!sId || !title || !scoreVal) {
-      toast.error("Selecione o aluno, informe o título da avaliação e a nota.");
+      notifyError("Selecione o aluno, informe o título da avaliação e a nota.");
       return;
     }
 
@@ -441,13 +456,13 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar nota.");
-      toast.success("Nota lançada com sucesso!");
+      notifySuccess("Nota lançada com sucesso!");
       setGradeAssessmentTitle(prev => ({ ...prev, [classId]: "" }));
       setGradeScore(prev => ({ ...prev, [classId]: "" }));
       setGradeFeedback(prev => ({ ...prev, [classId]: "" }));
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao salvar nota.");
+      notifyError(err instanceof Error ? err.message : "Erro ao salvar nota.");
     } finally {
       setSubmitting(false);
     }
@@ -463,10 +478,10 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao excluir nota.");
-      toast.success("Nota excluída com sucesso.");
+      notifySuccess("Nota excluída com sucesso.");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir nota.");
+      notifyError(err instanceof Error ? err.message : "Erro ao excluir nota.");
     }
   };
 
@@ -476,7 +491,7 @@ export default function TurmasExternasPage() {
     const desc = materialDescription[classId] || "";
 
     if (!title || !url) {
-      toast.error("Informe o título e o link/URL do material.");
+      notifyError("Informe o título e o link/URL do material.");
       return;
     }
 
@@ -495,13 +510,13 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao adicionar material.");
-      toast.success("Material vinculado à turma com sucesso!");
+      notifySuccess("Material vinculado à turma com sucesso!");
       setMaterialTitle(prev => ({ ...prev, [classId]: "" }));
       setMaterialFileUrl(prev => ({ ...prev, [classId]: "" }));
       setMaterialDescription(prev => ({ ...prev, [classId]: "" }));
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao adicionar material.");
+      notifyError(err instanceof Error ? err.message : "Erro ao adicionar material.");
     } finally {
       setSubmitting(false);
     }
@@ -517,10 +532,10 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao excluir material.");
-      toast.success("Material removido com sucesso.");
+      notifySuccess("Material removido com sucesso.");
       void loadClasses();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao excluir material.");
+      notifyError(err instanceof Error ? err.message : "Erro ao excluir material.");
     }
   };
 
@@ -537,7 +552,7 @@ export default function TurmasExternasPage() {
 
         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
         if (lines.length < 2) {
-          toast.error("O arquivo CSV precisa de um cabeçalho e ao menos uma linha de dados.");
+          notifyError("O arquivo CSV precisa de um cabeçalho e ao menos uma linha de dados.");
           return;
         }
 
@@ -556,7 +571,7 @@ export default function TurmasExternasPage() {
         }
 
         if (csvData.length === 0) {
-          toast.error("Nenhum aluno válido encontrado no arquivo CSV.");
+          notifyError("Nenhum aluno válido encontrado no arquivo CSV.");
           return;
         }
 
@@ -568,10 +583,10 @@ export default function TurmasExternasPage() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erro ao importar CSV.");
-        toast.success(`${data.importedCount} alunos importados com sucesso via CSV!`);
+        notifySuccess(`${data.importedCount} alunos importados com sucesso via CSV!`);
         void loadClasses();
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Erro ao processar arquivo CSV.");
+        notifyError(err instanceof Error ? err.message : "Erro ao processar arquivo CSV.");
       } finally {
         setSubmitting(false);
         e.target.value = "";
@@ -603,6 +618,60 @@ export default function TurmasExternasPage() {
             </p>
           </div>
         </header>
+
+        {loadError && (
+          <section
+            role="alert"
+            aria-live="assertive"
+            className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-3"
+          >
+            <div className="shrink-0 rounded-xl bg-red-100 dark:bg-red-950/70 p-2 text-red-700 dark:text-red-300">
+              <AlertCircle size={20} aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1 space-y-1">
+              <h2 className="text-sm font-black text-red-900 dark:text-red-200">{loadError.title}</h2>
+              <p className="text-xs leading-relaxed text-red-800 dark:text-red-300">{loadError.message}</p>
+              {loadError.status && <p className="text-[11px] font-semibold text-red-700/80 dark:text-red-300/80">Código de resposta: {loadError.status}</p>}
+              <div className="flex flex-wrap gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => void loadClasses()}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-2 text-xs font-bold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
+                >
+                  <Loader2 size={13} aria-hidden="true" /> Tentar novamente
+                </button>
+                {loadError.action === "Fazer login" && (
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center rounded-lg border border-red-300 dark:border-red-800 px-3 py-2 text-xs font-bold text-red-800 dark:text-red-200 transition hover:bg-red-100 dark:hover:bg-red-950/60 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
+                  >
+                    Fazer login
+                  </Link>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {operationFeedback && !loadError && (
+          <div
+            role={operationFeedback.type === "error" ? "alert" : "status"}
+            aria-live="polite"
+            className={`rounded-2xl border p-3 flex items-start gap-3 ${
+              operationFeedback.type === "success"
+                ? "border-green-200 bg-green-50 text-green-900 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-200"
+                : operationFeedback.type === "info"
+                  ? "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200"
+                  : "border-red-200 bg-red-50 text-red-900 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"
+            }`}
+          >
+            {operationFeedback.type === "success" ? <CheckCircle2 size={17} className="mt-0.5 shrink-0" aria-hidden="true" /> : <AlertCircle size={17} className="mt-0.5 shrink-0" aria-hidden="true" />}
+            <p className="flex-1 text-xs font-semibold leading-relaxed">{operationFeedback.message}</p>
+            <button type="button" onClick={() => setOperationFeedback(null)} className="rounded-md p-1 opacity-70 hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-current" aria-label="Fechar mensagem">
+              <X size={15} aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         {/* Resumo Consolidado por Instituição */}
         {Object.keys(institutionSummary).length > 0 && (
@@ -919,10 +988,35 @@ export default function TurmasExternasPage() {
                 <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e dados acadêmicos...
               </div>
             ) : filteredClasses.length === 0 ? (
-              <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center space-y-3">
-                <AlertCircle size={32} className="mx-auto text-gray-400" />
-                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">Nenhum registro encontrado</h3>
-                <p className="text-xs text-gray-500">Ajuste os filtros de busca ou cadastre uma nova turma externa.</p>
+              <div
+                role="status"
+                aria-live="polite"
+                className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 sm:p-12 text-center space-y-3"
+              >
+                <AlertCircle size={32} className="mx-auto text-gray-400" aria-hidden="true" />
+                <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  {classes.length === 0 ? "Nenhuma turma externa cadastrada" : "Nenhuma turma corresponde aos filtros"}
+                </h3>
+                <p className="text-xs leading-relaxed text-gray-500 max-w-md mx-auto">
+                  {classes.length === 0
+                    ? "A consulta foi concluída, mas o banco não retornou turmas para esta conta. Cadastre a primeira turma usando o formulário ao lado."
+                    : "Os registros existem, mas nenhum atende à busca, instituição, ano, semestre ou status selecionado. Limpe os filtros e tente novamente."}
+                </p>
+                {classes.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedInstitutionFilter("all");
+                      setStudentStatusFilter("all");
+                      setSelectedYearFilter("all");
+                      setSelectedSemesterFilter("all");
+                    }}
+                    className="inline-flex items-center rounded-lg border border-gray-300 dark:border-slate-700 px-3 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    Limpar filtros
+                  </button>
+                )}
               </div>
             ) : (
               filteredClasses.map((cls) => {
@@ -985,7 +1079,7 @@ export default function TurmasExternasPage() {
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            toast.success("Relatório CSV exportado com sucesso!");
+                            notifySuccess("Relatório CSV exportado com sucesso!");
                           }}
                           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
                           title="Exportar CSV da Turma"
@@ -998,7 +1092,7 @@ export default function TurmasExternasPage() {
                             // Exportar Relatório em PDF via janela de impressão formatada
                             const printWindow = window.open("", "_blank");
                             if (!printWindow) {
-                              toast.error("Permita popups no navegador para gerar o PDF.");
+                              notifyError("Permita popups no navegador para gerar o PDF.");
                               return;
                             }
                             const gradesHtml = (cls.grades || []).map(g => {
@@ -1043,7 +1137,7 @@ export default function TurmasExternasPage() {
                               </html>
                             `);
                             printWindow.document.close();
-                            toast.success("Gerando PDF para impressão/download...");
+                            notifySuccess("Gerando PDF para impressão/download...");
                           }}
                           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
                           title="Exportar Relatório PDF"

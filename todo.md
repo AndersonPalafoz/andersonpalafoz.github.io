@@ -780,3 +780,8 @@
 - [x] **Rota `/cursos/[id]` (ex: `/cursos/6`)**: Auditar o carregamento de dados do curso, módulos, aulas, estado de erro e se o ID 6 existe de fato no banco Neon. Caso necessário, refazer o componente e a API para garantir tratamento robusto de falhas e fallback para estados vazios sem quebrar a renderização.
 - [x] **Rota `/professor/turmas-externas`**: Auditar o endpoint de listagem de turmas externas, validação de sessão NextAuth, verificação do papel do professor/admin, tratamento de erros de SQL e renderização em dispositivos móveis. Caso necessário, reconstruir o componente de listagem e gerenciamento com tratamento resiliente de erros e skeleton loaders consistentes.
 - [x] **Validação Real e End-to-End**: Testar o comportamento das duas rotas em ambiente de homologação simulado e verificar logs de console/rede.
+
+## Mensagens de Erro Claras e Feedback Visual em Turmas Externas — 19/08/2026
+- [x] Implementar tratamento detalhado de erros HTTP (401, 403, 404, 500) com botões de tentativa e orientações na página `/professor/turmas-externas`.
+- [x] Adicionar indicadores visuais de sucesso, aviso e falha nas operações de criação de turmas, matrícula de alunos e lançamento de notas.
+- [x] Cobrir os novos estados de erro e feedback com testes automatizados e validar responsividade.
