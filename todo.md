@@ -858,8 +858,8 @@
 - [x] Validar com testes automatizados de tratamento de erro HTTP.
 
 ## Auditoria Crítica das 4 Rotas e Vercel Deploy — 19/08/2026
-- [ ] Auditar e corrigir `/professor/turmas-externas` (tratamento de erros, carregamento e permissões).
-- [ ] Auditar e corrigir `/admin/cursos` (gestão, salvamento, exclusão e exibição de códigos HTTP).
-- [ ] Auditar e corrigir `/professor/progresso-aulas` (resolução de erros de carregamento e remoção de menções de IA).
-- [ ] Auditar e corrigir `/cursos/6` (tratamento de IDs válidos e inválidos, módulos e aulas).
-- [ ] Inspecionar logs e status de deploy no Vercel (via CLI do Vercel ou verificação de build).
+- [x] Auditar e corrigir `/professor/turmas-externas` (tratamento de erros, carregamento e permissões).
+- [x] Auditar e corrigir `/admin/cursos` (gestão, salvamento, exclusão e exibição de códigos HTTP).
+- [x] Auditar e corrigir `/professor/progresso-aulas` (resolução de erros de carregamento e remoção de menções de IA).
+- [x] Auditar e corrigir `/cursos/6` (tratamento de IDs válidos e inválidos, módulos e aulas).
+- [x] Inspecionar logs e status de deploy no Vercel (via CLI do Vercel ou verificação de build).
