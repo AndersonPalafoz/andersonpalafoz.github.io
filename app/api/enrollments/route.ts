@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { enrollments, courses, users } from "@/drizzle/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { notifyStudentAndTeacher } from "@/lib/email";
 
@@ -54,6 +54,34 @@ export async function POST(request: Request) {
         { error: "Curso não encontrado" },
         { status: 404 }
       );
+    }
+
+    const courseRecord = course[0];
+    const isCourseFree = courseRecord.isFree === true || Number(courseRecord.price || 0) <= 0;
+
+    // Se o curso for pago, verificar se o usuário possui liberação manual de acesso (pela tabela paidAccessGrants ou similar)
+    // ou registro de checkout bem-sucedido na tabela coursePurchases.
+    if (!isCourseFree) {
+      // Verificar liberação administrativa ou compra paga
+      // Vamos checar se existe registro em paidAccessGrants ou coursePurchases para o usuário e curso
+      const paidAccessGrants = await db.execute(
+        sql`SELECT * FROM paid_access_grants WHERE user_id = ${userId} AND (course_id = ${courseId} OR course_id IS NULL) AND status = 'active'`
+      ).catch(() => ({ rows: [] }));
+
+      const coursePurchases = await db.execute(
+        sql`SELECT * FROM course_purchases WHERE user_id = ${userId} AND course_id = ${courseId} AND status = 'completed'`
+      ).catch(() => ({ rows: [] }));
+
+      const hasPaid = (paidAccessGrants.rows && paidAccessGrants.rows.length > 0) || 
+                      (coursePurchases.rows && coursePurchases.rows.length > 0) ||
+                      (session.user.role === 'admin'); // Administrador pode se inscrever livremente
+
+      if (!hasPaid) {
+        return NextResponse.json(
+          { error: "Este curso é pago. É necessário concluir o pagamento via Stripe ou aguardar a liberação manual pelo administrador." },
+          { status: 403 }
+        );
+      }
     }
 
     // Verificar se o usuário já está inscrito
