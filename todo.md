@@ -706,3 +706,7 @@
 - [x] Verificação e correção do contador de ofensivas na área do aluno e perfil (removido valor hardcoded de 14 dias e integrado ao endpoint `/api/gamification` com dados reais do banco de dados)
 
 - [x] Suporte completo e acessível a arrastar e soltar (drag-and-drop) na área de upload do CMS com realce visual interativo
+
+## Publicação do Professor no Google Drive Particular e Classroom — 19/08/2026
+- [x] Permissão RBAC para professores exportarem e salvarem suas próprias publicações de cursos e materiais no Google Drive particular
+- [x] Integração com Google Classroom do professor para exportar atividades e materiais para turmas próprias com escopos mínimos e rastreabilidade
