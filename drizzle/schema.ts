@@ -576,26 +576,16 @@ export const userGamificationPoints = pgTable("user_gamification_points", {
   userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   points: integer("points").default(0).notNull(),
   level: varchar("level", { length: 50 }).default("Explorer (A1)").notNull(),
-  streakDays: integer("streakDays").default(1).notNull(),
+  streakDays: integer("streakDays").default(0).notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
   userGamificationUnique: uniqueIndex("user_gamification_user_idx").on(table.userId),
 }));
 export type UserGamificationPoint = typeof userGamificationPoints.$inferSelect;
 
-/**
- * Realtime Notifications table
- */
-export const userNotifications = pgTable("user_notifications", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  title: varchar("title", { length: 255 }).notNull(),
-  message: text("message").notNull(),
-  type: varchar("type", { length: 50 }).default("info").notNull(), // info, deadline, message, achievement
-  isRead: boolean("isRead").default(false).notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-export type UserNotification = typeof userNotifications.$inferSelect;
+// A tabela `notifications` acima é a fonte única de verdade para alertas da plataforma.
+// A antiga `user_notifications` foi mantida apenas no banco legado por compatibilidade
+// até que sua remoção física seja aprovada e executada em uma migração separada.
 
 /**
  * Speaking AI Assistant practice history table

@@ -14,6 +14,15 @@ export type TeacherMaterialZipOption = {
 };
 
 const ZIP_LIMIT_BYTES = 40 * 1024 * 1024;
+type DifficultyFilter = "all" | "basic" | "intermediate" | "advanced";
+
+function matchesDifficulty(level: string, filter: DifficultyFilter) {
+  if (filter === "all") return true;
+  const normalized = level.toLocaleLowerCase();
+  if (filter === "basic") return normalized.includes("básic") || /\ba[12]\b/.test(normalized);
+  if (filter === "intermediate") return normalized.includes("inter") || /\bb[12]\b/.test(normalized);
+  return normalized.includes("avanç") || /\bc[12]\b/.test(normalized);
+}
 
 function formatBytes(bytes: number) {
   if (bytes < 1024) return `${bytes} B`;
@@ -40,16 +49,18 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
   const [estimating, setEstimating] = useState(false);
   const [sizeEstimate, setSizeEstimate] = useState({ totalBytes: 0, unknownCount: 0, exceedsLimit: false });
   const [searchQuery, setSearchQuery] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>("all");
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const selectedCount = selectedIds.size;
   const selectedIdList = useMemo(() => Array.from(selectedIds).sort((a, b) => a - b), [selectedIds]);
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredMaterials = useMemo(
-    () => normalizedSearchQuery.length === 0
-      ? selectableMaterials
-      : selectableMaterials.filter((material) => material.title.toLocaleLowerCase().includes(normalizedSearchQuery)),
-    [normalizedSearchQuery, selectableMaterials],
+    () => selectableMaterials.filter((material) => {
+      const matchesName = normalizedSearchQuery.length === 0 || material.title.toLocaleLowerCase().includes(normalizedSearchQuery);
+      return matchesName && matchesDifficulty(material.level, difficultyFilter);
+    }),
+    [difficultyFilter, normalizedSearchQuery, selectableMaterials],
   );
   const allVisibleSelected = filteredMaterials.length > 0 && filteredMaterials.every((material) => selectedIds.has(material.id));
   const someVisibleSelected = filteredMaterials.some((material) => selectedIds.has(material.id)) && !allVisibleSelected;
@@ -187,30 +198,46 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
               </label>
               <span className="text-xs text-muted-foreground">{filteredMaterials.length} de {selectableMaterials.length} material(is) visível(is)</span>
             </div>
-            <div className="relative">
-              <Search size={17} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <label htmlFor="teacher-materials-zip-search" className="sr-only">Pesquisar material pelo nome</label>
-              <input
-                id="teacher-materials-zip-search"
-                type="search"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Pesquisar material pelo nome…"
-                autoComplete="off"
-                className="min-h-11 w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-red-500 focus:ring-2 focus:ring-red-600/25"
-              />
-              {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery("")} aria-label="Limpar pesquisa de materiais" className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
-                  <X size={16} aria-hidden="true" />
-                </button>
-              )}
+            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(12rem,auto)]">
+              <div className="relative">
+                <Search size={17} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <label htmlFor="teacher-materials-zip-search" className="sr-only">Pesquisar material pelo nome</label>
+                <input
+                  id="teacher-materials-zip-search"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Pesquisar material pelo nome…"
+                  autoComplete="off"
+                  className="min-h-11 w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-red-500 focus:ring-2 focus:ring-red-600/25"
+                />
+                {searchQuery && (
+                  <button type="button" onClick={() => setSearchQuery("")} aria-label="Limpar pesquisa de materiais" className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                    <X size={16} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+              <div>
+                <label htmlFor="teacher-materials-zip-level" className="sr-only">Filtrar materiais por nível de dificuldade</label>
+                <select
+                  id="teacher-materials-zip-level"
+                  value={difficultyFilter}
+                  onChange={(event) => setDifficultyFilter(event.target.value as DifficultyFilter)}
+                  className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-600/25"
+                >
+                  <option value="all">Todos os níveis</option>
+                  <option value="basic">Básico</option>
+                  <option value="intermediate">Intermediário</option>
+                  <option value="advanced">Avançado</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {filteredMaterials.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-5 py-8 text-center" role="status">
               <p className="font-semibold text-foreground">Nenhum material encontrado.</p>
-              <p className="mt-1 text-sm text-muted-foreground">Tente outro nome ou limpe a pesquisa para ver todos os materiais.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Ajuste o nome ou o nível de dificuldade para ver outros materiais.</p>
             </div>
           ) : (
             <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Materiais disponíveis para seleção">

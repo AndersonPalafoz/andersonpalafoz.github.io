@@ -1,0 +1,1 @@
+ALTER TABLE "user_gamification_points" ALTER COLUMN "streakDays" SET DEFAULT 0;
