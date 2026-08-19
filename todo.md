@@ -699,3 +699,5 @@
 - [x] Configuração nominal da conta dedicada: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`); autorização server-side pendente
 
 - [x] Indicador de progresso visual acessível e responsivo no CMS para acompanhamento de uploads de arquivos
+
+- [x] Botão de cancelar upload em andamento no gerenciador de mídias (CMS) com AbortController e interrupção segura de lotes
