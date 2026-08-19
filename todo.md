@@ -775,3 +775,8 @@
 - [x] Implementar serviço de envio de e-mails usando a biblioteca `googleapis` autenticada pelo token do professor/admin.
 - [x] Adicionar botão de boas-vindas na interface de turmas externas com confirmação, spinner e feedback de sucesso ou erro.
 - [x] Cobrir com testes automatizados e validar build.
+
+## Auditoria Profunda e Reconstrução de Rotas com Erro Persistente — 19/08/2026
+- [ ] **Rota `/cursos/[id]` (ex: `/cursos/6`)**: Auditar o carregamento de dados do curso, módulos, aulas, estado de erro e se o ID 6 existe de fato no banco Neon. Caso necessário, refazer o componente e a API para garantir tratamento robusto de falhas e fallback para estados vazios sem quebrar a renderização.
+- [ ] **Rota `/professor/turmas-externas`**: Auditar o endpoint de listagem de turmas externas, validação de sessão NextAuth, verificação do papel do professor/admin, tratamento de erros de SQL e renderização em dispositivos móveis. Caso necessário, reconstruir o componente de listagem e gerenciamento com tratamento resiliente de erros e skeleton loaders consistentes.
+- [ ] **Validação Real e End-to-End**: Testar o comportamento das duas rotas em ambiente de homologação simulado e verificar logs de console/rede.
