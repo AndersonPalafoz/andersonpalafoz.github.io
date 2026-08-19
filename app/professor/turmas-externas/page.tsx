@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -63,6 +63,25 @@ export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [sendingEmailId, setSendingEmailId] = useState<number | null>(null);
+
+  const handleSendWelcomeEmail = async (studentId: number, studentName: string) => {
+    try {
+      setSendingEmailId(studentId);
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "sendWelcomeEmail", studentId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao enviar e-mail de boas-vindas.");
+      toast.success(`E-mail de boas-vindas enviado para ${studentName}!`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao enviar e-mail.");
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
   const [classPendingDeletion, setClassPendingDeletion] = useState<ExternalClassItem | null>(null);
   const [deletingClassId, setDeletingClassId] = useState<number | null>(null);
 
@@ -1160,7 +1179,19 @@ export default function TurmasExternasPage() {
                                   </p>
                                   {st.notes && <p className="text-xs text-gray-400 italic mt-1">Obs: {st.notes}</p>}
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {st.email && (
+                                    <button
+                                      type="button"
+                                      disabled={sendingEmailId === st.id}
+                                      onClick={() => void handleSendWelcomeEmail(st.id, st.name)}
+                                      className="px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1"
+                                      title="Enviar e-mail de boas-vindas para o aluno"
+                                    >
+                                      {sendingEmailId === st.id ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />}
+                                      Boas-vindas
+                                    </button>
+                                  )}
                                   <Link
                                     href={`/professor/boletim/${st.id}`}
                                     className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition text-gray-700 dark:text-gray-300"
