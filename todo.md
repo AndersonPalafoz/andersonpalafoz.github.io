@@ -863,3 +863,7 @@
 - [x] Auditar e corrigir `/professor/progresso-aulas` (resolução de erros de carregamento e remoção de menções de IA).
 - [x] Auditar e corrigir `/cursos/6` (tratamento de IDs válidos e inválidos, módulos e aulas).
 - [x] Inspecionar logs e status de deploy no Vercel (via CLI do Vercel ou verificação de build).
+
+## Verificação de Status no Vercel — 19/08/2026
+- [x] Consultar o status de deploy e logs utilizando a ferramenta MCP Vercel ou CLI Vercel.
+- [x] Diagnosticar eventual divergência entre o commit local atualizado e o ambiente publicado no Vercel.
