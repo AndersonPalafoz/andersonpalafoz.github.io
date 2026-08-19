@@ -727,3 +727,4 @@
 - [x] Implementar a seção de histórico de exportação de materiais do professor para exibir as gerações anteriores de ZIP, com persistência real em `teacher_zip_exports`, isolamento por proprietário, formatação de tamanho, data, botão de atualização em tempo real e exportação do relatório completo em CSV com codificação UTF-8 BOM.
 - [x] Adicionar indicador de carregamento, bloquear cliques duplicados e exibir mensagem de sucesso acessível ao exportar o histórico ZIP em CSV; 284 testes Vitest aprovados.
 - [x] Implementar e testar o registro manual e persistente de notas e frequências para turmas externas no painel do professor (`/app/api/professor/external-classes/route.ts`), com validação de propriedade, armazenamento real no Neon e notificações automáticas para alunos.
+- [x] Implementar lançamento em lote de notas e presenças para turmas externas com validação de pertencimento, relatório de processamento e testes automatizados (`saveBatchGrades`).
