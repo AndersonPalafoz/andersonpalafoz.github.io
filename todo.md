@@ -846,3 +846,13 @@
 - [x] Unificar o predicado `isGlobalAdmin` nas rotas de API para evitar rejeições incorretas (403) em mutações de turmas externas e materiais.
 - [x] Validar que administradores e super administradores (`palafozanderson@gmail.com`) possuem acesso total a todas as operações de escrita, edição e exclusão.
 - [x] Reexecutar suíte Vitest (306 testes aprovados).
+
+## Links do Google Drive no Formulário de Cursos — 19/08/2026
+- [ ] Adicionar campo para links diretos de materiais do Google Drive no cadastro e edição de cursos.
+- [ ] Exibir os links de materiais do Google Drive com ícone e abertura segura nos detalhes do curso.
+- [ ] Validar persistência no banco Neon e garantir aprovação da suíte de testes.
+
+## Transparência de Erros e Códigos HTTP no CRUD — 19/08/2026
+- [x] Exibir códigos de status HTTP claros (ex: `HTTP 400`, `HTTP 401`, `HTTP 403`, `HTTP 404`, `HTTP 500`) e mensagens detalhadas em caso de falha em mutações de cursos, turmas e materiais.
+- [x] Fornecer feedback visual persistente com orientações para nova tentativa nos painéis de administração e professor.
+- [x] Validar com testes automatizados de tratamento de erro HTTP.
