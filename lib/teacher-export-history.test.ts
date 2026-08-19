@@ -24,6 +24,9 @@ describe("Teacher ZIP Export History Feature Contract", () => {
     const content = fs.readFileSync(componentPath, "utf8");
     expect(content).toContain("Histórico de Exportações ZIP");
     expect(content).toContain("RefreshCw");
+    expect(content).toContain("Gerando CSV");
+    expect(content).toContain("Relatório CSV baixado com sucesso");
+    expect(content).toContain("aria-busy");
   });
 
   it("implements the zip-history CSV export endpoint", () => {
