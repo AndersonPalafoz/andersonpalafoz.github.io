@@ -829,3 +829,8 @@
 - [x] Implementar validação em tempo real na criação e edição de turmas externas (instituição, nome da turma, disciplina e período letivo).
 - [x] Exibir mensagens de erro amigáveis e indicadores visuais de preenchimento correto por campo.
 - [x] Cobrir com testes automatizados de validação de formulário e garantir build de produção.
+
+## Melhorias de UX e Gestão Acadêmica — 19/08/2026
+- [x] Implementar exportação em lote de boletins em PDF para todos os alunos de uma turma externa.
+- [ ] Adicionar suporte a atalhos de teclado (ex: `Ctrl+Enter`) no envio do formulário de turmas externas.
+- [ ] Criar histórico de alterações e auditoria de ações docentes no painel do professor.
