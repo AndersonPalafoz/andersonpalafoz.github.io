@@ -824,3 +824,8 @@
   - Páginas públicas e de alunos protegidas contra quebras de renderização (fallbacks para itens vazios ou não publicados).
 - [x] **5. Homologação e Critérios de Conclusão**
   - Manutenção da cobertura de testes em Vitest e validação de build em produção no Next.js 15.
+
+## Validação em Tempo Real no Formulário de Turmas Externas — 19/08/2026
+- [x] Implementar validação em tempo real na criação e edição de turmas externas (instituição, nome da turma, disciplina e período letivo).
+- [x] Exibir mensagens de erro amigáveis e indicadores visuais de preenchimento correto por campo.
+- [x] Cobrir com testes automatizados de validação de formulário e garantir build de produção.

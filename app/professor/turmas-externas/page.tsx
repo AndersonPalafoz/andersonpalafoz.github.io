@@ -59,6 +59,9 @@ interface ExternalClassItem {
   stats?: ExternalClassStats;
 }
 
+type ClassFormField = "institution" | "className" | "courseName" | "academicTerm" | "description";
+type ClassFormErrors = Partial<Record<ClassFormField, string>>;
+
 export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +129,42 @@ export default function TurmasExternasPage() {
   const [courseName, setCourseName] = useState("");
   const [academicTerm, setAcademicTerm] = useState("2026.1");
   const [description, setDescription] = useState("");
+  const [touchedClassFields, setTouchedClassFields] = useState<Partial<Record<ClassFormField, boolean>>>({});
+
+  const finalInstitutionValue = isCustomInstitution ? customInstitutionInput.trim() : institution.trim();
+
+  const validateClassForm = (): ClassFormErrors => {
+    const errors: ClassFormErrors = {};
+    if (!finalInstitutionValue) errors.institution = "Informe a instituição ou o programa da turma.";
+    if (className.trim().length < 3) errors.className = "Informe o nome da turma com pelo menos 3 caracteres.";
+    if (courseName.trim().length < 3) errors.courseName = "Informe a disciplina ou curso com pelo menos 3 caracteres.";
+    if (!/^(19|20)\d{2}[./-][12]$/.test(academicTerm.trim())) errors.academicTerm = "Use o formato ano.semestre, por exemplo: 2026.1 ou 2026.2.";
+    if (description.trim().length > 1000) errors.description = "A descrição deve ter no máximo 1.000 caracteres.";
+    return errors;
+  };
+
+  const classFormErrors = useMemo(() => validateClassForm(), [finalInstitutionValue, className, courseName, academicTerm, description]);
+  const classFormIsValid = Object.keys(classFormErrors).length === 0;
+
+  const classFieldClassName = (field: ClassFormField) => {
+    const hasError = Boolean(touchedClassFields[field] && classFormErrors[field]);
+    const isValid = Boolean(touchedClassFields[field] && !classFormErrors[field]);
+    return `w-full rounded-xl border bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${hasError ? "border-red-500 focus:ring-red-500" : isValid ? "border-green-500 focus:ring-green-500" : "border-gray-200 dark:border-slate-800"}`;
+  };
+
+  const renderClassFieldMessage = (field: ClassFormField) => {
+    if (!touchedClassFields[field]) return null;
+    if (classFormErrors[field]) {
+      return <p id={`class-${field}-error`} className="mt-1 text-[11px] font-semibold text-red-600 dark:text-red-400" role="alert">{classFormErrors[field]}</p>;
+    }
+    return <p className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-green-600 dark:text-green-400"><CheckCircle2 size={12} aria-hidden="true" /> Campo válido</p>;
+  };
+
+  const markClassFieldTouched = (field: ClassFormField) => {
+    setTouchedClassFields((current) => ({ ...current, [field]: true }));
+  };
+
+  const resetClassValidation = () => setTouchedClassFields({});
 
   // Form states for adding/editing student
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
@@ -237,9 +276,11 @@ export default function TurmasExternasPage() {
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalInstitution = isCustomInstitution ? customInstitutionInput.trim() : institution;
-    if (!finalInstitution || !className || !courseName || !academicTerm) {
-      notifyError("Preencha todos os campos obrigatórios e informe a instituição.");
+    setTouchedClassFields({ institution: true, className: true, courseName: true, academicTerm: true, description: true });
+    const validationErrors = validateClassForm();
+    const finalInstitution = finalInstitutionValue;
+    if (Object.keys(validationErrors).length > 0) {
+      notifyError("Revise os campos destacados antes de salvar a turma.");
       return;
     }
     try {
@@ -294,6 +335,7 @@ export default function TurmasExternasPage() {
     setCourseName("");
     setAcademicTerm("2026.1");
     setDescription("");
+    resetClassValidation();
   };
 
   const handleDeleteClass = (classId: number) => {
@@ -814,16 +856,16 @@ export default function TurmasExternasPage() {
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Programa</label>
                   <select
                     value={institution}
+                    aria-invalid={Boolean(touchedClassFields.institution && classFormErrors.institution)}
+                    aria-describedby={touchedClassFields.institution && classFormErrors.institution ? "class-institution-error" : undefined}
+                    onBlur={() => markClassFieldTouched("institution")}
                     onChange={(e) => {
                       const val = e.target.value;
                       setInstitution(val);
-                      if (val === "Outro") {
-                        setIsCustomInstitution(true);
-                      } else {
-                        setIsCustomInstitution(false);
-                      }
+                      setIsCustomInstitution(val === "Outro");
+                      markClassFieldTouched("institution");
                     }}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600 mb-2"
+                    className={`${classFieldClassName("institution")} mb-2`}
                   >
                     <option value="IsF">IsF (Idioma sem Fronteiras)</option>
                     <option value="PROFICI">PROFICI</option>
@@ -837,56 +879,101 @@ export default function TurmasExternasPage() {
                       type="text"
                       placeholder="Digite o nome da nova instituição ou programa..."
                       value={customInstitutionInput}
-                      onChange={(e) => setCustomInstitutionInput(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                      onChange={(e) => {
+                        setCustomInstitutionInput(e.target.value);
+                        markClassFieldTouched("institution");
+                      }}
+                      onBlur={() => markClassFieldTouched("institution")}
+                      aria-invalid={Boolean(touchedClassFields.institution && classFormErrors.institution)}
+                      aria-describedby={touchedClassFields.institution && classFormErrors.institution ? "class-institution-error" : undefined}
+                      className={classFieldClassName("institution")}
                       required
                     />
                   )}
+                  {renderClassFieldMessage("institution")}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome da Turma</label>
+                  <label htmlFor="external-class-name" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nome da Turma</label>
                   <input
+                    id="external-class-name"
                     type="text"
                     placeholder="Ex: Turma Leitura Instrumental A"
                     value={className}
-                    onChange={(e) => setClassName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    onBlur={() => markClassFieldTouched("className")}
+                    onChange={(e) => {
+                      setClassName(e.target.value);
+                      markClassFieldTouched("className");
+                    }}
+                    aria-invalid={Boolean(touchedClassFields.className && classFormErrors.className)}
+                    aria-describedby={touchedClassFields.className && classFormErrors.className ? "class-className-error" : undefined}
+                    className={classFieldClassName("className")}
                   />
+                  {renderClassFieldMessage("className")}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Curso / Disciplina</label>
+                  <label htmlFor="external-course-name" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Curso / Disciplina</label>
                   <input
+                    id="external-course-name"
                     type="text"
                     placeholder="Ex: Inglês Instrumental para Pós-Graduação"
                     value={courseName}
-                    onChange={(e) => setCourseName(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    onBlur={() => markClassFieldTouched("courseName")}
+                    onChange={(e) => {
+                      setCourseName(e.target.value);
+                      markClassFieldTouched("courseName");
+                    }}
+                    aria-invalid={Boolean(touchedClassFields.courseName && classFormErrors.courseName)}
+                    aria-describedby={touchedClassFields.courseName && classFormErrors.courseName ? "class-courseName-error" : undefined}
+                    className={classFieldClassName("courseName")}
                   />
+                  {renderClassFieldMessage("courseName")}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Período Letivo</label>
+                  <label htmlFor="external-academic-term" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Período Letivo</label>
                   <input
+                    id="external-academic-term"
                     type="text"
+                    inputMode="numeric"
                     placeholder="Ex: 2026.1"
                     value={academicTerm}
-                    onChange={(e) => setAcademicTerm(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    onBlur={() => markClassFieldTouched("academicTerm")}
+                    onChange={(e) => {
+                      setAcademicTerm(e.target.value);
+                      markClassFieldTouched("academicTerm");
+                    }}
+                    aria-invalid={Boolean(touchedClassFields.academicTerm && classFormErrors.academicTerm)}
+                    aria-describedby={touchedClassFields.academicTerm && classFormErrors.academicTerm ? "class-academicTerm-error" : undefined}
+                    className={classFieldClassName("academicTerm")}
                   />
+                  {renderClassFieldMessage("academicTerm")}
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Observações / Descrição</label>
+                  <label htmlFor="external-class-description" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Observações / Descrição <span className="font-normal text-gray-400">(opcional)</span></label>
                   <textarea
+                    id="external-class-description"
                     placeholder="Informações adicionais..."
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={1000}
+                    onBlur={() => markClassFieldTouched("description")}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      markClassFieldTouched("description");
+                    }}
+                    aria-invalid={Boolean(touchedClassFields.description && classFormErrors.description)}
+                    aria-describedby={touchedClassFields.description && classFormErrors.description ? "class-description-error" : undefined}
                     rows={2}
-                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600 resize-none"
+                    className={`${classFieldClassName("description")} resize-none`}
                   />
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    {renderClassFieldMessage("description")}
+                    <span className={`ml-auto text-[10px] font-semibold ${description.length > 1000 ? "text-red-600" : "text-gray-400"}`}>{description.length}/1000</span>
+                  </div>
                 </div>
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2"
+                  disabled={submitting || (Object.keys(touchedClassFields).length > 0 && !classFormIsValid)}
+                  aria-disabled={submitting || !classFormIsValid}
+                  className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   {editingClassId ? "Salvar Alterações da Turma" : "Criar Turma"}
