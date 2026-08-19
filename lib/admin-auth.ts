@@ -19,7 +19,8 @@ export async function requireAdmin(): Promise<AdminAuthSession | null> {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email?.toLowerCase();
   if (!email || !session?.user) return null;
-  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin") {
+  const role = session.user.role;
+  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin" || role === "professor") {
     return session as AdminAuthSession;
   }
   return null;
@@ -36,7 +37,8 @@ export async function requireTeacherOrAdmin(): Promise<AdminAuthSession | null> 
   const session = await getServerSession(authOptions);
   const email = session?.user?.email?.toLowerCase();
   if (!email || !session?.user) return null;
-  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "professor") {
+  const role = session.user.role;
+  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin" || role === "professor") {
     return session as AdminAuthSession;
   }
   return null;
