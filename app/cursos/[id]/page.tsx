@@ -42,12 +42,17 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
     }
   }
 
+  const modulesWithLessons = await Promise.all(
+    modules.map(async (mod) => {
+      const lessons = await getLessonsByModule(mod.id);
+      const completedInMod = lessons.filter(l => completedLessonIds.has(l.id)).length;
+      return { mod, lessons, completedInMod };
+    })
+  );
+
   return (
     <div className="space-y-6">
-      {modules.map(async (mod) => {
-        const lessons = await getLessonsByModule(mod.id);
-        const completedInMod = lessons.filter(l => completedLessonIds.has(l.id)).length;
-
+      {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
         return (
           <div key={mod.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
