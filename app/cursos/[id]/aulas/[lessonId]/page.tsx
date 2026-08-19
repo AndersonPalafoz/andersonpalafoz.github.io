@@ -85,7 +85,7 @@ export default function LessonPageClient() {
           }
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Erro ao carregar aula.");
+        toast.error(err instanceof Error ? err.message : "Não foi possível carregar os dados da aula.");
       } finally {
         setLoadingInitial(false);
       }
@@ -145,7 +145,7 @@ export default function LessonPageClient() {
       const improvement = payload.comparison?.improvement ?? null;
       setSpeakingHistory((current) => [payload.attempt, ...current]);
       setLatestFeedback({ ...payload.attempt, previousScore, improvement });
-      toast.success(previousScore === null ? "Gravação enviada e avaliada pela IA com sucesso." : "Regravação salva e comparada com a tentativa anterior.");
+      toast.success(previousScore === null ? "Gravação enviada com sucesso." : "Regravação salva e comparada com a tentativa anterior.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao enviar áudio.");
     } finally {
@@ -287,7 +287,7 @@ export default function LessonPageClient() {
           </div>
 
           <div className="border-t border-gray-100 pt-6 space-y-6">
-            <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking com IA)</h3>
+            <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 space-y-4">
                 <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-white px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span><span className="text-xs text-gray-500 font-medium">Listening Exercise</span></div>
@@ -297,18 +297,18 @@ export default function LessonPageClient() {
               </div>
 
               <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 space-y-4">
-                <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia & IA</span><span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Speaking Ativo</span></div>
-                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e receba análise fonética</h4>
+                <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia</span><span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Speaking Ativo</span></div>
+                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e acompanhe suas tentativas</h4>
                 <p className="text-xs text-gray-600 leading-relaxed">{speakingActivity ? speakingActivity.title : "Atividade de conversação guiada."}</p>
                 <div className="pt-2 space-y-3">
                   <Button disabled={!speakingActivity || savingSpeaking} onClick={isRecording ? stopRecording : startRecording} className={`w-full py-3 rounded-xl text-white font-bold text-xs ${isRecording ? "bg-gray-900 hover:bg-black" : "bg-blue-600 hover:bg-blue-700"}`}>
-                    {savingSpeaking ? <><Loader2 size={14} className="mr-2 animate-spin" /> Salvando...</> : isRecording ? <><Square size={14} className="mr-2" /> Parar gravação</> : <><Mic size={14} className="mr-2" /> {speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa e analisar"}</>}
+                    {savingSpeaking ? <><Loader2 size={14} className="mr-2 animate-spin" /> Salvando...</> : isRecording ? <><Square size={14} className="mr-2" /> Parar gravação</> : <><Mic size={14} className="mr-2" /> {speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa"}</>}
                   </Button>
                   <label className="block rounded-xl border border-dashed border-blue-200 bg-white/70 p-3 text-xs text-gray-600">Enviar arquivo de áudio
                     <input type="file" accept="audio/*" disabled={!speakingActivity || savingSpeaking} onChange={(e) => { const f = e.target.files?.[0]; if (f) void submitSpeakingAudio(f); e.currentTarget.value = ""; }} className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                   </label>
 
-                  {latestFeedback && <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 animate-fadeIn"><div className="flex items-center justify-between"><span className="text-xs font-bold text-blue-700">Resultado da IA</span><span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.aiScore ?? "—"}/100</span></div><p className="text-xs font-semibold text-red-600">{latestFeedback.aiFeedback}</p>{latestFeedback.improvement !== null && <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><TrendingUp size={14} /><span>{latestFeedback.improvement >= 0 ? "+" : ""}{latestFeedback.improvement} pontos vs tentativa anterior.</span></div>}</div>}
+                  {latestFeedback && <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 animate-fadeIn"><div className="flex items-center justify-between"><span className="text-xs font-bold text-blue-700">Resultado da tentativa</span><span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.aiScore ?? "—"}/100</span></div><p className="text-xs font-semibold text-red-600">{latestFeedback.aiFeedback}</p>{latestFeedback.improvement !== null && <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><TrendingUp size={14} /><span>{latestFeedback.improvement >= 0 ? "+" : ""}{latestFeedback.improvement} pontos vs tentativa anterior.</span></div>}</div>}
 
                   {speakingHistory.length > 0 && <div className="pt-2 border-t border-blue-100"><p className="text-xs font-bold text-gray-700 mb-2">Histórico ({speakingHistory.length})</p><div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">{speakingHistory.map((item) => <div key={item.id} className="flex items-center justify-between bg-white p-2 rounded-lg text-xs border border-blue-100"><span className="font-semibold text-gray-700">Tentativa #{item.attemptNumber}</span><div className="flex items-center gap-2">{item.audioResponseUrl && <audio controls src={item.audioResponseUrl} className="h-6 max-w-[120px]" />}<span className="font-bold text-blue-600">{item.aiScore ?? "—"} pts</span></div></div>)}</div></div>}
                 </div>
