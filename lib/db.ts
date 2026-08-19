@@ -3,6 +3,7 @@ import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
 // usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
@@ -268,6 +269,7 @@ export async function createCourse(data: {
   instructor?: string;
   isFree?: boolean;
   price?: number;
+  googleDriveLinks?: string | string[] | null;
 }) {
   return await db.insert(schema.courses).values({
     title: data.title,
@@ -277,6 +279,7 @@ export async function createCourse(data: {
     instructor: data.instructor || "Anderson Palafoz",
     isFree: data.isFree ?? true,
     price: data.price !== undefined ? data.price.toFixed(2) : "0.00",
+    googleDriveLinks: parseGoogleDriveLinks(data.googleDriveLinks).join("\n") || null,
   }).returning();
 }
 
@@ -288,12 +291,14 @@ export async function updateCourse(id: number, data: Partial<{
   instructor: string;
   isFree: boolean;
   price: number;
+  googleDriveLinks: string | string[] | null;
 }>) {
-  const { price, ...courseData } = data;
+  const { price, googleDriveLinks, ...courseData } = data;
   return await db.update(schema.courses)
     .set({
       ...courseData,
       ...(price !== undefined ? { price: price.toFixed(2) } : {}),
+      ...(googleDriveLinks !== undefined ? { googleDriveLinks: parseGoogleDriveLinks(googleDriveLinks).join("\n") || null } : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.courses.id, id))

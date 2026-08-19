@@ -867,3 +867,10 @@
 ## Verificação de Status no Vercel — 19/08/2026
 - [x] Consultar o status de deploy e logs utilizando a ferramenta MCP Vercel ou CLI Vercel.
 - [x] Diagnosticar eventual divergência entre o commit local atualizado e o ambiente publicado no Vercel.
+
+## Seção Visual de Materiais do Google Drive em Detalhes do Curso — 19/08/2026
+- [x] Criar seção visualmente destacada na página `/cursos/[id]` para exibir links de materiais do Google Drive.
+- [x] Validar responsividade, ícones acessíveis e abertura segura em nova aba.
+- [x] Executar suíte de testes e salvar checkpoint.
+- [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
+- [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
