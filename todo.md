@@ -875,6 +875,30 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Auditoria de Estado do Vercel e Sincronização — 19/08/2026
-- [x] Verificar o estado do repositório local e confirmar que o branch `main` está totalmente atualizado (`git push user_github main`).
-- [x] Identificar que os erros em produção no Vercel (`andersonpalafoz.vercel.app`) exigem a verificação direta do painel de logs de build e runtime do Vercel.
+## Auditoria de Variáveis de Ambiente do Vercel — 19/08/2026
+- [x] Analisar capturas de tela das variáveis cadastradas no Vercel (`DATABASE_URL`, `NEON_DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, etc.).
+- [x] Identificar desalinhamentos de ambiente (Production vs Preview) e variáveis essenciais que precisam ser promovidas ou corrigidas.
+
+## Edição Segura das Variáveis do Vercel — 19/08/2026
+- [ ] Confirmar acesso autenticado à conta Vercel e vínculo com o projeto `andersonpalafoz`.
+- [ ] Inventariar variáveis críticas por nome e ambiente, sem expor valores secretos.
+- [ ] Confirmar ou obter com segurança os valores necessários de `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
+- [ ] Aplicar as alterações somente após confirmação explícita dos valores e dos ambientes Production/Preview.
+- [ ] Fazer redeploy e validar as rotas críticas sem expor segredos nos logs.
+
+## Verificação e Ajuste Completo do Vercel — 19/08/2026
+- [x] Confirmar acesso ao projeto Vercel correto (`andersonpalafoz`, ID `prj_kF1vCYnAkUm6VciN0dHHH5eSRXJ1`).
+- [x] Auditar logs de runtime da Vercel para isolar o erro de schema faltante (`relation "external_class_attendance" does not exist`, coluna `approvalStatus`).
+- [x] Mapear todas as variáveis de ambiente essenciais lidas pelo código (`NEON_DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, chaves Google e Stripe).
+- [x] Orientar o ajuste seguro no painel da Vercel pelo celular ou painel web.
+
+## Auditoria e correção do ambiente Vercel/Neon — 19/08/2026
+- [x] Confirmar acesso autenticado ao projeto Vercel correto `andersonpalafoz` na equipe `palafozanderson-2076`.
+- [x] Revisar os nomes e ambientes das variáveis sem expor valores secretos.
+- [x] Ajustar `NEXTAUTH_URL` para `https://andersonpalafoz.vercel.app` nos ambientes Production e Preview, preservando os secrets existentes.
+- [x] Confirmar que o código prioriza `NEON_DATABASE_URL` sobre `DATABASE_URL` e evitar substituir a conexão sem validar o valor secreto.
+- [x] Diagnosticar que o banco Neon de produção estava parcialmente atrás do schema Drizzle, com colunas/tabelas ausentes que causavam erros 500.
+- [x] Aplicar transação aditiva no Neon principal `teacher-palafoz` para criar os tipos, colunas e tabelas ausentes de progresso, chamada, turmas externas, mídia e mensagens, sem apagar registros.
+- [x] Validar no Neon a existência de `lessonProgress.approvalStatus`, `attendances.status`, `external_class_attendance`, `external_class_materials`, `media_assets` e `contact_messages`.
+- [ ] Fazer redeploy do projeto Vercel para que `NEXTAUTH_URL` e o código atualizado entrem em vigor no deployment de produção.
+- [ ] Revalidar `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/cursos/6`, `/admin/cms`, `/admin/mensagens` e `/admin/media` após o redeploy.
