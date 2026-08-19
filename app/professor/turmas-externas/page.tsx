@@ -70,6 +70,8 @@ export default function TurmasExternasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
   const [studentStatusFilter, setStudentStatusFilter] = useState("all");
+  const [selectedYearFilter, setSelectedYearFilter] = useState("all");
+  const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
 
   // Edit class mode
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
@@ -150,6 +152,28 @@ export default function TurmasExternasPage() {
     return Array.from(instSet);
   }, [classes]);
 
+  const uniqueYears = useMemo(() => {
+    const yearSet = new Set<string>();
+    classes.forEach(c => {
+      const match = c.academicTerm?.match(/(?:19|20)\d{2}/);
+      if (match) yearSet.add(match[0]);
+    });
+    return Array.from(yearSet).sort().reverse();
+  }, [classes]);
+
+  const uniqueSemesters = useMemo(() => {
+    const semSet = new Set<string>();
+    classes.forEach(c => {
+      if (c.academicTerm?.includes(".1") || c.academicTerm?.includes("/1") || c.academicTerm?.includes("-1") || c.academicTerm?.toLowerCase().includes("1º")) {
+        semSet.add("1");
+      }
+      if (c.academicTerm?.includes(".2") || c.academicTerm?.includes("/2") || c.academicTerm?.includes("-2") || c.academicTerm?.toLowerCase().includes("2º")) {
+        semSet.add("2");
+      }
+    });
+    return Array.from(semSet).sort();
+  }, [classes]);
+
   const filteredClasses = useMemo(() => {
     return classes.map((cls) => {
       const filteredStudents = cls.students.filter((s) => {
@@ -165,10 +189,15 @@ export default function TurmasExternasPage() {
       };
     }).filter((cls) => {
       const matchesInstitution = selectedInstitutionFilter === "all" || cls.institution.toLowerCase() === selectedInstitutionFilter.toLowerCase();
+      
+      const termYear = cls.academicTerm || "";
+      const matchesYear = selectedYearFilter === "all" || termYear.includes(selectedYearFilter);
+      const matchesSemester = selectedSemesterFilter === "all" || termYear.includes(`.${selectedSemesterFilter}`) || termYear.includes(`/${selectedSemesterFilter}`) || termYear.includes(`-${selectedSemesterFilter}`) || termYear.toLowerCase().includes(`${selectedSemesterFilter}º`);
+
       const term = searchTerm.toLowerCase();
       const matchesClassSearch = !term || cls.className.toLowerCase().includes(term) || cls.courseName.toLowerCase().includes(term) || cls.institution.toLowerCase().includes(term);
       const hasMatchingStudents = cls.filteredStudents.length > 0;
-      return matchesInstitution && (matchesClassSearch || hasMatchingStudents);
+      return matchesInstitution && matchesYear && matchesSemester && (matchesClassSearch || hasMatchingStudents);
     });
   }, [classes, selectedInstitutionFilter, studentStatusFilter, searchTerm]);
 
@@ -600,6 +629,33 @@ export default function TurmasExternasPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
+              <select
+                value={selectedYearFilter}
+                onChange={(e) => setSelectedYearFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="all">Todos os Anos</option>
+                {uniqueYears.map((yr) => (
+                  <option key={yr} value={yr}>{yr}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Semestre:</span>
+              <select
+                value={selectedSemesterFilter}
+                onChange={(e) => setSelectedSemesterFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="all">Todos</option>
+                <option value="1">1º Semestre</option>
+                <option value="2">2º Semestre</option>
+              </select>
+            </div>
+
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status Aluno:</span>
               <select
