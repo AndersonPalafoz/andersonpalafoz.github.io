@@ -14,6 +14,7 @@ interface Course {
   modules: number;
   instructor?: string | null;
   description: string | null;
+  googleDriveLinks?: string | null;
 }
 
 export default function AdminCursos() {
@@ -41,6 +42,7 @@ export default function AdminCursos() {
     imageUrl: "",
     audioUrl: "",
     videoUrl: "",
+    googleDriveLinks: "",
   });
 
   useEffect(() => {
@@ -112,6 +114,7 @@ export default function AdminCursos() {
       imageUrl: course.imageUrl || "",
       audioUrl: course.audioUrl || "",
       videoUrl: course.videoUrl || "",
+      googleDriveLinks: course.googleDriveLinks || "",
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -170,7 +173,7 @@ export default function AdminCursos() {
         setEditingId(null);
         toast.success("Curso atualizado com sucesso.");
         setShowForm(false);
-        setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+        setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "", googleDriveLinks: "" });
       } else {
         const response = await fetch("/api/admin/courses", {
           method: "POST",
@@ -220,7 +223,7 @@ export default function AdminCursos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "" });
+              setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "", googleDriveLinks: "" });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
           >
@@ -368,6 +371,20 @@ export default function AdminCursos() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Cole um link direto ou envie JPG, PNG, WebP ou GIF. A imagem enviada fica armazenada de forma persistente.</p>
                 </div>
+              </div>
+
+              <div>
+                <label htmlFor="course-google-drive-links" className="block text-sm font-semibold text-foreground mb-2">Materiais complementares do Google Drive</label>
+                <textarea
+                  id="course-google-drive-links"
+                  rows={4}
+                  value={formData.googleDriveLinks}
+                  onChange={(e) => setFormData({ ...formData, googleDriveLinks: e.target.value })}
+                  placeholder="https://drive.google.com/file/d/.../view\nhttps://docs.google.com/document/d/.../edit"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20"
+                  aria-describedby="course-google-drive-links-help"
+                />
+                <p id="course-google-drive-links-help" className="mt-1 text-xs text-muted-foreground">Insira um link HTTPS por linha. Apenas endereços do Google Drive ou Google Docs serão exibidos aos alunos.</p>
               </div>
 
               <div>
