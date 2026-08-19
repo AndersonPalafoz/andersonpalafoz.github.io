@@ -39,7 +39,7 @@ export async function GET() {
       teacher = inserted[0];
     }
 
-    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || email === "palafozanderson@gmail.com";
+    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
     const classes = isGlobalAdmin
       ? await db.select().from(externalClasses).orderBy(desc(externalClasses.createdAt))
       : await db.select().from(externalClasses).where(eq(externalClasses.teacherId, teacher.id)).orderBy(desc(externalClasses.createdAt));
