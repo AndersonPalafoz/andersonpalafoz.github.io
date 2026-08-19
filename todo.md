@@ -716,11 +716,11 @@
 ## Auditoria de ofensivas e gamificação — 19/08/2026
 - [x] Mapear componentes, rotas, APIs, tabelas e regras que compõem ofensivas e gamificação: `user_gamification_points`, `medals_catalog`, `user_medals`, `notifications`, `/api/gamification`, `/api/leaderboard`, `/api/user/medals`, `/api/admin/medals`, `/api/notifications`, dashboard semanal e componentes de ofensiva.
 - [x] Auditar valores fixos, dados fabricados, cálculo real de ofensiva, XP, medalhas, metas, desafios, ranking e notificações; foram encontrados seed fictício de 350 XP/1 dia, modal fixo em 14 dias/+150 XP, coluna inexistente `totalXp` no ranking e duas tabelas de notificações divergentes.
-- [ ] Remover a inicialização fictícia de XP, nível e ofensiva para novas contas e retornar estado vazio/zero sem criar progresso artificial.
-- [ ] Corrigir o ranking para usar `points`, exigir sessão aprovada e aplicar escopo de turma quando disponível, sem expor dados de usuários não autorizados.
-- [ ] Substituir o modal fixo de ofensiva por dados reais do endpoint e só celebrar um novo marco confirmado pelo servidor, com bônus idempotente.
-- [ ] Unificar os eventos de conquista com a tabela de notificações efetivamente consumida pela interface e evitar duplicidade de concessão de medalhas.
-- [ ] Corrigir inconsistências de persistência, idempotência, RBAC, acessibilidade, responsividade e feedback visual.
+- [x] Remover a inicialização fictícia de XP, nível e ofensiva para novas contas e retornar estado vazio/zero sem criar progresso artificial.
+- [x] Corrigir o ranking para usar `points`, exigir sessão aprovada e aplicar escopo de turma quando disponível, sem expor dados de usuários não autorizados.
+- [x] Substituir o modal fixo de ofensiva por dados reais do endpoint e só celebrar um novo marco confirmado pelo servidor, com bônus idempotente.
+- [x] Unificar os eventos de conquista com a tabela de notificações efetivamente consumida pela interface e evitar duplicidade de concessão de medalhas.
+- [x] Corrigir inconsistências de persistência, idempotência, RBAC, acessibilidade, responsividade e feedback visual.
 - [x] Executar testes direcionados e suíte completa: 79 arquivos e 280 testes aprovados; validação visual e de rotas protegidas registrada no preview.
 - [x] Aplicar e verificar a migração de gamificação no banco Neon real: `streakDays` agora inicia em 0 no branch principal `br-lucky-lab-atg6m31w`; a ramificação temporária foi removida após a validação.
 - [x] Consolidar fisicamente a tabela legada `user_notifications`: a aplicação e o schema ORM usam exclusivamente `notifications`. Verificou-se que a tabela legada estava vazia e sem dependências de FK. A migração foi validada em branch temporário e aplicada com segurança ao Neon principal (`br-lucky-lab-atg6m31w`).
