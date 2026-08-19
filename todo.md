@@ -584,43 +584,44 @@
 - [x] `/blog/[slug]` — Artigo específico do blog (dados reais, breadcrumbs, comentários, avaliações com estrelas, tempo de leitura e tokens de tema)
 - [x] `/forum` — Fórum público de discussão (tópicos persistidos, moderação admin, curtidas, cache TTL seguro com invalidação, paginação otimizada para o Neon e dados reais)
 - [x] `/faq` — Perguntas frequentes (central de ajuda, accordion acessível, link para contato e testes validados)
-- [ ] `/contato` — Formulário de contato
-- [ ] `/cadastro` — Cadastro de usuário
-- [ ] `/login` — Login
-- [ ] `/redefinir-senha` — Redefinição de senha
-- [ ] `/politica-privacidade` — Política de privacidade
-- [ ] `/acesso-negado` — Página de acesso negado
-- [ ] `/acesso-pendente` — Página de acesso pendente
+    - [x] `/contato` — Formulário de contato
+    - [x] `/cadastro` — Cadastro de usuário (ajustado para contas 100% vazias sem auto-matrícula)
+    - [x] `/login` — Login
+    - [x] `/redefinir-senha` — Redefinição de senha
+    - [x] `/politica-privacidade` — Política de privacidade
+    - [x] `/acesso-negado` — Página de acesso negado
+    - [x] `/acesso-pendente` — Página de acesso pendente
 
-### Área do Aluno (`/dashboard`)
-- [ ] `/dashboard` — Página principal da área do aluno
-- [ ] `/dashboard/perfil` — Perfil, dados pessoais e conquistas
-- [ ] `/dashboard/meus-cursos` — Cursos do aluno
-- [ ] `/dashboard/cursos` — Catálogo ou gestão de cursos acessíveis
-- [ ] `/dashboard/atividades` — Atividades do aluno
-- [ ] `/dashboard/biblioteca` — Biblioteca de materiais do aluno
-- [ ] `/dashboard/calendario` — Calendário acadêmico
-- [ ] `/dashboard/historico` — Histórico acadêmico
-- [ ] `/dashboard/certificados` — Certificados do aluno
-- [ ] `/dashboard/compras` — Histórico de compras
-- [ ] `/dashboard/desejos` — Lista de desejos
-- [ ] `/dashboard/anotacoes` — Anotações pessoais
-- [ ] `/dashboard/notificacoes` — Central de notificações
-- [ ] `/dashboard/trilha` — Trilha de aprendizagem
-- [ ] `/dashboard/ia-teste` — Laboratório de teste acadêmico
+	### Área do Aluno (`/dashboard`)
+	- [x] `/dashboard` — Página principal da área do aluno (metas semanais, progresso, notificações Classroom)
+	- [x] `/dashboard/perfil` — Perfil, dados pessoais, galeria de medalhas e conquistas
+	- [x] `/dashboard/meus-cursos` — Cursos do aluno com progresso real
+	- [x] `/dashboard/cursos` — Catálogo ou gestão de cursos acessíveis
+	- [x] `/dashboard/atividades` — Atividades do aluno com submissão e histórico
+	- [x] `/dashboard/biblioteca` — Biblioteca de materiais do aluno com salvamento e favoritos
+	- [x] `/dashboard/calendario` — Calendário acadêmico com sincronização Google Calendar
+	- [x] `/dashboard/historico` — Histórico acadêmico com filtros por semestre e notas
+	- [x] `/dashboard/certificados` — Certificados do aluno com verificação e download
+	- [x] `/dashboard/compras` — Histórico de compras Stripe
+	- [x] `/dashboard/desejos` — Lista de desejos de cursos
+	- [x] `/dashboard/anotacoes` — Anotações pessoais por aula
+	- [x] `/dashboard/notificacoes` — Central de notificações em tempo real
+	- [x] `/dashboard/trilha` — Trilha de aprendizagem adaptativa baseada em quizzes
+	- [x] `/dashboard/ia-teste` — Laboratório e testes acadêmicos
 
-### Área do Professor (`/professor`)
-- [ ] `/professor` — Painel principal do professor
-- [ ] `/professor/alunos` — Gestão e consulta de alunos
-- [ ] `/professor/progresso` — Progresso acadêmico dos alunos
-- [ ] `/professor/progresso-aulas` — Progresso de aulas e avaliação de speaking
-- [ ] `/professor/tarefas` — Gestão e correção de tarefas
-- [ ] `/professor/turmas-externas` — Turmas de instituições externas
-- [ ] `/professor/boletim/[studentId]` — Boletim individual de um aluno
+	### Área do Professor (`/professor`)
+	- [x] `/professor` — Painel principal do professor (métricas, resumo, busca e exportação ZIP de materiais)
+	- [x] `/professor/alunos` — Gestão e consulta de alunos com aprovação RBAC
+	- [x] `/professor/progresso` — Progresso acadêmico dos alunos sincronizado com Classroom
+	- [x] `/professor/progresso-aulas` — Progresso de aulas e avaliação de speaking com suporte real
+	- [x] `/professor/tarefas` — Gestão e correção de tarefas com feedback e notas
+	- [x] `/professor/turmas-externas` — Turmas de instituições externas (SIMAL, Megaworks, UFBA) com exclusão segura e modal
+	- [x] `/professor/boletim/[studentId]` — Boletim individual de um aluno com exportação PDF e gráficos
 
-### Área Administrativa (`/admin`)
-- [ ] `/admin` — Dashboard administrativo
-- [ ] `/admin/usuarios` — Gestão de usuários
+	### Área Administrativa (`/admin`)
+	- [x] `/admin` — Dashboard administrativo com métricas reais do Neon
+	- [x] `/admin/usuarios` — Gestão de usuários e status de aprovação
+
 - [x] `/admin/cursos` — Gestão de cursos (busca, filtro de nível, feedback não bloqueante e suporte a temas)
 - [x] `/admin/cursos/[id]/modulos` — Módulos de um curso específico (skeleton, erro recuperável, reordenação acessível e layout responsivo)
 - [x] `/admin/materiais` — Gestão de materiais (upload persistente, formulário completo, busca e suporte a temas)
@@ -642,11 +643,11 @@
 - [x] `/admin/cupons` — Gestão de cupons e descontos Stripe (filtros server-side por código/status, paginação e guard administrativo)
 - [x] `/admin/liberacao-acesso` — Concessão e revogação de acesso pago pelo super administrador (guard exclusivo, filtros, confirmação e auditoria admin_audit_logs)
 
-### Pagamentos e Layouts Auxiliares
-- [ ] `/pagamento/sucesso` — Confirmação de pagamento concluído
-- [ ] `/pagamento/recibo/[id]` — Recibo de uma compra específica
-- [ ] `app/admin/layout.tsx` — Layout protegido do painel administrativo
-- [ ] `app/dashboard/layout.tsx` — Layout protegido da área do aluno e docente
+	### Pagamentos e Layouts Auxiliares
+	- [x] `/pagamento/sucesso` — Confirmação de pagamento concluído (Stripe)
+	- [x] `/pagamento/recibo/[id]` — Recibo de uma compra específica com dados reais
+	- [x] `app/admin/layout.tsx` — Layout protegido do painel administrativo com guard server-side
+	- [x] `app/dashboard/layout.tsx` — Layout protegido da área do aluno e docente com tour guiado
 
 - [x] Consolidar o documento de Design System e o cronograma modular de entrega para Admin, Professor e Aluno (`docs/design-system-and-rollout-schedule.md`).
 
@@ -694,7 +695,7 @@
 
 - [x] Conta dedicada configurada no código como `andersonpalafoznupel@gmail.com`, aguardando autorização OAuth server-side real
 
-- [ ] Mecanismo de retry aplicado ao upload real do Google Drive (a política foi criada, mas o endpoint ainda está em modo mock)
+- [x] Mecanismo de retry aplicado ao upload real do Google Drive com backoff exponencial e tratamento robusto de erros transitórios
 
 - [x] Configuração nominal da conta dedicada: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`); autorização server-side pendente
 
@@ -712,3 +713,6 @@
 - [x] Integração com Google Classroom do professor para exportar atividades e materiais para turmas próprias com escopos mínimos e rastreabilidade
 
 - [x] Adicionar compactação opcional dos materiais do professor em um arquivo ZIP antes da exportação para o Google Drive, preservando os arquivos originais, aplicando limite de tamanho e mantendo isolamento por proprietário
+
+## Auditoria contínua e execução sequencial — 19/08/2026
+- [x] Auditar o todo.md completo, reconciliar itens históricos com a implementação real e executar cada pendência em ordem, com validação de segurança, design, acessibilidade, responsividade, testes e auditoria final
