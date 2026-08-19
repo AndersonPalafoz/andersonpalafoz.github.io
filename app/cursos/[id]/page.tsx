@@ -14,8 +14,14 @@ import { eq, and } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
-  const modules = await getModulesByCourse(courseId);
-  if (modules.length === 0) {
+  let modules: any[] = [];
+  try {
+    modules = await getModulesByCourse(courseId);
+  } catch (err) {
+    console.error("CourseModulesList: failed to fetch modules", err);
+  }
+
+  if (!modules || modules.length === 0) {
     return <p className="text-gray-500 text-sm">Nenhum módulo cadastrado para este curso ainda.</p>;
   }
 
@@ -137,22 +143,32 @@ async function CourseDetail({ courseId }: { courseId: number }) {
     );
   }
 
-  const modules = await getModulesByCourse(courseId);
-  const driveLinks = parseGoogleDriveLinks(course.googleDriveLinks);
+  let modules: any[] = [];
+  try {
+    modules = await getModulesByCourse(courseId);
+  } catch (err) {
+    console.error("Failed to load modules for course", courseId, err);
+  }
 
-  // Calcular progresso total do curso para exibição visual
+  const driveLinks = parseGoogleDriveLinks((course as any).googleDriveLinks);
+
+  // Calcular progresso total do curso para exibição visual de forma segura
   let totalLessonsCount = 0;
   let completedLessonsCount = 0;
   if (user?.id) {
-    for (const mod of modules) {
-      const lessonsInMod = await getLessonsByModule(mod.id);
-      totalLessonsCount += lessonsInMod.length;
-      for (const l of lessonsInMod) {
-        const lp = await db.query.lessonProgress.findFirst({
-          where: (table) => and(eq(table.userId, Number(user.id)), eq(table.lessonId, l.id)),
-        });
-        if (lp && lp.completed === 1) completedLessonsCount++;
+    try {
+      for (const mod of modules) {
+        const lessonsInMod = await getLessonsByModule(mod.id).catch(() => []);
+        totalLessonsCount += lessonsInMod.length;
+        for (const l of lessonsInMod) {
+          const lp = await db.query.lessonProgress.findFirst({
+            where: (table) => and(eq(table.userId, Number(user.id)), eq(table.lessonId, l.id)),
+          }).catch(() => null);
+          if (lp && lp.completed === 1) completedLessonsCount++;
+        }
       }
+    } catch (err) {
+      console.error("Failed to calculate course progress for user", user.id, err);
     }
   }
 
