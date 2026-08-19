@@ -1,107 +1,125 @@
 # Guia de Configuração de Variáveis de Ambiente no Vercel
 
-## 🔧 Problema
-A página de login está mostrando erro `?error=Configuration` porque as variáveis de ambiente não estão configuradas no Vercel.
+Este documento registra a configuração efetiva do projeto **andersonpalafoz** após a auditoria autenticada realizada em 19/08/2026. O projeto utiliza Next.js, NextAuth, Neon PostgreSQL, integrações Google, Supabase Storage e Stripe em fluxos opcionais.
 
-## ✅ Solução: Adicionar Variáveis de Ambiente
+## Projeto confirmado
 
-### Passo 1: Acessar o Painel do Vercel
+| Item | Valor |
+|---|---|
+| Projeto | `andersonpalafoz` |
+| Domínio de produção | `https://andersonpalafoz.vercel.app` |
+| Ambiente principal | Production |
+| Banco principal | Neon PostgreSQL |
 
-1. Vá para [https://vercel.com](https://vercel.com)
-2. Faça login com sua conta
-3. Clique no projeto **andersonpalafoz** na lista de projetos
+## Regra mais importante do banco
 
-### Passo 2: Acessar Configurações de Ambiente
+O arquivo `lib/db.ts` lê primeiro `NEON_DATABASE_URL` e usa `DATABASE_URL` apenas como alternativa. Portanto, a variável prioritária em produção é:
 
-1. No painel do projeto, clique na aba **Settings** (Configurações)
-2. Na barra lateral esquerda, clique em **Environment Variables** (Variáveis de Ambiente)
+```text
+NEON_DATABASE_URL
+```
 
-### Passo 3: Adicionar as Variáveis
+`NEON_DATABASE_URL` e `DATABASE_URL` devem apontar para a mesma instância PostgreSQL Neon, ou a variável alternativa deve ser mantida apenas se houver algum fluxo que realmente a utilize. Não substitua uma string de conexão secreta sem confirmar o banco de destino e sem verificar se o schema de produção está atualizado.
 
-Você precisa adicionar **4 variáveis de ambiente**. Para cada uma, clique em **"Add New"** (Adicionar Nova):
+A conexão de produção deve utilizar SSL conforme exigido pelo Neon. O código também desativa `prepare` para manter compatibilidade com poolers/PgBouncer.
 
-#### Variável 1: NEXTAUTH_URL
-- **Name:** `NEXTAUTH_URL`
-- **Value:** `https://andersonpalafoz.vercel.app`
-- **Environments:** Selecione "Production"
-- Clique **Save**
+## Variáveis críticas e ambientes
 
-#### Variável 2: NEXTAUTH_SECRET
-- **Name:** `NEXTAUTH_SECRET`
-- **Value:** Gere uma chave segura. Você pode usar este comando no terminal:
-  ```bash
-  openssl rand -base64 32
-  ```
-  Ou use um gerador online: [https://generate-secret.vercel.app/32](https://generate-secret.vercel.app/32)
-- **Environments:** Selecione "Production"
-- Clique **Save**
+As seguintes variáveis devem ser conferidas no painel **Settings → Environment Variables**:
 
-#### Variável 3: GOOGLE_CLIENT_ID
-- **Name:** `GOOGLE_CLIENT_ID`
-- **Value:** Você precisa obter isso do Google Cloud Console (veja instruções abaixo)
-- **Environments:** Selecione "Production"
-- Clique **Save**
+| Variável | Finalidade | Production | Preview | Development |
+|---|---|---:|---:|---:|
+| `NEON_DATABASE_URL` | Conexão PostgreSQL prioritária usada pelo código | Obrigatória | Recomendada | Conforme o banco local |
+| `DATABASE_URL` | Fallback de conexão PostgreSQL | Igual à conexão Neon ou confirmada como não utilizada | Igual à conexão Neon ou confirmada como não utilizada | Opcional |
+| `NEXTAUTH_URL` | URL canônica da aplicação | `https://andersonpalafoz.vercel.app` | URL do preview correspondente ou domínio canônico, conforme o fluxo de teste | URL local quando necessário |
+| `NEXTAUTH_SECRET` | Assinatura das sessões NextAuth | Obrigatória e estável | Obrigatória e estável | Pode usar um segredo separado |
+| `GOOGLE_CLIENT_ID` | Cliente OAuth do Google | Obrigatória para login Google | Obrigatória para login Google | Conforme o cliente de desenvolvimento |
+| `GOOGLE_CLIENT_SECRET` | Segredo do cliente OAuth do Google | Obrigatória para login Google | Obrigatória para login Google | Conforme o cliente de desenvolvimento |
 
-#### Variável 4: GOOGLE_CLIENT_SECRET
-- **Name:** `GOOGLE_CLIENT_SECRET`
-- **Value:** Você precisa obter isso do Google Cloud Console (veja instruções abaixo)
-- **Environments:** Selecione "Production"
-- Clique **Save**
+A alteração de `NEXTAUTH_SECRET` invalida sessões existentes. Não gere uma nova chave apenas para “testar”; troque-a somente quando houver necessidade de rotação controlada.
 
-### Passo 4: Obter Google Client ID e Secret
+Para criar um segredo localmente, use:
 
-Se você ainda não tem as credenciais do Google, siga estes passos:
+```bash
+openssl rand -base64 32
+```
 
-1. Vá para [Google Cloud Console](https://console.cloud.google.com/)
-2. Crie um novo projeto ou selecione um existente
-3. Ative a API do Google+ (Search for "Google+ API" e clique Enable)
-4. Vá para **Credentials** (Credenciais) na barra lateral
-5. Clique **Create Credentials** → **OAuth 2.0 Client ID**
-6. Selecione **Web application** (Aplicação Web)
-7. Em **Authorized redirect URIs**, adicione:
-   - `https://andersonpalafoz.vercel.app/api/auth/callback/google`
-8. Clique **Create**
-9. Copie o **Client ID** e **Client Secret** que aparecerem
+Não envie esse valor, a senha do banco, tokens OAuth ou qualquer outro secret pelo chat.
 
-### Passo 5: Fazer Deploy Novamente
+## Configuração confirmada durante a auditoria
 
-Após adicionar todas as variáveis:
+A variável não secreta `NEXTAUTH_URL` foi ajustada no Vercel para:
 
-1. Volte para a aba **Deployments** no Vercel
-2. Clique no último deploy (deve estar em cinza/inativo)
-3. Clique **Redeploy** (Reimplantar)
-4. Aguarde o deploy completar
+```text
+https://andersonpalafoz.vercel.app
+```
 
-### Passo 6: Testar o Login
+Ela foi mantida nos ambientes **Production** e **Preview**. Os valores de `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e das conexões de banco foram preservados e não foram expostos.
 
-1. Vá para [https://andersonpalafoz.vercel.app/login](https://andersonpalafoz.vercel.app/login)
-2. Clique em **"Entrar com Google"**
-3. Você deve ser redirecionado para o login do Google
-4. Após fazer login, você será redirecionado para o dashboard
+## Integrações Google opcionais
 
-## 🆘 Se Ainda Não Funcionar
+Os fluxos de armazenamento e sincronização Google podem utilizar as variáveis abaixo:
 
-Se o login ainda não funcionar após adicionar as variáveis:
+| Variável | Finalidade | Obrigatoriedade |
+|---|---|---|
+| `GOOGLE_REFRESH_TOKEN` | Acesso OAuth persistente para Drive, Calendar ou Gmail, conforme o fluxo autorizado | Necessária somente para sincronização server-side sem novo login |
+| `GOOGLE_STORAGE_ACCOUNT` | Identificação da conta dedicada de armazenamento | Recomendada quando o Drive dedicado estiver ativo |
+| `GOOGLE_STORAGE_HOST` | Host/configuração auxiliar do armazenamento Google | Conforme o fluxo implementado |
 
-1. Verifique se todas as 4 variáveis estão adicionadas
-2. Verifique se o **NEXTAUTH_URL** está correto: `https://andersonpalafoz.vercel.app`
-3. Verifique se o **GOOGLE_CLIENT_SECRET** está correto (sem espaços extras)
-4. Aguarde 5-10 minutos após o deploy (às vezes leva tempo para propagar)
-5. Limpe o cache do navegador (Ctrl+Shift+Delete) e tente novamente
+A conta dedicada planejada para armazenamento é `andersonpalafoznupel@gmail.com`, separada da conta administrativa `palafozanderson@gmail.com`. O refresh token deve ser emitido pelo mesmo cliente OAuth e pelo mesmo usuário que terá acesso aos arquivos.
 
-## 📝 Resumo das Variáveis
+No Google Cloud Console, confirme o URI de callback do login principal:
 
-| Nome | Valor | Origem |
-|------|-------|--------|
-| NEXTAUTH_URL | `https://andersonpalafoz.vercel.app` | Seu domínio Vercel |
-| NEXTAUTH_SECRET | Chave aleatória (openssl rand -base64 32) | Gerar localmente |
-| GOOGLE_CLIENT_ID | Obtido do Google Cloud Console | Google Cloud |
-| GOOGLE_CLIENT_SECRET | Obtido do Google Cloud Console | Google Cloud |
+```text
+https://andersonpalafoz.vercel.app/api/auth/callback/google
+```
 
-## ✨ Resultado Esperado
+O projeto Google também precisa ter as APIs efetivamente utilizadas habilitadas. O login básico usa OpenID, e-mail e perfil; Calendar, Drive, Classroom e Gmail devem ser autorizados somente quando o usuário conectar cada integração.
 
-Após configurar corretamente, você verá:
-- ✅ Página de login sem erros
-- ✅ Botão "Entrar com Google" funcionando
-- ✅ Redirecionamento para o Google para autenticação
-- ✅ Acesso ao dashboard após login bem-sucedido
+## Supabase, Resend e Stripe
+
+Estas variáveis são opcionais e devem ser mantidas apenas enquanto os respectivos fluxos estiverem ativos:
+
+```text
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+RESEND_API_KEY
+RESEND_FROM_EMAIL
+STRIPE_SECRET_KEY
+STRIPE_WEBHOOK_SECRET
+VITE_STRIPE_PUBLISHABLE_KEY
+```
+
+`SUPABASE_SERVICE_ROLE_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY` e tokens Google devem permanecer exclusivamente no servidor. Nunca use o prefixo `NEXT_PUBLIC_` ou `VITE_` para uma chave secreta.
+
+As chaves Stripe de teste e produção não devem ser misturadas. O webhook precisa pertencer ao mesmo ambiente da chave secreta usada pelo backend.
+
+## Aliases automáticos do Neon e Postgres
+
+O painel pode exibir aliases gerados automaticamente por integrações, como `NEON_PGHOST`, `NEON_PGUSER`, `NEON_PGPASSWORD`, `NEON_POSTGRES_URL`, `POSTGRES_URL`, `POSTGRES_PRISMA_URL` e similares. Não remova essas variáveis somente pelo nome. Primeiro confirme no código, nas configurações de build e nas integrações se alguma delas ainda é necessária.
+
+A aplicação atualmente prioriza `NEON_DATABASE_URL`. A existência de aliases adicionais não é, por si só, um erro; o risco está em aliases apontarem para bancos diferentes ou incompletos.
+
+## Procedimento para atualizar no Vercel
+
+1. Acesse https://vercel.com e abra o projeto `andersonpalafoz`.
+2. Entre em **Settings → Environment Variables**.
+3. Revise o nome, o valor mascarado e os ambientes selecionados sem copiar secrets para fora do painel.
+4. Corrija primeiro `NEON_DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
+5. Salve a alteração e crie um novo deployment. Variáveis de ambiente alteradas não atualizam automaticamente um deployment já criado.
+6. Aguarde o deployment ficar **Ready**.
+7. Teste as rotas públicas e, depois de autenticar, as rotas protegidas.
+
+## Validação realizada em 19/08/2026
+
+O deployment baseado no checkpoint `061d08a7` ficou **READY** em Production. As seguintes páginas responderam sem HTTP 500 para acesso anônimo: `/cursos/6`, `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/admin/cms`, `/admin/mensagens` e `/admin/media`. As rotas protegidas renderizaram a tela de login, enquanto `/cursos/6` respondeu publicamente com HTTP 200.
+
+As APIs protegidas também retornaram códigos de autorização esperados: `/api/professor/external-classes` respondeu HTTP 403 e `/api/professor/progress-speaking` respondeu HTTP 401 quando acessadas sem sessão. Nenhum cluster de erro de runtime foi encontrado nos 30 minutos posteriores ao deployment.
+
+Além das variáveis, o banco Neon foi alinhado de forma aditiva com o schema Drizzle, incluindo tabelas e colunas que estavam ausentes e causavam erros 500. Nenhum registro acadêmico foi apagado.
+
+## Diagnóstico em caso de falha
+
+Se ocorrer `?error=Configuration` no login, revise `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`, além do callback no Google Cloud Console. Se ocorrer erro 500 em uma rota acadêmica, verifique primeiro a conexão efetiva de `NEON_DATABASE_URL` e, em seguida, os logs de runtime e o alinhamento do schema Neon.
+
+Se uma rota protegida responder com a tela de login ou com HTTP 401/403 sem sessão, isso é comportamento esperado. O teste funcional completo deve ser realizado depois de entrar com a conta autorizada.
