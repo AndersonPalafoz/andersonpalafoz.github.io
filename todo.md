@@ -880,11 +880,11 @@
 - [x] Identificar desalinhamentos de ambiente (Production vs Preview) e variáveis essenciais que precisam ser promovidas ou corrigidas.
 
 ## Edição Segura das Variáveis do Vercel — 19/08/2026
-- [ ] Confirmar acesso autenticado à conta Vercel e vínculo com o projeto `andersonpalafoz`.
-- [ ] Inventariar variáveis críticas por nome e ambiente, sem expor valores secretos.
-- [ ] Confirmar ou obter com segurança os valores necessários de `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`.
-- [ ] Aplicar as alterações somente após confirmação explícita dos valores e dos ambientes Production/Preview.
-- [ ] Fazer redeploy e validar as rotas críticas sem expor segredos nos logs.
+- [x] Confirmar acesso autenticado à conta Vercel e vínculo com o projeto `andersonpalafoz` (projeto `prj_kF1vCYnAkUm6VciN0dHHH5eSRXJ1`).
+- [x] Inventariar variáveis críticas por nome e ambiente, sem expor valores secretos.
+- [x] Confirmar com segurança a presença e o escopo de `DATABASE_URL`, `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`; os valores secretos foram preservados e não foram expostos nem rotacionados sem necessidade.
+- [x] Aplicar as alterações não secretas somente após confirmação explícita dos ambientes Production/Preview; `NEXTAUTH_URL` foi corrigida e os secrets existentes foram preservados.
+- [x] Fazer redeploy e validar as rotas críticas sem expor segredos nos logs; o deployment ficou READY, não houve erros de runtime nos 30 minutos posteriores e as APIs protegidas retornaram 401/403 esperados sem sessão.
 
 ## Verificação e Ajuste Completo do Vercel — 19/08/2026
 - [x] Confirmar acesso ao projeto Vercel correto (`andersonpalafoz`, ID `prj_kF1vCYnAkUm6VciN0dHHH5eSRXJ1`).
