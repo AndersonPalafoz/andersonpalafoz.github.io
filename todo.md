@@ -875,8 +875,8 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Resolução Definitiva de Erros de Build Vercel & v0 — 19/08/2026
-- [x] Diagnosticar todos os erros de TypeScript (`tsc --noEmit`) que impediam o build estrito de produção no Vercel.
-- [x] Corrigir tipagens de NextAuth (`super_admin` unificado), tipagem de consultas raw em enrollments, null-safety em leaderboard, variáveis/imports não utilizados.
-- [x] Validar 100% de sucesso no `tsc --noEmit` e em todos os 317 testes unitários Vitest.
-- [x] Salvar checkpoint final pronto para publicação sem erros no Vercel.
+## Estabilização Completa das Rotas do Professor e Cursos — 19/08/2026
+- [x] Inspecionar e corrigir `/app/api/professor/progress-speaking/route.ts` (adicionando importação correta de `getServerSession`).
+- [x] Validar integridade e resiliência em `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas` e `/cursos/[id]`.
+- [x] Validar 100% de sucesso no compilador TypeScript (`tsc --noEmit`) e em todos os 317 testes unitários Vitest.
+- [x] Salvar checkpoint final com todas as falhas corrigidas.
