@@ -841,3 +841,8 @@
 - [x] Restringir integrações Google (Drive, Calendar, Classroom) estritamente aos itens relacionados à plataforma.
 - [x] Configurar observabilidade e auditoria contínua de erros no painel de administração.
 - [x] Executar suíte Vitest e validar build de produção.
+
+## Correção de Comunicação Frontend-Backend e Permissões — 19/08/2026
+- [x] Unificar o predicado `isGlobalAdmin` nas rotas de API para evitar rejeições incorretas (403) em mutações de turmas externas e materiais.
+- [x] Validar que administradores e super administradores (`palafozanderson@gmail.com`) possuem acesso total a todas as operações de escrita, edição e exclusão.
+- [x] Reexecutar suíte Vitest (306 testes aprovados).
