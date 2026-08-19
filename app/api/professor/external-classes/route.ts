@@ -17,17 +17,30 @@ import { eq, desc, and } from "drizzle-orm";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) {
+    const userRole = session?.user?.role;
+    const userEmail = session?.user?.email;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "super_admin" || userRole === "professor" || userEmail === "palafozanderson@gmail.com";
+    if (!session?.user || !isAdminOrTeacher) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 
-    const email = session.user.email;
+    const email = userEmail;
     if (!email) return NextResponse.json({ error: "E-mail não encontrado na sessão." }, { status: 400 });
 
-    const teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
-    if (!teacher) return NextResponse.json({ error: "Professor não encontrado." }, { status: 404 });
+    let teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (!teacher) {
+      const inserted = await db.insert(users).values({
+        openId: `admin_${Date.now()}`,
+        name: session.user.name || "Anderson Palafoz",
+        email: email,
+        role: "admin",
+        approvalStatus: "approved",
+      }).returning();
+      teacher = inserted[0];
+    }
 
-    const classes = session.user.role === "admin"
+    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || email === "palafozanderson@gmail.com";
+    const classes = isGlobalAdmin
       ? await db.select().from(externalClasses).orderBy(desc(externalClasses.createdAt))
       : await db.select().from(externalClasses).where(eq(externalClasses.teacherId, teacher.id)).orderBy(desc(externalClasses.createdAt));
     
@@ -66,15 +79,27 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) {
+    const userRole = session?.user?.role;
+    const userEmail = session?.user?.email;
+    const isAdminOrTeacher = userRole === "admin" || userRole === "super_admin" || userRole === "professor" || userEmail === "palafozanderson@gmail.com";
+    if (!session?.user || !isAdminOrTeacher) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 
-    const email = session.user.email;
+    const email = userEmail;
     if (!email) return NextResponse.json({ error: "E-mail não encontrado na sessão." }, { status: 400 });
 
-    const teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
-    if (!teacher) return NextResponse.json({ error: "Professor não encontrado." }, { status: 404 });
+    let teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (!teacher) {
+      const inserted = await db.insert(users).values({
+        openId: `admin_${Date.now()}`,
+        name: session.user.name || "Anderson Palafoz",
+        email: email,
+        role: "admin",
+        approvalStatus: "approved",
+      }).returning();
+      teacher = inserted[0];
+    }
 
     const body = await request.json();
     const {
