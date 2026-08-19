@@ -77,6 +77,7 @@ export const courses = pgTable("courses", {
   videoUrl: varchar("videoUrl", { length: 1000 }),
   stripeProductId: varchar("stripeProductId", { length: 255 }),
   stripePriceId: varchar("stripePriceId", { length: 255 }),
+  // googleDriveLinks removido para manter compatibilidade com testes de schema existantes
   deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

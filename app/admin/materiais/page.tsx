@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Trash2, Edit2, Plus, Download, ArrowLeft, Loader2, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { describeHttpError, type HttpErrorDescription } from "@/lib/error-codes";
 
 interface Material {
   id: number;
@@ -20,6 +21,7 @@ export default function AdminMateriaisReal() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<HttpErrorDescription | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -41,11 +43,16 @@ export default function AdminMateriaisReal() {
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/materials");
-      if (!res.ok) throw new Error("Falha ao carregar materiais");
-      const data = await res.json();
+      const res = await fetch("/api/admin/materials", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const details = describeHttpError(res.status, data.error);
+        setErrorDetails(details);
+        throw new Error(details.message);
+      }
       setMaterials(data.materials || data);
       setError(null);
+      setErrorDetails(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
@@ -63,9 +70,7 @@ export default function AdminMateriaisReal() {
     try {
       setSaving(true);
       const method = editingId ? "PUT" : "POST";
-      const url = editingId
-        ? `/api/admin/materials/${editingId}`
-        : "/api/admin/materials";
+      const url = "/api/admin/materials";
 
       const res = await fetch(url, {
         method,
@@ -73,11 +78,14 @@ export default function AdminMateriaisReal() {
         body: JSON.stringify(editingId ? { id: editingId, ...formData } : formData),
       });
 
+      const responseData = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Falha ao salvar material");
+        const details = describeHttpError(res.status, responseData.error);
+        setErrorDetails(details);
+        throw new Error(details.message);
       }
 
+      setErrorDetails(null);
       await fetchMaterials();
       setFormData({ title: "", category: "Worksheets", level: "A1", fileUrl: "", description: "", isPublic: true });
       setEditingId(null);
@@ -130,8 +138,14 @@ export default function AdminMateriaisReal() {
   const confirmDelete = async () => {
     if (!materialToDelete) return;
     try {
-      const res = await fetch(`/api/admin/materials/${materialToDelete.id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Falha ao excluir material");
+      const res = await fetch(`/api/admin/materials?id=${materialToDelete.id}`, { method: "DELETE" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const details = describeHttpError(res.status, data.error);
+        setErrorDetails(details);
+        throw new Error(details.message);
+      }
+      setErrorDetails(null);
       setMaterials((current) => current.filter((m) => m.id !== materialToDelete.id));
       toast.success("Material excluído com sucesso.");
     } catch (error) {
@@ -172,6 +186,19 @@ export default function AdminMateriaisReal() {
             {showForm ? "Fechar Formulário" : "Novo Material Acadêmico"}
           </button>
         </div>
+
+        {errorDetails && (
+          <div role="alert" aria-live="assertive" className="rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950 shadow-sm dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-black">{errorDetails.title}</p>
+                <p className="mt-1 text-sm">{errorDetails.message}</p>
+                <p className="mt-2 text-xs font-semibold">{errorDetails.actionHint}</p>
+              </div>
+              <button type="button" onClick={() => void fetchMaterials()} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-900/40">Tentar novamente</button>
+            </div>
+          </div>
+        )}
 
         {/* Formulário Completo de Material */}
         {showForm && (

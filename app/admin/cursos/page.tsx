@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Plus, Edit2, Trash2, ArrowLeft, Loader2, BookOpen, Layers, User, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
+import { describeHttpError, type HttpErrorDescription } from "@/lib/error-codes";
 
 interface Course {
   id: number;
@@ -19,6 +20,7 @@ export default function AdminCursos() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<HttpErrorDescription | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [coverRemovalPending, setCoverRemovalPending] = useState(false);
@@ -48,11 +50,16 @@ export default function AdminCursos() {
   const fetchCourses = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/admin/courses");
-      if (!response.ok) throw new Error("Falha ao carregar cursos");
-      const data = await response.json();
-      setCourses(data);
+      const response = await fetch("/api/admin/courses", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const details = describeHttpError(response.status, data.error);
+        setErrorDetails(details);
+        throw new Error(details.message);
+      }
+      setCourses(Array.isArray(data) ? data : data.courses || []);
       setError(null);
+      setErrorDetails(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
@@ -76,8 +83,14 @@ export default function AdminCursos() {
     if (!confirm("Tem certeza que deseja deletar este curso?")) return;
     try {
       const response = await fetch(`/api/admin/courses?id=${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Falha ao deletar curso");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const details = describeHttpError(response.status, data.error);
+        setErrorDetails(details);
+        throw new Error(details.message);
+      }
       setCourses(courses.filter((c) => c.id !== id));
+      setErrorDetails(null);
       toast.success("Curso excluído com sucesso.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir curso.");
@@ -146,8 +159,13 @@ export default function AdminCursos() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editingId, ...formData }),
         });
-        if (!response.ok) throw new Error("Falha ao atualizar curso");
-        const [updated] = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const details = describeHttpError(response.status, data.error);
+          setErrorDetails(details);
+          throw new Error(details.message);
+        }
+        const [updated] = Array.isArray(data) ? data : [data.course || data];
         setCourses(courses.map((c) => (c.id === editingId ? updated : c)));
         setEditingId(null);
         toast.success("Curso atualizado com sucesso.");
@@ -159,10 +177,16 @@ export default function AdminCursos() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(formData),
         });
-        if (!response.ok) throw new Error("Falha ao criar curso");
-        const [created] = await response.json();
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const details = describeHttpError(response.status, data.error);
+          setErrorDetails(details);
+          throw new Error(details.message);
+        }
+        const [created] = Array.isArray(data) ? data : [data.course || data];
         const newCourseId = created.id;
         setCourses([...courses, created]);
+        setErrorDetails(null);
         toast.success("Curso criado. Redirecionando para estruturar os módulos...");
         window.location.href = `/admin/cursos/${newCourseId}/modulos`;
       }
@@ -204,6 +228,19 @@ export default function AdminCursos() {
             {showForm ? "Fechar Formulário" : "Novo Curso Completo"}
           </button>
         </div>
+
+        {errorDetails && (
+          <div role="alert" aria-live="assertive" className="rounded-2xl border border-red-300 bg-red-50 p-5 text-red-950 shadow-sm dark:border-red-900 dark:bg-red-950/40 dark:text-red-100">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="font-black">{errorDetails.title}</p>
+                <p className="mt-1 text-sm">{errorDetails.message}</p>
+                <p className="mt-2 text-xs font-semibold">{errorDetails.actionHint}</p>
+              </div>
+              <button type="button" onClick={() => void fetchCourses()} className="rounded-lg border border-red-300 px-3 py-2 text-xs font-bold hover:bg-red-100 dark:border-red-800 dark:hover:bg-red-900/40">Tentar novamente</button>
+            </div>
+          </div>
+        )}
 
         {/* Formulário Completo de Curso */}
         {showForm && (
