@@ -17,9 +17,18 @@ interface EnrollmentItem {
   status: string;
   notes: string | null;
   updatedAt: string | Date;
+  maxAbsencePercent: number;
   grades: GradeItem[];
   attendance: AttendanceItem[];
-  attendanceSummary: { totalSessions: number; present: number; absent: number; late: number; attendanceRate: number | null };
+  attendanceSummary: {
+    totalSessions: number;
+    present: number;
+    absent: number;
+    late: number;
+    attendanceRate: number | null;
+    absencePercent?: number;
+    isAboveAbsenceLimit?: boolean;
+  };
 }
 
 interface StudentReport {
@@ -173,9 +182,27 @@ export default function StudentReportPage() {
                       <div className="mb-3 flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Notas lançadas</strong><span className="text-[10px] text-gray-500">{enrol.grades.length} registro(s)</span></div>
                       {enrol.grades.length === 0 ? <p className="text-xs text-gray-500">Nenhuma nota lançada nesta turma.</p> : <div className="space-y-2">{enrol.grades.map((grade) => <div key={grade.id} className="flex items-start justify-between gap-3 border-b border-gray-200/70 pb-2 text-xs last:border-0 last:pb-0 dark:border-slate-700"><div><p className="font-bold text-gray-900 dark:text-white">{grade.assessmentTitle}</p>{grade.feedback && <p className="mt-0.5 text-gray-500">{grade.feedback}</p>}</div><span className="whitespace-nowrap font-black text-red-600">{grade.score} / {grade.maxScore}</span></div>)}</div>}
                     </div>
-                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
-                      <div className="mb-3 flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Frequência registrada</strong><span className="text-[10px] text-gray-500">{enrol.attendanceSummary.attendanceRate === null ? "—" : `${enrol.attendanceSummary.attendanceRate}%`}</span></div>
-                      {enrol.attendance.length === 0 ? <p className="text-xs text-gray-500">Nenhuma presença registrada nesta turma.</p> : <div className="grid grid-cols-3 gap-2 text-center text-[10px]"><div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"><strong className="block text-base">{enrol.attendanceSummary.present}</strong>Presenças</div><div className="rounded-xl bg-red-50 p-2 text-red-700 dark:bg-red-950/30 dark:text-red-300"><strong className="block text-base">{enrol.attendanceSummary.absent}</strong>Faltas</div><div className="rounded-xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"><strong className="block text-base">{enrol.attendanceSummary.late}</strong>Atrasos</div></div>}
+                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50 space-y-3">
+                      <div className="flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Frequência registrada</strong><span className="text-[10px] font-semibold text-gray-500">Limite máx. faltas: {enrol.maxAbsencePercent}%</span></div>
+                      {enrol.attendance.length === 0 ? <p className="text-xs text-gray-500">Nenhuma presença registrada nesta turma.</p> : (
+                        <>
+                          <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
+                            <div className="rounded-xl bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300"><strong className="block text-base">{enrol.attendanceSummary.present}</strong>Presenças</div>
+                            <div className="rounded-xl bg-red-50 p-2 text-red-700 dark:bg-red-950/30 dark:text-red-300"><strong className="block text-base">{enrol.attendanceSummary.absent}</strong>Faltas ({enrol.attendanceSummary.absencePercent ?? 0}%)</div>
+                            <div className="rounded-xl bg-amber-50 p-2 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300"><strong className="block text-base">{enrol.attendanceSummary.late}</strong>Atrasos</div>
+                          </div>
+                          {enrol.attendanceSummary.isAboveAbsenceLimit ? (
+                            <div role="alert" className="flex items-center gap-2 p-3 rounded-xl bg-red-100 dark:bg-red-950/70 border border-red-300 dark:border-red-800 text-red-800 dark:text-red-200 text-xs font-bold">
+                              <ShieldAlert size={16} className="shrink-0 text-red-600 dark:text-red-400" />
+                              <span>Alerta: Aluno ultrapassou o limite máximo de faltas ({enrol.attendanceSummary.absencePercent}% &gt; {enrol.maxAbsencePercent}%)! Risco de reprovação por frequência.</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-100/60 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold">
+                              <span>Frequência dentro do limite regulamentar (&le; {enrol.maxAbsencePercent}% de faltas).</span>
+                            </div>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                   {enrol.notes && <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3.5 text-xs text-gray-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300"><strong className="mb-0.5 block text-gray-900 dark:text-white">Observações Acadêmicas:</strong>{enrol.notes}</div>}
