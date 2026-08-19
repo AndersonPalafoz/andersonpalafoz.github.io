@@ -848,9 +848,9 @@
 - [x] Reexecutar suíte Vitest (306 testes aprovados).
 
 ## Links do Google Drive no Formulário de Cursos — 19/08/2026
-- [ ] Adicionar campo para links diretos de materiais do Google Drive no cadastro e edição de cursos.
-- [ ] Exibir os links de materiais do Google Drive com ícone e abertura segura nos detalhes do curso.
-- [ ] Validar persistência no banco Neon e garantir aprovação da suíte de testes.
+- [x] Adicionar campo para links diretos de materiais do Google Drive no cadastro e edição de cursos.
+- [x] Exibir os links de materiais do Google Drive com ícone e abertura segura nos detalhes do curso.
+- [x] Validar persistência no banco Neon e garantir aprovação da suíte de testes.
 
 ## Transparência de Erros e Códigos HTTP no CRUD — 19/08/2026
 - [x] Exibir códigos de status HTTP claros (ex: `HTTP 400`, `HTTP 401`, `HTTP 403`, `HTTP 404`, `HTTP 500`) e mensagens detalhadas em caso de falha em mutações de cursos, turmas e materiais.
