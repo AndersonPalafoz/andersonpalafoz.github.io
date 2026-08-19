@@ -900,5 +900,5 @@
 - [x] Diagnosticar que o banco Neon de produção estava parcialmente atrás do schema Drizzle, com colunas/tabelas ausentes que causavam erros 500.
 - [x] Aplicar transação aditiva no Neon principal `teacher-palafoz` para criar os tipos, colunas e tabelas ausentes de progresso, chamada, turmas externas, mídia e mensagens, sem apagar registros.
 - [x] Validar no Neon a existência de `lessonProgress.approvalStatus`, `attendances.status`, `external_class_attendance`, `external_class_materials`, `media_assets` e `contact_messages`.
-- [ ] Fazer redeploy do projeto Vercel para que `NEXTAUTH_URL` e o código atualizado entrem em vigor no deployment de produção.
-- [ ] Revalidar `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/cursos/6`, `/admin/cms`, `/admin/mensagens` e `/admin/media` após o redeploy.
+- [x] Fazer redeploy do projeto Vercel para que `NEXTAUTH_URL` e o código atualizado entrem em vigor no deployment de produção.
+- [x] Revalidar `/professor`, `/professor/turmas-externas`, `/professor/progresso-aulas`, `/cursos/6`, `/admin/cms`, `/admin/mensagens` e `/admin/media` após o redeploy; todas responderam sem HTTP 500 para acesso anônimo.
