@@ -118,8 +118,16 @@ export function CourseCatalog({
                 <div className="bg-red-600 text-white">
                   {course.imageUrl ? <img src={course.imageUrl} alt={`Capa do curso ${course.title}`} className="h-40 w-full object-cover" /> : <div className="h-3 bg-red-700" />}
                   <div className="p-6">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-4xl font-black">{course.level}</div>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span
+                          aria-label="Origem: Curso interno"
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-red-700 shadow-sm"
+                        >
+                          <BookOpen size={12} aria-hidden="true" /> Curso interno
+                        </span>
+                        <div className="mt-2 text-4xl font-black">{course.level}</div>
+                      </div>
                       <div className="flex items-center gap-2">
                         <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">{course.isFree ? "Gratuito" : "Pago"}</span>
                         <WishlistToggle courseId={course.id} initialSaved={wishlist.has(course.id)} />

@@ -860,6 +860,12 @@ export default function TurmasExternasPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
+                          <span
+                            aria-label="Origem: Turma externa institucional"
+                            className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300"
+                          >
+                            <Building2 size={12} aria-hidden="true" /> Turma externa
+                          </span>
                           <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
                             {cls.institution}
                           </span>
