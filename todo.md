@@ -745,3 +745,18 @@
 - [x] Auditar os últimos comandos executados e o histórico de requisições do servidor para identificar a causa exata dos erros de acesso aos cursos internos e externos.
 - [x] Corrigir qualquer divergência entre permissões de sessão (admin/professor), rotas dinâmicas e consultas Drizzle.
 - [x] Validar com testes automatizados e navegação simulada (292 testes aprovados).
+
+## Indicadores Visuais de Cursos — 19/08/2026
+- [ ] Adicionar etiquetas visuais claras (ex: "Curso Interno" vs "Turma Externa / Institucional") nas listagens de cursos, cards e catálogos.
+- [ ] Validar a consistência visual em todo o site e cobrir com testes automatizados.
+
+## Auditoria de Exclusões (Materiais, Turmas, Artigos, Módulos e Cursos) — 19/08/2026
+- [x] Auditar exclusão de materiais (`deleteMaterial` disponível).
+- [x] Auditar exclusão de turmas externas (`deleteClass` disponível).
+- [x] Auditar exclusão de artigos (`deleteArticle` disponível).
+- [x] Auditar exclusão de cursos (`deleteCourse` disponível).
+- [ ] Implementar exclusão de módulos e aulas (`deleteModule` e `deleteLesson` com cascata no Neon) e rota de API administrativa associada.
+
+## Auditoria da Rota /professor/turmas-externas — 19/08/2026
+- [x] Auditar a rota e API de turmas externas quanto a dados reais, segurança RBAC, filtros, chamadas, notas unitárias e em lote, importação/exportação CSV e PDF.
+- [x] Validar responsividade visual e testes automatizados.
