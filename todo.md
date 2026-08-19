@@ -724,3 +724,4 @@
 - [x] Executar testes direcionados e suíte completa: 79 arquivos e 280 testes aprovados; validação visual e de rotas protegidas registrada no preview.
 - [x] Aplicar e verificar a migração de gamificação no banco Neon real: `streakDays` agora inicia em 0 no branch principal `br-lucky-lab-atg6m31w`; a ramificação temporária foi removida após a validação.
 - [x] Consolidar fisicamente a tabela legada `user_notifications`: a aplicação e o schema ORM usam exclusivamente `notifications`. Verificou-se que a tabela legada estava vazia e sem dependências de FK. A migração foi validada em branch temporário e aplicada com segurança ao Neon principal (`br-lucky-lab-atg6m31w`).
+- [x] Implementar a seção de histórico de exportação de materiais do professor para exibir as gerações anteriores de ZIP, com persistência real em `teacher_zip_exports`, isolamento por proprietário, formatação de tamanho, data e botão de atualização em tempo real.

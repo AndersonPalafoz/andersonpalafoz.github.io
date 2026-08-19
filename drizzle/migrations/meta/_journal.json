@@ -309,6 +309,13 @@
       "when": 1787118587351,
       "tag": "0043_demonic_brother_voodoo",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1787119312563,
+      "tag": "0044_rare_songbird",
+      "breakpoints": true
     }
   ]
 }
