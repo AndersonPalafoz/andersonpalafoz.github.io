@@ -316,6 +316,13 @@
       "when": 1787119312563,
       "tag": "0044_rare_songbird",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1787126200330,
+      "tag": "0045_stormy_rumiko_fujikawa",
+      "breakpoints": true
     }
   ]
 }
