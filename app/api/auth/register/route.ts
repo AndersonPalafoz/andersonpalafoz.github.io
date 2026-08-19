@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { courses, enrollments, users } from "@/drizzle/schema";
+import { enrollments, users } from "@/drizzle/schema";
 import { hashPassword, isPasswordAcceptable } from "@/lib/password";
 
 export async function POST(request: Request) {
