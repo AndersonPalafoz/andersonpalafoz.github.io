@@ -728,4 +728,10 @@
 - [x] Adicionar indicador de carregamento, bloquear cliques duplicados e exibir mensagem de sucesso acessível ao exportar o histórico ZIP em CSV; 284 testes Vitest aprovados.
 - [x] Implementar e testar o registro manual e persistente de notas e frequências para turmas externas no painel do professor (`/app/api/professor/external-classes/route.ts`), com validação de propriedade, armazenamento real no Neon e notificações automáticas para alunos.
 - [x] Implementar lançamento em lote de notas e presenças para turmas externas com validação de pertencimento, relatório de processamento e testes automatizados (`saveBatchGrades`).
-- [ ] Corrigir e validar o fluxo de acesso aos cursos e aulas recém-criados: separar falha de autenticação da renderização, tratar 401/500 com feedback acionável e comparar com cursos existentes.
+- [x] Corrigir e validar o fluxo de acesso aos cursos e aulas recém-criados: separar falha de autenticação da renderização, tratar 401/500 com feedback acionável e comparar com cursos existentes (290 testes Vitest aprovados).
+
+## Requisitos Adicionais de Cursos e Turmas Externas — 19/08/2026
+- [x] Garantir que todos os cursos internos possuam múltiplos módulos e aulas reais em cada módulo, simulando cadastramento manual completo.
+- [x] Cadastrar alunos reais matriculados nos cursos internos (tabela `enrollments`), garantindo dados de progresso coerentes.
+- [x] Investigar e corrigir o erro interno ao buscar turmas externas ("Erro interno ao buscar turmas externas").
+- [x] Criar uma turma externa robusta com alunos reais cadastrados (`external_students`), simulando o processo manual no painel do professor sem erros.
