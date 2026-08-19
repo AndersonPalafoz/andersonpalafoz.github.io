@@ -2,13 +2,11 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getTeacherMaterials } from "@/lib/teacher";
-import { createMaterialsZip, MAX_ZIP_ENTRIES, MAX_ZIP_INPUT_BYTES } from "@/lib/materials-zip";
-import { fetchMaterialBytes } from "@/lib/material-download";
+import { estimateMaterialSize } from "@/lib/material-download";
+import { MAX_ZIP_ENTRIES, MAX_ZIP_INPUT_BYTES } from "@/lib/materials-zip";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const MAX_DOWNLOAD_BYTES = MAX_ZIP_INPUT_BYTES;
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -36,33 +34,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Um ou mais materiais não pertencem ao escopo autorizado deste professor." }, { status: 403 });
     }
 
-    const entries = [];
-    let totalBytes = 0;
-    for (const material of selectedMaterials) {
-      if (!material?.fileUrl) {
-        return NextResponse.json({ error: `O material “${material?.title ?? "sem título"}” não possui arquivo disponível.` }, { status: 422 });
+    const sizes = await Promise.all(selectedMaterials.map(async (material) => {
+      if (!material?.fileUrl) return { id: material?.id ?? 0, bytes: null };
+      try {
+        return { id: material.id, bytes: await estimateMaterialSize(material.fileUrl) };
+      } catch {
+        return { id: material.id, bytes: null };
       }
-      const data = await fetchMaterialBytes(material.fileUrl, MAX_DOWNLOAD_BYTES);
-      totalBytes += data.byteLength;
-      if (totalBytes > MAX_DOWNLOAD_BYTES) {
-        return NextResponse.json({ error: "A seleção excede o limite seguro de 40 MB." }, { status: 413 });
-      }
-      entries.push({ name: material.title, data });
-    }
+    }));
 
-    const zip = createMaterialsZip(entries);
-    const date = new Date().toISOString().slice(0, 10);
-    return new NextResponse(Buffer.from(zip), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="materiais-anderson-palafoz-${date}.zip"`,
-        "Content-Length": String(zip.byteLength),
-        "Cache-Control": "private, no-store",
-      },
-    });
+    const knownBytes = sizes.reduce((sum, item) => sum + (item.bytes ?? 0), 0);
+    const unknownCount = sizes.filter((item) => item.bytes === null).length;
+    return NextResponse.json({
+      totalBytes: knownBytes,
+      unknownCount,
+      exceedsLimit: knownBytes > MAX_ZIP_INPUT_BYTES,
+      limitBytes: MAX_ZIP_INPUT_BYTES,
+      items: sizes,
+    }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
-    console.error("Teacher materials ZIP export failed", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Não foi possível gerar o ZIP." }, { status: 500 });
+    console.error("Teacher materials size estimation failed", error);
+    return NextResponse.json({ error: "Não foi possível estimar o tamanho dos materiais selecionados." }, { status: 500 });
   }
 }

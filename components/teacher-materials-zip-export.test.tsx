@@ -16,8 +16,17 @@ describe("teacher materials ZIP selector", () => {
   it("sends only selected material IDs to the protected endpoint", () => {
     const source = read("components/teacher-materials-zip-export.tsx");
     expect(source).toContain('"/api/professor/export-materials-zip"');
-    expect(source).toContain("Array.from(selectedIds)");
+    expect(source).toContain("selectedIdList");
     expect(source).toContain("selectedIds.size === 0");
+  });
+
+  it("previews the selected size and blocks selections over 40 MB", () => {
+    const source = read("components/teacher-materials-zip-export.tsx");
+    expect(source).toContain('"/api/professor/materials-size"');
+    expect(source).toContain("Tamanho total estimado");
+    expect(source).toContain("Calculando…");
+    expect(source).toContain("sizeEstimate.exceedsLimit");
+    expect(source).toContain("40 MB");
   });
 
   it("keeps the server-side ownership validation contract", () => {
@@ -26,5 +35,9 @@ describe("teacher materials ZIP selector", () => {
     expect(source).toContain("getTeacherMaterials");
     expect(source).toContain("não pertencem ao escopo autorizado");
     expect(source).toContain("Cache-Control");
+    const sizeRoute = read("app/api/professor/materials-size/route.ts");
+    expect(sizeRoute).toContain("estimateMaterialSize");
+    expect(sizeRoute).toContain("unknownCount");
+    expect(sizeRoute).toContain("exceedsLimit");
   });
 });
