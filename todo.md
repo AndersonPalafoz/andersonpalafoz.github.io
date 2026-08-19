@@ -875,7 +875,7 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Auditoria Vercel e Correção de Sessão — 19/08/2026
-- [x] Consultar documentação de Vercel e contratos de Next.js App Router para falhas de Serverless Functions (500).
-- [x] Ajustar mapeamento de papéis em `/lib/auth.ts` para suportar `super_admin` e evitar conflitos de sessão.
+## Auditoria e Blindagem de Páginas de Cursos (`/cursos/[id]`) — 19/08/2026
+- [x] Auditar por que `/cursos/1` funcionava e outros IDs (como `/cursos/6`) falhavam (falta de tratamento de exceções em dados relacionais de módulos e aulas órfãs).
+- [x] Blindar `CourseDetail` e `CourseModulesList` com blocos `try/catch` robustos.
 - [x] Validar 100% de sucesso nos 320 testes Vitest.
