@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { userGamificationPoints } from "@/drizzle/schema";
 

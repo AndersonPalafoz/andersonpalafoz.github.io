@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Flame, Award, Zap, TrendingUp, ShieldCheck, CheckCircle2, Gift, Mic, Sparkles, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -115,7 +115,7 @@ export function StudentGamificationProfile() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
-                  Nível 5 • Expert (C2)
+                  {levelName}
                 </span>
                 <span className="text-xs font-bold text-slate-400">Rank #{rankPosition} na Turma</span>
               </div>
