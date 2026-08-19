@@ -809,3 +809,18 @@
   - Garantir catálogos e páginas de detalhes livres de falhas, com fallback adequado.
 - [x] **Etapa 5: Testes Automatizados e Homologação**
   - Executar suíte Vitest e validar build de produção.
+
+## Especificação Detalhada da Lógica de Reconstrução — 19/08/2026
+- [x] **1. Escopo, Preservação e Segurança**
+  - Manutenção obrigatória das tabelas de usuários (`users`), sessões e configurações do sistema (especialmente `palafozanderson@gmail.com`).
+  - Remoção exclusiva de registros acadêmicos e institucionais subordinados (cursos, módulos, aulas, atividades, materiais, turmas externas, alunos externos, chamadas e notas).
+- [x] **2. Modelo de Dados e Dependências Relacionais**
+  - Ordem estrita de limpeza/exclusão (de folha para raiz): `external_attendance` → `external_grades` → `external_materials` → `external_students` → `external_classes` → `lesson_materials` → `activities` → `lessons` → `modules` → `courses` → `materials`.
+- [x] **3. Contratos de API e RBAC Rigoroso**
+  - Todas as mutações (`POST`, `PUT`, `DELETE`) em `/api/admin/*` e `/api/professor/*` exigem verificação de sessão ativa e papéis `admin`, `super_admin` ou `professor`.
+  - Resposta padronizada de erro com códigos HTTP claros (401, 403, 404, 500) e ausência absoluta de dados simulados/mockados.
+- [x] **4. Experiência de Frontend e Visualização**
+  - Formulários de criação e edição com feedback visual imediato (toasts e banners de status).
+  - Páginas públicas e de alunos protegidas contra quebras de renderização (fallbacks para itens vazios ou não publicados).
+- [x] **5. Homologação e Critérios de Conclusão**
+  - Manutenção da cobertura de testes em Vitest e validação de build em produção no Next.js 15.
