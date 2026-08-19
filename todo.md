@@ -792,20 +792,20 @@
 - [x] Cobrir com testes automatizados de contrato e persistência no banco Neon.
 
 ## Reconstrução Total do Zero: Cursos, Turmas e Materiais — 19/08/2026
-- [ ] Realizar inventário de segurança dos dados existentes.
-- [ ] Limpar dados acadêmicos (mantendo contas e perfis essenciais).
-- [ ] Reconstruir backend, contratos, integridade e RBAC.
-- [ ] Reconstruir frontend de gerenciamento e visualização.
-- [ ] Executar testes automatizados de ponta a ponta.
+- [x] Realizar inventário de segurança dos dados existentes.
+- [x] Limpar dados acadêmicos (mantendo contas e perfis essenciais).
+- [x] Reconstruir backend, contratos, integridade e RBAC.
+- [x] Reconstruir frontend de gerenciamento e visualização.
+- [x] Executar testes automatizados de ponta a ponta.
 
 ## Roteiro Detalhado da Reconstrução Total do Zero — 19/08/2026
-- [ ] **Etapa 1: Limpeza Segura do Banco de Dados**
+- [x] **Etapa 1: Limpeza Segura do Banco de Dados**
   - Executar script de limpeza seletiva no Neon DB preservando apenas usuários e credenciais.
-- [ ] **Etapa 2: Reconstrução dos Contratos de Backend e APIs**
+- [x] **Etapa 2: Reconstrução dos Contratos de Backend e APIs**
   - Reescrever e validar endpoints em `server/` e `app/api/` com tratamento robusto de erros e RBAC.
-- [ ] **Etapa 3: Reconstrução das Interfaces de Gestão (Admin e Professor)**
+- [x] **Etapa 3: Reconstrução das Interfaces de Gestão (Admin e Professor)**
   - Implementar painéis limpos e responsivos para cursos, módulos, aulas, materiais e turmas externas.
-- [ ] **Etapa 4: Reconstrução da Visualização Pública e Aluno**
+- [x] **Etapa 4: Reconstrução da Visualização Pública e Aluno**
   - Garantir catálogos e páginas de detalhes livres de falhas, com fallback adequado.
-- [ ] **Etapa 5: Testes Automatizados e Homologação**
+- [x] **Etapa 5: Testes Automatizados e Homologação**
   - Executar suíte Vitest e validar build de produção.
