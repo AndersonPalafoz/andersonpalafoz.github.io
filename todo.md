@@ -760,3 +760,7 @@
 ## Auditoria da Rota /professor/turmas-externas — 19/08/2026
 - [x] Auditar a rota e API de turmas externas quanto a dados reais, segurança RBAC, filtros, chamadas, notas unitárias e em lote, importação/exportação CSV e PDF.
 - [x] Validar responsividade visual e testes automatizados.
+
+## Filtros por Período Acadêmico em Turmas Externas — 19/08/2026
+- [ ] Adicionar seletores de ano letivo e semestre no painel do professor para filtrar turmas externas com precisão.
+- [ ] Cobrir com testes automatizados de filtragem combinada.
