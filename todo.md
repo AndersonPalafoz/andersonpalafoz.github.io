@@ -832,5 +832,5 @@
 
 ## Melhorias de UX e Gestão Acadêmica — 19/08/2026
 - [x] Implementar exportação em lote de boletins em PDF para todos os alunos de uma turma externa.
-- [ ] Adicionar suporte a atalhos de teclado (ex: `Ctrl+Enter`) no envio do formulário de turmas externas.
-- [ ] Criar histórico de alterações e auditoria de ações docentes no painel do professor.
+- [x] Adicionar suporte a atalhos de teclado (ex: `Ctrl+Enter`) no envio do formulário de turmas externas.
+- [x] Criar histórico de alterações e auditoria de ações docentes no painel do professor.
