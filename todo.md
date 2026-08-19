@@ -875,7 +875,7 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Correção de Causa Raiz do HTTP 500 em Progresso de Aulas — 19/08/2026
-- [x] Corrigir importação ausente de `getServerSession` em `/app/api/professor/progress-speaking/route.ts`.
-- [x] Garantir resiliência completa na página de progresso com fallback visual e botão de nova tentativa.
-- [x] Validar 100% de sucesso nos 317 testes Vitest e verificação de tipos.
+## Auditoria e Diagnóstico de Turmas Externas — 19/08/2026
+- [x] Auditar a API de listagem de turmas externas (`/api/professor/external-classes/route.ts`) e o componente de interface (`/app/professor/turmas-externas/page.tsx`).
+- [x] Confirmar robustez no tratamento de permissões (`isGlobalAdmin`) e na serialização de turmas, alunos, notas e frequências.
+- [x] Validar a suíte completa de 317 testes Vitest em sinal verde.
