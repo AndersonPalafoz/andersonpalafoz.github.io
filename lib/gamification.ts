@@ -47,7 +47,7 @@ export async function awardCompletionXp(userId: number, amount: number) {
     .values({
       userId,
       points: amount,
-      level: "Não iniciado",
+      level: "Explorer (A1)",
       streakDays: 0,
       updatedAt: new Date(),
     })
