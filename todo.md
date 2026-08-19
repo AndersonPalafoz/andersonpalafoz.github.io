@@ -875,7 +875,7 @@
 - [x] Corrigir o erro de TypeScript no build da Vercel: importação de `authOptions` não utilizada em `app/api/admin/courses/route.ts`.
 - [x] Reexecutar o build de produção após a correção e verificar se não surgem novos erros de compilação.
 
-## Tratamento de Erro Resiliente em Progresso de Aulas — 19/08/2026
-- [x] Implementar estado de erro visual dedicado com mensagem clara e botão "Tentar Novamente" em `/app/professor/progresso-aulas/page.tsx`.
-- [x] Integrar feedback via toast (`sonner`) em caso de falha na requisição da API de progresso.
-- [x] Validar 100% de sucesso nos 317 testes Vitest e no build do projeto.
+## Correção de Causa Raiz do HTTP 500 em Progresso de Aulas — 19/08/2026
+- [x] Corrigir importação ausente de `getServerSession` em `/app/api/professor/progress-speaking/route.ts`.
+- [x] Garantir resiliência completa na página de progresso com fallback visual e botão de nova tentativa.
+- [x] Validar 100% de sucesso nos 317 testes Vitest e verificação de tipos.
