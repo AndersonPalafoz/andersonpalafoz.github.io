@@ -856,3 +856,10 @@
 - [x] Exibir códigos de status HTTP claros (ex: `HTTP 400`, `HTTP 401`, `HTTP 403`, `HTTP 404`, `HTTP 500`) e mensagens detalhadas em caso de falha em mutações de cursos, turmas e materiais.
 - [x] Fornecer feedback visual persistente com orientações para nova tentativa nos painéis de administração e professor.
 - [x] Validar com testes automatizados de tratamento de erro HTTP.
+
+## Auditoria Crítica das 4 Rotas e Vercel Deploy — 19/08/2026
+- [ ] Auditar e corrigir `/professor/turmas-externas` (tratamento de erros, carregamento e permissões).
+- [ ] Auditar e corrigir `/admin/cursos` (gestão, salvamento, exclusão e exibição de códigos HTTP).
+- [ ] Auditar e corrigir `/professor/progresso-aulas` (resolução de erros de carregamento e remoção de menções de IA).
+- [ ] Auditar e corrigir `/cursos/6` (tratamento de IDs válidos e inválidos, módulos e aulas).
+- [ ] Inspecionar logs e status de deploy no Vercel (via CLI do Vercel ou verificação de build).
