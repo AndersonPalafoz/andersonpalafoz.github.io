@@ -704,6 +704,7 @@
 ## Exportação ZIP de materiais do professor
 - [x] Permitir a seleção de materiais específicos por caixas de seleção antes da geração e exportação do ZIP do professor, com seleção em massa, contador, estado vazio e validação server-side
 - [x] Adicionar indicador visual de tamanho total estimado dos materiais selecionados antes de gerar o arquivo ZIP, com alerta de limite de 40 MB
+- [x] Adicionar barra de pesquisa instantânea para os professores encontrarem rapidamente materiais específicos pelo nome antes de selecioná-los, preservando a seleção ativa e o cálculo de tamanho
 
 ## Reconciliação do todo.md anexado com a infraestrutura real — 19/08/2026
 - [x] Confirmar que uploads persistidos no Neon guardam somente metadados e referências externas, sem colunas de bytes/blob.

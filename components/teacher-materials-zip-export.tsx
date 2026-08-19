@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Download, FileArchive, Loader2, SquareCheck, SquareMousePointer } from "lucide-react";
+import { Check, Download, FileArchive, Loader2, Search, SquareCheck, SquareMousePointer, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -39,16 +39,24 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
   const [loading, setLoading] = useState(false);
   const [estimating, setEstimating] = useState(false);
   const [sizeEstimate, setSizeEstimate] = useState({ totalBytes: 0, unknownCount: 0, exceedsLimit: false });
+  const [searchQuery, setSearchQuery] = useState("");
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const selectedCount = selectedIds.size;
   const selectedIdList = useMemo(() => Array.from(selectedIds).sort((a, b) => a - b), [selectedIds]);
-  const allSelected = selectableMaterials.length > 0 && selectedCount === selectableMaterials.length;
-  const someSelected = selectedCount > 0 && !allSelected;
+  const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase();
+  const filteredMaterials = useMemo(
+    () => normalizedSearchQuery.length === 0
+      ? selectableMaterials
+      : selectableMaterials.filter((material) => material.title.toLocaleLowerCase().includes(normalizedSearchQuery)),
+    [normalizedSearchQuery, selectableMaterials],
+  );
+  const allVisibleSelected = filteredMaterials.length > 0 && filteredMaterials.every((material) => selectedIds.has(material.id));
+  const someVisibleSelected = filteredMaterials.some((material) => selectedIds.has(material.id)) && !allVisibleSelected;
 
   useEffect(() => {
-    if (selectAllRef.current) selectAllRef.current.indeterminate = someSelected;
-  }, [someSelected]);
+    if (selectAllRef.current) selectAllRef.current.indeterminate = someVisibleSelected;
+  }, [someVisibleSelected]);
 
   useEffect(() => {
     if (selectedIdList.length === 0) {
@@ -97,8 +105,10 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
 
   function toggleAll() {
     setSelectedIds((current) => {
-      if (selectableMaterials.length > 0 && current.size === selectableMaterials.length) return new Set();
-      return new Set(selectableMaterials.map((material) => material.id));
+      const next = new Set(current);
+      if (allVisibleSelected) filteredMaterials.forEach((material) => next.delete(material.id));
+      else filteredMaterials.forEach((material) => next.add(material.id));
+      return next;
     });
   }
 
@@ -162,23 +172,49 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-3 text-sm font-bold text-foreground">
+          <div className="flex flex-col gap-3 rounded-2xl border border-border bg-muted/30 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <label className="inline-flex min-h-11 cursor-pointer items-center gap-3 text-sm font-bold text-foreground">
               <input
                 ref={selectAllRef}
                 type="checkbox"
-                checked={allSelected}
+                checked={allVisibleSelected}
                 onChange={toggleAll}
-                aria-label="Selecionar todos os materiais com arquivo"
+                aria-label={normalizedSearchQuery ? "Selecionar todos os materiais encontrados" : "Selecionar todos os materiais com arquivo"}
                 className="h-5 w-5 accent-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
               />
-              <span className="inline-flex items-center gap-2"><SquareCheck size={17} aria-hidden="true" /> Selecionar todos</span>
-            </label>
-            <span className="text-xs text-muted-foreground">{selectableMaterials.length} material(is) disponível(is)</span>
+                <span className="inline-flex items-center gap-2"><SquareCheck size={17} aria-hidden="true" /> {normalizedSearchQuery ? "Selecionar resultados" : "Selecionar todos"}</span>
+              </label>
+              <span className="text-xs text-muted-foreground">{filteredMaterials.length} de {selectableMaterials.length} material(is) visível(is)</span>
+            </div>
+            <div className="relative">
+              <Search size={17} aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <label htmlFor="teacher-materials-zip-search" className="sr-only">Pesquisar material pelo nome</label>
+              <input
+                id="teacher-materials-zip-search"
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Pesquisar material pelo nome…"
+                autoComplete="off"
+                className="min-h-11 w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-10 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-red-500 focus:ring-2 focus:ring-red-600/25"
+              />
+              {searchQuery && (
+                <button type="button" onClick={() => setSearchQuery("")} aria-label="Limpar pesquisa de materiais" className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
+                  <X size={16} aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Materiais disponíveis para seleção">
-            {selectableMaterials.map((material) => {
+          {filteredMaterials.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-5 py-8 text-center" role="status">
+              <p className="font-semibold text-foreground">Nenhum material encontrado.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Tente outro nome ou limpe a pesquisa para ver todos os materiais.</p>
+            </div>
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-2" role="group" aria-label="Materiais disponíveis para seleção">
+            {filteredMaterials.map((material) => {
               const checked = selectedIds.has(material.id);
               return (
                 <label
@@ -200,7 +236,8 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
                 </label>
               );
             })}
-          </div>
+            </div>
+          )}
 
           <div className="flex flex-col gap-4 border-t border-border pt-5">
             <div
