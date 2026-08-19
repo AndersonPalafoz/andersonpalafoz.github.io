@@ -699,3 +699,6 @@
 - [x] Configuração nominal da conta dedicada: `andersonpalafoznupel@gmail.com` (isolada da conta admin `palafozanderson@gmail.com`); autorização server-side pendente
 
 - [x] Indicador de progresso visual acessível e responsivo no CMS para acompanhamento de uploads de arquivos
+
+## Exportação ZIP de materiais do professor
+- [x] Permitir a seleção de materiais específicos por caixas de seleção antes da geração e exportação do ZIP do professor, com seleção em massa, contador, estado vazio e validação server-side

@@ -2,7 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, UserCheck } from "lucide-react";
-import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents } from "@/lib/teacher";
+import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents, getTeacherMaterials } from "@/lib/teacher";
+import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
 import { authOptions } from "@/lib/auth";
@@ -16,10 +17,11 @@ export default async function TeacherDashboardPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) redirect("/login?callbackUrl=/professor");
   const teacherEmail = session.user.email ?? undefined;
-  const [data, allCourses, allStudents] = await Promise.all([
+  const [data, allCourses, allStudents, allMaterials] = await Promise.all([
     getTeacherDashboardData(teacherEmail),
     getTeacherCourses(teacherEmail),
     getTeacherStudents(teacherEmail),
+    getTeacherMaterials(teacherEmail),
   ]);
 
   return (
@@ -76,6 +78,16 @@ export default async function TeacherDashboardPage() {
 
         {/* Painel de Resumo: Dúvidas Pendentes e Médias por Turma */}
         <ProfessorSummaryDashboard />
+
+        <TeacherMaterialsZipExport
+          materials={allMaterials.map((material) => ({
+            id: material.id,
+            title: material.title,
+            category: material.category,
+            level: material.level,
+            fileUrl: material.fileUrl,
+          }))}
+        />
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
