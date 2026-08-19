@@ -124,6 +124,26 @@ export function MediaAssetLibrary() {
   };
 
   const processFiles = async (files: FileList | File[]) => {
+    const fileList = Array.from(files);
+    
+    // Validação client-side antes de iniciar o upload
+    for (const file of fileList) {
+      const maxSize = 10 * 1024 * 1024; // 10 MB
+      if (file.size > maxSize) {
+        toast.error(`O arquivo "${file.name}" excede o limite de 10 MB (${(file.size / (1024 * 1024)).toFixed(1)} MB).`);
+        return;
+      }
+      const validTypes = ["image/png", "image/jpeg", "image/webp", "image/gif", "audio/mpeg", "audio/wav", "audio/mp3", "application/pdf"];
+      const isAudioByName = file.name.endsWith(".mp3") || file.name.endsWith(".wav");
+      const isImageByName = file.name.endsWith(".png") || file.name.endsWith(".jpg") || file.name.endsWith(".jpeg") || file.name.endsWith(".webp");
+      const isPdfByName = file.name.endsWith(".pdf");
+
+      if (!validTypes.includes(file.type) && !isAudioByName && !isImageByName && !isPdfByName) {
+        toast.error(`O formato do arquivo "${file.name}" não é suportado. Use imagens, áudios ou PDFs.`);
+        return;
+      }
+    }
+
     uploadControllerRef.current?.abort();
     const controller = new AbortController();
     uploadControllerRef.current = controller;
@@ -131,7 +151,6 @@ export function MediaAssetLibrary() {
     setUploading(true);
     setUploadProgress(0);
     try {
-      const fileList = Array.from(files);
       const totalFiles = fileList.length;
 
       for (let i = 0; i < totalFiles; i++) {
