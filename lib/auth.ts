@@ -93,7 +93,7 @@ export const authOptions: NextAuthOptions = {
           session.user.id = token.id as string;
         }
         if (token.role) {
-          session.user.role = token.role as "user" | "professor" | "admin";
+          session.user.role = token.role as "user" | "professor" | "admin" | "super_admin";
         }
         if (token.approvalStatus) {
           session.user.approvalStatus = token.approvalStatus as "pending" | "approved" | "rejected";
