@@ -8,9 +8,10 @@ import { formatLevel } from "@/lib/levels";
 import { EnrollButton } from "@/components/enroll-button";
 import { CertificateModal } from "@/components/certificate-modal";
 import { CourseEngagement } from "@/components/course-engagement";
-import { BookOpen, Layers, PlayCircle, Clock, CheckCircle } from "lucide-react";
+import { BookOpen, Layers, PlayCircle, Clock, CheckCircle, ExternalLink, HardDrive } from "lucide-react";
 import { lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
+import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
   const modules = await getModulesByCourse(courseId);
@@ -132,6 +133,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
   }
 
   const modules = await getModulesByCourse(courseId);
+  const driveLinks = parseGoogleDriveLinks(course.googleDriveLinks);
 
   // Calcular progresso total do curso para exibição visual
   let totalLessonsCount = 0;
@@ -204,6 +206,61 @@ async function CourseDetail({ courseId }: { courseId: number }) {
               {course.isFree ? "Curso gratuito" : `Curso pago • R$ ${Number(course.price || 0).toFixed(2).replace(".", ",")}`}
             </div>
           </div>
+
+          <section
+            aria-labelledby="google-drive-materials-title"
+            className="relative overflow-hidden rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm sm:p-7"
+          >
+            <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-100/70 blur-2xl" aria-hidden="true" />
+            <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm ring-1 ring-sky-100" aria-hidden="true">
+                  <HardDrive size={22} strokeWidth={2.2} />
+                </div>
+                <div className="min-w-0">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Materiais complementares</p>
+                  <h2 id="google-drive-materials-title" className="text-xl font-bold text-slate-900">Materiais no Google Drive</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                    Acesse os arquivos disponibilizados para este curso em uma nova aba, diretamente no Google Drive.
+                  </p>
+                </div>
+              </div>
+              <span className="w-fit shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-sky-100">
+                {driveLinks.length} {driveLinks.length === 1 ? "link disponível" : "links disponíveis"}
+              </span>
+            </div>
+
+            {driveLinks.length > 0 ? (
+              <ul className="relative mt-6 grid gap-3 sm:grid-cols-2" aria-label="Links de materiais do Google Drive">
+                {driveLinks.map((link, index) => (
+                  <li key={link}>
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                      aria-label={`Abrir material ${index + 1} no Google Drive em nova aba`}
+                    >
+                      <span className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700" aria-hidden="true">
+                          <BookOpen size={18} />
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block text-sm font-semibold text-slate-900">Material {index + 1}</span>
+                          <span className="block truncate text-xs text-slate-500">Link direto do Google Drive</span>
+                        </span>
+                      </span>
+                      <ExternalLink className="shrink-0 text-sky-700 transition-transform group-hover:translate-x-0.5" size={18} aria-hidden="true" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="relative mt-6 rounded-2xl border border-dashed border-sky-200 bg-white/70 px-4 py-5 text-sm text-slate-600">
+                Nenhum material do Google Drive está vinculado a este curso no momento.
+              </div>
+            )}
+          </section>
 
           <div className="pt-4 pb-2 flex flex-col sm:flex-row items-center gap-4">
             <EnrollButton courseId={course.id} isFree={course.isFree ?? true} price={course.price} />
