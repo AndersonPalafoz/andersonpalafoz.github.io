@@ -929,3 +929,9 @@
 - [x] Atualizar formulários administrativos em `/admin/cursos` e `/professor/turmas-externas` para capturar dias de aula, horário, carga horária, datas e percentual máximo de faltas (ex: 25% padrão).
 - [x] Integrar os campos às tabelas do banco e atualizar interfaces e formulários.
 - [x] Executar suíte de testes Vitest e validar build de produção (320 testes aprovados).
+
+## Alerta Visual de Limite de Faltas no Boletim do Aluno — 19/08/2026
+- [ ] Auditar a rota e o componente do boletim individual do aluno (`/professor/boletim/[studentId]` ou equivalente).
+- [ ] Calcular dinamicamente o percentual de faltas com base nas chamadas registradas e comparar com `maxAbsencePercent` da turma.
+- [ ] Adicionar selo/alerta visual (destaque em vermelho ou amarelo) e mensagem explicativa de reprovação por frequência caso o limite seja atingido.
+- [ ] Executar suíte de testes Vitest e validar build de produção.

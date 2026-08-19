@@ -45,7 +45,11 @@ export async function GET(request: NextRequest) {
       const present = attendance.filter((item) => item.status === "present").length;
       const absent = attendance.filter((item) => item.status === "absent").length;
       const late = attendance.filter((item) => item.status === "late").length;
-      return { classId: classItem.id, institution: classItem.institution, className: classItem.className, courseName: classItem.courseName, academicTerm: classItem.academicTerm, status: student.status, notes: student.notes, updatedAt: student.updatedAt, grades, attendance, attendanceSummary: { totalSessions: attendance.length, present, absent, late, attendanceRate: attendance.length ? Number(((present / attendance.length) * 100).toFixed(1)) : null } };
+      const maxAbsencePercent = classItem.maxAbsencePercent ?? 25;
+      const totalSessions = attendance.length;
+      const absencePercent = totalSessions > 0 ? Number(((absent / totalSessions) * 100).toFixed(1)) : 0;
+      const isAboveAbsenceLimit = totalSessions > 0 && absencePercent > maxAbsencePercent;
+      return { classId: classItem.id, institution: classItem.institution, className: classItem.className, courseName: classItem.courseName, academicTerm: classItem.academicTerm, status: student.status, notes: student.notes, updatedAt: student.updatedAt, maxAbsencePercent, grades, attendance, attendanceSummary: { totalSessions, present, absent, late, attendanceRate: totalSessions ? Number(((present / totalSessions) * 100).toFixed(1)) : null, absencePercent, isAboveAbsenceLimit } };
     }));
 
     return NextResponse.json({ success: true, report: { studentInfo: { id: studentRecord.id, name: studentRecord.name, email: studentRecord.email, studentIdNumber: studentRecord.studentIdNumber }, enrollments } });
