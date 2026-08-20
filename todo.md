@@ -1448,3 +1448,9 @@
 - [x] Reverter o progresso persistido sem apagar o histórico de tentativas de speaking
 - [x] Garantir idempotência, bloqueio de cliques duplicados e feedback de erro na reversão
 - [x] Criar testes de contrato e validar build e comportamento responsivo antes do checkpoint
+
+## Auditoria de Pendências Reais e Próximas Melhorias (Agosto 2026)
+- [ ] **Validação de Variáveis na Vercel:** Confirmar se `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEON_DATABASE_URL` e `NEXTAUTH_URL` estão gravadas no painel da Vercel para produção.
+- [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
+- [ ] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode.
+- [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar as execuções da rota `/api/scheduled/cleanup-trash` na Vercel para confirmar a retenção de 30 dias da lixeira.
