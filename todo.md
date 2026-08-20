@@ -1240,3 +1240,8 @@
 - [x] Criar API de contagem de lixeira respeitando escopo de professor vs admin.
 - [x] Exibir badge com contagem exata no menu lateral das áreas administrativas.
 - [x] Validar com testes e salvar checkpoint.
+
+## Atualização Instantânea do Contador da Lixeira no Menu Lateral — Concluído
+- [x] Implementar custom event / hook compartilhado para propagar mudanças de contagem da lixeira sem refresh.
+- [x] Atualizar os componentes de lixeira para disparar o evento após excluir, restaurar ou mutar itens.
+- [x] Validar com testes e salvar checkpoint estável.
