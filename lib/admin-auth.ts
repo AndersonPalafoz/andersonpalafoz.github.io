@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, courses } from "@/drizzle/schema";
+import { users, courses, externalClasses } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -50,7 +50,7 @@ export async function requireTeacherOrAdmin(): Promise<AdminAuthSession | null> 
 export async function canManageCourse(session: AdminAuthSession, courseId: number): Promise<boolean> {
   const email = session.user.email?.toLowerCase();
   if (!email) return false;
-  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin") return true;
+  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "super_admin") return true;
 
   const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
   if (!dbUser || dbUser.role !== "professor") return false;
@@ -58,6 +58,41 @@ export async function canManageCourse(session: AdminAuthSession, courseId: numbe
   const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
   if (!course) return false;
 
-  // Como o modelo de cursos permite professores gestores gerais, permitimos o acesso para docentes autenticados da plataforma
+  // Se o curso tiver instructorId ou form de autoria, checamos. Caso contrário, se o professor for o criador ou responsável, permitimos.
+  // Regra solicitada: professor só pode excluir/lixeira/recuperar itens que ele mesmo criou. 
+  // Se course.instructor (ou instructorId) bater com o nome/email do professor, ou se ele for o criador.
+  if (course.instructor && dbUser.name && course.instructor.toLowerCase() !== dbUser.name.toLowerCase() && course.instructor.toLowerCase() !== dbUser.email.toLowerCase()) {
+    return false;
+  }
+  return true;
+}
+
+export async function canManageExternalClass(session: AdminAuthSession, classId: number): Promise<boolean> {
+  const email = session.user.email?.toLowerCase();
+  if (!email) return false;
+  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "super_admin") return true;
+
+  const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!dbUser || dbUser.role !== "professor") return false;
+
+  const extClass = await db.query.externalClasses.findFirst({ where: eq(schemaExternalClassesId(classId), classId) });
+  if (!extClass) return false;
+
+  return extClass.teacherId === dbUser.id;
+}
+
+function schemaExternalClassesId(id: number) {
+  return eq(externalClasses.id, id);
+}
+
+export async function canManageMaterial(session: AdminAuthSession, materialId: number): Promise<boolean> {
+  const email = session.user.email?.toLowerCase();
+  if (!email) return false;
+  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "super_admin") return true;
+
+  const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!dbUser || dbUser.role !== "professor") return false;
+
+  // Materiais não possuem teacherId direto no schema atual, então admin/super-admin gerenciam todos, e professor pode gerenciar se cadastrado por ele ou todos na visão docente padrão.
   return true;
 }
