@@ -1093,3 +1093,12 @@
 ## Correção do Erro de Carregamento de Materiais Salvos em /dashboard/desejos — 19/08/2026
 - [x] Auditar e corrigir a página e a API de materiais salvos e desejos do usuário.
 - [x] Validar com testes automatizados e build de produção.
+
+## Botão de Remoção na Lista de Desejos com Toast de Sucesso — 19/08/2026
+- [x] Refinar o botão de remoção na página de desejos (`/dashboard/desejos`) com ícone, feedback de carregamento por item e toast de sucesso.
+- [x] Validar testes e build de produção.
+
+## Lixeira de Cursos para Admin e Professor — 19/08/2026
+- [x] Adicionar suporte a soft delete (deletedAt) na tabela de cursos e endpoints de gerenciamento.
+- [x] Implementar botões de enviar para a lixeira e restaurar nos painéis /admin e /professor.
+- [x] Validar testes automatizados e build de produção.
