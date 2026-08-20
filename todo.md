@@ -1089,3 +1089,7 @@
 - [x] Implementar botão de download de recibo individual em PDF para cada transação no histórico de compras do perfil.
 - [x] Adicionar skeleton de carregamento suave para a seção de faturamento.
 - [x] Validar testes e build de produção.
+
+## Correção do Erro de Carregamento de Materiais Salvos em /dashboard/desejos — 19/08/2026
+- [x] Auditar e corrigir a página e a API de materiais salvos e desejos do usuário.
+- [x] Validar com testes automatizados e build de produção.
