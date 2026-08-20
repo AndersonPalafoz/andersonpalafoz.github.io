@@ -995,3 +995,12 @@
 - [x] Implementar função `isValidCpf` com cálculo matemático dos dígitos verificadores em `components/profile-form.tsx`.
 - [x] Adicionar validação no envio do formulário e exibição de alerta caso o CPF seja inválido.
 - [x] Executar testes Vitest e validar estabilidade.
+
+## Assinatura Digital de Certificados via gov.br — 19/08/2026
+- [ ] Pesquisar e documentar os requisitos da API de Assinatura Eletrônica Avançada do gov.br (ITI / Secretaria de Governo Digital) [1].
+- [ ] Implementar fluxo de autenticação OAuth com escopo de assinatura e integração com o endpoint REST de assinatura de documentos PDF.
+- [ ] Disponibilizar painel administrativo para o professor/administrador assinar digitalmente os certificados antes de liberá-los para download pelos alunos.
+- [ ] Executar testes automatizados e validar conformidade com o padrão ICP-Brasil.
+
+### Referências
+- [1] [Roteiro de Integração da API de Assinatura Eletrônica GOV.BR](https://manual-integracao-assinatura-eletronica.servicos.gov.br/)
