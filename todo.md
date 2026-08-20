@@ -1278,3 +1278,7 @@
 ## Auditoria de Schema para a Fase 1 — Concluído
 - [x] Criar arquivo `AUDITORIA_SCHEMA_FASE_1.md` detalhando a análise do schema atual, lacunas e script SQL proposto.
 - [x] Executar validação e salvar checkpoint.
+
+## Execução da Migração SQL da Fase 1 — Concluído
+- [x] Executar script SQL para adicionar as colunas `course_type`, `external_redirect_url` e `sync_modality` na tabela `courses`.
+- [x] Validar a estrutura pós-migração no banco de desenvolvimento com sucesso.
