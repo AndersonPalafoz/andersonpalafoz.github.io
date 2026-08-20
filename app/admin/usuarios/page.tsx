@@ -27,6 +27,8 @@ type StatusFilter = "all" | ApprovalStatus | "deleted";
 interface User {
   id: number;
   name: string | null;
+  socialName: string | null;
+  cpf: string | null;
   email: string | null;
   role: Role;
   approvalStatus: ApprovalStatus;
@@ -192,11 +194,15 @@ export default function UsuariosPage() {
   };
 
   const filteredUsers = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const rawQuery = query.trim().toLowerCase();
+    const cleanQueryQuery = rawQuery.replace(/\D/g, "");
     return users.filter((user) => {
-      const matchesQuery = !normalizedQuery || [user.name, user.email, user.phone]
+      const cleanUserCpf = (user.cpf || "").replace(/\D/g, "");
+      const matchesCpf = cleanQueryQuery.length > 0 && cleanUserCpf.includes(cleanQueryQuery);
+      const matchesText = !rawQuery || [user.name, user.socialName, user.email, user.phone]
         .filter(Boolean)
-        .some((value) => value!.toLowerCase().includes(normalizedQuery));
+        .some((value) => value!.toLowerCase().includes(rawQuery));
+      const matchesQuery = !rawQuery || matchesText || matchesCpf;
       const matchesRole = roleFilter === "all" || user.role === roleFilter;
       const matchesStatus = statusFilter === "all"
         || (statusFilter === "deleted" ? Boolean(user.deletedAt) : !user.deletedAt && user.approvalStatus === statusFilter);
@@ -254,7 +260,7 @@ export default function UsuariosPage() {
 
         <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="flex flex-col gap-4 border-b border-gray-200 p-5 lg:flex-row lg:items-center lg:justify-between">
-            <label className="relative block flex-1 lg:max-w-sm"><span className="sr-only">Pesquisar usuários</span><Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, email ou telefone" className="h-11 w-full rounded-xl border border-gray-300 pl-10 pr-3 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100" /></label>
+            <label className="relative block flex-1 lg:max-w-sm"><span className="sr-only">Pesquisar usuários</span><Search size={17} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, CPF, email ou telefone" className="h-11 w-full rounded-xl border border-gray-300 pl-10 pr-3 text-sm outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100" /></label>
             <div className="flex flex-wrap gap-2">
               <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as "all" | Role)} className="h-11 rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-600"><option value="all">Todos os papéis</option><option value="user">Alunos</option><option value="professor">Professores</option><option value="admin">Administradores</option></select>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} className="h-11 rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-600"><option value="all">Todos os status</option><option value="pending">Pendentes</option><option value="approved">Aprovados</option><option value="rejected">Recusados</option><option value="deleted">Excluídos</option></select>
