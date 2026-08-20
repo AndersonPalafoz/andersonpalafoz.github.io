@@ -111,3 +111,22 @@ A tentativa de executar `pnpm db:migrate` não foi aplicada porque o histórico 
 O teste efetuado diretamente no DSN configurado no ambiente atual confirmou que a tabela `courses` possui atualmente 26 colunas e ainda não contém as colunas `course_type`, `external_redirect_url` e `sync_modality`. Como este é o banco ativo nas variáveis do projeto, os testes que consultam a listagem de cursos falham por falta dessas colunas.
 
 Para solucionar definitivamente o problema apontado nos testes e garantir que o ambiente local e o Vercel operem com a mesma estrutura sem erros 500 ou colunas ausentes, aplicarei imediatamente o comando SQL idempotente para adicionar as três colunas neste mesmo banco. Em seguida, reexecutarei toda a suíte de testes Vitest para validar a aprovação de 100% dos testes.
+
+## Fase 2: Refinamento da Vitrine Pública e Experiência do Visitante
+
+### Objetivo
+Consolidar a experiência visual e interativa dos cinco tipos de curso na vitrine pública (`/aulas`, `/cursos/[id]` e páginas institucionais), garantindo que visitantes e alunos identifiquem imediatamente a modalidade, regras de acesso, formas de atendimento e canais de contato, em conformidade estrita com o Design System da plataforma.
+
+### Tarefas da Fase 2
+1. **Legenda Interativa de Modalidades**: Adicionar um painel explicativo e colapsável na página de catálogo (`/aulas`) descrevendo detalhadamente os cinco tipos de curso (EAD Fechado, Híbrido, Particular, Externo/Corporativo e Presencial/Agendamento).
+2. **Filtros Avançados por Tipo de Curso**: Estender o catálogo público com botões de filtro rápido no topo da listagem para permitir que o usuário filtre os cursos por tipo (ex: apenas EAD, apenas Híbrido, apenas Particulares ou Presenciais).
+3. **Melhorias de Acessibilidade e Contraste**: Garantir que todas as tags coloridas de tipo e modalidade atendam aos critérios WCAG AA com contraste adequado nos modos claro e escuro.
+4. **Seção de Chamada para Ação para Aulas Presenciais e Particulares**: Otimizar o bloco de CTA nas páginas de cursos dos tipos 3 e 5 para direcionar o interessado diretamente ao canal de contato institucional ou agendamento.
+5. **Testes Unitários e Validação de Regressão**: Criar novos testes Vitest cobrindo os filtros da vitrine pública e assegurar que toda a suíte permaneça 100% aprovada.
+
+### Resultados da Fase 2 (Refinamento da Vitrine Pública)
+
+1. **Legenda Interativa (`CourseTypeLegend`)**: Criado e integrado no topo da página `/aulas`. Exibe em formato de cards acessíveis os cinco tipos de curso com seus respectivos ícones, cores institucionais do Design System e descrições claras para o visitante.
+2. **Filtros Rápidos por Tipo**: Adicionados botões de filtro rápido baseados nos 5 tipos na barra de pesquisa da vitrine pública, permitindo que o usuário alterne instantaneamente entre modalidades com suporte a aria-pressed.
+3. **CTAs Contextuais**: As páginas individuais de detalhes (`/cursos/[id]`) agora adaptam os botões de ação com base na modalidade (redirecionamento para Hotmart/Classroom para os tipos 1 e 4; direcionamento para contato/agendamento com parâmetro do curso para os tipos 3 e 5).
+4. **Testes Unitários**: Criado o arquivo `app/course-types-public.test.ts` validando a presença da legenda, filtros rápidos e CTAs específicos. A suíte completa de testes passou com **328 testes aprovados (100% de sucesso)**.

@@ -1288,3 +1288,11 @@
 - [ ] Atualizar contratos de API e validações para persistir os novos campos.
 - [ ] Atualizar listagens, detalhes e páginas públicas com sinalização visual e comportamento adequado por modalidade.
 - [ ] Criar ou atualizar testes Vitest, validar build e responsividade.
+
+## Fase 2 — Refinamento da Vitrine Pública dos Cinco Tipos de Curso
+- [x] Adicionar legenda interativa explicando os cinco tipos de curso na página pública de aulas.
+- [x] Adicionar filtros rápidos por tipo de curso na vitrine pública.
+- [x] Auditar contraste, foco visível, navegação por teclado e modo escuro das tags e filtros.
+- [x] Ajustar CTAs públicos para cursos particulares e aulas presenciais/agendamento.
+- [x] Criar testes Vitest para legenda, filtros e CTAs públicos.
+- [ ] Validar build, responsividade e atualizar o markdown com o resultado da Fase 2.
