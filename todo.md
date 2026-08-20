@@ -1208,3 +1208,9 @@
 - [x] Implementar paginação robusta com controle de limite, deslocamento e total de registros (`/api/admin/activity-logs` e `/admin/cursos/audit`).
 - [x] Garantir a restauração e operações em lote corretas de todos os itens selecionados na lixeira, sincronizando contadores imediatamente.
 - [x] Validar bateria completa de 321 testes automatizados (Vitest) com 100% de aprovação.
+
+## Sistema de Lixeira, Restauração e Exclusão para Alunos e Materiais — 19/08/2026
+- [x] Adicionar suporte a `deletedAt` nas tabelas `users` e `materials` (banco de dados e Drizzle schema).
+- [x] Criar funções de soft delete, restauração e exclusão permanente com dependências em `lib/db.ts`.
+- [x] Implementar endpoints de lote (`/api/admin/users/batch` e `/api/admin/materials/batch`) e rotas de lixeira.
+- [x] Executar bateria de testes automatizados e build de produção com sucesso.
