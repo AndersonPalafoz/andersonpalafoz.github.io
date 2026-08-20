@@ -18,8 +18,9 @@ import ContatoPage, { metadata } from "./page";
 import { ContactForm } from "@/components/contact-form";
 
 describe("ContatoPage server rendering", () => {
-  it("renders the contact page with form, channels, FAQ and primary CTAs", () => {
-    const markup = renderToStaticMarkup(React.createElement(ContatoPage));
+  it("renders the contact page with form, channels, FAQ and primary CTAs", async () => {
+    const page = await ContatoPage({});
+    const markup = renderToStaticMarkup(page);
 
     expect(markup).toContain("Fale com o");
     expect(markup).toContain("Anderson Palafoz");

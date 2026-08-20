@@ -10,6 +10,8 @@ import {
 
 const SUBJECT_OPTIONS = [
   "Dúvida sobre cursos",
+  "Agendamento de aula presencial",
+  "Aulas particulares personalizadas",
   "Sugestão de conteúdo",
   "Parceria",
   "Feedback",
@@ -19,11 +21,20 @@ const SUBJECT_OPTIONS = [
 const SUBMIT_DELAY_MS = 350;
 type FormStatus = "idle" | "success" | "error";
 
-type ContactFormProps = {
-  onMailto?: (mailto: string) => void;
+type ContactFormContext = {
+  courseId: number;
+  courseName: string;
+  courseType: 3 | 5;
+  initialSubject: string;
+  initialMessage: string;
 };
 
-export function ContactForm({ onMailto }: ContactFormProps) {
+type ContactFormProps = {
+  onMailto?: (mailto: string) => void;
+  courseContext?: ContactFormContext;
+};
+
+export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
   const [status, setStatus] = useState<FormStatus>("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -69,9 +80,14 @@ export function ContactForm({ onMailto }: ContactFormProps) {
           Formulário de contato
         </p>
         <h2 className="text-3xl font-bold text-[#1F1F1F]">Envie uma mensagem</h2>
-        <p className="mt-3 text-base leading-7 text-gray-600">
+              <p className="mt-3 text-base leading-7 text-gray-600">
           Preencha os campos abaixo. Seu aplicativo de email será aberto com a mensagem pronta para envio.
         </p>
+              {courseContext && (
+                <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm leading-6 text-red-800" role="note">
+                  Esta mensagem está contextualizada para o curso <strong>{courseContext.courseName}</strong>. Você poderá revisar tudo antes de enviar.
+                </p>
+              )}
       </div>
 
       <form className="space-y-6" onSubmit={handleSubmit} aria-busy={isSubmitting}>
@@ -114,10 +130,10 @@ export function ContactForm({ onMailto }: ContactFormProps) {
           <label htmlFor="contact-subject" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
             Assunto <span className="text-red-600" aria-hidden="true">*</span>
           </label>
-          <select
+            <select
             id="contact-subject"
             name="subject"
-            defaultValue=""
+            defaultValue={courseContext?.initialSubject ?? ""}
             required
             disabled={isSubmitting}
             className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
@@ -137,6 +153,7 @@ export function ContactForm({ onMailto }: ContactFormProps) {
             id="contact-message"
             name="message"
             placeholder="Escreva sua mensagem..."
+            defaultValue={courseContext?.initialMessage ?? ""}
             required
             minLength={10}
             rows={6}

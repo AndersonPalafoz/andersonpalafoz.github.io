@@ -1305,3 +1305,10 @@
 
 ## Validação de Build de Produção — 20/08/2026
 - [x] Executar build de produção do Next.js 15 e verificar ausência de erros de compilação.
+
+## Fase 3 — Otimização dos Fluxos de Conversão e Atendimento
+- [x] Auditar e conectar a página de contato aos parâmetros reais de curso para Tipos 3 e 5.
+- [x] Implementar pré-preenchimento contextual da mensagem de contato/agendamento pelo curso selecionado.
+- [ ] Validar o comportamento de matrícula e acesso dos Tipos 1 e 2 sem alterar regras de pagamento existentes.
+- [ ] Auditar a rota de turmas externas para o Tipo 4 e registrar os resultados no plano estratégico.
+- [x] Criar testes de integração/regressão da primeira entrega da Fase 3.

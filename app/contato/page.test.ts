@@ -25,6 +25,16 @@ describe("contact page contract", () => {
     expect(pageSource).toContain("rel=\"noopener noreferrer\"");
   });
 
+  it("accepts a course query and resolves persisted context for Types 3 and 5", () => {
+    expect(pageSource).toContain("searchParams");
+    expect(pageSource).toContain("getCourseById");
+    expect(pageSource).toContain("courseContext");
+    expect(pageSource).toContain("Agendamento de aula presencial");
+    expect(pageSource).toContain("Aulas particulares personalizadas");
+    expect(formSource).toContain("courseContext?.initialSubject");
+    expect(formSource).toContain("courseContext?.initialMessage");
+  });
+
   it("keeps FAQ items keyboard-friendly with native details disclosure", () => {
     expect(pageSource).toContain("<details");
     expect(pageSource).toContain("<summary");

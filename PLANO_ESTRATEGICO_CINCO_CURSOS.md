@@ -140,3 +140,31 @@ O teste de contrato `components/external-course-cta.test.ts` confirma o destino 
 ### Validação de build após os CTAs externos
 
 O build de produção foi executado com sucesso após liberar processos concorrentes do sandbox e executar o Next.js 15 com um worker controlado. A compilação concluiu sem erros de TypeScript ou de módulos, e as rotas `/aulas` e `/cursos/[id]` foram geradas no relatório final do build. O encerramento anterior do worker foi confirmado como limitação de memória do ambiente, não como falha introduzida pelo componente `ExternalCourseCta`.
+
+---
+
+## Fase 3: Otimização dos Fluxos de Conversão e Atendimento
+
+### Objetivo
+Garantir que os usuários sejam direcionados à jornada e ao canal de conversão corretos com base no tipo de curso selecionado, integrando matrículas diretas, redirecionamento para plataformas parceiras, agendamentos presenciais e relatórios institucionais.
+
+### Tarefas da Fase 3
+1. **Refinamento do Fluxo de Matrícula para Tipos 1 e 2**:
+   * Assegurar que cursos EAD fechados e híbridos ofereçam matrícula automática (gratuita ou paga via Stripe) com liberação imediata de acesso na área do aluno.
+   * Quando houver URL externa cadastrada, exibir o botão de acesso com o componente de feedback visual (`ExternalCourseCta`).
+2. **Integração de Contato Direto para Tipos 3 e 5 (Particulares e Presenciais)**:
+   * Conectar a página de contato e agendamento (`/contato`) ao ID e título do curso selecionado, permitindo pré-preenchimento automático da mensagem para aulas presenciais em Salvador ou percursos particulares customizados.
+3. **Validação do Painel de Turmas Externas para o Tipo 4**:
+   * Auditar a rota `/professor/turmas-externas` e as listagens de alunos para confirmar a exibição correta de turmas corporativas e institucionais (UFBA, SIMAL), com suporte a lançamentos em lote e exportação de boletins em PDF.
+4. **Testes de Integração e Regressão**:
+   * Criar cenários de teste automatizados em Vitest para os novos fluxos de conversão da Fase 3 e validar a ausência de regressões no build de produção.
+
+### Início da Fase 3 — Primeira entrega: contato contextual para Tipos 3 e 5
+
+A primeira entrega da Fase 3 foi iniciada e concluída no fluxo de contato. A página `app/contato/page.tsx` agora aceita o parâmetro público `curso`, consulta o curso persistido por `getCourseById` e só ativa o contexto quando o registro real pertence ao Tipo 3 (Particular) ou ao Tipo 5 (Presencial). O formulário recebe o título e o ID do curso, apresenta um aviso de contextualização e pré-preenche assuntos e mensagens específicos, mantendo o usuário livre para revisar o texto antes de abrir o aplicativo de email.
+
+O componente `ContactForm` passou a aceitar `courseContext` opcional e ganhou os assuntos válidos **“Aulas particulares personalizadas”** e **“Agendamento de aula presencial”**. A página pública de detalhes continua enviando apenas o ID do curso no CTA (`/contato?curso=...`), evitando confiar em títulos ou modalidades manipulados no navegador.
+
+Durante a validação, foram corrigidos dois pontos de compatibilidade: o teste de renderização passou a aguardar a página assíncrona do App Router, e o teste de pré-preenchimento passou a usar asserções compatíveis com a configuração Vitest existente. Resultado atual: **331 testes aprovados em 96 arquivos**.
+
+**Próximas tarefas da Fase 3:** validar a jornada de matrícula dos Tipos 1 e 2 sem modificar a política de pagamento; auditar a listagem e os relatórios de Tipo 4 em `/professor/turmas-externas`; e criar cenários de regressão para as três jornadas.
