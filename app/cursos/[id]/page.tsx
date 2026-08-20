@@ -200,11 +200,22 @@ async function CourseDetail({ courseId }: { courseId: number }) {
 
           {/* Barra de Progresso Visual */}
           {user && (
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-              <div
-                className="bg-red-600 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
-              />
+            <div className="space-y-3">
+              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                <div
+                  className="bg-red-600 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${progressPercentage}%` }}
+                />
+              </div>
+              {progressPercentage === 100 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-2xl gap-4">
+                  <div>
+                    <p className="font-bold text-emerald-900">Parabéns! Você concluiu 100% deste curso.</p>
+                    <p className="text-sm text-emerald-700">Seu certificado oficial de conclusão já está disponível para emissão.</p>
+                  </div>
+                  <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
+                </div>
+              )}
             </div>
           )}
 
