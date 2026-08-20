@@ -1045,3 +1045,8 @@
 - [x] Auditar configuração do Next.js, tsconfig e dependências para v0 e Vercel.
 - [x] Garantir que rotas de API e componentes cliente/servidor estejam totalmente isolados e compatíveis com Serverless/Edge.
 - [x] Executar testes automatizados (Vitest) e validar build de produção.
+
+## Sistema de Busca e Filtros para Cursos e Materiais — 19/08/2026
+- [x] Implementar busca textual por título e descrição em `/cursos` e `/materiais`.
+- [x] Adicionar filtros por categoria, nível acadêmico e tipo de acesso.
+- [x] Otimizar performance de listagem e responsividade com feedback visual.
