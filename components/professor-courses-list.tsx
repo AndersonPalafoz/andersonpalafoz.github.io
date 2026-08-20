@@ -154,26 +154,47 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
       return;
     }
 
+    const currentDate = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Relatório de Cursos - Anderson Palafoz Platform</title>
           <style>
-            body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
-            h1 { font-size: 20px; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 5px; }
-            .meta { font-size: 12px; color: #555; margin-bottom: 25px; }
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1e293b; background: #fff; }
+            .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #dc2626; padding-bottom: 20px; margin-bottom: 25px; }
+            .brand { display: flex; align-items: center; gap: 15px; }
+            .logo-badge { background: #dc2626; color: #fff; font-weight: 900; font-size: 22px; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+            .title-group h1 { font-size: 20px; font-weight: 900; color: #0f172a; margin: 0; }
+            .title-group p { font-size: 12px; color: #64748b; margin: 3px 0 0 0; }
+            .meta { text-align: right; font-size: 12px; color: #475569; font-weight: 600; }
             table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
-            th { background-color: #f8fafc; color: #1e293b; }
+            th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 12px; }
+            th { background-color: #f8fafc; color: #0f172a; font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; }
             tr:nth-child(even) { background-color: #f8fafc; }
+            .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; pt: 15px; }
           </style>
         </head>
         <body>
-          <h1>Anderson Palafoz Platform - Relatório de Cursos</h1>
-          <div class="meta">
-            Gerado em: ${new Date().toLocaleDateString("pt-BR")} | Total de cursos: ${filteredCourses.length}
+          <div class="header">
+            <div class="brand">
+              <div class="logo-badge">AP</div>
+              <div class="title-group">
+                <h1>Anderson Palafoz Platform</h1>
+                <p>Relatório Oficial do Catálogo Acadêmico de Cursos</p>
+              </div>
+            </div>
+            <div class="meta">
+              <div>Data: ${currentDate}</div>
+              <div style="margin-top: 4px; color: #dc2626;">Total Registrado: ${filteredCourses.length} cursos</div>
+            </div>
           </div>
+
           <table>
             <thead>
               <tr>
@@ -188,16 +209,20 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
             <tbody>
               ${filteredCourses.map(c => `
                 <tr>
-                  <td>${c.id}</td>
+                  <td><b>#${c.id}</b></td>
                   <td><b>${c.title}</b></td>
                   <td>${c.level}</td>
                   <td>${c.category || "Geral"}</td>
                   <td>${c.modules || 4}</td>
-                  <td>${c.status || ((c.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve")}</td>
+                  <td><b>${c.status || ((c.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve")}</b></td>
                 </tr>
               `).join("")}
             </tbody>
           </table>
+
+          <div class="footer">
+            Documento gerado eletronicamente pela Plataforma Anderson Palafoz • Ensino de Inglês e Pesquisa Acadêmica
+          </div>
           <script>
             window.onload = function() { window.print(); };
           </script>
@@ -207,7 +232,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
 
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    toast.success("Janela de impressão em PDF gerada com sucesso!");
+    toast.success("Janela de impressão em PDF gerada com o logotipo da escola e data atual!");
   };
 
   return (
@@ -234,7 +259,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
             onClick={exportPDF}
             className="rounded-xl text-xs font-bold gap-1.5 border-border hover:bg-muted"
           >
-            <FileText size={13} /> PDF
+            <FileText size={13} /> PDF com Logotipo
           </Button>
           <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1 pl-2">
             Gerenciar <ArrowRight size={16} />

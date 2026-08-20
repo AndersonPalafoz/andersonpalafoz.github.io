@@ -6,6 +6,7 @@ import Link from "next/link";
 import { BarChart3, BookOpen, FileText, Users, Loader, Award } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
+import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 
 interface Stats {
   totalCourses: number;
@@ -182,6 +183,14 @@ export default function AdminDashboardPage() {
       </div>
 
       <div className="page-container py-8 sm:py-12 space-y-8">
+        {/* Painel Estatístico Estilo Dashboard do Aluno */}
+        <StudentStyleDashboardStats
+          coursesCount={stats?.totalCourses || 0}
+          studentsCount={stats?.totalUsers || 0}
+          materialsCount={stats?.totalMaterials || 0}
+          enrollmentsCount={stats?.totalEnrollments || 0}
+        />
+
         {/* Admin Unified Search Widget */}
         <div className="surface-card p-6 sm:p-8 space-y-4">
           <h2 className="text-base font-black text-foreground">Busca Administrativa Ampliada</h2>

@@ -1155,3 +1155,9 @@
 - [x] Remover dependência de jspdf não instalada em components/professor-courses-list.tsx.
 - [x] Implementar exportação de relatório PDF nativa e robusta.
 - [x] Validar build de produção local e testes automatizados.
+
+## Cabeçalho com Logo/Data no PDF, Dashboard em Admin/Professor e Auditoria de Responsividade — 19/08/2026
+- [x] Adicionar logotipo da escola e data atual no cabeçalho da exportação nativa de PDF em components/professor-courses-list.tsx.
+- [x] Integrar resumo estatístico do dashboard nas páginas principais de admin (/admin/page.tsx) e professor (/professor/page.tsx).
+- [x] Auditar responsividade, comportamento em dispositivos móveis e design system em todas as abas.
+- [x] Executar testes automatizados e validar build de produção sem erros.
