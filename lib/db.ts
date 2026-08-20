@@ -489,10 +489,17 @@ export async function getAdminStats() {
       return date >= monthStart && date < nextMonth;
     }).length;
 
+    const coursesCreated = coursesCount.filter((course) => {
+      if (course.deletedAt) return false;
+      const date = new Date(course.createdAt || course.updatedAt);
+      return date >= monthStart && date < nextMonth;
+    }).length;
+
     return {
       month: monthFormatter.format(monthStart).replace(".", ""),
       enrollments,
       activeUsers,
+      coursesCreated,
     };
   });
 
