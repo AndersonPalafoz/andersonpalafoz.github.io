@@ -1040,3 +1040,8 @@
 - [x] Unificar o Design System, fontes Poppins e cartões em todo o ecossistema.
 - [x] Aprimorar o dashboard do aluno (`/dashboard`) e suas subpáginas de perfil, cursos, certificados, calendário e anotações.
 - [x] Garantir responsividade perfeita e testes Vitest validados.
+
+## Compatibilidade com V0 e Vercel — 19/08/2026
+- [x] Auditar configuração do Next.js, tsconfig e dependências para v0 e Vercel.
+- [x] Garantir que rotas de API e componentes cliente/servidor estejam totalmente isolados e compatíveis com Serverless/Edge.
+- [x] Executar testes automatizados (Vitest) e validar build de produção.
