@@ -870,3 +870,22 @@ export const manualAccessGrants = pgTable("manual_access_grants", {
 
 export type ManualAccessGrant = typeof manualAccessGrants.$inferSelect;
 export type InsertManualAccessGrant = typeof manualAccessGrants.$inferInsert;
+
+
+/**
+ * Admin Activity Logs - Rastreamento de ações administrativas (exclusões, restaurações, lote)
+ */
+export const adminActivityLogs = pgTable("admin_activity_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId"),
+  userEmail: varchar("userEmail", { length: 320 }),
+  userName: varchar("userName", { length: 255 }),
+  action: varchar("action", { length: 64 }).notNull(), // 'soft_delete', 'restore', 'permanent_delete', 'batch_restore', 'batch_permanent_delete'
+  targetType: varchar("targetType", { length: 64 }).notNull().default("course"), // 'course'
+  targetIds: text("targetIds").notNull(), // IDs dos cursos afetados separados por vírgula ou JSON
+  details: text("details"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
+export type InsertAdminActivityLog = typeof adminActivityLogs.$inferInsert;

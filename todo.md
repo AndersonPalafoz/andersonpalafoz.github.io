@@ -1187,3 +1187,10 @@
 ## Modal de Confirmação Segura para Exclusão Permanente de Cursos na Lixeira — 19/08/2026
 - [x] Implementar modal interativo e detalhado com exibição de título, nível, categoria, módulos e descrição antes de executar a exclusão permanente de um curso na lixeira do admin.
 - [x] Executar bateria de 321 testes automatizados (Vitest) com 100% de aprovação.
+
+## Ações em Lote na Lixeira e Registro de Atividades (Auditoria) — 19/08/2026
+- [x] Adicionar seleção múltipla com checkboxes e botões de ação em lote ("Restaurar Selecionados" e "Excluir Selecionados") na lixeira do administrador.
+- [x] Criar infraestrutura de banco de dados (`admin_activity_logs`) e rotas de API dedicadas (`/api/admin/courses/batch` e `/api/admin/activity-logs`) para rastrear todas as exclusões, restaurações e operações em lote.
+- [x] Desenvolver a página de auditoria de atividades (`/admin/cursos/audit`) exibindo administrador responsável, data/hora, tipo de ação e cursos afetados.
+- [x] Corrigir a diretiva `"use client"` ausente em `/app/admin/page.tsx` para garantir build de produção perfeito no Vercel.
+- [x] Executar build de produção local com sucesso (`pnpm build`) e aprovar 100% dos 321 testes automatizados (Vitest).
