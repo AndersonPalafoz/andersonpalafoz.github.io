@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Download, FileText, BookOpen, Zap, Headphones, PenTool, Search, Filter, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { GrammarGuidesSection } from "./guias-gramatica";
+import { MaterialLoginLock } from "@/components/material-login-lock";
 
 const CATEGORY_ICONS: Record<string, typeof FileText> = {
   Worksheets: FileText,
@@ -27,6 +29,7 @@ export default function MateriaisPage() {
   const [facets, setFacets] = useState({ levels: [] as string[], categories: [] as string[] });
   const [completedMaterialIds, setCompletedMaterialIds] = useState<number[]>([]);
   const requestIdRef = useRef(0);
+  const { status: sessionStatus } = useSession();
 
   useEffect(() => {
     const controller = new AbortController();
@@ -240,12 +243,15 @@ export default function MateriaisPage() {
                       </p>
                     </div>
 
-                    <Link href={`/materiais/${material.id}`} className="w-full">
-                      <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow">
-                        <Download size={18} />
-                        <span>Visualizar Material</span>
-                      </button>
-                    </Link>
+                    <div className="flex flex-col gap-2">
+                      {sessionStatus === "unauthenticated" && <MaterialLoginLock materialId={Number(material.id)} />}
+                      <Link href={`/materiais/${material.id}`} className="w-full">
+                        <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow">
+                          <Download size={18} />
+                          <span>Visualizar Material</span>
+                        </button>
+                      </Link>
+                    </div>
                   </div>
                 );
               })}
