@@ -1245,3 +1245,8 @@
 - [x] Implementar custom event / hook compartilhado para propagar mudanças de contagem da lixeira sem refresh.
 - [x] Atualizar os componentes de lixeira para disparar o evento após excluir, restaurar ou mutar itens.
 - [x] Validar com testes e salvar checkpoint estável.
+
+## Modal de Confirmação de Segurança para Exclusão Permanente — Concluído
+- [x] Garantir que cursos, materiais, alunos e turmas externas utilizem modal detalhado de confirmação antes de qualquer exclusão definitiva.
+- [x] Bloquear botões durante o processamento para evitar cliques acidentais duplicados.
+- [x] Executar testes Vitest e salvar checkpoint estável.
