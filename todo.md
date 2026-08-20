@@ -945,3 +945,9 @@
 - [x] Atualizar a função `handleEdit` em `app/admin/cursos/page.tsx` para incluir todas as propriedades do calendário acadêmico e regra de faltas (`classDays`, `classTime`, `workloadHours`, `startDate`, `endDate`, `maxAbsencePercent`).
 - [x] Executar build de produção (`pnpm build`) para verificar se o TypeScript compila sem erros.
 - [x] Executar suíte de testes Vitest e salvar checkpoint.
+
+## Barra de Progresso Visual no Painel do Curso — 19/08/2026
+- [x] Localizar a página de detalhes/painel do curso (`/cursos/[id]` ou equivalente).
+- [x] Calcular a porcentagem real de conclusão com base no total de aulas do curso versus aulas concluídas pelo aluno autenticado.
+- [x] Adicionar componente visual de barra de progresso em gradiente com indicador numérico de porcentagem e contagem de aulas concluídas.
+- [x] Executar suíte de testes Vitest e validar build de produção.
