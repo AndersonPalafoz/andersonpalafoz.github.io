@@ -1250,3 +1250,9 @@
 - [x] Garantir que cursos, materiais, alunos e turmas externas utilizem modal detalhado de confirmação antes de qualquer exclusão definitiva.
 - [x] Bloquear botões durante o processamento para evitar cliques acidentais duplicados.
 - [x] Executar testes Vitest e salvar checkpoint estável.
+
+## Esvaziar Lixeira com Um Clique — Concluído
+- [x] Criar API segura para esvaziar lixeira respeitando o escopo de permissões (global para admin/super-admin e restrito por autoria para professores).
+- [x] Adicionar botão "Esvaziar Lixeira" com modal de confirmação de segurança e aviso de irreversibilidade nas páginas de administração.
+- [x] Disparar evento de atualização instantânea do contador no menu lateral e registrar log de auditoria.
+- [x] Validar com testes e salvar checkpoint.

@@ -164,7 +164,27 @@ export default function AdminCursos() {
 
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [trashCourseToPermanentDelete, setTrashCourseToPermanentDelete] = useState<Course | null>(null);
+  const [showEmptyTrashModal, setShowEmptyTrashModal] = useState(false);
   const [deletingCourse, setDeletingCourse] = useState(false);
+
+  const handleEmptyTrash = async () => {
+    try {
+      setBatchLoading(true);
+      const res = await fetch("/api/admin/courses/empty-trash", { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Falha ao esvaziar lixeira.");
+      toast.success(`Lixeira esvaziada com sucesso! ${json.count || 0} curso(s) excluído(s).`);
+      setShowEmptyTrashModal(false);
+      setSelectedTrashIds([]);
+      fetchCourses();
+      fetchTrash();
+      window.dispatchEvent(new Event("trash-updated"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao esvaziar lixeira.");
+    } finally {
+      setBatchLoading(false);
+    }
+  };
 
   const confirmDeleteCourse = async () => {
     if (!courseToDelete) return;
@@ -794,6 +814,13 @@ export default function AdminCursos() {
                     >
                       Excluir Selecionados (Definitivo)
                     </button>
+                    <button
+                      disabled={trashCourses.length === 0 || batchLoading}
+                      onClick={() => setShowEmptyTrashModal(true)}
+                      className="px-3.5 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white font-bold text-xs transition disabled:opacity-50 shadow-sm flex items-center gap-1.5"
+                    >
+                      <Trash2 size={14} /> Esvaziar Lixeira
+                    </button>
                   </div>
                 </div>
 
@@ -892,6 +919,44 @@ export default function AdminCursos() {
               >
                 {deletingCourse && <Loader2 className="animate-spin" size={14} />}
                 {deletingCourse ? "Excluindo..." : "Sim, excluir curso"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação para Esvaziar Lixeira */}
+      {showEmptyTrashModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="w-full max-w-md rounded-3xl bg-card text-card-foreground p-6 sm:p-8 shadow-2xl border border-border space-y-6 animate-in fade-in zoom-in-95 duration-150 font-sans">
+            <div className="flex items-start gap-4 text-red-600 border-b border-border pb-4">
+              <div className="p-3.5 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600">
+                <Trash2 size={28} />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-xl font-black text-foreground">Esvaziar Toda a Lixeira?</h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Atenção: Esta ação excluirá permanentemente <strong>{trashCourses.length} curso(s)</strong> atualmente na lixeira. Esta operação não pode ser desfeita.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+              <button
+                type="button"
+                disabled={batchLoading}
+                onClick={() => setShowEmptyTrashModal(false)}
+                className="px-5 py-2.5 rounded-xl border border-border text-foreground font-bold text-xs hover:bg-muted/60 transition disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={batchLoading}
+                onClick={handleEmptyTrash}
+                className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
+              >
+                {batchLoading && <Loader2 className="animate-spin" size={14} />}
+                {batchLoading ? "Esvaziando..." : "Sim, Esvaziar Tudo"}
               </button>
             </div>
           </div>
