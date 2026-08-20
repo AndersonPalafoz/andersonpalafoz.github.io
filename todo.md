@@ -1054,3 +1054,7 @@
 ## Skeletons Animados em Busca e Filtros de Cursos — 19/08/2026
 - [x] Implementar estados de carregamento com skeletons animados na página de listagem de cursos ao filtrar ou pesquisar.
 - [x] Garantir transição fluida e feedback visual imediato para o usuário.
+
+## Paginação e Botão "Carregar Mais" em Cursos — 19/08/2026
+- [x] Implementar paginação e botão "Carregar Mais" na listagem de cursos.
+- [x] Integrar com busca, filtros, ordenação e skeletons animados.
