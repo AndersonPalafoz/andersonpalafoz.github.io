@@ -112,6 +112,7 @@ export default function TurmasExternasPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
   const [studentStatusFilter, setStudentStatusFilter] = useState("all");
+  const [studentAttendanceFilter, setStudentAttendanceFilter] = useState("all");
   const [selectedYearFilter, setSelectedYearFilter] = useState("all");
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
 
@@ -309,11 +310,43 @@ export default function TurmasExternasPage() {
 
   const filteredClasses = useMemo(() => {
     return classes.map((cls) => {
+      // Calcular faltas por aluno com base nas chamadas registradas
+      const maxAbs = cls.maxAbsencePercent ?? 25;
       const filteredStudents = cls.students.filter((s) => {
         const matchesStatus = studentStatusFilter === "all" || s.status === studentStatusFilter;
         const term = searchTerm.toLowerCase();
         const matchesTerm = !term || s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)) || (s.studentIdNumber && s.studentIdNumber.toLowerCase().includes(term));
-        return matchesStatus && matchesTerm;
+        
+        // Calcular frequência e faltas reais
+        let totalSessions = 0;
+        let absentCount = 0;
+        if (cls.attendance) {
+          cls.attendance.forEach((att) => {
+            try {
+              const parsed = JSON.parse(att.attendanceData) as Record<string, string>;
+              const status = parsed[String(s.id)];
+              if (status) {
+                totalSessions++;
+                if (status === "absent") absentCount++;
+              }
+            } catch {}
+          });
+        }
+        const absencePercent = totalSessions > 0 ? (absentCount / totalSessions) * 100 : 0;
+        const isAboveLimit = totalSessions > 0 && absencePercent > maxAbs;
+        const isNearLimit = totalSessions > 0 && absencePercent >= (maxAbs * 0.8) && absencePercent <= maxAbs;
+        const isRegular = totalSessions === 0 || absencePercent < (maxAbs * 0.8);
+
+        let matchesAttendanceFilter = true;
+        if (studentAttendanceFilter === "above_limit") {
+          matchesAttendanceFilter = isAboveLimit;
+        } else if (studentAttendanceFilter === "near_limit") {
+          matchesAttendanceFilter = isNearLimit;
+        } else if (studentAttendanceFilter === "regular") {
+          matchesAttendanceFilter = isRegular;
+        }
+
+        return matchesStatus && matchesTerm && matchesAttendanceFilter;
       });
 
       return {
@@ -857,6 +890,20 @@ export default function TurmasExternasPage() {
                 <option value="active">Ativos</option>
                 <option value="completed">Concluídos</option>
                 <option value="inactive">Inativos</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Frequência:</span>
+              <select
+                value={studentAttendanceFilter}
+                onChange={(e) => setStudentAttendanceFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="all">Todas as Frequências</option>
+                <option value="above_limit">Acima do Limite de Faltas 🚨</option>
+                <option value="near_limit">Próximos do Limite (80%-100%) ⚠️</option>
+                <option value="regular">Frequência Regular ✅</option>
               </select>
             </div>
 
