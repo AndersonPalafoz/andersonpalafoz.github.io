@@ -30,6 +30,7 @@ export default function AdminCursos() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"courses" | "trash">("courses");
+  const [trashCategoryFilter, setTrashCategoryFilter] = useState<string>("all");
   const [trashCourses, setTrashCourses] = useState<Course[]>([]);
   const [loadingTrash, setLoadingTrash] = useState(false);
   const [selectedTrashIds, setSelectedTrashIds] = useState<number[]>([]);
@@ -796,6 +797,20 @@ export default function AdminCursos() {
             ) : (
               <div>
                 <div className="p-4 bg-muted/60 border-b border-border flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3 flex-wrap w-full md:w-auto pb-2 md:pb-0 border-b md:border-b-0 border-border">
+                    <span className="text-xs font-bold text-muted-foreground">Filtrar Categoria:</span>
+                    <select
+                      value={trashCategoryFilter}
+                      onChange={(e) => setTrashCategoryFilter(e.target.value)}
+                      className="px-3 py-1.5 rounded-xl border border-border bg-background text-xs font-bold text-foreground focus:ring-red-600"
+                    >
+                      <option value="all">Todas as Categorias</option>
+                      <option value="Gramática">Gramática & Sintaxe</option>
+                      <option value="Letramento">Letramento Étnico-Racial</option>
+                      <option value="Leitura">Leitura Acadêmica</option>
+                      <option value="Geral">Geral</option>
+                    </select>
+                  </div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <input
                       type="checkbox"
@@ -847,7 +862,9 @@ export default function AdminCursos() {
                 </div>
 
                 <div className="divide-y divide-border/70">
-                  {trashCourses.map((course) => {
+                  {trashCourses
+                    .filter((c) => trashCategoryFilter === "all" || c.category === trashCategoryFilter)
+                    .map((course) => {
                     const isSelected = selectedTrashIds.includes(course.id);
                     return (
                       <div key={course.id} className={`p-6 transition flex flex-col md:flex-row md:items-center justify-between gap-4 ${isSelected ? "bg-red-50/40 dark:bg-red-950/20" : "hover:bg-muted/40"}`}>
