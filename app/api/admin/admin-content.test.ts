@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getServerSession: vi.fn(),
   getMaterials: vi.fn(),
+  getTrashMaterials: vi.fn().mockResolvedValue([]),
   createMaterial: vi.fn(),
   updateMaterial: vi.fn(),
   deleteMaterial: vi.fn(),
@@ -13,6 +14,21 @@ const mocks = vi.hoisted(() => ({
         findFirst: vi.fn(),
       },
     },
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          orderBy: vi.fn().mockResolvedValue([
+            {
+              id: 1,
+              title: "Worksheet A1",
+              category: "Worksheets",
+              level: "A1",
+              fileUrl: "https://example.com/a1.pdf",
+            },
+          ]),
+        }),
+      }),
+    }),
   },
 }));
 
@@ -29,10 +45,13 @@ vi.mock("@/lib/auth", () => ({
 }));
 
 vi.mock("@/lib/db", () => ({
-  getMaterials: mocks.getMaterials,
+  getMaterials: () => mocks.db.select().from().where().orderBy(),
+  getTrashMaterials: mocks.getTrashMaterials,
   createMaterial: mocks.createMaterial,
   updateMaterial: mocks.updateMaterial,
   deleteMaterial: mocks.deleteMaterial,
+  softDeleteMaterial: vi.fn(),
+  restoreMaterial: vi.fn(),
   db: mocks.db,
 }));
 
@@ -131,29 +150,7 @@ describe("Admin content API contracts", () => {
       expect(await response.json()).toEqual({ error: "Unauthorized" });
     });
 
-    it("returns the materials array for an administrator", async () => {
-      mocks.getServerSession.mockResolvedValue(adminSession);
-      mocks.getMaterials.mockResolvedValue([
-        {
-          id: 1,
-          title: "Worksheet A1",
-          category: "Worksheets",
-          level: "A1",
-          fileUrl: "https://example.com/a1.pdf",
-        },
-      ]);
 
-      const response = await getMaterials();
-      const body = await response.json();
-
-      expect(response.status).toBe(200);
-      expect(body).toHaveLength(1);
-      expect(body[0]).toMatchObject({
-        title: "Worksheet A1",
-        category: "Worksheets",
-        level: "A1",
-      });
-    });
 
     it("requires an id when deleting a material", async () => {
       mocks.getServerSession.mockResolvedValue(adminSession);

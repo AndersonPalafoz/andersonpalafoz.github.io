@@ -71,9 +71,7 @@ export async function softDeleteCourse(id: number) {
 }
 
 export async function getMaterials() {
-  return await db.query.materials.findMany({
-    orderBy: desc(schema.materials.createdAt),
-  });
+  return await db.select().from(schema.materials).where(isNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.createdAt));
 }
 
 export async function getMaterialById(id: number) {
@@ -375,6 +373,8 @@ export async function updateMaterial(id: number, data: Partial<{
 }
 
 export async function deleteMaterial(id: number) {
+  await db.delete(schema.materialProgress).where(eq(schema.materialProgress.materialId, id));
+  await db.delete(schema.savedMaterials).where(eq(schema.savedMaterials.materialId, id));
   return await db.delete(schema.materials)
     .where(eq(schema.materials.id, id))
     .returning();
@@ -594,9 +594,6 @@ export async function getResumeLesson(userId: number, courseId: number) {
 
 
 // --- Materiais: Lixeira, Restauração e Exclusão Permanente ---
-export async function getMaterials() {
-  return await db.select().from(schema.materials).where(isNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.createdAt));
-}
 
 export async function getTrashMaterials() {
   return await db.select().from(schema.materials).where(isNotNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.updatedAt));
@@ -610,11 +607,7 @@ export async function restoreMaterial(id: number) {
   return await db.update(schema.materials).set({ deletedAt: null }).where(eq(schema.materials.id, id)).returning();
 }
 
-export async function deleteMaterial(id: number) {
-  await db.delete(schema.materialProgress).where(eq(schema.materialProgress.materialId, id));
-  await db.delete(schema.savedMaterials).where(eq(schema.savedMaterials.materialId, id));
-  return await db.delete(schema.materials).where(eq(schema.materials.id, id)).returning();
-}
+
 
 // --- Alunos/Usuários: Lixeira, Restauração e Exclusão Permanente ---
 export async function getUsersList() {
