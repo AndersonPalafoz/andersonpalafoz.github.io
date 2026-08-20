@@ -1058,3 +1058,7 @@
 ## Paginação e Botão "Carregar Mais" em Cursos — 19/08/2026
 - [x] Implementar paginação e botão "Carregar Mais" na listagem de cursos.
 - [x] Integrar com busca, filtros, ordenação e skeletons animados.
+
+## Botão "Continuar de Onde Parou" no Dashboard — 19/08/2026
+- [x] Implementar botão de destaque "Continuar de onde parou" no topo do dashboard para o último curso e aula acessados.
+- [x] Garantir validação com testes automatizados e checkpoint.
