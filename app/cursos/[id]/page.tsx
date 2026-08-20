@@ -24,7 +24,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
   }
 
   if (!modules || modules.length === 0) {
-    return <p className="text-gray-500 text-sm">Nenhum módulo cadastrado para este curso ainda.</p>;
+    return <p className="text-gray-600 dark:text-gray-300 text-sm">Nenhum módulo cadastrado para este curso ainda.</p>;
   }
 
   // Buscar progresso de aulas do usuário se logado
@@ -67,10 +67,10 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-red-600">Módulo {mod.order}</span>
                 <h3 className="text-xl font-bold text-gray-900 mt-1">{mod.title}</h3>
-                {mod.description && <p className="text-gray-600 text-sm mt-1">{mod.description}</p>}
+                {mod.description && <p className="text-gray-700 dark:text-gray-300 text-sm mt-1">{mod.description}</p>}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-600">
+                <span className="text-xs font-semibold bg-gray-100 px-3 py-1 rounded-full text-gray-700 dark:text-gray-300">
                   {completedInMod}/{lessons.length} concluídas
                 </span>
               </div>
@@ -110,11 +110,11 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Listening & Speaking</span>
                           </div>
                           {lesson.description && (
-                            <p className="text-xs text-gray-500 line-clamp-1">{lesson.description}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1">{lesson.description}</p>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 flex-shrink-0">
+                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
                         <Clock size={14} />
                         <span>{lesson.duration || 15} min</span>
                       </div>
@@ -140,7 +140,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
   if (!course) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-600">Curso não encontrado.</p>
+        <p className="text-gray-700 dark:text-gray-300">Curso não encontrado.</p>
       </div>
     );
   }
@@ -255,10 +255,10 @@ async function CourseDetail({ courseId }: { courseId: number }) {
           )}
 
           {course.description && (
-            <p className="text-lg text-gray-600 leading-relaxed">{course.description}</p>
+            <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">{course.description}</p>
           )}
 
-          <div className="flex flex-wrap items-center gap-6 text-gray-600 text-sm">
+          <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 text-sm">
             <div className="flex items-center gap-2">
               <Layers size={18} className="text-red-600" />
               <span>{course.modules ?? modules.length} módulos</span>
@@ -358,7 +358,7 @@ export default async function CoursePage({
     <Suspense
       fallback={
         <div className="min-h-screen bg-white flex items-center justify-center">
-          <p className="text-gray-600">Carregando curso...</p>
+          <p className="text-gray-700 dark:text-gray-300">Carregando curso...</p>
         </div>
       }
     >
