@@ -168,3 +168,11 @@ O componente `ContactForm` passou a aceitar `courseContext` opcional e ganhou os
 Durante a validação, foram corrigidos dois pontos de compatibilidade: o teste de renderização passou a aguardar a página assíncrona do App Router, e o teste de pré-preenchimento passou a usar asserções compatíveis com a configuração Vitest existente. Resultado atual: **331 testes aprovados em 96 arquivos**.
 
 **Próximas tarefas da Fase 3:** validar a jornada de matrícula dos Tipos 1 e 2 sem modificar a política de pagamento; auditar a listagem e os relatórios de Tipo 4 em `/professor/turmas-externas`; e criar cenários de regressão para as três jornadas.
+
+### Validação de Checkout e Conversão (Tipos 1 e 2)
+
+A auditoria dos fluxos de pagamento e matrícula para **Cursos Fechados (Tipo 1)** e **Híbridos (Tipo 2)** confirmou a robustez dos endpoints:
+1. **Proteção de Cursos Gratuitos**: A rota `/api/stripe/checkout` rejeita explicitamente tentativas de checkout em cursos marcados como gratuitos (`isFree: true`), orientando o aluno para a matrícula direta.
+2. **Criação de Sessão e Preços**: Para cursos pagos, o gateway garante a criação ou recuperação do preço no Stripe e gera a sessão de pagamento com metadados vinculados ao ID do usuário e do curso.
+3. **Cumprimento de Compra (*Fulfillment*)**: O webhook do Stripe (`/api/stripe/webhook`) e a função `fulfillCoursePurchase` registram a transação na tabela `coursePurchases` de forma idempotente e criam automaticamente a matrícula ativa na tabela `enrollments` caso ainda não exista.
+4. **Testes automatizados**: O arquivo `app/api/stripe/checkout-types.test.ts` foi criado para certificar os contratos de checkout e webhooks. A suíte completa passou com **333 testes aprovados**.
