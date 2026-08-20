@@ -934,4 +934,9 @@
 - [ ] Auditar a rota e o componente do boletim individual do aluno (`/professor/boletim/[studentId]` ou equivalente).
 - [ ] Calcular dinamicamente o percentual de faltas com base nas chamadas registradas e comparar com `maxAbsencePercent` da turma.
 - [ ] Adicionar selo/alerta visual (destaque em vermelho ou amarelo) e mensagem explicativa de reprovação por frequência caso o limite seja atingido.
-- [ ] Executar suíte de testes Vitest e validar build de produção.
+- [x] Executar suíte de testes Vitest e validar build de produção.
+
+## Correção Crítica de ID de Usuário em Progresso de Aulas — 19/08/2026
+- [x] Substituir o uso incorreto de `parseInt(session.user.email.split('@')[0])` por `session.user.id` em `app/api/lessons/[id]/progress/route.ts`.
+- [x] Criar teste automatizado cobrindo o endpoint de progresso de aula com autenticação válida.
+- [x] Executar suíte de testes Vitest e validar build de produção.
