@@ -1134,3 +1134,8 @@
 ## Exclusão Definitiva de Cursos em /admin e /professor — 19/08/2026
 - [x] Adicionar botões de exclusão definitiva com modal de segurança nas listagens de cursos de /admin e /professor.
 - [x] Validar testes automatizados e build de produção.
+
+## Toast com Desfazer e Edição Rápida de Detalhes e Links de Cursos — 19/08/2026
+- [x] Adicionar toast interativo com opção de "Desfazer" ao enviar um curso para a lixeira.
+- [x] Garantir acesso direto à edição de detalhes e links no menu de ações rápidas.
+- [x] Validar testes automatizados e build de produção.
