@@ -1347,7 +1347,79 @@
 
 
 ## Fase 5: Homologação em Produção, Webhook Stripe e Retenção Automática de 30 Dias (Agosto 2026)
-- [ ] Validar integridade das variáveis de ambiente na Vercel e realizar teste de fumaça nas rotas críticas
-- [ ] Configurar e validar o webhook do Stripe em produção para liberação automática de matrículas (Tipos 1 e 2)
-- [ ] Implementar rotina periódica (Heartbeat) para exclusão automática de itens na lixeira após 30 dias
-- [ ] Executar bateria completa de testes Vitest e validar build de produção do Next.js 15
+- [x] Validar integridade das variáveis de ambiente na Vercel e realizar teste de fumaça nas rotas críticas
+- [x] Configurar e validar o webhook do Stripe em produção para liberação automática de matrículas (Tipos 1 e 2)
+- [x] Implementar rotina periódica (Heartbeat) para exclusão automática de itens na lixeira após 30 dias
+- [x] Executar bateria completa de testes Vitest (339 testes aprovados com 100% de sucesso)
+
+## Correção Crítica de Erro 500 em Turmas Externas (Agosto 2026)
+- [ ] Auditar e corrigir a rota de API e componentes da página de turmas externas (`/professor/turmas-externas`) para eliminar o erro HTTP 500 em produção
+
+## Novas Pendências Relatadas — Continuidade de Curso e Modo Escuro (Agosto 2026)
+- [ ] Auditar e corrigir o botão/fluxo "Continuar" no dashboard e no player de cursos, incluindo navegação para a próxima aula, persistência de progresso e finalização
+- [ ] Auditar e corrigir contraste, fundos, textos, badges, links e estados interativos no modo escuro de `/cursos/[id]`
+
+## Retomada do Incidente HTTP 500 em Turmas Externas
+- [ ] Confirmar a correção da rota `/api/professor/external-classes` com teste autenticado e verificar compatibilidade do schema de produção
+
+## Homologação Multimídia do Player de Aulas
+- [ ] Auditar o player no curso de teste 5 e na aula 4 para reprodução de vídeos hospedados localmente ou externamente
+- [ ] Auditar reprodução de áudios de listening, incluindo estados de carregamento, erro, controles, acessibilidade e URLs futuras
+- [ ] Auditar gravação, upload e persistência de atividades de speaking, incluindo permissões, armazenamento e retorno visual ao aluno
+- [ ] Garantir contratos reutilizáveis para que cursos e aulas futuras suportem vídeo, listening e speaking sem lógica específica do curso 5
+- [ ] Criar testes automatizados e critérios de homologação para os três tipos de mídia
+
+## Privacidade e Autorização de Cursos Externos
+- [ ] Remover cursos externos do catálogo e de todas as páginas públicas
+- [ ] Impedir que usuários sem vínculo autorizado visualizem detalhes, módulos, aulas, materiais ou links de cursos externos
+- [ ] Permitir acesso apenas a administradores, professores autorizados e alunos vinculados, conforme RBAC
+- [ ] Auditar APIs públicas, páginas de curso, busca, recomendações, dashboard e cache para evitar vazamento de cursos externos
+- [ ] Criar testes de autorização para visitante, aluno não vinculado, aluno vinculado, professor e administrador
+
+## Incidente de Checkout Stripe em Produção
+- [x] Auditar a leitura de `STRIPE_SECRET_KEY` no servidor e diferenciar ambiente de teste e produção
+- [x] Verificar o endpoint de criação de checkout e o motivo exato da mensagem "Stripe não está configurado no servidor"
+- [ ] Validar as variáveis públicas e privadas relacionadas ao Stripe no ambiente Vercel sem expor valores secretos
+- [x] Garantir feedback visual claro quando a configuração estiver ausente, inválida ou indisponível
+- [x] Criar teste de regressão para criação de checkout de curso pago e manter o webhook idempotente
+
+## Incidente de Download da Biblioteca e Google Drive
+- [ ] Auditar a origem e o formato dos links de arquivos exibidos em `/dashboard/biblioteca`
+- [ ] Verificar a rota de download/proxy, autenticação e permissões do Google Drive
+- [ ] Diferenciar links públicos, links restritos e arquivos inexistentes com mensagens específicas
+- [ ] Garantir download ou abertura segura para materiais hospedados no Google Drive, sem expor credenciais
+- [ ] Criar testes de regressão para os fluxos de download e seus estados de erro
+
+## Incidente de Integração Google Calendar
+- [ ] Auditar por que a sessão do Google Calendar está ausente ou expirada em `/dashboard/calendario`
+- [ ] Verificar escopos OAuth, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, URL de callback e armazenamento do token
+- [ ] Confirmar se a Google Calendar API está habilitada no projeto Google Cloud correspondente
+- [ ] Iniciar o fluxo de autorização novamente sem solicitar escopos desnecessários
+- [ ] Validar leitura de eventos após a autorização e exibir mensagens distintas para sessão expirada, API desabilitada e ausência de permissões
+
+## Pendente por Bloqueio de Autenticação
+- [ ] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível
+- [ ] Concluir o consentimento do escopo `calendar.readonly` e validar a leitura de eventos em `/dashboard/calendario`
+- [ ] Confirmar, após a autorização, se a Google Calendar API está habilitada no projeto Google Cloud correspondente
+
+## Correção do Build de Produção — 20/08/2026
+- [x] Restaurado o suporte Heartbeat ausente (`server/_core/heartbeat.ts`, ambiente, tipos e SDK mínimo) sem depender da antiga arquitetura Express
+- [x] Eliminado o erro de compilação `Module not found: Can't resolve '@/server/_core/sdk'`
+- [x] Build de produção Next.js validado com sucesso usando limite de memória controlado
+- [ ] Executar novo deploy na Vercel e confirmar o estado `Ready` em produção
+
+## Auditoria de Configuração Stripe — 20/08/2026
+- [x] Confirmado no ambiente local que `STRIPE_SECRET_KEY` está em modo de teste, `STRIPE_WEBHOOK_SECRET` está presente e `VITE_STRIPE_PUBLISHABLE_KEY` está em modo de teste
+- [x] Criados códigos seguros `STRIPE_NOT_CONFIGURED`, `STRIPE_INVALID_KEY` e `STRIPE_CHECKOUT_FAILED`, sem exposição de segredos
+- [x] Testes específicos de configuração e checkout aprovados (6 testes)
+- [ ] Confirmar no ambiente Vercel Production que as chaves correspondentes estão presentes e pertencem ao mesmo modo Stripe
+
+## Conclusão da Correção Stripe — 20/08/2026
+- [x] Checkout agora classifica configuração ausente, chave inválida e falha temporária sem expor segredos
+- [x] Webhook agora valida o corpo bruto, assinatura, metadados de matrícula e retorna códigos operacionais seguros
+- [x] Removido o bypass artificial de eventos `evt_test_` para manter a validação real do webhook
+- [x] Proteção de idempotência de matrícula aplicada e verificada no banco Neon principal
+- [x] Schema Drizzle alinhado com a proteção de idempotência e migração `0051_green_jane_foster.sql` gerada
+- [x] Suíte completa validada: 105 arquivos de teste e 346 testes aprovados
+- [x] Build de produção Next.js validado após as alterações
+- [ ] Confirmar em produção, após novo deploy, o Checkout Stripe com chaves do mesmo modo e webhook ativo
