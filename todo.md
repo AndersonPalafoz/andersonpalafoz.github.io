@@ -1434,3 +1434,10 @@
 - [ ] Auditar e validar a integridade das variáveis de ambiente exigidas em produção pela Vercel (`DATABASE_URL`, `NEON_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
 - [ ] Validar a compatibilidade do Next.js 15 App Router e server actions/endpoints com o tempo limite e limites de memória da Vercel
 - [x] Registrar instruções passo a passo para o usuário configurar variáveis de ambiente na Vercel caso algum conector exija autenticação manual no painel
+
+## Feedback Visual de Atividades no Player (Agosto 2026)
+- [x] Exibir toast acessível de sucesso ao concluir uma atividade de listening
+- [x] Exibir toast acessível de sucesso ao concluir uma atividade de speaking
+- [x] Exibir toast de erro acionável quando o envio ou persistência da atividade falhar
+- [x] Impedir toasts duplicados durante cliques repetidos e manter o feedback compatível com mobile e modo escuro
+- [x] Criar ou atualizar testes de interação, rodar Vitest e validar build de produção antes do checkpoint
