@@ -8,6 +8,7 @@ import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
 import { ProfessorCoursesTrashManager } from "@/components/professor-courses-trash-manager";
 import { ProfessorCoursesList } from "@/components/professor-courses-list";
+import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { authOptions } from "@/lib/auth";
 
 export const metadata = {
@@ -74,6 +75,14 @@ export default async function TeacherDashboardPage() {
             </Link>
           </div>
         </div>
+
+        {/* Painel Estatístico Estilo Dashboard do Aluno */}
+        <StudentStyleDashboardStats
+          coursesCount={data.stats.totalCourses}
+          studentsCount={data.stats.totalStudents}
+          materialsCount={data.stats.totalMaterials}
+          enrollmentsCount={data.stats.totalEnrollments}
+        />
 
         {/* Motor de Busca Acadêmica do Professor */}
         <TeacherSearchWidget courses={allCourses} students={allStudents} />
