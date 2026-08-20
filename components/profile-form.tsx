@@ -25,6 +25,22 @@ const formatCpf = (value: string) => {
     .replace(/(\d{3})(\d{1,2})/, "$1-$2");
 };
 
+const isValidCpf = (cpfStr: string) => {
+  const clean = (cpfStr || "").replace(/\D/g, "");
+  if (clean.length !== 11 || /^(\d)\1+$/.test(clean)) return false;
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(clean.charAt(i), 10) * (10 - i);
+  let rev = 11 - (sum % 11);
+  if (rev === 10 || rev === 11) rev = 0;
+  if (rev !== parseInt(clean.charAt(9), 10)) return false;
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(clean.charAt(i), 10) * (11 - i);
+  rev = 11 - (sum % 11);
+  if (rev === 10 || rev === 11) rev = 0;
+  if (rev !== parseInt(clean.charAt(10), 10)) return false;
+  return true;
+};
+
 const formatPhone = (value: string) => {
   const digits = (value || "").replace(/\D/g, "").slice(0, 11);
   if (digits.length > 10) {
@@ -126,8 +142,15 @@ export function ProfileForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setFeedback(null);
+
+    const cleanCpf = cpf.replace(/\D/g, "");
+    if (cleanCpf.length > 0 && !isValidCpf(cleanCpf)) {
+      setFeedback({ type: "error", text: "CPF inválido. Por favor, verifique os números digitados." });
+      return;
+    }
+
+    setSaving(true);
     try {
       const response = await fetch("/api/user/profile", {
         method: "PUT",

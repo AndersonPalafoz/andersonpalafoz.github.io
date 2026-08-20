@@ -990,3 +990,8 @@
 ## Máscaras em Formulários Administrativos de Alunos — 19/08/2026
 - [x] Localizar e atualizar os formulários de gestão de usuários e alunos em `/admin/usuarios` e `/professor/turmas-externas` com as funções de máscara de CPF e celular.
 - [x] Executar suíte de testes Vitest e validar build de produção.
+
+## Validação Real de CPF — 19/08/2026
+- [x] Implementar função `isValidCpf` com cálculo matemático dos dígitos verificadores em `components/profile-form.tsx`.
+- [x] Adicionar validação no envio do formulário e exibição de alerta caso o CPF seja inválido.
+- [x] Executar testes Vitest e validar estabilidade.
