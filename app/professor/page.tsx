@@ -147,26 +147,28 @@ export default async function TeacherDashboardPage() {
           {/* Cursos Recentes */}
           <div className="surface-card space-y-6 p-6 sm:p-8">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">Cursos e Módulos</h2>
-              <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1">
+              <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+                Cursos <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">({allCourses.length})</span>
+              </h2>
+              <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1">
                 Gerenciar <ArrowRight size={16} />
               </Link>
             </div>
-            <div className="space-y-4">
-              {data.recentCourses.length === 0 ? (
+            <div className="space-y-3">
+              {allCourses.length === 0 ? (
                 <p className="text-muted-foreground text-sm">Nenhum curso cadastrado ainda.</p>
               ) : (
-                data.recentCourses.map((course) => (
-                  <div key={course.id} className="rounded-2xl border border-border/70 bg-muted/50 p-4 flex items-center justify-between">
+                allCourses.map((course) => (
+                  <div key={course.id} className="rounded-2xl border border-border/70 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-red-200">
                     <div>
-                      <h3 className="font-semibold text-foreground">{course.title}</h3>
-                      <p className="text-xs text-muted-foreground">Nível {course.level} • {course.modules} módulos</p>
+                      <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">Nível <span className="font-extrabold text-foreground">{course.level}</span> {course.category ? `• ${course.category}` : ""}</p>
                     </div>
                     <Link
                       href={`/cursos/${course.id}`}
-                      className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition"
+                      className="inline-flex items-center justify-center text-xs font-bold px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition shadow-sm"
                     >
-                      Visualizar
+                      Ver
                     </Link>
                   </div>
                 ))
