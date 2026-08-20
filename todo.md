@@ -951,3 +951,9 @@
 - [x] Calcular a porcentagem real de conclusão com base no total de aulas do curso versus aulas concluídas pelo aluno autenticado.
 - [x] Adicionar componente visual de barra de progresso em gradiente com indicador numérico de porcentagem e contagem de aulas concluídas.
 - [x] Executar suíte de testes Vitest e validar build de produção.
+
+## Botão Condicional de Download de Certificado no Painel do Curso — 19/08/2026
+- [ ] Verificar o componente `CertificateModal` e a lógica de elegibilidade em `/cursos/[id]/page.tsx`.
+- [ ] Renderizar o botão de "Baixar Certificado" apenas quando `progressPercentage === 100` e o aluno estiver autenticado.
+- [ ] Conectar o botão ao modal de certificado com feedback visual claro e acessível.
+- [ ] Executar suíte de testes Vitest e validar estabilidade de build.
