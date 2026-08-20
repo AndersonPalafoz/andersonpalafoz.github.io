@@ -1460,3 +1460,8 @@
 - [x] Garantir que badges, descrições, metadados e botões mantenham legibilidade perfeita sobre fundos escuros
 - [x] Criar teste automatizado de contraste para a página de cursos e validar na suíte Vitest
 - [x] Validar responsividade e build de produção antes de salvar o checkpoint final
+
+## Privacidade de Cursos Externos na Página /aulas (Agosto 2026)
+- [ ] Ocultar cursos com `courseType === 4` (cursos externos institucionais/terceiros) da listagem pública em `/aulas`
+- [ ] Criar teste automatizado verificando que nenhum curso externo é retornado na rota pública ou componente de catálogo
+- [ ] Validar build e integridade da suíte Vitest

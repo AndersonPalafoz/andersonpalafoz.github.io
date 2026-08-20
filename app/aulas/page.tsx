@@ -20,12 +20,13 @@ const LEVEL_ORDER = ["A1", "A2", "B1", "B2", "C1", "C2"];
 export default async function AulasPage() {
   const session = await getServerSession(authOptions);
   const user = session?.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
-  const [cursosDb, purchasedRows, enrollmentRows, wishlistRows] = await Promise.all([
+  const [rawCursos, purchasedRows, enrollmentRows, wishlistRows] = await Promise.all([
     getCourses(),
     user ? db.select({ courseId: coursePurchases.courseId }).from(coursePurchases).where(eq(coursePurchases.userId, user.id)) : Promise.resolve([]),
     user ? db.select({ courseId: enrollments.courseId }).from(enrollments).where(eq(enrollments.userId, user.id)) : Promise.resolve([]),
     user ? db.select({ courseId: wishlistItems.courseId }).from(wishlistItems).where(eq(wishlistItems.userId, user.id)) : Promise.resolve([]),
   ]);
+  const cursosDb = rawCursos.filter((c) => c.courseType !== 4);
   const purchasedCourseIds = new Set(purchasedRows.map((row) => row.courseId));
   const enrolledCourseIds = new Set(enrollmentRows.map((row) => row.courseId));
   const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));
