@@ -5,11 +5,47 @@ import { courses, type Course } from "@/drizzle/schema";
 
 let stripeClient: Stripe | null = null;
 
+export type StripeConfigurationErrorCode = "STRIPE_NOT_CONFIGURED" | "STRIPE_INVALID_KEY";
+
+export class StripeConfigurationError extends Error {
+  readonly code: StripeConfigurationErrorCode;
+  readonly status = 503;
+
+  constructor(code: StripeConfigurationErrorCode, message: string) {
+    super(message);
+    this.name = "StripeConfigurationError";
+    this.code = code;
+  }
+}
+
+function readStripeSecretKey() {
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  if (!secretKey) {
+    throw new StripeConfigurationError(
+      "STRIPE_NOT_CONFIGURED",
+      "O pagamento online está temporariamente indisponível. O administrador precisa configurar o Stripe no ambiente de produção.",
+    );
+  }
+  if (!/^sk_(test|live)_[A-Za-z0-9]+$/.test(secretKey)) {
+    throw new StripeConfigurationError(
+      "STRIPE_INVALID_KEY",
+      "O pagamento online está temporariamente indisponível. A configuração do Stripe precisa ser revisada pelo administrador.",
+    );
+  }
+  return secretKey;
+}
+
 export function getStripe() {
   if (!stripeClient) {
-    const secretKey = process.env.STRIPE_SECRET_KEY;
-    if (!secretKey) throw new Error("Stripe não está configurado no servidor.");
-    stripeClient = new Stripe(secretKey);
+    try {
+      stripeClient = new Stripe(readStripeSecretKey());
+    } catch (error) {
+      if (error instanceof StripeConfigurationError) throw error;
+      throw new StripeConfigurationError(
+        "STRIPE_INVALID_KEY",
+        "O pagamento online está temporariamente indisponível. A configuração do Stripe precisa ser revisada pelo administrador.",
+      );
+    }
   }
   return stripeClient;
 }
@@ -39,5 +75,7 @@ export async function ensureCoursePrice(course: Course) {
 }
 
 export function isStripeConfigured() {
-  return Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET);
+  const secretKey = process.env.STRIPE_SECRET_KEY?.trim() || "";
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim() || "";
+  return /^sk_(test|live)_[A-Za-z0-9]+$/.test(secretKey) && webhookSecret.length > 0;
 }

@@ -608,7 +608,7 @@ export async function fulfillCoursePurchase(input: {
 
   const enrollment = await db.query.enrollments.findFirst({ where: and(eq(schema.enrollments.userId, input.userId), eq(schema.enrollments.courseId, input.courseId)) });
   if (!enrollment) {
-    await db.insert(schema.enrollments).values({ userId: input.userId, courseId: input.courseId, status: "active", enrolledAt: new Date() });
+    await db.insert(schema.enrollments).values({ userId: input.userId, courseId: input.courseId, status: "active", enrolledAt: new Date() }).onConflictDoNothing();
   }
   return { purchase: insertedPurchase[0] || null, alreadyFulfilled: insertedPurchase.length === 0 };
 }

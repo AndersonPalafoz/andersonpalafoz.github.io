@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { courses, enrollments, materials, users } from "@/drizzle/schema";
-import { ensureCoursePrice, getStripe, getStripeOrigin } from "@/lib/stripe";
+import { ensureCoursePrice, getStripe, getStripeOrigin, StripeConfigurationError } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,7 +72,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Requisição inválida." }, { status: 400 });
   } catch (error) {
-    console.error("Stripe checkout error:", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Não foi possível iniciar o pagamento." }, { status: 500 });
+    if (error instanceof StripeConfigurationError) {
+      return NextResponse.json({ error: error.message, code: error.code }, { status: error.status, headers: { "Cache-Control": "no-store" } });
+    }
+    console.error("Stripe checkout error:", error instanceof Error ? error.message : "unknown_error");
+    return NextResponse.json({ error: "Não foi possível iniciar o pagamento agora. Tente novamente em alguns instantes.", code: "STRIPE_CHECKOUT_FAILED" }, { status: 502, headers: { "Cache-Control": "no-store" } });
   }
 }
