@@ -1172,3 +1172,8 @@
 - [x] Criar componente `components/ui/skeleton.tsx` compatível com o design system do Vercel/Next.js.
 - [x] Executar build de produção com sucesso absoluto (Next.js 15 compilado sem erros).
 - [x] Validar 321 testes automatizados (Vitest) com 100% de aprovação.
+
+## Persistência da Lixeira após Refresh e Harmonização do Painel Admin — 19/08/2026
+- [x] Ajustar loaders do servidor (`lib/teacher.ts`) para excluir estritamente cursos movidos para a lixeira (`deletedAt IS NOT NULL`), garantindo persistência após atualização da página em `/professor` e `/admin`.
+- [x] Harmonizar o cabeçalho e design visual do painel administrativo (`/admin`) com o padrão refinado do painel do professor, implementando o princípio onde o superadmin possui todas as prerrogativas docentes e gerenciais estendidas.
+- [x] Validar 321 testes automatizados (Vitest) com 100% de aprovação.

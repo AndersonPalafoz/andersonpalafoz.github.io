@@ -18,7 +18,7 @@ function courseBelongsToTeacher(course: CourseRow, teacher: TeacherUser | null) 
 export async function getTeacherDashboardData(userEmail?: string) {
   const teacher = await getTeacherUser(userEmail);
   const [allCourses, allMaterials, allActivities, activeStudents, allEnrollments] = await Promise.all([
-    db.query.courses.findMany({ orderBy: desc(courses.updatedAt) }),
+    db.query.courses.findMany({ where: isNull(courses.deletedAt), orderBy: desc(courses.updatedAt) }),
     db.query.materials.findMany({ orderBy: desc(materials.updatedAt) }),
     db.query.activities.findMany({ with: { course: true }, orderBy: desc(activities.createdAt) }),
     db.query.users.findMany({ where: and(eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt)), orderBy: desc(users.lastSignedIn) }),
@@ -44,7 +44,7 @@ export async function getTeacherDashboardData(userEmail?: string) {
 
 export async function getTeacherCourses(userEmail?: string) {
   const teacher = await getTeacherUser(userEmail);
-  const rows = await db.query.courses.findMany({ orderBy: desc(courses.updatedAt) });
+  const rows = await db.query.courses.findMany({ where: isNull(courses.deletedAt), orderBy: desc(courses.updatedAt) });
   return rows.filter((course) => courseBelongsToTeacher(course, teacher));
 }
 
@@ -52,7 +52,7 @@ export async function getTeacherStudents(userEmail?: string) {
   const teacher = await getTeacherUser(userEmail);
   const rows = await db.query.users.findMany({ where: and(eq(users.role, "user"), isNull(users.deletedAt)), orderBy: desc(users.lastSignedIn) });
   if (teacher?.role !== "professor") return rows;
-  const visibleCourses = (await db.query.courses.findMany()).filter((course) => courseBelongsToTeacher(course, teacher));
+  const visibleCourses = (await db.query.courses.findMany({ where: isNull(courses.deletedAt) })).filter((course) => courseBelongsToTeacher(course, teacher));
   const visibleCourseIds = visibleCourses.map((course) => course.id);
   if (visibleCourseIds.length === 0) return [];
   const teacherEnrollments = await db.query.enrollments.findMany({ where: inArray(enrollments.courseId, visibleCourseIds) });
@@ -64,7 +64,7 @@ export async function getTeacherMaterials(userEmail?: string) {
   const teacher = await getTeacherUser(userEmail);
   const rows = await db.query.materials.findMany({ orderBy: desc(materials.updatedAt) });
   if (teacher?.role !== "professor") return rows;
-  const visibleCourses = (await db.query.courses.findMany()).filter((course) => courseBelongsToTeacher(course, teacher));
+  const visibleCourses = (await db.query.courses.findMany({ where: isNull(courses.deletedAt) })).filter((course) => courseBelongsToTeacher(course, teacher));
   const visibleCourseIds = new Set(visibleCourses.map((course) => course.id));
   return rows.filter((material) => material.courseId === null || visibleCourseIds.has(material.courseId));
 }
@@ -73,7 +73,7 @@ export async function getTeacherActivities(userEmail?: string) {
   const teacher = await getTeacherUser(userEmail);
   const rows = await db.query.activities.findMany({ with: { course: true }, orderBy: desc(activities.createdAt) });
   if (teacher?.role !== "professor") return rows;
-  const visibleCourses = (await db.query.courses.findMany()).filter((course) => courseBelongsToTeacher(course, teacher));
+  const visibleCourses = (await db.query.courses.findMany({ where: isNull(courses.deletedAt) })).filter((course) => courseBelongsToTeacher(course, teacher));
   const visibleCourseIds = new Set(visibleCourses.map((course) => course.id));
   return rows.filter((activity) => visibleCourseIds.has(activity.courseId));
 }
