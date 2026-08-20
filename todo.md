@@ -1261,3 +1261,8 @@
 - [x] Implementar toast interativo com botão de desfazer ao mover cursos para a lixeira.
 - [x] Integrar restauração instantânea ao clicar em Desfazer, atualizando contadores e listagens sem refresh.
 - [x] Executar testes Vitest e salvar checkpoint estável.
+
+## Filtro por Categoria na Lixeira — Concluído
+- [x] Adicionar opções de filtro por categoria (Cursos, Alunos, Materiais, Turmas Externas) na interface da lixeira.
+- [x] Atualizar contadores e ações em lote para respeitar a categoria selecionada.
+- [x] Executar testes Vitest e salvar checkpoint estável.
