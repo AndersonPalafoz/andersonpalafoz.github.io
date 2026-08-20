@@ -220,9 +220,9 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                 Acessar ambiente externo autorizado <ExternalLink size={16} aria-hidden="true" />
               </a>
             )}
-            {courseType.id === 5 && (
-              <Link href="/contato" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
-                Entrar em contato para agendar <ExternalLink size={16} aria-hidden="true" />
+            {(courseType.id === 3 || courseType.id === 5) && (
+              <Link href={`/contato?curso=${course.id}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
+                {courseType.id === 5 ? "Entrar em contato para agendar" : "Solicitar um percurso personalizado"} <ExternalLink size={16} aria-hidden="true" />
               </Link>
             )}
           </section>
