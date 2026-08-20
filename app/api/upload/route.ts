@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { validateAssessmentImage } from "@/lib/assessment-image";
 import { uploadEducationalImage } from "@/lib/media-image";
+import { uploadLearningAudio } from "@/lib/learning-storage";
 
 export async function POST(req: Request) {
   try {
@@ -23,6 +24,11 @@ export async function POST(req: Request) {
 
     const ownerId = Number.parseInt(session.user.id || "0", 10);
     if (!Number.isInteger(ownerId) || ownerId <= 0) return NextResponse.json({ error: "Usuário inválido" }, { status: 401 });
+    if (context === "lesson-audio") {
+      const uploaded = await uploadLearningAudio(ownerId, file, "teacher-listening");
+      return NextResponse.json({ success: true, url: uploaded.url, key: uploaded.objectPath, type: file.type });
+    }
+
     const storageContext = context === "course-cover" ? "course" : context === "material" ? "material" : "assessment";
     const uploaded = await uploadEducationalImage(ownerId, file, storageContext);
     return NextResponse.json({ success: true, url: uploaded.url, key: uploaded.objectPath, type: file.type });

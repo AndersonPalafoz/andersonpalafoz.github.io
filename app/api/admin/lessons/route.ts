@@ -15,9 +15,19 @@ export async function POST(request: NextRequest) {
     if (!session?.user || !canManage(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { courseId, moduleId, moduleTitle, title, description, videoUrl, duration, content, order, materialUrl, materialTitle, materialCategory, materialLevel } = body;
+    const { courseId, moduleId, moduleTitle, title, description, videoUrl, audioUrl, duration, content, order, materialUrl, materialTitle, materialCategory, materialLevel } = body;
     const parsedCourseId = Number(courseId);
     if (!Number.isInteger(parsedCourseId) || parsedCourseId <= 0 || !title?.trim()) return NextResponse.json({ error: "courseId e title são obrigatórios" }, { status: 400 });
+
+    const normalizedAudioUrl = typeof audioUrl === "string" ? audioUrl.trim() : "";
+    if (normalizedAudioUrl) {
+      try {
+        const parsedAudioUrl = new URL(normalizedAudioUrl);
+        if (!['http:', 'https:'].includes(parsedAudioUrl.protocol)) throw new Error();
+      } catch {
+        return NextResponse.json({ error: "A URL do áudio deve começar com http:// ou https://." }, { status: 400 });
+      }
+    }
 
     let targetModule = moduleId ? await db.query.modules.findFirst({ where: and(eq(modules.id, Number(moduleId)), eq(modules.courseId, parsedCourseId)) }) : null;
     if (!targetModule && moduleTitle?.trim()) {
@@ -40,6 +50,7 @@ export async function POST(request: NextRequest) {
       title: title.trim(),
       description: description?.trim() || "",
       videoUrl: videoUrl?.trim() || "",
+      audioUrl: normalizedAudioUrl || "",
       duration: Number.isFinite(Number(duration)) ? Number(duration) : 15,
       order: Number.isFinite(Number(order)) && Number(order) > 0 ? Number(order) : existingLessons.length + 1,
       content: content || "",

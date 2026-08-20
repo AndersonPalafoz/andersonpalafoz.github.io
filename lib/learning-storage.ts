@@ -35,7 +35,7 @@ export function validateLearningAudio(input: { mimeType: string; size: number })
   return { valid: true as const };
 }
 
-export async function uploadLearningAudio(ownerId: number, file: File, kind: "student-attempt" | "teacher-feedback") {
+export async function uploadLearningAudio(ownerId: number, file: File, kind: "student-attempt" | "teacher-feedback" | "teacher-listening") {
   const validation = validateLearningAudio({ mimeType: file.type, size: file.size });
   if (!validation.valid) throw new Error(validation.error);
   const supabase = await ensureBucket(LEARNING_AUDIO_BUCKET, {

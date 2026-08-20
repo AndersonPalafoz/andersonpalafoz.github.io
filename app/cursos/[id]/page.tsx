@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { getCourseById, getModulesByCourse, getLessonsByModule, db } from "@/lib/db";
+import { getCourseById, getModulesByCourse, getLessonsByModule, getResumeLesson, db } from "@/lib/db";
 import { formatLevel } from "@/lib/levels";
 import { EnrollButton } from "@/components/enroll-button";
 import { CertificateModal } from "@/components/certificate-modal";
@@ -62,7 +62,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
     <div className="space-y-6">
       {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
         return (
-          <div key={mod.id} className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div key={mod.id} className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-red-600">Módulo {mod.order}</span>
@@ -152,6 +152,13 @@ async function CourseDetail({ courseId }: { courseId: number }) {
     console.error("Failed to load modules for course", courseId, err);
   }
 
+  const resumeLesson = user?.id
+    ? await getResumeLesson(Number(user.id), courseId).catch((error) => {
+        console.error("Failed to resolve resume lesson", { courseId, userId: user.id, error });
+        return null;
+      })
+    : null;
+
   const driveLinks = parseGoogleDriveLinks((course as any).googleDriveLinks);
   const courseType = getCourseTypeDefinition(course.courseType);
   const syncLabel = getSyncModalityLabel(course.syncModality);
@@ -179,7 +186,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
   const progressPercentage = totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-background dark:text-foreground">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Breadcrumbs
           items={[
@@ -209,18 +216,18 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                 <h2 id="course-type-title" className="mt-1 text-xl font-black">{courseType.label}</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6">{courseType.description}</p>
               </div>
-              <span className="w-fit rounded-full bg-white/80 px-3 py-1.5 text-xs font-black shadow-sm">{courseType.tag}</span>
+              <span className="w-fit rounded-full bg-white/80 dark:bg-black/20 px-3 py-1.5 text-xs font-black shadow-sm">{courseType.tag}</span>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold">
-              <span className="rounded-full bg-white/75 px-3 py-1.5">{syncLabel}</span>
-              {courseType.id === 1 && <span className="rounded-full bg-white/75 px-3 py-1.5">Acesso assíncrono</span>}
-              {courseType.id === 4 && <span className="rounded-full bg-white/75 px-3 py-1.5">Gestão de turma institucional</span>}
+              <span className="rounded-full bg-white/75 dark:bg-black/20 px-3 py-1.5">{syncLabel}</span>
+              {courseType.id === 1 && <span className="rounded-full bg-white/75 dark:bg-black/20 px-3 py-1.5">Acesso assíncrono</span>}
+              {courseType.id === 4 && <span className="rounded-full bg-white/75 dark:bg-black/20 px-3 py-1.5">Gestão de turma institucional</span>}
             </div>
             {course.externalRedirectUrl && (courseType.id === 1 || courseType.id === 4) && (
               <ExternalCourseCta href={course.externalRedirectUrl} />
             )}
             {(courseType.id === 3 || courseType.id === 5) && (
-              <Link href={`/contato?curso=${course.id}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
+              <Link href={`/contato?curso=${course.id}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white dark:bg-black/20 px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
                 {courseType.id === 5 ? "Entrar em contato para agendar" : "Solicitar um percurso personalizado"} <ExternalLink size={16} aria-hidden="true" />
               </Link>
             )}
@@ -229,17 +236,17 @@ async function CourseDetail({ courseId }: { courseId: number }) {
           {/* Barra de Progresso Visual */}
           {user && (
             <div className="space-y-3">
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-200 dark:bg-muted rounded-full h-3 overflow-hidden">
                 <div
                   className="bg-red-600 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${progressPercentage}%` }}
                 />
               </div>
               {progressPercentage === 100 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between bg-emerald-50 border border-emerald-200 p-4 rounded-2xl gap-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/70 p-4 rounded-2xl gap-4">
                   <div>
-                    <p className="font-bold text-emerald-900">Parabéns! Você concluiu 100% deste curso.</p>
-                    <p className="text-sm text-emerald-700">Seu certificado oficial de conclusão já está disponível para emissão.</p>
+                    <p className="font-bold text-emerald-900 dark:text-emerald-100">Parabéns! Você concluiu 100% deste curso.</p>
+                    <p className="text-sm text-emerald-700 dark:text-emerald-200">Seu certificado oficial de conclusão já está disponível para emissão.</p>
                   </div>
                   <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
                 </div>
@@ -269,23 +276,23 @@ async function CourseDetail({ courseId }: { courseId: number }) {
 
           <section
             aria-labelledby="google-drive-materials-title"
-            className="relative overflow-hidden rounded-3xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-indigo-50 p-5 shadow-sm sm:p-7"
+            className="relative overflow-hidden rounded-3xl border border-sky-200 dark:border-sky-900/70 bg-gradient-to-br from-sky-50 via-white to-indigo-50 dark:from-sky-950/35 dark:via-background dark:to-indigo-950/25 p-5 shadow-sm sm:p-7"
           >
-            <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-100/70 blur-2xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-100/70 dark:bg-sky-900/30 blur-2xl" aria-hidden="true" />
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-sky-700 shadow-sm ring-1 ring-sky-100" aria-hidden="true">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-sky-950/50 text-sky-700 dark:text-sky-200 shadow-sm ring-1 ring-sky-100 dark:ring-sky-900/70" aria-hidden="true">
                   <HardDrive size={22} strokeWidth={2.2} />
                 </div>
                 <div className="min-w-0">
                   <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Materiais complementares</p>
-                  <h2 id="google-drive-materials-title" className="text-xl font-bold text-slate-900">Materiais no Google Drive</h2>
-                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                  <h2 id="google-drive-materials-title" className="text-xl font-bold text-slate-900 dark:text-slate-100">Materiais no Google Drive</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                     Acesse os arquivos disponibilizados para este curso em uma nova aba, diretamente no Google Drive.
                   </p>
                 </div>
               </div>
-              <span className="w-fit shrink-0 rounded-full bg-white px-3 py-1 text-xs font-semibold text-sky-700 shadow-sm ring-1 ring-sky-100">
+              <span className="w-fit shrink-0 rounded-full bg-white dark:bg-slate-900/60 px-3 py-1 text-xs font-semibold text-sky-700 dark:text-sky-200 shadow-sm ring-1 ring-sky-100 dark:ring-sky-900/70">
                 {driveLinks.length} {driveLinks.length === 1 ? "link disponível" : "links disponíveis"}
               </span>
             </div>
@@ -298,16 +305,16 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                      className="group flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-sky-100 dark:border-sky-900/60 bg-white/90 dark:bg-slate-900/45 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
                       aria-label={`Abrir material ${index + 1} no Google Drive em nova aba`}
                     >
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-700" aria-hidden="true">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-200" aria-hidden="true">
                           <BookOpen size={18} />
                         </span>
                         <span className="min-w-0">
-                          <span className="block text-sm font-semibold text-slate-900">Material {index + 1}</span>
-                          <span className="block truncate text-xs text-slate-500">Link direto do Google Drive</span>
+                          <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">Material {index + 1}</span>
+                          <span className="block truncate text-xs text-slate-500 dark:text-slate-400">Link direto do Google Drive</span>
                         </span>
                       </span>
                       <ExternalLink className="shrink-0 text-sky-700 transition-transform group-hover:translate-x-0.5" size={18} aria-hidden="true" />
@@ -316,18 +323,23 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                 ))}
               </ul>
             ) : (
-              <div className="relative mt-6 rounded-2xl border border-dashed border-sky-200 bg-white/70 px-4 py-5 text-sm text-slate-600">
+              <div className="relative mt-6 rounded-2xl border border-dashed border-sky-200 dark:border-sky-900/70 bg-white/70 dark:bg-slate-900/35 px-4 py-5 text-sm text-slate-600 dark:text-slate-300">
                 Nenhum material do Google Drive está vinculado a este curso no momento.
               </div>
             )}
           </section>
 
           <div className="pt-4 pb-2 flex flex-col sm:flex-row items-center gap-4">
-            <EnrollButton courseId={course.id} isFree={course.isFree ?? true} price={course.price} />
+            <EnrollButton
+              courseId={course.id}
+              isFree={course.isFree ?? true}
+              price={course.price}
+              resumeLessonId={resumeLesson?.lesson.id ?? null}
+            />
             <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>
 
-          <div className="pt-6 border-t border-gray-200"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} /></div>
+          <div className="pt-6 border-t border-gray-200 dark:border-border"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} /></div>
           <CourseEngagement courseId={course.id} />
         </div>
       </div>

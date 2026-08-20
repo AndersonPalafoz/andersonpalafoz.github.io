@@ -1356,14 +1356,14 @@
 - [ ] Auditar e corrigir a rota de API e componentes da página de turmas externas (`/professor/turmas-externas`) para eliminar o erro HTTP 500 em produção
 
 ## Novas Pendências Relatadas — Continuidade de Curso e Modo Escuro (Agosto 2026)
-- [ ] Auditar e corrigir o botão/fluxo "Continuar" no dashboard e no player de cursos, incluindo navegação para a próxima aula, persistência de progresso e finalização
+- [x] Auditar e corrigir o botão/fluxo "Continuar" no dashboard e no player de cursos, incluindo navegação para a próxima aula, persistência de progresso e finalização
 - [ ] Auditar e corrigir contraste, fundos, textos, badges, links e estados interativos no modo escuro de `/cursos/[id]`
 
 ## Retomada do Incidente HTTP 500 em Turmas Externas
 - [ ] Confirmar a correção da rota `/api/professor/external-classes` com teste autenticado e verificar compatibilidade do schema de produção
 
 ## Homologação Multimídia do Player de Aulas
-- [ ] Auditar o player no curso de teste 5 e na aula 4 para reprodução de vídeos hospedados localmente ou externamente
+- [x] Auditar o player no curso de teste 5 e na aula 4 para reprodução de vídeos hospedados localmente ou externamente
 - [ ] Auditar reprodução de áudios de listening, incluindo estados de carregamento, erro, controles, acessibilidade e URLs futuras
 - [ ] Auditar gravação, upload e persistência de atividades de speaking, incluindo permissões, armazenamento e retorno visual ao aluno
 - [ ] Garantir contratos reutilizáveis para que cursos e aulas futuras suportem vídeo, listening e speaking sem lógica específica do curso 5
@@ -1384,11 +1384,11 @@
 - [x] Criar teste de regressão para criação de checkout de curso pago e manter o webhook idempotente
 
 ## Incidente de Download da Biblioteca e Google Drive
-- [ ] Auditar a origem e o formato dos links de arquivos exibidos em `/dashboard/biblioteca`
-- [ ] Verificar a rota de download/proxy, autenticação e permissões do Google Drive
-- [ ] Diferenciar links públicos, links restritos e arquivos inexistentes com mensagens específicas
-- [ ] Garantir download ou abertura segura para materiais hospedados no Google Drive, sem expor credenciais
-- [ ] Criar testes de regressão para os fluxos de download e seus estados de erro
+- [x] Auditar a origem e o formato dos links de arquivos exibidos em `/dashboard/biblioteca`
+- [x] Verificar a rota de download/proxy, autenticação e permissões do Google Drive
+- [x] Diferenciar links públicos, links restritos e arquivos inexistentes com mensagens específicas
+- [x] Garantir download ou abertura segura para materiais hospedados no Google Drive, sem expor credenciais
+- [x] Criar testes de regressão para os fluxos de download e seus estados de erro
 
 ## Incidente de Integração Google Calendar
 - [ ] Auditar por que a sessão do Google Calendar está ausente ou expirada em `/dashboard/calendario`
@@ -1423,3 +1423,14 @@
 - [x] Suíte completa validada: 105 arquivos de teste e 346 testes aprovados
 - [x] Build de produção Next.js validado após as alterações
 - [ ] Confirmar em produção, após novo deploy, o Checkout Stripe com chaves do mesmo modo e webhook ativo
+
+## Incidente de Runtime Webpack no Preview — 20/08/2026
+- [x] Diagnosticar o erro `__webpack_modules__[moduleId] is not a function` detectado no preview após o checkpoint
+- [x] Confirmar que a causa era cache/artefatos `.next` inconsistentes após a limpeza do build durante o servidor ativo
+- [x] Reiniciar o servidor, recriar os artefatos Next.js e validar visualmente o preview sem o erro de runtime
+
+## Auditoria de Compatibilidade com Vercel e Variáveis de Produção (Agosto 2026)
+- [x] Consolidar o estado atual das correções de build, Heartbeat, rotinas de banco Neon e player multimídia
+- [ ] Auditar e validar a integridade das variáveis de ambiente exigidas em produção pela Vercel (`DATABASE_URL`, `NEON_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+- [ ] Validar a compatibilidade do Next.js 15 App Router e server actions/endpoints com o tempo limite e limites de memória da Vercel
+- [x] Registrar instruções passo a passo para o usuário configurar variáveis de ambiente na Vercel caso algum conector exija autenticação manual no painel
