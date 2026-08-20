@@ -1102,3 +1102,9 @@
 - [x] Adicionar suporte a soft delete (deletedAt) na tabela de cursos e endpoints de gerenciamento.
 - [x] Implementar botões de enviar para a lixeira e restaurar nos painéis /admin e /professor.
 - [x] Validar testes automatizados e build de produção.
+
+## Lixeira Avançada de Cursos com Batch Actions, Modal e Busca — 19/08/2026
+- [x] Adicionar seleção múltipla com checkboxes na aba da lixeira para ações em lote.
+- [x] Implementar barra de pesquisa e filtros por nível na aba da lixeira.
+- [x] Adicionar modal de confirmação de segurança para exclusão permanente de cursos.
+- [x] Validar testes automatizados e build de produção.
