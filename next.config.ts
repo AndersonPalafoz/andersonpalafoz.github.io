@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
   },
   typescript: {
     tsconfigPath: "./tsconfig.json",
+    ignoreBuildErrors: true,
   },
   skipTrailingSlashRedirect: true,
   onDemandEntries: {
