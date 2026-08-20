@@ -748,7 +748,7 @@ export default function AdminCursos() {
             ) : (
               <div>
                 <div className="p-4 bg-muted/60 border-b border-border flex items-center justify-between flex-wrap gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <input
                       type="checkbox"
                       aria-label="Selecionar todos os cursos da lixeira"
@@ -759,8 +759,18 @@ export default function AdminCursos() {
                       }}
                       className="h-4 w-4 rounded border-border text-red-600 focus:ring-red-600"
                     />
-                    <span className="text-xs font-bold text-foreground">
-                      {selectedTrashIds.length} de {trashCourses.length} curso(s) selecionado(s)
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedTrashIds.length === trashCourses.length) setSelectedTrashIds([]);
+                        else setSelectedTrashIds(trashCourses.map((c) => c.id));
+                      }}
+                      className="px-3 py-1.5 rounded-lg border border-border bg-background text-xs font-bold text-foreground hover:bg-muted transition"
+                    >
+                      {selectedTrashIds.length === trashCourses.length ? "Desmarcar Todos" : "Selecionar Todos"}
+                    </button>
+                    <span className="px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 text-xs font-black">
+                      {selectedTrashIds.length} item(ns) selecionado(s)
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

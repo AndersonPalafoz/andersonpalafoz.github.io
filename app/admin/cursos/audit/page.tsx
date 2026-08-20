@@ -71,6 +71,37 @@ export default function CourseActivityAuditPage() {
               Rastreamento detalhado de quais administradores excluíram, restauraram ou operaram cursos em lote no sistema.
             </p>
           </div>
+          <button
+            type="button"
+            disabled={loading || logs.length === 0}
+            onClick={() => {
+              if (logs.length === 0) return;
+              const escapeCell = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+              const csv = [
+                "Data,Administrador,Email,Acao,IDs Afetados,Detalhes",
+                ...logs.map((log) =>
+                  [
+                    formatDate(log.createdAt),
+                    log.userName || "Administrador",
+                    log.userEmail || "palafozanderson@gmail.com",
+                    actionLabels[log.action]?.label || log.action,
+                    log.targetIds,
+                    log.details || "Sem detalhes",
+                  ]
+                    .map(escapeCell)
+                    .join(","),
+                ),
+              ].join("\\n");
+              const link = document.createElement("a");
+              link.href = URL.createObjectURL(new Blob([`\\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
+              link.download = `registro-atividades-lixeira-${new Date().toISOString().slice(0, 10)}.csv`;
+              link.click();
+              URL.revokeObjectURL(link.href);
+            }}
+            className="flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white px-5 py-3 font-bold text-xs transition shadow-sm disabled:opacity-50"
+          >
+            Exportar CSV de Auditoria
+          </button>
         </div>
 
         <div className="surface-card overflow-x-auto">
