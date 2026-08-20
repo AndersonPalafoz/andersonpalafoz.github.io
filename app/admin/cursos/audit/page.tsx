@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ArrowLeft, Loader2, ShieldCheck, Trash2, RotateCcw, CheckSquare } from "lucide-react";
+import { ArrowLeft, Loader2, ShieldCheck } from "lucide-react";
 
 interface ActivityLog {
   id: number;
@@ -37,24 +37,32 @@ export default function CourseActivityAuditPage() {
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [offset, setOffset] = useState(0);
+  const [limit] = useState(15);
+  const [total, setTotal] = useState(0);
+
+  const loadLogs = useCallback(async (currentOffset: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch(`/api/admin/activity-logs?limit=${limit}&offset=${currentOffset}`, { cache: "no-store" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Não foi possível carregar os registros de atividades.");
+      setLogs(Array.isArray(json.logs) ? json.logs : []);
+      setTotal(typeof json.pagination?.total === "number" ? json.pagination.total : 0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao carregar auditoria.");
+    } finally {
+      setLoading(false);
+    }
+  }, [limit]);
 
   useEffect(() => {
-    async function loadLogs() {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await fetch("/api/admin/activity-logs", { cache: "no-store" });
-        const json = await res.json();
-        if (!res.ok) throw new Error(json.error || "Não foi possível carregar os registros de atividades.");
-        setLogs(Array.isArray(json) ? json : []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro ao carregar auditoria.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadLogs();
-  }, []);
+    loadLogs(offset);
+  }, [offset, loadLogs]);
+
+  const totalPages = Math.ceil(total / limit) || 1;
+  const currentPage = Math.floor(offset / limit) + 1;
 
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
@@ -68,7 +76,7 @@ export default function CourseActivityAuditPage() {
               <ShieldCheck className="text-red-600" size={28} /> Registro de Atividades da Lixeira
             </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Rastreamento detalhado de quais administradores excluíram, restauraram ou operaram cursos em lote no sistema.
+              Rastreamento detalhado de quais administradores excluíram, restauraram ou operaram cursos em lote no sistema. Total de {total} registro(s).
             </p>
           </div>
           <button
@@ -100,7 +108,7 @@ export default function CourseActivityAuditPage() {
             }}
             className="flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 text-white px-5 py-3 font-bold text-xs transition shadow-sm disabled:opacity-50"
           >
-            Exportar CSV de Auditoria
+            Exportar CSV da Página
           </button>
         </div>
 
@@ -152,6 +160,33 @@ export default function CourseActivityAuditPage() {
             </table>
           )}
         </div>
+
+        {/* Paginação */}
+        {!loading && total > limit && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 surface-card p-4 rounded-2xl">
+            <span className="text-xs font-bold text-muted-foreground">
+              Mostrando {offset + 1} a {Math.min(offset + limit, total)} de {total} registro(s) (Página {currentPage} de {totalPages})
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={offset === 0}
+                onClick={() => setOffset((prev) => Math.max(0, prev - limit))}
+                className="px-4 py-2 rounded-xl border border-border bg-background text-xs font-bold text-foreground hover:bg-muted disabled:opacity-40 transition"
+              >
+                Página Anterior
+              </button>
+              <button
+                type="button"
+                disabled={offset + limit >= total}
+                onClick={() => setOffset((prev) => prev + limit)}
+                className="px-4 py-2 rounded-xl border border-border bg-background text-xs font-bold text-foreground hover:bg-muted disabled:opacity-40 transition"
+              >
+                Próxima Página
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
