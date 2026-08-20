@@ -28,18 +28,38 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   }, [courses, visibleCount]);
 
   const handleSoftDelete = async (id: number, title: string) => {
-    if (!confirm(`Deseja enviar o curso "${title}" para a lixeira?`)) return;
     try {
       setActionLoading(id);
       const res = await fetch(`/api/admin/courses?id=${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Falha ao mover para a lixeira.");
+      
+      const removedCourse = courses.find((c) => c.id === id);
       setCourses((prev) => prev.filter((c) => c.id !== id));
-      toast.success(`Curso "${title}" enviado para a lixeira.`);
+      setOpenMenuId(null);
+
+      // Toast com opção de desfazer
+      toast.success(`Curso "${title}" enviado para a lixeira.`, {
+        action: {
+          label: "Desfazer",
+          onClick: async () => {
+            try {
+              const restoreRes = await fetch(`/api/admin/courses?id=${id}&restore=true`, { method: "DELETE" });
+              if (!restoreRes.ok) throw new Error("Falha ao desfazer ação.");
+              if (removedCourse) {
+                setCourses((prev) => [removedCourse, ...prev]);
+              }
+              toast.success(`Curso "${title}" restaurado com sucesso!`);
+            } catch {
+              toast.error("Erro ao desfazer ação.");
+            }
+          },
+        },
+        duration: 6000,
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao mover curso para lixeira.");
     } finally {
       setActionLoading(null);
-      setOpenMenuId(null);
     }
   };
 
@@ -107,13 +127,13 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                     </Button>
 
                     {isMenuOpen && (
-                      <div className="absolute right-0 top-11 z-20 w-52 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95">
+                      <div className="absolute right-0 top-11 z-20 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95">
                         <Link
                           href={`/admin/cursos?edit=${course.id}`}
                           onClick={() => setOpenMenuId(null)}
                           className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-foreground hover:bg-muted rounded-xl transition"
                         >
-                          <Edit2 size={13} className="text-blue-600" /> Editar Curso
+                          <Edit2 size={13} className="text-blue-600" /> Editar Detalhes e Links
                         </Link>
                         <button
                           onClick={() => void handleSoftDelete(course.id, course.title)}
