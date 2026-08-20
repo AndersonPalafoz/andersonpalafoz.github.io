@@ -171,6 +171,12 @@ export default function AdminCursos() {
       audioUrl: course.audioUrl || "",
       videoUrl: course.videoUrl || "",
       googleDriveLinks: course.googleDriveLinks || "",
+      classDays: course.classDays || "Segundas e Quartas",
+      classTime: course.classTime || "19:00 - 20:30",
+      workloadHours: course.workloadHours || 40,
+      startDate: course.startDate || "",
+      endDate: course.endDate || "",
+      maxAbsencePercent: course.maxAbsencePercent ?? 25,
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
