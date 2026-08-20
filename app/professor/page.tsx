@@ -6,6 +6,7 @@ import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents, getTeac
 import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
+import { ProfessorCoursesTrashManager } from "@/components/professor-courses-trash-manager";
 import { authOptions } from "@/lib/auth";
 
 export const metadata = {
@@ -86,6 +87,15 @@ export default async function TeacherDashboardPage() {
             category: material.category,
             level: material.level,
             fileUrl: material.fileUrl,
+          }))}
+        />
+
+        <ProfessorCoursesTrashManager
+          initialCourses={allCourses.map((c) => ({
+            id: c.id,
+            title: c.title,
+            level: c.level,
+            category: c.category,
           }))}
         />
 
