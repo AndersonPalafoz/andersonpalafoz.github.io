@@ -1009,3 +1009,8 @@
 - [x] Criar endpoint ou função de exportação CSV para listar todos os alunos com nome, nome social, e-mail, CPF, celular, papel, status e data de cadastro.
 - [x] Adicionar botão "Exportar CSV" na interface de gestão de usuários em `/admin/usuarios`.
 - [x] Executar testes Vitest e validar build de produção.
+
+## Pesquisa por Nome ou CPF na Gestão de Usuários — 19/08/2026
+- [x] Atualizar a lógica de filtro `filteredUsers` em `/admin/usuarios/page.tsx` para buscar também por CPF (com ou sem pontuação) e nome social.
+- [x] Atualizar o placeholder da barra de pesquisa para indicar "Buscar por nome, CPF, email ou telefone".
+- [x] Executar testes Vitest e validar build de produção.
