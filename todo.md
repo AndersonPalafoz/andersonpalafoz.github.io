@@ -1214,3 +1214,8 @@
 - [x] Criar funções de soft delete, restauração e exclusão permanente com dependências em `lib/db.ts`.
 - [x] Implementar endpoints de lote (`/api/admin/users/batch` e `/api/admin/materials/batch`) e rotas de lixeira.
 - [x] Executar bateria de testes automatizados e build de produção com sucesso.
+
+## Sistema de Lixeira, Restauração e Exclusão em Lote para Alunos e Materiais — Concluído
+- [x] Implementar abas de lixeira, restauração, exclusão permanente com confirmação detalhada e lote para materiais e alunos.
+- [x] Garantir sincronização e contadores em tempo real no painel administrativo.
+- [x] Executar bateria completa de testes automatizados e salvar checkpoint final.
