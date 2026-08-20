@@ -1235,3 +1235,8 @@
 - [x] Ajustar APIs de listagem e lixeira (cursos, turmas externas e materiais) para filtrar por criador quando o usuário logado for professor.
 - [x] Garantir que administradores e superadministradores mantenham visão global de todos os itens.
 - [x] Validar com testes Vitest e salvar checkpoint estável.
+
+## Contador da Lixeira no Menu Lateral — Concluído
+- [x] Criar API de contagem de lixeira respeitando escopo de professor vs admin.
+- [x] Exibir badge com contagem exata no menu lateral das áreas administrativas.
+- [x] Validar com testes e salvar checkpoint.
