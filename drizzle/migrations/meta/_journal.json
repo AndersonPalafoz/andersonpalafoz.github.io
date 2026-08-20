@@ -351,6 +351,13 @@
       "when": 1787210032025,
       "tag": "0049_material_warpath",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1787213439797,
+      "tag": "0050_premium_carlie_cooper",
+      "breakpoints": true
     }
   ]
 }
