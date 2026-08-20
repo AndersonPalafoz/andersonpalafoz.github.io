@@ -1139,3 +1139,9 @@
 - [x] Adicionar toast interativo com opção de "Desfazer" ao enviar um curso para a lixeira.
 - [x] Garantir acesso direto à edição de detalhes e links no menu de ações rápidas.
 - [x] Validar testes automatizados e build de produção.
+
+## Pesquisa em Tempo Real, Tags de Status e Exportação CSV/PDF de Cursos — 19/08/2026
+- [x] Implementar barra de pesquisa em tempo real para filtrar cursos por nome ou nível.
+- [x] Adicionar sistema de tags coloridas de status baseadas em dados reais (Ativo, Módulos Prontos, etc.).
+- [x] Criar opções de exportação da lista de cursos em CSV e PDF.
+- [x] Validar testes automatizados e build de produção.
