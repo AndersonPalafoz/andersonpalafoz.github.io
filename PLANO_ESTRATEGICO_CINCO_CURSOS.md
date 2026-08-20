@@ -130,3 +130,9 @@ Consolidar a experiência visual e interativa dos cinco tipos de curso na vitrin
 2. **Filtros Rápidos por Tipo**: Adicionados botões de filtro rápido baseados nos 5 tipos na barra de pesquisa da vitrine pública, permitindo que o usuário alterne instantaneamente entre modalidades com suporte a aria-pressed.
 3. **CTAs Contextuais**: As páginas individuais de detalhes (`/cursos/[id]`) agora adaptam os botões de ação com base na modalidade (redirecionamento para Hotmart/Classroom para os tipos 1 e 4; direcionamento para contato/agendamento com parâmetro do curso para os tipos 3 e 5).
 4. **Testes Unitários**: Criado o arquivo `app/course-types-public.test.ts` validando a presença da legenda, filtros rápidos e CTAs específicos. A suíte completa de testes passou com **328 testes aprovados (100% de sucesso)**.
+
+### Melhoria complementar — Feedback de redirecionamento externo
+
+Foi criado o componente client-side `components/external-course-cta.tsx` e integrado à página pública `app/cursos/[id]/page.tsx`. Quando o usuário clica em um CTA de ambiente externo dos Tipos 1 ou 4, o botão muda imediatamente para o estado **“Abrindo ambiente externo...”**, mostra um indicador de carregamento e informa via região `aria-live` que o destino será aberto em uma nova aba. Cliques duplicados são bloqueados durante o estado de transição, enquanto o link mantém `target="_blank"` e `rel="noopener noreferrer"`.
+
+O teste de contrato `components/external-course-cta.test.ts` confirma o destino em nova aba, os atributos de segurança, o feedback textual, o estado `aria-disabled` e a região acessível de status. A suíte passou com **329 testes aprovados**. A validação do build permanece pendente porque o worker do Next.js foi encerrado pelo limite de recursos do sandbox em tentativas anteriores; isso não gerou erro de TypeScript no servidor reiniciado.
