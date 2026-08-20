@@ -7,7 +7,17 @@ import Link from "next/link";
 import { CheckCircle2, Loader2, PlayCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
-export function EnrollButton({ courseId, isFree = true, price = 0 }: { courseId: number; isFree?: boolean; price?: number | string | null }) {
+export function EnrollButton({
+  courseId,
+  isFree = true,
+  price = 0,
+  resumeLessonId = null,
+}: {
+  courseId: number;
+  isFree?: boolean;
+  price?: number | string | null;
+  resumeLessonId?: number | null;
+}) {
   const { status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -105,10 +115,12 @@ export function EnrollButton({ courseId, isFree = true, price = 0 }: { courseId:
           <CheckCircle2 size={18} />
           <span>Matrícula Ativa neste Curso</span>
         </div>
-        <Link href={`/cursos/${courseId}`}>
-          <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold text-sm inline-flex items-center gap-2 transition shadow-md shadow-red-600/20">
-            <PlayCircle size={18} /> Continuar Assistindo
-          </button>
+        <Link
+          href={resumeLessonId ? `/cursos/${courseId}/aulas/${resumeLessonId}` : `/cursos/${courseId}`}
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold text-sm inline-flex items-center gap-2 transition shadow-md shadow-red-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+          aria-label={resumeLessonId ? "Continuar na próxima aula pendente" : "Abrir o curso"}
+        >
+          <PlayCircle size={18} /> Continuar Assistindo
         </Link>
       </div>
     );

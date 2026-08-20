@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { BookOpen, Plus, Video, Clock, Loader2, Upload, FileText, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { BookOpen, Plus, Video, Clock, Loader2, Upload, FileText, Headphones, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 
 interface Course {
@@ -17,6 +17,7 @@ interface Lesson {
   title: string;
   description: string | null;
   videoUrl: string | null;
+  audioUrl: string | null;
   duration: number | null;
   order: number;
   content: string | null;
@@ -39,6 +40,7 @@ export default function AdminAulasPage() {
     title: "",
     description: "",
     videoUrl: "",
+    audioUrl: "",
     duration: 15,
     order: 1,
     content: "",
@@ -110,6 +112,7 @@ export default function AdminAulasPage() {
         title: "",
         description: "",
         videoUrl: "",
+        audioUrl: "",
         duration: 15,
         order: lessons.length + 1,
         content: "",
@@ -250,6 +253,47 @@ export default function AdminAulasPage() {
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Áudio de Listening</label>
+                  <div className="relative flex gap-2">
+                    <Headphones className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <input
+                      type="url"
+                      value={formData.audioUrl}
+                      onChange={(e) => setFormData({ ...formData, audioUrl: e.target.value })}
+                      placeholder="https://.../listening.mp3"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                    />
+                    <label className="cursor-pointer shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+                      <Upload size={16} />
+                      <span>Enviar</span>
+                      <input
+                        type="file"
+                        accept="audio/webm,audio/ogg,audio/mpeg,audio/wav,audio/mp4"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          e.currentTarget.value = "";
+                          if (!file) return;
+                          try {
+                            const payload = new FormData();
+                            payload.append("file", file);
+                            payload.append("context", "lesson-audio");
+                            const response = await fetch("/api/upload", { method: "POST", body: payload });
+                            const result = await response.json();
+                            if (!response.ok) throw new Error(result.error || "Falha ao enviar áudio");
+                            setFormData((current) => ({ ...current, audioUrl: result.url }));
+                            toast.success(`Áudio ${file.name} enviado e vinculado ao formulário.`);
+                          } catch (error) {
+                            toast.error(error instanceof Error ? error.message : "Erro ao enviar áudio.");
+                          }
+                        }}
+                      />
+                    </label>
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">Aceita MP3, WAV, OGG, WebM ou MP4, com limite de 15 MB.</p>
                 </div>
 
                 <div>

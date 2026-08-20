@@ -31,6 +31,7 @@ interface LessonData {
   title: string;
   description: string | null;
   videoUrl: string | null;
+  audioUrl: string | null;
   type: string;
 }
 
@@ -42,6 +43,7 @@ export default function LessonPageClient() {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [lesson, setLesson] = useState<LessonData | null>(null);
   const [courseTitle, setCourseTitle] = useState("");
+  const [courseAudioUrl, setCourseAudioUrl] = useState<string | null>(null);
   const [materials, setMaterials] = useState<MaterialItem[]>([]);
   const [completed, setCompleted] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(false);
@@ -67,6 +69,7 @@ export default function LessonPageClient() {
         const json = await res.json();
         setLesson(json.lesson);
         setCourseTitle(json.course?.title || "Curso Oficial");
+        setCourseAudioUrl(json.course?.audioUrl || null);
         setMaterials(json.materials || []);
         setCompleted(json.completed);
         const noteRes = await fetch(`/api/notes?lessonId=${lessonId}`);
@@ -289,11 +292,17 @@ export default function LessonPageClient() {
           <div className="border-t border-gray-100 pt-6 space-y-6">
             <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 space-y-4">
-                <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-white px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span><span className="text-xs text-gray-500 font-medium">Listening Exercise</span></div>
-                <h4 className="font-bold text-gray-900 text-base">Ouça o áudio de referência</h4>
-                <p className="text-xs text-gray-600 leading-relaxed">Pratique a escuta ativa acompanhando o diálogo principal da aula.</p>
-                <button onClick={() => toast.success("Áudio nativo em reprodução.")} className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-sm">▶ Reproduzir Áudio de Treino</button>
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/35 dark:to-orange-950/25 border border-red-200 dark:border-red-900/70 space-y-4">
+                <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-200 bg-white dark:bg-black/20 px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span><span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Listening Exercise</span></div>
+                <h4 className="font-bold text-gray-900 dark:text-gray-100 text-base">Ouça o áudio de referência</h4>
+                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">Pratique a escuta ativa acompanhando o diálogo principal da aula.</p>
+                {(lesson?.audioUrl || courseAudioUrl) ? (
+                  <audio controls preload="metadata" src={lesson?.audioUrl || courseAudioUrl || undefined} className="w-full" aria-label={`Áudio de listening da aula ${lesson?.title || lessonId}`} />
+                ) : (
+                  <div className="rounded-xl border border-dashed border-red-200 dark:border-red-900/70 bg-white/70 dark:bg-black/20 px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
+                    O áudio de listening ainda não foi vinculado a esta aula.
+                  </div>
+                )}
               </div>
 
               <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 space-y-4">

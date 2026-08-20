@@ -305,6 +305,7 @@ export const lessons = pgTable("lessons", {
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   videoUrl: varchar("videoUrl", { length: 500 }),
+  audioUrl: varchar("audioUrl", { length: 1000 }),
   duration: integer("duration"), // em minutos
   order: integer("order").notNull(),
   content: text("content"), // conteúdo em markdown

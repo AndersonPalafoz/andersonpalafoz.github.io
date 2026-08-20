@@ -630,10 +630,14 @@ export async function getResumeLesson(userId: number, courseId: number) {
     lessonRows.push(...moduleLessons);
   }
   if (lessonRows.length === 0) return null;
-  const completedRows = await db.query.lessonProgress.findMany({ where: eq(schema.lessonProgress.userId, userId) });
+  const lessonIds = lessonRows.map((lesson) => lesson.id);
+  const completedRows = await db.query.lessonProgress.findMany({
+    where: and(eq(schema.lessonProgress.userId, userId), inArray(schema.lessonProgress.lessonId, lessonIds)),
+  });
   const completedIds = new Set(completedRows.filter((row) => row.completed === 1).map((row) => row.lessonId));
   const next = lessonRows.find((lesson) => !completedIds.has(lesson.id)) || lessonRows[lessonRows.length - 1];
-  return { lesson: next, completedLessons: completedIds.size, totalLessons: lessonRows.length, percentage: Math.round((completedIds.size / lessonRows.length) * 100) };
+  const completedLessons = lessonRows.filter((lesson) => completedIds.has(lesson.id)).length;
+  return { lesson: next, completedLessons, totalLessons: lessonRows.length, percentage: Math.round((completedLessons / lessonRows.length) * 100) };
 }
 
 

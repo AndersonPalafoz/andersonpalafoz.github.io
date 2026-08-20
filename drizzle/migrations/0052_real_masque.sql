@@ -1,0 +1,1 @@
+ALTER TABLE "lessons" ADD COLUMN "audioUrl" varchar(1000);
