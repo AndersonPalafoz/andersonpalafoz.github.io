@@ -1199,3 +1199,7 @@
 - [x] Adicionar botão explícito de "Selecionar Todos / Desmarcar Todos" e contador visual destacado de itens selecionados na lixeira do administrador.
 - [x] Implementar funcionalidade de exportação do registro de atividades administrativas em formato CSV com codificação UTF-8 (`/admin/cursos/audit`).
 - [x] Executar build de produção otimizado com sucesso (`pnpm build`) e validar 100% dos 321 testes automatizados (Vitest).
+
+## Atualização Imediata do Contador da Lixeira — 19/08/2026
+- [x] Atualizar todas as mutações de cursos (`confirmDeleteCourse`, `handleRestore`, `handlePermanentDelete`, `handleBatchAction`) para disparar `fetchTrash()` e `fetchCourses()` imediatamente, garantindo atualização em tempo real do contador e listagens.
+- [x] Validar bateria completa de 321 testes automatizados (Vitest) com 100% de sucesso.

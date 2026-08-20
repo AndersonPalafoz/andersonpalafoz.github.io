@@ -176,8 +176,10 @@ export default function AdminCursos() {
       }
       setCourses(courses.filter((c) => c.id !== courseToDelete.id));
       setErrorDetails(null);
-      toast.success("Curso excluído com sucesso.");
+      toast.success("Curso movido para a lixeira com sucesso.");
       setCourseToDelete(null);
+      fetchCourses();
+      fetchTrash();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir curso.");
     } finally {
