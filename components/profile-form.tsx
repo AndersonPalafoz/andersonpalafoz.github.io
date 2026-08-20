@@ -9,14 +9,38 @@ const AVATAR_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface ProfileFormProps {
   initialName: string;
+  initialSocialName?: string;
+  initialCpf?: string;
   initialPhone: string;
   initialLocation: string;
   initialBio: string;
   initialAvatarUrl?: string;
 }
 
+const formatCpf = (value: string) => {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 11);
+  return digits
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})/, "$1-$2");
+};
+
+const formatPhone = (value: string) => {
+  const digits = (value || "").replace(/\D/g, "").slice(0, 11);
+  if (digits.length > 10) {
+    return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+  } else if (digits.length > 6) {
+    return digits.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+  } else if (digits.length > 2) {
+    return digits.replace(/(\d{2})(\d{0,5})/, "($1) $2");
+  }
+  return digits;
+};
+
 export function ProfileForm({
   initialName,
+  initialSocialName = "",
+  initialCpf = "",
   initialPhone,
   initialLocation,
   initialBio,
@@ -26,7 +50,9 @@ export function ProfileForm({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewObjectUrl = useRef<string | null>(null);
   const [name, setName] = useState(initialName);
-  const [phone, setPhone] = useState(initialPhone);
+  const [socialName, setSocialName] = useState(initialSocialName);
+  const [cpf, setCpf] = useState(formatCpf(initialCpf));
+  const [phone, setPhone] = useState(formatPhone(initialPhone));
   const [location, setLocation] = useState(initialLocation);
   const [bio, setBio] = useState(initialBio);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
@@ -106,7 +132,7 @@ export function ProfileForm({
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, location, bio }),
+        body: JSON.stringify({ name, socialName, cpf, phone, location, bio }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
@@ -176,9 +202,26 @@ export function ProfileForm({
       </section>
 
       <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-gray-700">Nome Completo</label>
-          <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" required />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-gray-700">Nome Completo</label>
+            <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" required />
+          </div>
+          <div>
+            <label htmlFor="profile-socialName" className="mb-1.5 block text-sm font-medium text-gray-700">Nome Social (Opcional)</label>
+            <input id="profile-socialName" type="text" value={socialName} onChange={(e) => setSocialName(e.target.value)} placeholder="Como prefere ser chamado" className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="profile-cpf" className="mb-1.5 block text-sm font-medium text-gray-700">CPF</label>
+            <input id="profile-cpf" type="text" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          </div>
+          <div>
+            <label htmlFor="profile-phone" className="mb-1.5 block text-sm font-medium text-gray-700">Celular / WhatsApp</label>
+            <input id="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={15} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
