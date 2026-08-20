@@ -197,13 +197,35 @@ export default function AdminCursos() {
         setErrorDetails(details);
         throw new Error(details.message);
       }
-      setCourses(courses.filter((c) => c.id !== courseToDelete.id));
+      const deletedId = courseToDelete.id;
+      setCourses(courses.filter((c) => c.id !== deletedId));
       setErrorDetails(null);
-      toast.success("Curso movido para a lixeira com sucesso.");
       setCourseToDelete(null);
       fetchCourses();
       fetchTrash();
       window.dispatchEvent(new Event("trash-updated"));
+
+      toast("Curso movido para a lixeira.", {
+        description: "Você pode restaurar o curso imediatamente se foi um engano.",
+        action: {
+          label: "Desfazer",
+          onClick: async () => {
+            try {
+              const res = await fetch(`/api/admin/courses?id=${deletedId}&restore=true`, { method: "DELETE" });
+              if (res.ok) {
+                toast.success("Ação desfeita! Curso restaurado com sucesso.");
+                fetchCourses();
+                fetchTrash();
+                window.dispatchEvent(new Event("trash-updated"));
+              } else {
+                toast.error("Falha ao desfazer.");
+              }
+            } catch (e) {
+              toast.error("Erro ao desfazer ação.");
+            }
+          },
+        },
+      });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir curso.");
     } finally {
