@@ -103,6 +103,7 @@ export default function AdminCursos() {
       toast.success("Curso restaurado com sucesso!");
       fetchCourses();
       fetchTrash();
+      window.dispatchEvent(new Event("trash-updated"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao restaurar.");
     }
@@ -125,6 +126,7 @@ export default function AdminCursos() {
       setSelectedTrashIds([]);
       fetchCourses();
       fetchTrash();
+      window.dispatchEvent(new Event("trash-updated"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro na operação em lote.");
     } finally {
@@ -140,6 +142,7 @@ export default function AdminCursos() {
       toast.success("Curso excluído permanentemente do sistema.");
       setTrashCourseToPermanentDelete(null);
       fetchTrash();
+      window.dispatchEvent(new Event("trash-updated"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir.");
     } finally {
@@ -180,6 +183,7 @@ export default function AdminCursos() {
       setCourseToDelete(null);
       fetchCourses();
       fetchTrash();
+      window.dispatchEvent(new Event("trash-updated"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir curso.");
     } finally {
