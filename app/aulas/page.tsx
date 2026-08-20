@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Clock, Users, Award, BookOpen } from "lucide-react";
 import { CourseCatalog } from "@/components/course-catalog";
+import { CourseTypeLegend } from "@/components/course-type-legend";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getCourses, db } from "@/lib/db";
@@ -120,6 +121,8 @@ export default async function AulasPage() {
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
             Nossos Cursos
           </h2>
+
+          <CourseTypeLegend />
 
           {cursos.length === 0 ? (
             <p className="text-center text-gray-600">

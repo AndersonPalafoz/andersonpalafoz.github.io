@@ -85,6 +85,27 @@ export function CourseCatalog({
             </button>
           ))}
           <span className="ml-2 mr-1 text-xs font-black uppercase tracking-wide text-muted-foreground">Tipo</span>
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtros rápidos por tipo de curso">
+            <button
+              type="button"
+              aria-pressed={selectedCourseType === "all"}
+              onClick={() => setSelectedCourseType("all")}
+              className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${selectedCourseType === "all" ? "bg-red-600 text-white" : "bg-card text-muted-foreground hover:bg-red-50 hover:text-red-700"}`}
+            >
+              Todos
+            </button>
+            {COURSE_TYPE_OPTIONS.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={selectedCourseType === String(option.id)}
+                onClick={() => setSelectedCourseType(String(option.id))}
+                className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${selectedCourseType === String(option.id) ? option.className : "border-border bg-card text-muted-foreground hover:border-red-200 hover:text-red-700"}`}
+              >
+                {option.shortLabel}
+              </button>
+            ))}
+          </div>
           <select
             value={selectedCourseType}
             onChange={(event) => setSelectedCourseType(event.target.value)}
