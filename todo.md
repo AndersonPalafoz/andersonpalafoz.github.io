@@ -1219,3 +1219,14 @@
 - [x] Implementar abas de lixeira, restauração, exclusão permanente com confirmação detalhada e lote para materiais e alunos.
 - [x] Garantir sincronização e contadores em tempo real no painel administrativo.
 - [x] Executar bateria completa de testes automatizados e salvar checkpoint final.
+
+## Governança de Autoria e Permissões (RBAC) para Professores e Administradores
+- [ ] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
+- [ ] Permitir que administradores e superadministradores gerenciem itens criados por qualquer usuário.
+- [ ] Adicionar testes automatizados para validar as regras de permissão por autoria.
+- [ ] Validar build e salvar checkpoint.
+
+## Governança de Autoria e Permissões (RBAC) para Professores e Administradores — Concluído
+- [x] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
+- [x] Permitir que administradores e superadministradores gerenciem itens criados por qualquer usuário.
+- [x] Bateria completa de testes Vitest aprovada com 100% de sucesso.

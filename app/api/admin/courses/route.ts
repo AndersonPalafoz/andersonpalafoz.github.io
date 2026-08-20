@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCourses, getTrashCourses, createCourse, updateCourse, softDeleteCourse, restoreCourse, deleteCourse } from "@/lib/db";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageCourse } from "@/lib/admin-auth";
 
 export async function GET(request: NextRequest) {
   try {
@@ -74,6 +74,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     const courseId = parseInt(id);
+
+    const allowed = await canManageCourse(admin, courseId);
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden: professores só podem gerenciar seus próprios cursos." }, { status: 403 });
+    }
 
     if (restore) {
       const restored = await restoreCourse(courseId);
