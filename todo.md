@@ -1070,3 +1070,7 @@
 ## Botão de Exportação de Relatório de Progresso em PDF no Dashboard — 19/08/2026
 - [x] Implementar botão de exportação do relatório de progresso individual do aluno em PDF no dashboard.
 - [x] Garantir validação com testes automatizados e checkpoint.
+
+## Compartilhamento no LinkedIn de Relatório e Certificados — 19/08/2026
+- [x] Implementar botões de compartilhamento direto no LinkedIn para o relatório de progresso acadêmico e certificados do aluno no dashboard.
+- [x] Validar compilação e testes automatizados.
