@@ -1050,3 +1050,7 @@
 - [x] Implementar busca textual por título e descrição em `/cursos` e `/materiais`.
 - [x] Adicionar filtros por categoria, nível acadêmico e tipo de acesso.
 - [x] Otimizar performance de listagem e responsividade com feedback visual.
+
+## Skeletons Animados em Busca e Filtros de Cursos — 19/08/2026
+- [x] Implementar estados de carregamento com skeletons animados na página de listagem de cursos ao filtrar ou pesquisar.
+- [x] Garantir transição fluida e feedback visual imediato para o usuário.
