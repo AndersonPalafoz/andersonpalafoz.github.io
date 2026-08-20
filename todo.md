@@ -1230,3 +1230,8 @@
 - [x] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
 - [x] Permitir que administradores e superadministradores gerenciem itens criados por qualquer usuário.
 - [x] Bateria completa de testes Vitest aprovada com 100% de sucesso.
+
+## Filtragem de Lixeira por Autoria para Professores — Concluído
+- [x] Ajustar APIs de listagem e lixeira (cursos, turmas externas e materiais) para filtrar por criador quando o usuário logado for professor.
+- [x] Garantir que administradores e superadministradores mantenham visão global de todos os itens.
+- [x] Validar com testes Vitest e salvar checkpoint estável.
