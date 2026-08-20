@@ -1194,3 +1194,8 @@
 - [x] Desenvolver a página de auditoria de atividades (`/admin/cursos/audit`) exibindo administrador responsável, data/hora, tipo de ação e cursos afetados.
 - [x] Corrigir a diretiva `"use client"` ausente em `/app/admin/page.tsx` para garantir build de produção perfeito no Vercel.
 - [x] Executar build de produção local com sucesso (`pnpm build`) e aprovar 100% dos 321 testes automatizados (Vitest).
+
+## Botão Selecionar Todos, Contador Visual e Exportação CSV de Auditoria — 19/08/2026
+- [x] Adicionar botão explícito de "Selecionar Todos / Desmarcar Todos" e contador visual destacado de itens selecionados na lixeira do administrador.
+- [x] Implementar funcionalidade de exportação do registro de atividades administrativas em formato CSV com codificação UTF-8 (`/admin/cursos/audit`).
+- [x] Executar build de produção otimizado com sucesso (`pnpm build`) e validar 100% dos 321 testes automatizados (Vitest).
