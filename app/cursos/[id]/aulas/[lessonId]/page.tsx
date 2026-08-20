@@ -54,6 +54,7 @@ export default function LessonPageClient() {
   const [listeningCompleted, setListeningCompleted] = useState(false);
   const [savingListening, setSavingListening] = useState(false);
 
+  const [listeningActivity, setListeningActivity] = useState<{ id: number; title: string } | null>(null);
   const [speakingActivity, setSpeakingActivity] = useState<{ id: number; title: string } | null>(null);
   const [speakingHistory, setSpeakingHistory] = useState<SpeakingAttempt[]>([]);
   const [latestFeedback, setLatestFeedback] = useState<(SpeakingAttempt & { previousScore: number | null; improvement: number | null }) | null>(null);
@@ -76,6 +77,16 @@ export default function LessonPageClient() {
         setCompleted(json.completed);
         const noteRes = await fetch(`/api/notes?lessonId=${lessonId}`);
         if (noteRes.ok) { const noteJson = await noteRes.json(); setPersonalNote(noteJson.note?.note || ""); }
+
+        const listeningAct = json.activities?.find((a: any) => a.type === "listening");
+        if (listeningAct) {
+          setListeningActivity(listeningAct);
+          const listeningRes = await fetch(`/api/activities/${listeningAct.id}/progress`, { cache: "no-store" });
+          if (listeningRes.ok) {
+            const listeningJson = await listeningRes.json();
+            setListeningCompleted(Boolean(listeningJson.completed));
+          }
+        }
 
         const speakingAct = json.activities?.find((a: any) => a.type === "speaking");
         if (speakingAct) {
@@ -133,6 +144,40 @@ export default function LessonPageClient() {
     }
   };
 
+  const updateListeningProgress = async (completed: boolean) => {
+    if (!listeningActivity) {
+      toast.error("Nenhuma atividade de Listening vinculada a esta aula.");
+      return;
+    }
+    setSavingListening(true);
+    try {
+      const response = await fetch(`/api/activities/${listeningActivity.id}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Não foi possível atualizar o Listening.");
+      setListeningCompleted(completed);
+      if (completed) {
+        toast.success("Parabéns! Atividade de Listening concluída.", {
+          action: {
+            label: "Desfazer",
+            onClick: () => {
+              void updateListeningProgress(false);
+            },
+          },
+        });
+      } else {
+        toast.success("Conclusão do Listening desfeita.");
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao atualizar a atividade de Listening.");
+    } finally {
+      setSavingListening(false);
+    }
+  };
+
   const submitSpeakingAudio = async (file: File) => {
     if (!speakingActivity) {
       toast.error("Nenhuma atividade de Speaking vinculada a esta aula.");
@@ -150,9 +195,35 @@ export default function LessonPageClient() {
       const improvement = payload.comparison?.improvement ?? null;
       setSpeakingHistory((current) => [payload.attempt, ...current]);
       setLatestFeedback({ ...payload.attempt, previousScore, improvement });
-      toast.success(previousScore === null ? "Gravação enviada com sucesso." : "Regravação salva e comparada com a tentativa anterior.");
+      toast.success(previousScore === null ? "Speaking concluído e gravação enviada." : "Regravação de Speaking salva e comparada.", {
+        action: {
+          label: "Desfazer",
+          onClick: () => {
+            void undoSpeakingCompletion();
+          },
+        },
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao enviar áudio.");
+    } finally {
+      setSavingSpeaking(false);
+    }
+  };
+
+  const undoSpeakingCompletion = async () => {
+    if (!speakingActivity || savingSpeaking) return;
+    setSavingSpeaking(true);
+    try {
+      const response = await fetch(`/api/activities/${speakingActivity.id}/progress`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: false }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Não foi possível desfazer a conclusão de Speaking.");
+      toast.success("Conclusão do Speaking desfeita. O histórico da gravação foi preservado.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao desfazer a conclusão de Speaking.");
     } finally {
       setSavingSpeaking(false);
     }
@@ -301,25 +372,14 @@ export default function LessonPageClient() {
                 {(lesson?.audioUrl || courseAudioUrl) ? (
                   <>
                     <audio controls preload="metadata" src={lesson?.audioUrl || courseAudioUrl || undefined} className="w-full" aria-label={`Áudio de listening da aula ${lesson?.title || lessonId}`} />
-                    <Button 
-                      onClick={async () => {
-                        setSavingListening(true);
-                        try {
-                          // Simula salvamento robusto de conclusão do listening com feedback imediato
-                          await new Promise(r => setTimeout(r, 300));
-                          setListeningCompleted(true);
-                          toast.success("Parabéns! Atividade de Listening concluída com sucesso.");
-                        } catch {
-                          toast.error("Erro ao registrar conclusão da atividade de listening.");
-                        } finally {
-                          setSavingListening(false);
-                        }
-                      }}
-                      disabled={savingListening || listeningCompleted}
+                    <Button
+                      onClick={() => void updateListeningProgress(!listeningCompleted)}
+                      disabled={savingListening || !listeningActivity}
                       className={`w-full gap-2 rounded-xl font-bold text-xs ${listeningCompleted ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-red-600 hover:bg-red-700 text-white"}`}
+                      aria-pressed={listeningCompleted}
                     >
                       {savingListening ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
-                      {listeningCompleted ? "Listening Concluído" : "Marcar Listening como Concluído"}
+                      {listeningCompleted ? "Desfazer conclusão do Listening" : "Marcar Listening como Concluído"}
                     </Button>
                   </>
                 ) : (

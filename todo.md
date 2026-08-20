@@ -1441,3 +1441,10 @@
 - [x] Exibir toast de erro acionável quando o envio ou persistência da atividade falhar
 - [x] Impedir toasts duplicados durante cliques repetidos e manter o feedback compatível com mobile e modo escuro
 - [x] Criar ou atualizar testes de interação, rodar Vitest e validar build de produção antes do checkpoint
+
+## Ação Desfazer em Toasts de Atividades (Agosto 2026)
+- [x] Adicionar botão Desfazer no toast após concluir listening
+- [x] Adicionar botão Desfazer no toast após concluir speaking
+- [x] Reverter o progresso persistido sem apagar o histórico de tentativas de speaking
+- [x] Garantir idempotência, bloqueio de cliques duplicados e feedback de erro na reversão
+- [x] Criar testes de contrato e validar build e comportamento responsivo antes do checkpoint
