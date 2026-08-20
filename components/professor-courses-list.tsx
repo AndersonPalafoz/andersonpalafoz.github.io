@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check } from "lucide-react";
+import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -15,16 +15,18 @@ interface Course {
   modules?: number;
   isFree?: boolean;
   price?: number;
-  status?: string | null; // Novo campo para suportar status customizado ou automático
+  status?: string | null;
 }
 
 export function ProfessorCoursesList({ initialCourses }: { initialCourses: Course[] }) {
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [visibleCount, setVisibleCount] = useState(4);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [statusDropdownId, setStatusDropdownId] = useState<number | null>(null);
+  const [animatingId, setAnimatingId] = useState<number | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id?: number; title?: string }>({
     isOpen: false,
   });
@@ -33,9 +35,13 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
     return courses.filter((c) => {
       const term = searchTerm.toLowerCase();
       const matchesSearch = !term || c.title.toLowerCase().includes(term) || c.level.toLowerCase().includes(term) || (c.category && c.category.toLowerCase().includes(term));
-      return matchesSearch;
+      
+      const currentStatus = c.status || ((c.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve");
+      const matchesStatus = statusFilter === "all" || currentStatus === statusFilter;
+
+      return matchesSearch && matchesStatus;
     });
-  }, [courses, searchTerm]);
+  }, [courses, searchTerm, statusFilter]);
 
   const paginatedCourses = useMemo(() => {
     return filteredCourses.slice(0, visibleCount);
@@ -55,7 +61,12 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
         prev.map((c) => (c.id === courseId ? { ...c, status: newStatus } : c))
       );
       setStatusDropdownId(null);
-      toast.success(`Status do curso alterado para "${newStatus}" com sucesso!`);
+      setAnimatingId(courseId);
+      setTimeout(() => setAnimatingId(null), 1000);
+
+      toast.success(`Status alterado para "${newStatus}" com sucesso!`, {
+        description: "A alteração foi salva permanentemente no banco de dados.",
+      });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao atualizar status.");
     } finally {
@@ -208,25 +219,48 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
         </div>
       </div>
 
-      {/* Barra de Pesquisa em Tempo Real */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Pesquisar curso por nome, nível (A1-C2) ou categoria..."
-          className="w-full rounded-2xl border border-border bg-muted/30 pl-10 pr-4 py-3 text-xs sm:text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-600 transition"
-        />
+      {/* Barra de Pesquisa e Filtros Rápidos por Status */}
+      <div className="space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Pesquisar curso por nome, nível (A1-C2) ou categoria..."
+            className="w-full rounded-2xl border border-border bg-muted/30 pl-10 pr-4 py-3 text-xs sm:text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap pt-1">
+          <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 mr-1">
+            <Filter size={12} /> Filtro Rápido:
+          </span>
+          {[
+            { label: "Todos", value: "all" },
+            { label: "Ativo & Pronto", value: "Ativo & Pronto" },
+            { label: "Em Breve", value: "Em Breve" },
+            { label: "Lotado", value: "Lotado" },
+          ].map((tab) => (
+            <button
+              key={tab.value}
+              onClick={() => setStatusFilter(tab.value)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${statusFilter === tab.value ? "bg-red-600 text-white shadow-sm" : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-3">
         {filteredCourses.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-8 text-center">Nenhum curso encontrado para a busca realizada.</p>
+          <p className="text-muted-foreground text-sm py-8 text-center">Nenhum curso encontrado para a busca ou filtro selecionado.</p>
         ) : (
           paginatedCourses.map((course) => {
             const isMenuOpen = openMenuId === course.id;
             const isStatusDropdownOpen = statusDropdownId === course.id;
+            const isRecentlyUpdated = animatingId === course.id;
             
             const currentStatus = course.status || ((course.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve");
             const statusBadgeClass =
@@ -237,12 +271,15 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                 : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-200";
 
             return (
-              <div key={course.id} className="relative rounded-2xl border border-border/70 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-red-200">
+              <div
+                key={course.id}
+                className={`relative rounded-2xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition ${isRecentlyUpdated ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-2 ring-emerald-500/30 scale-[1.01]" : "border-border/70 bg-muted/40 hover:border-red-200"}`}
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
                     
-                    {/* Tag de Status Interativa */}
+                    {/* Tag de Status Interativa com Animação */}
                     <div className="relative">
                       <button
                         type="button"

@@ -1145,3 +1145,8 @@
 - [x] Adicionar sistema de tags coloridas de status baseadas em dados reais (Ativo, Módulos Prontos, etc.).
 - [x] Criar opções de exportação da lista de cursos em CSV e PDF.
 - [x] Validar testes automatizados e build de produção.
+
+## Filtros Rápidos por Status e Animação de Salvamento em Cursos — 19/08/2026
+- [x] Adicionar botões de filtro rápido por status no topo da lista de cursos.
+- [x] Incluir animação suave e notificação visual de sucesso ao alterar o status do curso pela tag.
+- [x] Validar testes automatizados e build de produção.
