@@ -9,6 +9,7 @@ import {
   Phone,
 } from "lucide-react";
 import { ContactForm } from "@/components/contact-form";
+import { getCourseById } from "@/lib/db";
 import {
   CONTACT_EMAIL,
   CONTACT_LOCATION,
@@ -48,7 +49,42 @@ const faqItems = [
   },
 ];
 
-export default function ContatoPage() {
+type ContactPageProps = {
+  searchParams?: Promise<{ curso?: string | string[] }>;
+};
+
+function firstParam(value: string | string[] | undefined): string {
+  return Array.isArray(value) ? value[0] ?? "" : value ?? "";
+}
+
+export default async function ContatoPage({ searchParams }: ContactPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const courseId = Number(firstParam(params.curso));
+  let courseContext: {
+    courseId: number;
+    courseName: string;
+    courseType: 3 | 5;
+    initialSubject: string;
+    initialMessage: string;
+  } | undefined;
+
+  if (Number.isInteger(courseId) && courseId > 0) {
+    const course = await getCourseById(courseId).catch(() => null);
+    const courseType = Number(course?.courseType);
+    if (course && (courseType === 3 || courseType === 5)) {
+      const normalizedType = courseType as 3 | 5;
+      courseContext = {
+        courseId: course.id,
+        courseName: course.title,
+        courseType: normalizedType,
+        initialSubject: normalizedType === 5 ? "Agendamento de aula presencial" : "Aulas particulares personalizadas",
+        initialMessage: normalizedType === 5
+          ? `Olá, Anderson. Tenho interesse em agendar uma aula presencial relacionada ao curso \"${course.title}\" (ID ${course.id}). Gostaria de saber sobre disponibilidade, local e próximos passos.`
+          : `Olá, Anderson. Tenho interesse em um percurso particular personalizado relacionado ao curso \"${course.title}\" (ID ${course.id}). Gostaria de conversar sobre meu objetivo, nível e disponibilidade.`,
+      };
+    }
+  }
+
   return (
     <main className="w-full bg-white text-[#1F1F1F]">
       <section className="relative overflow-hidden bg-[#F8F9FA] px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28">
@@ -167,7 +203,7 @@ export default function ContatoPage() {
             </div>
           </div>
 
-          <ContactForm />
+          <ContactForm courseContext={courseContext} />
           </div>
 
           <div id="faq" className="mx-auto mt-16 max-w-4xl scroll-mt-24 lg:mt-20">
