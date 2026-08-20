@@ -1296,3 +1296,9 @@
 - [x] Ajustar CTAs públicos para cursos particulares e aulas presenciais/agendamento.
 - [x] Criar testes Vitest para legenda, filtros e CTAs públicos.
 - [ ] Validar build, responsividade e atualizar o markdown com o resultado da Fase 2.
+
+## Feedback Visual para Redirecionamento Externo — 20/08/2026
+- [x] Criar componente interativo de redirecionamento com indicador de carregamento e mensagem visual.
+- [x] Integrar o feedback nos CTAs de cursos EAD fechados e corporativos com link externo.
+- [x] Criar teste Vitest para verificar o comportamento de redirecionamento.
+- [ ] Validar build e salvar checkpoint.

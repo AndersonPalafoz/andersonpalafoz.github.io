@@ -13,6 +13,7 @@ import { lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import { getCourseTypeDefinition, getSyncModalityLabel } from "@/lib/course-types";
+import { ExternalCourseCta } from "@/components/external-course-cta";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
   let modules: any[] = [];
@@ -216,9 +217,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
               {courseType.id === 4 && <span className="rounded-full bg-white/75 px-3 py-1.5">Gestão de turma institucional</span>}
             </div>
             {course.externalRedirectUrl && (courseType.id === 1 || courseType.id === 4) && (
-              <a href={course.externalRedirectUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
-                Acessar ambiente externo autorizado <ExternalLink size={16} aria-hidden="true" />
-              </a>
+              <ExternalCourseCta href={course.externalRedirectUrl} />
             )}
             {(courseType.id === 3 || courseType.id === 5) && (
               <Link href={`/contato?curso=${course.id}`} className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
