@@ -1172,47 +1172,6 @@ export default function TurmasExternasPage() {
                     </div>
                   </div>
                 </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Carga Horária (h)</label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={500}
-                      value={workloadHours}
-                      onChange={(e) => setWorkloadHours(parseInt(e.target.value) || 40)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Máx. Faltas (%)</label>
-                    <input
-                      type="number"
-                      min={5}
-                      max={50}
-                      value={maxAbsencePercent}
-                      onChange={(e) => setMaxAbsencePercent(parseInt(e.target.value) || 25)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Início</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Término</label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
-                  </div>
-                </div>
 
                 <div>
                   <label htmlFor="external-class-description" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Observações / Descrição <span className="font-normal text-gray-400">(opcional)</span></label>
