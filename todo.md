@@ -1080,3 +1080,7 @@
 - [x] Adicionar tooltip explicativo detalhado sobre o cálculo da ofensiva por conclusão diária.
 - [x] Criar popover interativo com calendário visual dos dias de atividade recentes.
 - [x] Validar testes e build de produção.
+
+## Correção do Erro de Carregamento do Histórico de Compras em /dashboard/perfil — 19/08/2026
+- [x] Auditar e corrigir a API e o componente de histórico de compras na página de perfil do usuário.
+- [x] Validar com testes automatizados e build de produção.
