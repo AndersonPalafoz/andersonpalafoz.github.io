@@ -968,13 +968,13 @@
 - [ ] Localizar a página de perfil do aluno (`/dashboard/perfil` ou equivalente).
 - [ ] Adicionar a aba "Meus Certificados" utilizando os registros reais retornados pelo banco de dados (`getCertificates`).
 - [ ] Exibir cards com título do curso, nível CEFR, data de emissão, código de autenticidade e botão de download do certificado em PDF.
-- [ ] Executar suíte de testes Vitest e validar build de produção.
+- [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Inclusão de CPF, Nome Social, Celular e E-mail de Alunos — 19/08/2026
 - [ ] Atualizar o schema Drizzle (`drizzle/schema.ts`) nas tabelas de usuários e estudantes externos para adicionar `cpf`, `socialName` e `phone` (celular).
 - [ ] Atualizar a API de perfil e os formulários de edição do aluno (`/dashboard/perfil`).
 - [ ] Atualizar as listagens de alunos para professores e administradores (`/admin/usuarios`, `/professor/alunos`, `/professor/turmas-externas`) exibindo CPF, nome social, celular e e-mail.
-- [ ] Executar suíte de testes Vitest e validar build de produção.
+- [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Auditoria e Correção de Deploy no Vercel — 19/08/2026
 - [x] Acessar painel do Vercel via navegador para auditar o log detalhado do erro de build.
@@ -986,3 +986,7 @@
 - [x] Atualizar o componente `ProfileForm` em `components/profile-form.tsx` para incluir campos de CPF e nome social com funções auxiliares de máscara (`000.000.000-00` e `(00) 00000-0000`).
 - [x] Atualizar a API `/api/user/profile` e a página `/dashboard/perfil/page.tsx` para carregar e salvar CPF e nome social corretamente.
 - [x] Executar suíte de testes Vitest e validar estabilidade de build.
+
+## Máscaras em Formulários Administrativos de Alunos — 19/08/2026
+- [x] Localizar e atualizar os formulários de gestão de usuários e alunos em `/admin/usuarios` e `/professor/turmas-externas` com as funções de máscara de CPF e celular.
+- [x] Executar suíte de testes Vitest e validar build de produção.
