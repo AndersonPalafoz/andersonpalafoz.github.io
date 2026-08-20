@@ -1454,3 +1454,9 @@
 - [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
 - [ ] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode.
 - [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar as execuções da rota `/api/scheduled/cleanup-trash` na Vercel para confirmar a retenção de 30 dias da lixeira.
+
+## Ajuste de Contraste WCAG AAA em Modo Escuro (Agosto 2026)
+- [x] Auditar e ajustar classes de texto secundário em `/app/cursos/[id]/page.tsx` para garantir alto contraste (WCAG AAA) no modo escuro
+- [x] Garantir que badges, descrições, metadados e botões mantenham legibilidade perfeita sobre fundos escuros
+- [x] Criar teste automatizado de contraste para a página de cursos e validar na suíte Vitest
+- [x] Validar responsividade e build de produção antes de salvar o checkpoint final
