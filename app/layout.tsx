@@ -1,38 +1,3 @@
-import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
-import { SessionProviderWrapper } from "@/components/session-provider";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { ToastProvider } from "@/components/toast-provider";
-import { InactivityMonitor } from "@/components/inactivity-monitor";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Anderson Palafoz | Ensino de Inglês",
-  description:
-    "Plataforma educacional completa para ensino de inglês com Anderson Palafoz. Cursos, materiais, blog e muito mais.",
-  keywords: [
-    "inglês",
-    "ensino",
-    "cursos",
-    "materiais",
-    "educação",
-    "Anderson Palafoz",
-  ],
-  authors: [{ name: "Anderson Palafoz" }],
-  openGraph: {
-    type: "website",
-    locale: "pt_BR",
-    url: "https://andersonpalafoz.com",
-    siteName: "Anderson Palafoz Platform",
-  },
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
@@ -44,6 +9,28 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;900&display=swap"
           rel="stylesheet"
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const mode = localStorage.getItem("themeMode");
+                const root = document.documentElement;
+                if (mode === "contrast") {
+                  root.classList.add("high-contrast", "dark");
+                } else if (mode === "dark") {
+                  root.classList.add("dark");
+                } else if (mode === "light") {
+                  root.classList.remove("dark", "high-contrast");
+                } else {
+                  // system
+                  if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                    root.classList.add("dark");
+                  }
+                }
+              } catch (e) {}
+            `,
+          }}
         />
       </head>
       <body className="bg-slate-50 font-sans text-slate-900 antialiased">
@@ -59,4 +46,3 @@ export default function RootLayout({
       </body>
     </html>
   );
-}
