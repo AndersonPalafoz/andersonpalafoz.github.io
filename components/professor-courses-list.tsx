@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText } from "lucide-react";
+import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
@@ -15,6 +15,7 @@ interface Course {
   modules?: number;
   isFree?: boolean;
   price?: number;
+  status?: string | null; // Novo campo para suportar status customizado ou automático
 }
 
 export function ProfessorCoursesList({ initialCourses }: { initialCourses: Course[] }) {
@@ -23,6 +24,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   const [visibleCount, setVisibleCount] = useState(4);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [statusDropdownId, setStatusDropdownId] = useState<number | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id?: number; title?: string }>({
     isOpen: false,
   });
@@ -38,6 +40,28 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   const paginatedCourses = useMemo(() => {
     return filteredCourses.slice(0, visibleCount);
   }, [filteredCourses, visibleCount]);
+
+  const handleStatusChange = async (courseId: number, newStatus: string) => {
+    try {
+      setActionLoading(courseId);
+      const res = await fetch("/api/admin/courses", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: courseId, status: newStatus }),
+      });
+      if (!res.ok) throw new Error("Falha ao atualizar status do curso.");
+      
+      setCourses((prev) =>
+        prev.map((c) => (c.id === courseId ? { ...c, status: newStatus } : c))
+      );
+      setStatusDropdownId(null);
+      toast.success(`Status do curso alterado para "${newStatus}" com sucesso!`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao atualizar status.");
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const handleSoftDelete = async (id: number, title: string) => {
     try {
@@ -92,14 +116,14 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   };
 
   const exportCSV = () => {
-    const headers = ["ID", "Titulo", "Nivel", "Categoria", "Modulos", "Tipo"];
+    const headers = ["ID", "Titulo", "Nivel", "Categoria", "Modulos", "Status"];
     const rows = filteredCourses.map((c) => [
       c.id,
       `"${c.title.replace(/"/g, '""')}"`,
       c.level,
       `"${(c.category || "Geral").replace(/"/g, '""')}"`,
       c.modules || 0,
-      c.isFree ? "Gratuito" : "Pago",
+      c.status || ((c.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve"),
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
@@ -136,7 +160,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
     y += 8;
 
     doc.setFont("helvetica", "normal");
-    filteredCourses.forEach((c, idx) => {
+    filteredCourses.forEach((c) => {
       if (y > 270) {
         doc.addPage();
         y = 20;
@@ -202,22 +226,53 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
         ) : (
           paginatedCourses.map((course) => {
             const isMenuOpen = openMenuId === course.id;
+            const isStatusDropdownOpen = statusDropdownId === course.id;
             
-            // Critério real para badge de status
-            const hasModules = (course.modules || 0) > 0;
-            const statusLabel = hasModules ? "Ativo & Pronto" : "Em Breve";
-            const statusBadgeClass = hasModules
-              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
-              : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
+            const currentStatus = course.status || ((course.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve");
+            const statusBadgeClass =
+              currentStatus === "Ativo & Pronto"
+                ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-200"
+                : currentStatus === "Lotado"
+                ? "bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 hover:bg-purple-200"
+                : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-200";
 
             return (
               <div key={course.id} className="relative rounded-2xl border border-border/70 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-red-200">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
-                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${statusBadgeClass}`}>
-                      {statusLabel}
-                    </span>
+                    
+                    {/* Tag de Status Interativa */}
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setStatusDropdownId(isStatusDropdownOpen ? null : course.id);
+                          setOpenMenuId(null);
+                        }}
+                        className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full cursor-pointer transition flex items-center gap-1 shadow-xs ${statusBadgeClass}`}
+                        title="Clique para alterar o status do curso"
+                      >
+                        {actionLoading === course.id ? <Loader2 size={10} className="animate-spin" /> : null}
+                        {currentStatus} ▾
+                      </button>
+
+                      {isStatusDropdownOpen && (
+                        <div className="absolute left-0 top-7 z-30 w-44 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95 font-sans">
+                          <p className="text-[10px] font-bold text-muted-foreground px-2 py-1 uppercase tracking-wider">Alterar Status</p>
+                          {["Ativo & Pronto", "Em Breve", "Lotado"].map((st) => (
+                            <button
+                              key={st}
+                              onClick={() => void handleStatusChange(course.id, st)}
+                              className={`flex items-center justify-between w-full px-3 py-1.5 text-xs font-bold rounded-xl transition text-left ${currentStatus === st ? "bg-red-50 dark:bg-red-950/50 text-red-600" : "text-foreground hover:bg-muted"}`}
+                            >
+                              {st}
+                              {currentStatus === st && <Check size={12} className="text-red-600" />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Nível <span className="font-extrabold text-foreground">{course.level}</span> {course.category ? `• ${course.category}` : ""} {course.modules !== undefined ? `• ${course.modules} módulos` : ""}
@@ -237,7 +292,10 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setOpenMenuId(isMenuOpen ? null : course.id)}
+                      onClick={() => {
+                        setOpenMenuId(isMenuOpen ? null : course.id);
+                        setStatusDropdownId(null);
+                      }}
                       className="h-9 w-9 p-0 rounded-xl border-border hover:bg-muted"
                       aria-label="Ações rápidas"
                     >
