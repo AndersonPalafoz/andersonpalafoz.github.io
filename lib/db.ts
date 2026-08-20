@@ -39,7 +39,13 @@ export async function getCourses() {
   });
 }
 
-export async function getTrashCourses() {
+export async function getTrashCourses(instructorName?: string | null) {
+  if (instructorName) {
+    return await db.query.courses.findMany({
+      where: and(isNotNull(schema.courses.deletedAt), eq(schema.courses.instructor, instructorName)),
+      orderBy: desc(schema.courses.deletedAt),
+    });
+  }
   return await db.query.courses.findMany({
     where: isNotNull(schema.courses.deletedAt),
     orderBy: desc(schema.courses.deletedAt),

@@ -12,12 +12,16 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode");
 
+    const email = admin.user.email?.toLowerCase();
+    const isGlobal = email === "palafozanderson@gmail.com" || admin.user.role === "admin" || admin.user.role === "super_admin";
+    const instructorFilter = !isGlobal ? admin.user.name || email : null;
+
     if (mode === "trash") {
-      const trash = await getTrashCourses();
+      const trash = await getTrashCourses(instructorFilter);
       return NextResponse.json(trash);
     }
 
-    const courses = await getCourses();
+    const courses = await getCourses(instructorFilter);
     return NextResponse.json(courses);
   } catch (error) {
     console.error("Error fetching courses:", error);
