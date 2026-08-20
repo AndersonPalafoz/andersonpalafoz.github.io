@@ -76,7 +76,7 @@ export function Navbar() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const applyTheme = (mode: "light" | "dark" | "system" | "contrast") => {
+  const applyTheme = (mode: "light" | "dark" | "system" | "contrast", notify = true) => {
     setThemeMode(mode);
     localStorage.setItem("themeMode", mode);
 
@@ -85,29 +85,30 @@ export function Navbar() {
 
     if (mode === "contrast") {
       root.classList.add("high-contrast", "dark");
-      setToastMessage("Modo de Alto Contraste ativado (Atalho: Alt+C).");
+      if (notify) setToastMessage("Modo de Alto Contraste ativado (Atalho: Alt+C).");
     } else if (mode === "dark") {
       root.classList.add("dark");
-      setToastMessage("Modo Escuro ativado.");
+      if (notify) setToastMessage("Modo Escuro ativado.");
     } else if (mode === "light") {
-      setToastMessage("Modo Claro ativado.");
+      if (notify) setToastMessage("Modo Claro ativado.");
     } else {
       // System
       const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (prefersDark) root.classList.add("dark");
-      setToastMessage(`Tema ajustado automaticamente para o modo ${prefersDark ? "escuro" : "claro"} (Preferência do Sistema).`);
+      if (notify) setToastMessage(`Tema ajustado automaticamente para o modo ${prefersDark ? "escuro" : "claro"} (Preferência do Sistema).`);
     }
 
-    const t = setTimeout(() => setToastMessage(null), 4000);
-    return () => clearTimeout(t);
+      if (!notify) return;
+      const t = setTimeout(() => setToastMessage(null), 4000);
+      return () => clearTimeout(t);
   };
 
   useEffect(() => {
     const storedMode = localStorage.getItem("themeMode") as "light" | "dark" | "system" | "contrast" | null;
     if (storedMode) {
-      applyTheme(storedMode);
+      applyTheme(storedMode, false);
     } else {
-      applyTheme("system");
+      applyTheme("system", false);
     }
   }, []);
 
