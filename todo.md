@@ -1328,13 +1328,14 @@
 - [x] Executar testes Vitest, validar build e salvar checkpoint.
 
 ## Fase 4 — Governança, Regressão e Homologação
-- [ ] Auditar contratos de RBAC por autoria para cursos, turmas e materiais.
+- [x] Auditar contratos de RBAC por autoria para cursos, turmas e materiais.
   - [x] Materiais: adicionar `instructorId`, restringir listagens e validar operações individuais por autoria.
-  - [ ] Cursos e turmas externas: concluir verificação dos contratos de autoria.
-- [ ] Auditar a retenção de 30 dias, contadores e operações da lixeira.
-- [ ] Criar testes de regressão para as regras de governança e lixeira.
+  - [x] Cursos e turmas externas: concluir verificação dos contratos de autoria (`canManageCourse`, `canManageExternalClass`).
+- [x] Auditar a retenção de 30 dias, contadores e operações da lixeira.
+- [x] Criar testes de regressão para as regras de governança e lixeira.
   - [x] Materiais: teste de contrato de RBAC criado e aprovado.
   - [x] Contato: teste de contrato de contraste no modo escuro criado e aprovado.
+  - [x] Governança geral: teste `governance-phase4.test.ts` criado e aprovado.
 - [x] Executar a suíte completa Vitest e o build de produção da primeira entrega da Fase 4.
 - [x] Atualizar o plano estratégico com os achados e o primeiro resultado da Fase 4.
 

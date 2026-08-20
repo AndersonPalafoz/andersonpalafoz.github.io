@@ -218,3 +218,10 @@ A auditoria encontrou uma lacuna objetiva: a tabela `materials` não possuía um
 Também foi corrigido o contraste no modo escuro de `/contato` e `ContactForm`: fundos, textos, rótulos, campos, placeholders, cartões e estados de sucesso/erro agora têm variantes explícitas para tema escuro. A página foi revisada visualmente em `/contato` e recebeu teste de contrato dedicado.
 
 A validação desta entrega alcançou **336 testes Vitest aprovados** e build de produção concluído com sucesso. A próxima tarefa da Fase 4 é auditar sistematicamente RBAC de cursos e turmas, retenção de 30 dias e operações da lixeira antes da homologação final.
+
+### Conclusão da Fase 4 — Governança Integral, Regressão e Homologação
+
+A Fase 4 foi integralmente concluída com a auditoria e consolidação das regras de governança para o ecossistema dos cinco tipos de curso:
+1. **RBAC por Autoria**: Validado e aprimorado para cursos (`canManageCourse`), turmas externas (`canManageExternalClass`) e materiais (`canManageMaterial`), assegurando que professores gerenciem estritamente seus próprios registros, enquanto administradores e superadministradores possuem acesso global inegociável.
+2. **Lixeira e Retenção de 30 Dias**: Mantida a política de exclusão lógica (*soft delete*), contadores reativos por escopo de usuário e exclusão permanente controlada com modais de segurança.
+3. **Testes e Qualidade**: Suíte com **338 testes Vitest** aprovados com 100% de sucesso e build de produção validado.
