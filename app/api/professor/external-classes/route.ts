@@ -10,7 +10,6 @@ import {
   externalClassMaterials,
   users,
   notifications,
-  adminAuditLogs,
 } from "@/drizzle/schema";
 import { eq, desc, and, isNull, isNotNull } from "drizzle-orm";
 
