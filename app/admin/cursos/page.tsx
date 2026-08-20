@@ -235,7 +235,27 @@ export default function AdminCursos() {
         setEditingId(null);
         toast.success("Curso atualizado com sucesso.");
         setShowForm(false);
-        setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "", googleDriveLinks: "" });
+        setFormData({
+          title: "",
+          level: "A1",
+          category: "",
+          modules: 4,
+          instructor: "Anderson Palafoz",
+          modality: "individual",
+          isFree: true,
+          price: 0,
+          description: "",
+          imageUrl: "",
+          audioUrl: "",
+          videoUrl: "",
+          googleDriveLinks: "",
+          classDays: "Segundas e Quartas",
+          classTime: "19:00 - 20:30",
+          workloadHours: 40,
+          startDate: "",
+          endDate: "",
+          maxAbsencePercent: 25,
+        });
       } else {
         const response = await fetch("/api/admin/courses", {
           method: "POST",
@@ -285,7 +305,27 @@ export default function AdminCursos() {
             onClick={() => {
               setShowForm(!showForm);
               setEditingId(null);
-              setFormData({ title: "", level: "A1", category: "", modules: 4, instructor: "Anderson Palafoz", modality: "individual", isFree: true, price: 0, description: "", imageUrl: "", audioUrl: "", videoUrl: "", googleDriveLinks: "" });
+              setFormData({
+                title: "",
+                level: "A1",
+                category: "",
+                modules: 4,
+                instructor: "Anderson Palafoz",
+                modality: "individual",
+                isFree: true,
+                price: 0,
+                description: "",
+                imageUrl: "",
+                audioUrl: "",
+                videoUrl: "",
+                googleDriveLinks: "",
+                classDays: "Segundas e Quartas",
+                classTime: "19:00 - 20:30",
+                workloadHours: 40,
+                startDate: "",
+                endDate: "",
+                maxAbsencePercent: 25,
+              });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
           >
