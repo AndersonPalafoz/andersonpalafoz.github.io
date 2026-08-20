@@ -75,13 +75,16 @@ export function CertificateModal({ courseId, courseName, percentage }: Certifica
                 concluiu com êxito o programa de ensino de inglês e capacitação acadêmica correspondente ao curso:
               </p>
               <h4 className="text-xl font-bold text-red-700">{titleForDisplay}</h4>
-              <p className="text-xs text-gray-400 pt-2">Ministrado pelo Prof. {certData.instructor}</p>
+              <p className="text-xs text-gray-500 font-semibold pt-1">
+                Carga Horária: {certData.workloadHours || 40} horas  •  Nível: {certData.level || "A1"}
+              </p>
+              <p className="text-xs text-gray-400 pt-1">Ministrado pelo Prof. {certData.instructor}</p>
             </div>
 
             <div className="pt-6 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
               <div>
-                <p>Data de Emissão: {certData.issueDate}</p>
-                <p className="font-mono mt-0.5">Código: {certData.certificateCode}</p>
+                <p className="font-medium text-gray-700">Data de Conclusão: {certData.issueDate}</p>
+                <p className="font-mono mt-0.5 text-gray-400">Código: {certData.certificateCode}</p>
               </div>
               <div className="text-right">
                 <p className="font-bold text-gray-800">Anderson Palafoz</p>

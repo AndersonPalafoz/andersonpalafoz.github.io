@@ -43,6 +43,7 @@ export async function issueCertificateIfEligible(userId: number, courseId: numbe
     level: course.level,
     issuedAt: new Date(),
     certificateCode,
+    workloadHours: course.workloadHours || 40,
   });
   const uploaded = await uploadCertificatePdf(userId, courseId, bytes);
   const certificate = await createCertificate({
