@@ -73,6 +73,8 @@ export default function UsuariosPage() {
   const [roleFilter, setRoleFilter] = useState<"all" | Role>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
   const [formData, setFormData] = useState<{ email: string; name: string; role: Role }>({
     email: "",
     name: "",
@@ -210,6 +212,16 @@ export default function UsuariosPage() {
     });
   }, [query, roleFilter, statusFilter, users]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query, roleFilter, statusFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
+  const paginatedUsers = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredUsers.slice(start, start + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
+
   const pendingCount = users.filter((user) => !user.deletedAt && user.approvalStatus === "pending").length;
   const approvedCount = users.filter((user) => !user.deletedAt && user.approvalStatus === "approved").length;
   const deletedCount = users.filter((user) => Boolean(user.deletedAt)).length;
@@ -278,7 +290,7 @@ export default function UsuariosPage() {
               <table className="w-full min-w-[980px] text-left">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-4 font-semibold">Usuário</th><th className="px-5 py-4 font-semibold">Papel</th><th className="px-5 py-4 font-semibold">Professor Responsável</th><th className="px-5 py-4 font-semibold">Acesso</th><th className="px-5 py-4 text-right font-semibold">Ações</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
-                  {filteredUsers.map((user) => {
+                  {paginatedUsers.map((user) => {
                     const isPrincipal = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
                     const isBusy = busyId === user.id;
                     return <tr key={user.id} className={user.deletedAt ? "bg-gray-50/80" : "hover:bg-gray-50/70"}>
@@ -296,7 +308,38 @@ export default function UsuariosPage() {
           )}
         </section>
 
-        <div className="mt-8 flex items-center justify-between"><p className="text-sm text-gray-500">{filteredUsers.length} de {users.length} contas exibidas</p><Link href="/admin"><Button variant="outline" className="gap-2"><ChevronDown size={16} className="rotate-90" />Voltar para o painel</Button></Link></div>
+        <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-gray-500">
+            Mostrando {(currentPage - 1) * pageSize + 1} a {Math.min(filteredUsers.length, currentPage * pageSize)} de {filteredUsers.length} usuários (Total: {users.length})
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            >
+              Anterior
+            </Button>
+            <span className="text-sm font-medium text-gray-700">
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Próxima
+            </Button>
+            <Link href="/admin">
+              <Button variant="outline" className="gap-2 ml-2">
+                <ChevronDown size={16} className="rotate-90" />
+                Voltar para o painel
+              </Button>
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
