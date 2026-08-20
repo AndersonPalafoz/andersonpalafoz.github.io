@@ -32,6 +32,8 @@ export default function AdminCursos() {
   const [activeTab, setActiveTab] = useState<"courses" | "trash">("courses");
   const [trashCourses, setTrashCourses] = useState<Course[]>([]);
   const [loadingTrash, setLoadingTrash] = useState(false);
+  const [selectedTrashIds, setSelectedTrashIds] = useState<number[]>([]);
+  const [batchLoading, setBatchLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     level: "A1",
@@ -103,6 +105,30 @@ export default function AdminCursos() {
       fetchTrash();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao restaurar.");
+    }
+  };
+
+  const handleBatchAction = async (action: "restore" | "permanent_delete") => {
+    if (selectedTrashIds.length === 0) return;
+    const actionName = action === "restore" ? "restaurar" : "excluir permanentemente";
+    if (!confirm(`Tem certeza que deseja ${actionName} ${selectedTrashIds.length} curso(s) selecionado(s)?`)) return;
+    try {
+      setBatchLoading(true);
+      const res = await fetch("/api/admin/courses/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ids: selectedTrashIds }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Falha na operação em lote.");
+      toast.success(`Operação em lote realizada com sucesso em ${selectedTrashIds.length} curso(s)!`);
+      setSelectedTrashIds([]);
+      fetchCourses();
+      fetchTrash();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro na operação em lote.");
+    } finally {
+      setBatchLoading(false);
     }
   };
 
@@ -292,9 +318,12 @@ export default function AdminCursos() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-card text-card-foreground p-8 rounded-2xl shadow-sm border border-border">
           <div>
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center justify-between gap-4 mb-2">
               <Link href="/admin" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1">
                 <ArrowLeft size={16} /> Voltar ao Painel Admin
+              </Link>
+              <Link href="/admin/cursos/audit" className="text-xs font-bold text-foreground bg-muted hover:bg-muted/80 px-3 py-1.5 rounded-lg border border-border transition">
+                Ver Registro de Atividades (Auditoria)
               </Link>
             </div>
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
@@ -717,38 +746,89 @@ export default function AdminCursos() {
                 <p className="text-muted-foreground font-medium">A lixeira de cursos está vazia.</p>
               </div>
             ) : (
-              <div className="divide-y divide-border/70">
-                {trashCourses.map((course) => (
-                  <div key={course.id} className="p-6 hover:bg-muted/60 transition flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                          Excluído Lógico
-                        </span>
-                        <span className="text-xs text-muted-foreground font-semibold">
-                          Nível {course.level}
-                        </span>
-                      </div>
-                      <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      <button
-                        onClick={() => handleRestore(course.id)}
-                        className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold text-xs transition flex items-center gap-1.5"
-                      >
-                        Restaurar
-                      </button>
-                      <button
-                        onClick={() => setTrashCourseToPermanentDelete(course)}
-                        className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
-                      >
-                        Excluir Permanentemente
-                      </button>
-                    </div>
+              <div>
+                <div className="p-4 bg-muted/60 border-b border-border flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      aria-label="Selecionar todos os cursos da lixeira"
+                      checked={selectedTrashIds.length === trashCourses.length && trashCourses.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) setSelectedTrashIds(trashCourses.map((c) => c.id));
+                        else setSelectedTrashIds([]);
+                      }}
+                      className="h-4 w-4 rounded border-border text-red-600 focus:ring-red-600"
+                    />
+                    <span className="text-xs font-bold text-foreground">
+                      {selectedTrashIds.length} de {trashCourses.length} curso(s) selecionado(s)
+                    </span>
                   </div>
-                ))}
+                  <div className="flex items-center gap-2">
+                    <button
+                      disabled={selectedTrashIds.length === 0 || batchLoading}
+                      onClick={() => handleBatchAction("restore")}
+                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition disabled:opacity-50 shadow-sm"
+                    >
+                      Restaurar Selecionados
+                    </button>
+                    <button
+                      disabled={selectedTrashIds.length === 0 || batchLoading}
+                      onClick={() => handleBatchAction("permanent_delete")}
+                      className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition disabled:opacity-50 shadow-sm"
+                    >
+                      Excluir Selecionados (Definitivo)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="divide-y divide-border/70">
+                  {trashCourses.map((course) => {
+                    const isSelected = selectedTrashIds.includes(course.id);
+                    return (
+                      <div key={course.id} className={`p-6 transition flex flex-col md:flex-row md:items-center justify-between gap-4 ${isSelected ? "bg-red-50/40 dark:bg-red-950/20" : "hover:bg-muted/40"}`}>
+                        <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            aria-label={`Selecionar curso ${course.title}`}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              if (e.target.checked) setSelectedTrashIds([...selectedTrashIds, course.id]);
+                              else setSelectedTrashIds(selectedTrashIds.filter((id) => id !== course.id));
+                            }}
+                            className="mt-1 h-4 w-4 rounded border-border text-red-600 focus:ring-red-600"
+                          />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-3">
+                              <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+                                Excluído Lógico
+                              </span>
+                              <span className="text-xs text-muted-foreground font-semibold">
+                                Nível {course.level}
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 pl-7 md:pl-0">
+                          <button
+                            onClick={() => handleRestore(course.id)}
+                            className="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold text-xs transition flex items-center gap-1.5"
+                          >
+                            Restaurar
+                          </button>
+                          <button
+                            onClick={() => setTrashCourseToPermanentDelete(course)}
+                            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
+                          >
+                            Excluir Permanentemente
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )
           )}
