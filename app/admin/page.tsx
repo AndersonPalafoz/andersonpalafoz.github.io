@@ -21,12 +21,13 @@ interface Stats {
     month: string;
     enrollments: number;
     activeUsers: number;
+    coursesCreated?: number;
   }>;
 }
 
 function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
-  const maxValue = Math.max(1, ...data.flatMap((item) => [item.enrollments, item.activeUsers]));
-  const chartHeight = 180;
+  const maxValue = Math.max(1, ...data.flatMap((item) => [item.enrollments, item.coursesCreated || 0]));
+  const chartHeight = 200;
   const chartWidth = 720;
   const groupWidth = data.length > 0 ? chartWidth / data.length : chartWidth;
 
@@ -36,41 +37,51 @@ function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
         <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 40}`} className="w-full h-auto">
           <line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="currentColor" className="text-border" strokeWidth="1" />
           {data.map((item, index) => {
-            const barWidth = Math.min(24, groupWidth / 3);
+            const barWidth = Math.min(26, groupWidth / 3);
             const enrHeight = (item.enrollments / maxValue) * (chartHeight - 20);
-            const actHeight = (item.activeUsers / maxValue) * (chartHeight - 20);
+            const courseHeight = ((item.coursesCreated || 0) / maxValue) * (chartHeight - 20);
 
             return (
               <g key={index} transform={`translate(${index * groupWidth}, 0)`}>
+                {/* Barra de Matrículas */}
                 <rect
-                  x={groupWidth / 2 - barWidth - 4}
+                  x={groupWidth / 2 - barWidth - 6}
                   y={chartHeight - enrHeight}
                   width={barWidth}
                   height={enrHeight}
-                  rx="4"
+                  rx="6"
                   className="fill-red-600 transition-all duration-300 hover:fill-red-700"
                 />
+                <text x={groupWidth / 2 - barWidth / 6} y={chartHeight - enrHeight - 6} textAnchor="middle" className="text-[9px] fill-foreground font-bold">
+                  {item.enrollments > 0 ? item.enrollments : ""}
+                </text>
+
+                {/* Barra de Cursos Criados */}
                 <rect
-                  x={groupWidth / 2 + 4}
-                  y={chartHeight - actHeight}
+                  x={groupWidth / 2 + 6}
+                  y={chartHeight - courseHeight}
                   width={barWidth}
-                  height={actHeight}
-                  rx="4"
+                  height={courseHeight}
+                  rx="6"
                   className="fill-blue-600 transition-all duration-300 hover:fill-blue-700"
                 />
-                <text x={groupWidth / 2} y={chartHeight + 20} textAnchor="middle" className="text-[10px] fill-muted-foreground font-bold">
+                <text x={groupWidth / 2 + barWidth + 6} y={chartHeight - courseHeight - 6} textAnchor="middle" className="text-[9px] fill-foreground font-bold">
+                  {(item.coursesCreated || 0) > 0 ? item.coursesCreated : ""}
+                </text>
+
+                <text x={groupWidth / 2} y={chartHeight + 24} textAnchor="middle" className="text-[11px] fill-muted-foreground font-black uppercase tracking-wider">
                   {item.month}
                 </text>
               </g>
             );
           })}
         </svg>
-        <div className="flex items-center justify-center gap-6 mt-4 text-xs font-bold text-muted-foreground">
+        <div className="flex items-center justify-center gap-8 mt-6 text-xs font-bold text-muted-foreground">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-600 inline-block" /> Matrículas / Alunos
+            <span className="w-3.5 h-3.5 rounded-md bg-red-600 inline-block shadow-xs" /> Matrículas Realizadas
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-blue-600 inline-block" /> Sessões Ativas
+            <span className="w-3.5 h-3.5 rounded-md bg-blue-600 inline-block shadow-xs" /> Cursos Criados
           </div>
         </div>
       </div>
@@ -179,7 +190,7 @@ export default function AdminDashboardPage() {
               href="/admin/cursos"
               className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
-              Gerenciar Cursos
+              Gerenciar Cursos & Lixeira
             </Link>
           </div>
         </div>
@@ -237,15 +248,15 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Gráfico de Barras de Evolução de Matrículas ao Longo do Tempo */}
+        {/* Gráfico Interativo de Evolução de Matrículas e Cursos Criados */}
         <div className="surface-card p-6 sm:p-8 space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
               <h3 className="text-base font-black text-foreground flex items-center gap-2">
-                <BarChart3 className="text-red-600" size={20} /> Evolução de Matrículas Acadêmicas por Mês
+                <BarChart3 className="text-red-600" size={20} /> Evolução de Matrículas e Cursos Criados por Mês
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Visualização detalhada do crescimento das matrículas e engajamento dos alunos na plataforma.
+                Comparativo mensal entre o volume de matrículas de alunos e a criação de novos cursos no ecossistema.
               </p>
             </div>
             <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600">
@@ -259,23 +270,8 @@ export default function AdminDashboardPage() {
             </div>
           ) : (
             <div className="py-12 text-center text-muted-foreground text-xs font-semibold">
-              Nenhum dado de matrícula registrado nos últimos meses.
+              Nenhum dado de atividade mensal registrado.
             </div>
-          )}
-        </div>
-
-        {/* Monthly Activity Chart */}
-        <div className="surface-card p-6 sm:p-8 space-y-4">
-          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="text-red-600" size={18} /> Resumo Geral de Atividade do Sistema
-          </h3>
-          <p className="text-xs text-muted-foreground">
-            Visão consolidada comparativa entre novas matrículas e sessões ativas registradas.
-          </p>
-          {stats?.monthlyActivity && stats.monthlyActivity.length > 0 ? (
-            <MonthlyActivityChart data={stats.monthlyActivity} />
-          ) : (
-            <p className="text-xs text-muted-foreground py-8 text-center">Nenhum dado de atividade mensal registrado.</p>
           )}
         </div>
       </div>
