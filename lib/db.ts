@@ -4,6 +4,7 @@ import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
 import { and, asc, desc, eq, inArray, isNull, isNotNull } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
+import { normalizeCourseType, validateCourseTypeFields, type SyncModality } from "@/lib/course-types";
 
 // O template pode fornecer DATABASE_URL apontando para TiDB/MySQL. Esta aplicação
 // usa Drizzle + postgres-js, portanto o DSN Neon precisa ter precedência.
@@ -292,44 +293,77 @@ export async function updateCourseProgress(userId: number, courseId: number, les
 }
 
 // Admin CRUD helpers for Courses
-export async function createCourse(data: {
+export type CourseWriteData = {
   title: string;
   description?: string;
   level: string;
+  category?: string;
   modules?: number;
   instructor?: string;
+  modality?: string;
   isFree?: boolean;
   price?: number;
+  imageUrl?: string;
+  audioUrl?: string;
+  videoUrl?: string;
   googleDriveLinks?: string | string[] | null;
-}) {
+  classDays?: string;
+  classTime?: string;
+  workloadHours?: number;
+  startDate?: string | Date | null;
+  endDate?: string | Date | null;
+  maxAbsencePercent?: number;
+  courseType?: number;
+  externalRedirectUrl?: string | null;
+  syncModality?: SyncModality;
+};
+
+function validateCourseWriteData(data: Pick<CourseWriteData, "courseType" | "externalRedirectUrl" | "syncModality">) {
+  const error = validateCourseTypeFields(data);
+  if (error) throw new Error(error);
+}
+
+export async function createCourse(data: CourseWriteData) {
+  validateCourseWriteData(data);
   return await db.insert(schema.courses).values({
     title: data.title,
     description: data.description,
     level: data.level,
+    category: data.category,
     modules: data.modules || 0,
     instructor: data.instructor || "Anderson Palafoz",
+    modality: data.modality || "individual",
     isFree: data.isFree ?? true,
     price: data.price !== undefined ? data.price.toFixed(2) : "0.00",
+    imageUrl: data.imageUrl,
+    audioUrl: data.audioUrl,
+    videoUrl: data.videoUrl,
     googleDriveLinks: parseGoogleDriveLinks(data.googleDriveLinks).join("\n") || null,
+    classDays: data.classDays,
+    classTime: data.classTime,
+    workloadHours: data.workloadHours,
+    startDate: data.startDate ? new Date(data.startDate) : null,
+    endDate: data.endDate ? new Date(data.endDate) : null,
+    maxAbsencePercent: data.maxAbsencePercent,
+    courseType: normalizeCourseType(data.courseType),
+    externalRedirectUrl: data.externalRedirectUrl?.trim() || null,
+    syncModality: data.syncModality || "none",
   }).returning();
 }
 
-export async function updateCourse(id: number, data: Partial<{
-  title: string;
-  description: string;
-  level: string;
-  modules: number;
-  instructor: string;
-  isFree: boolean;
-  price: number;
-  googleDriveLinks: string | string[] | null;
-}>) {
-  const { price, googleDriveLinks, ...courseData } = data;
+export async function updateCourse(id: number, data: Partial<CourseWriteData>) {
+  validateCourseWriteData(data);
+  const { price, googleDriveLinks, startDate, endDate, courseType, externalRedirectUrl, syncModality, ...courseData } = data;
   return await db.update(schema.courses)
     .set({
       ...courseData,
       ...(price !== undefined ? { price: price.toFixed(2) } : {}),
       ...(googleDriveLinks !== undefined ? { googleDriveLinks: parseGoogleDriveLinks(googleDriveLinks).join("\n") || null } : {}),
+      ...(startDate !== undefined ? { startDate: startDate ? new Date(startDate) : null } : {}),
+      ...(endDate !== undefined ? { endDate: endDate ? new Date(endDate) : null } : {}),
+      ...(courseType !== undefined ? { courseType: normalizeCourseType(courseType) } : {}),
+      ...(externalRedirectUrl !== undefined ? { externalRedirectUrl: externalRedirectUrl?.trim() || null } : {}),
+      ...(syncModality !== undefined ? { syncModality: syncModality || "none" } : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.courses.id, id))

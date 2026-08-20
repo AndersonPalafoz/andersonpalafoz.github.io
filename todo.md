@@ -1282,3 +1282,9 @@
 ## Execução da Migração SQL da Fase 1 — Concluído
 - [x] Executar script SQL para adicionar as colunas `course_type`, `external_redirect_url` e `sync_modality` na tabela `courses`.
 - [x] Validar a estrutura pós-migração no banco de desenvolvimento com sucesso.
+
+## Atualização do Formulário e Páginas dos Cinco Tipos de Curso — Em andamento
+- [ ] Auditar e atualizar o formulário administrativo de criação e edição de cursos com tipo, URL externa e modalidade.
+- [ ] Atualizar contratos de API e validações para persistir os novos campos.
+- [ ] Atualizar listagens, detalhes e páginas públicas com sinalização visual e comportamento adequado por modalidade.
+- [ ] Criar ou atualizar testes Vitest, validar build e responsividade.
