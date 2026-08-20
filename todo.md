@@ -1167,3 +1167,8 @@
 - [x] Incluir gráfico de barras interativo de evolução de matrículas no painel do administrador.
 - [x] Corrigir erro 500 no endpoint `/api/professor/resumo` com tolerância a falhas e retorno estruturado seguro.
 - [x] Executar bateria de 321 testes automatizados (Vitest) e validar build de produção.
+
+## Correção Definitiva de Build de Produção (Skeleton Component) — 19/08/2026
+- [x] Criar componente `components/ui/skeleton.tsx` compatível com o design system do Vercel/Next.js.
+- [x] Executar build de produção com sucesso absoluto (Next.js 15 compilado sem erros).
+- [x] Validar 321 testes automatizados (Vitest) com 100% de aprovação.
