@@ -1004,3 +1004,8 @@
 
 ### Referências
 - [1] [Roteiro de Integração da API de Assinatura Eletrônica GOV.BR](https://manual-integracao-assinatura-eletronica.servicos.gov.br/)
+
+## Exportação CSV da Lista de Alunos no Admin — 19/08/2026
+- [x] Criar endpoint ou função de exportação CSV para listar todos os alunos com nome, nome social, e-mail, CPF, celular, papel, status e data de cadastro.
+- [x] Adicionar botão "Exportar CSV" na interface de gestão de usuários em `/admin/usuarios`.
+- [x] Executar testes Vitest e validar build de produção.

@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Download,
   Plus,
   RefreshCw,
   Search,
@@ -258,6 +259,7 @@ export default function UsuariosPage() {
               <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value as "all" | Role)} className="h-11 rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-600"><option value="all">Todos os papéis</option><option value="user">Alunos</option><option value="professor">Professores</option><option value="admin">Administradores</option></select>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} className="h-11 rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-700 outline-none focus:border-red-600"><option value="all">Todos os status</option><option value="pending">Pendentes</option><option value="approved">Aprovados</option><option value="rejected">Recusados</option><option value="deleted">Excluídos</option></select>
               <button type="button" onClick={() => void fetchUsers()} className="inline-flex h-11 items-center gap-2 rounded-xl border border-gray-300 px-3 text-sm font-semibold text-gray-700 transition hover:border-red-600 hover:text-red-600" aria-label="Atualizar lista"><RefreshCw size={16} />Atualizar</button>
+              <a href="/api/admin/export-users" className="inline-flex h-11 items-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-semibold text-white transition hover:bg-red-700 shadow-sm" download><Download size={16} />Exportar CSV</a>
             </div>
           </div>
 
