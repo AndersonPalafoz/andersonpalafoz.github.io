@@ -1462,9 +1462,9 @@
 - [x] Validar responsividade e build de produção antes de salvar o checkpoint final
 
 ## Privacidade de Cursos Externos na Página /aulas (Agosto 2026)
-- [ ] Ocultar cursos com `courseType === 4` (cursos externos institucionais/terceiros) da listagem pública em `/aulas`
-- [ ] Criar teste automatizado verificando que nenhum curso externo é retornado na rota pública ou componente de catálogo
-- [ ] Validar build e integridade da suíte Vitest
+- [x] Ocultar cursos com `courseType === 4` (cursos externos institucionais/terceiros) da listagem pública em `/aulas`
+- [x] Criar teste automatizado verificando que nenhum curso externo é retornado na rota pública ou componente de catálogo
+- [ ] Validar build e integridade da suíte Vitest — Vitest aprovado; build local está sujeito a SIGTERM por pressão de memória do sandbox
 
 ## Download de Materiais Restrito a Usuários Autenticados (Agosto 2026)
 - [x] Auditar a rota e componente de download de materiais (`/components/download-material-button.tsx` e API associada)
