@@ -77,8 +77,10 @@ export async function softDeleteCourse(id: number) {
   return updated;
 }
 
-export async function getMaterials() {
-  return await db.select().from(schema.materials).where(isNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.createdAt));
+export async function getMaterials(instructorId?: number) {
+  const conditions = [isNull(schema.materials.deletedAt)];
+  if (instructorId) conditions.push(eq(schema.materials.instructorId, instructorId));
+  return await db.select().from(schema.materials).where(and(...conditions)).orderBy(desc(schema.materials.createdAt));
 }
 
 export async function getMaterialById(id: number) {
@@ -384,6 +386,7 @@ export async function createMaterial(data: {
   level: string;
   fileUrl?: string;
   isPublic?: boolean;
+  instructorId?: number;
 }) {
   return await db.insert(schema.materials).values({
     title: data.title,
@@ -392,6 +395,7 @@ export async function createMaterial(data: {
     level: data.level,
     fileUrl: data.fileUrl,
     isPublic: data.isPublic ?? true,
+    instructorId: data.instructorId,
   }).returning();
 }
 
@@ -635,8 +639,10 @@ export async function getResumeLesson(userId: number, courseId: number) {
 
 // --- Materiais: Lixeira, Restauração e Exclusão Permanente ---
 
-export async function getTrashMaterials() {
-  return await db.select().from(schema.materials).where(isNotNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.updatedAt));
+export async function getTrashMaterials(instructorId?: number) {
+  const conditions = [isNotNull(schema.materials.deletedAt)];
+  if (instructorId) conditions.push(eq(schema.materials.instructorId, instructorId));
+  return await db.select().from(schema.materials).where(and(...conditions)).orderBy(desc(schema.materials.updatedAt));
 }
 
 export async function softDeleteMaterial(id: number) {

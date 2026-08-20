@@ -144,6 +144,7 @@ export const materials = pgTable("materials", {
   downloads: integer("downloads").default(0).notNull(),
   isPublic: boolean("isPublic").default(true).notNull(),
   courseId: integer("courseId").references(() => courses.id),
+  instructorId: integer("instructorId").references(() => users.id),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   deletedAt: timestamp("deletedAt"),

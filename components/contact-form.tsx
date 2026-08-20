@@ -74,17 +74,17 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] sm:p-8 lg:p-10">
+    <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_4px_12px_rgba(0,0,0,0.08)] sm:p-8 lg:p-10 dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-black/20">
       <div className="mb-8">
         <p className="mb-2 text-sm font-semibold uppercase tracking-[0.16em] text-red-600">
           Formulário de contato
         </p>
-        <h2 className="text-3xl font-bold text-[#1F1F1F]">Envie uma mensagem</h2>
-              <p className="mt-3 text-base leading-7 text-gray-600">
+        <h2 className="text-3xl font-bold text-[#1F1F1F] dark:text-slate-100">Envie uma mensagem</h2>
+              <p className="mt-3 text-base leading-7 text-gray-600 dark:text-slate-300">
           Preencha os campos abaixo. Seu aplicativo de email será aberto com a mensagem pronta para envio.
         </p>
               {courseContext && (
-                <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm leading-6 text-red-800" role="note">
+                <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm leading-6 text-red-800 dark:bg-red-950/40 dark:text-red-200" role="note">
                   Esta mensagem está contextualizada para o curso <strong>{courseContext.courseName}</strong>. Você poderá revisar tudo antes de enviar.
                 </p>
               )}
@@ -93,7 +93,7 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
       <form className="space-y-6" onSubmit={handleSubmit} aria-busy={isSubmitting}>
         <div className="grid gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="contact-name" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
+            <label htmlFor="contact-name" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-slate-100">
               Nome completo <span className="text-red-600" aria-hidden="true">*</span>
             </label>
             <input
@@ -105,12 +105,12 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
               required
               minLength={2}
               disabled={isSubmitting}
-              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
+              className="h-12 w-full rounded-xl border border-gray-300 bg-white dark:border-slate-700 dark:bg-slate-950 px-4 text-[#1F1F1F] dark:text-slate-100 outline-none transition placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-slate-800"
             />
           </div>
 
           <div>
-            <label htmlFor="contact-email" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
+            <label htmlFor="contact-email" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-slate-100">
               Email <span className="text-red-600" aria-hidden="true">*</span>
             </label>
             <input
@@ -121,13 +121,13 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
               placeholder="seu@email.com"
               required
               disabled={isSubmitting}
-              className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
+              className="h-12 w-full rounded-xl border border-gray-300 bg-white dark:border-slate-700 dark:bg-slate-950 px-4 text-[#1F1F1F] dark:text-slate-100 outline-none transition placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-slate-800"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="contact-subject" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
+          <label htmlFor="contact-subject" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-slate-100">
             Assunto <span className="text-red-600" aria-hidden="true">*</span>
           </label>
             <select
@@ -136,7 +136,7 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
             defaultValue={courseContext?.initialSubject ?? ""}
             required
             disabled={isSubmitting}
-            className="h-12 w-full rounded-xl border border-gray-300 bg-white px-4 text-[#1F1F1F] outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
+            className="h-12 w-full rounded-xl border border-gray-300 bg-white dark:border-slate-700 dark:bg-slate-950 px-4 text-[#1F1F1F] dark:text-slate-100 outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-slate-800"
           >
             <option value="" disabled>Selecione um assunto</option>
             {SUBJECT_OPTIONS.map((option) => (
@@ -146,7 +146,7 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
         </div>
 
         <div>
-          <label htmlFor="contact-message" className="mb-2 block text-sm font-semibold text-[#1F1F1F]">
+          <label htmlFor="contact-message" className="mb-2 block text-sm font-semibold text-[#1F1F1F] dark:text-slate-100">
             Mensagem <span className="text-red-600" aria-hidden="true">*</span>
           </label>
           <textarea
@@ -158,9 +158,9 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
             minLength={10}
             rows={6}
             disabled={isSubmitting}
-            className="w-full resize-y rounded-xl border border-gray-300 bg-white px-4 py-3 text-[#1F1F1F] outline-none transition placeholder:text-gray-400 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50"
+            className="w-full resize-y rounded-xl border border-gray-300 bg-white dark:border-slate-700 dark:bg-slate-950 px-4 py-3 text-[#1F1F1F] dark:text-slate-100 outline-none transition placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:border-red-600 focus:ring-2 focus:ring-red-100 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-slate-800"
           />
-          <p className="mt-2 text-xs text-gray-500">Mínimo de 10 caracteres.</p>
+          <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">Mínimo de 10 caracteres.</p>
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -193,19 +193,19 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
         </div>
 
         {isSubmitting && (
-          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
             <Loader2 size={18} className="mt-0.5 shrink-0 animate-spin" aria-hidden="true" />
             Preparando sua mensagem e abrindo o aplicativo de email...
           </p>
         )}
         {!isSubmitting && status === "success" && (
-          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800">
+          <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 dark:bg-green-950/40 dark:text-green-200">
             <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
             Mensagem preparada com sucesso. Se o aplicativo de email não abriu, escreva diretamente para {CONTACT_EMAIL}.
           </p>
         )}
         {!isSubmitting && status === "error" && (
-          <p role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800">
+          <p role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
             <AlertCircle size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
             Não foi possível preparar sua mensagem. Confira os campos obrigatórios e tente novamente.
           </p>
