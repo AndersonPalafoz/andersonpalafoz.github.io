@@ -1112,3 +1112,8 @@
 ## Gestão Unificada de Cursos no Painel — 19/08/2026
 - [x] Padronizar a listagem de cursos no painel com contagem, níveis e botão "Ver" semelhante às listagens de alunos e professores.
 - [x] Validar testes automatizados e build de produção.
+
+## Paginação e Ações Rápidas na Lista de Cursos do Painel — 19/08/2026
+- [x] Implementar paginação e carregamento incremental na listagem de cursos do painel.
+- [x] Adicionar menu de ações rápidas (Ver, Editar, Enviar para lixeira) em cada item da lista.
+- [x] Validar testes automatizados e build de produção.
