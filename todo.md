@@ -1256,3 +1256,8 @@
 - [x] Adicionar botão "Esvaziar Lixeira" com modal de confirmação de segurança e aviso de irreversibilidade nas páginas de administração.
 - [x] Disparar evento de atualização instantânea do contador no menu lateral e registrar log de auditoria.
 - [x] Validar com testes e salvar checkpoint.
+
+## Notificações Toast com Ação Desfazer para Lixeira — Concluído
+- [x] Implementar toast interativo com botão de desfazer ao mover cursos para a lixeira.
+- [x] Integrar restauração instantânea ao clicar em Desfazer, atualizando contadores e listagens sem refresh.
+- [x] Executar testes Vitest e salvar checkpoint estável.
