@@ -84,10 +84,46 @@ export function ProfileBillingSection() {
     }
   };
 
+  const handleDownloadSingleReceiptPDF = async (p: PurchaseItem) => {
+    try {
+      const amount = p.payment?.amountTotal != null && p.payment.currency ? (p.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: p.payment.currency }) : "Não verificado";
+      const bytes = await createTablePdf(
+        `Recibo de Compra — ${p.course.title}`,
+        ["Detalhe da Transação", "Informação"],
+        [
+          ["Curso Adquirido", p.course.title],
+          ["Nível", p.course.level],
+          ["Data da Compra", new Date(p.purchasedAt).toLocaleDateString("pt-BR")],
+          ["Status do Pagamento", p.payment?.paymentStatus || "concluído"],
+          ["Valor Total", amount],
+          ["ID da Sessão / Transação", p.checkoutSessionId],
+        ]
+      );
+      downloadPdf(bytes, `recibo-compra-curso-${p.course.id}-${Date.now()}.pdf`);
+      toast.success("Recibo individual baixado em PDF com sucesso!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao gerar recibo em PDF.");
+    }
+  };
+
   if (loading) {
     return (
-      <div className="p-6 rounded-xl border border-border bg-card flex items-center justify-center py-12">
-        <Loader2 className="animate-spin text-red-600" size={28} />
+      <div className="p-6 rounded-xl border border-border bg-card space-y-4 animate-pulse">
+        <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 bg-muted rounded-full" />
+            <div className="h-5 w-56 bg-muted rounded-lg" />
+          </div>
+          <div className="flex gap-2">
+            <div className="h-8 w-24 bg-muted rounded-xl" />
+            <div className="h-8 w-24 bg-muted rounded-xl" />
+          </div>
+        </div>
+        <div className="h-20 bg-muted/40 rounded-xl" />
+        <div className="space-y-3">
+          <div className="h-16 bg-muted/30 rounded-xl" />
+          <div className="h-16 bg-muted/30 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -142,14 +178,20 @@ export function ProfileBillingSection() {
                   <h4 className="font-bold text-foreground text-sm">{p.course.title}</h4>
                   <p className="text-xs text-muted-foreground mt-0.5">Comprado em {new Date(p.purchasedAt).toLocaleDateString("pt-BR")} • Status: <span className={`font-semibold uppercase ${p.payment ? "text-emerald-600" : "text-amber-600"}`}>{p.payment?.paymentStatus || "Pagamento não verificado"}</span></p>{p.paymentError && <p className="mt-1 text-[11px] text-amber-700 dark:text-amber-300">{p.paymentError}</p>}
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-black text-foreground">{amount}</span>
-                  {p.payment?.receiptUrl ? (
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <span className="text-sm font-black text-foreground mr-2">{amount}</span>
+                  <Button
+                    onClick={() => void handleDownloadSingleReceiptPDF(p)}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs font-bold border-border"
+                  >
+                    <Download size={13} /> Baixar Recibo PDF
+                  </Button>
+                  {p.payment?.receiptUrl && (
                     <a href={p.payment.receiptUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition">
-                      Recibo <ExternalLink size={13} />
+                      Stripe <ExternalLink size={13} />
                     </a>
-                  ) : (
-                    <span className="text-xs text-muted-foreground italic">Recibo indisponível</span>
                   )}
                 </div>
               </div>
