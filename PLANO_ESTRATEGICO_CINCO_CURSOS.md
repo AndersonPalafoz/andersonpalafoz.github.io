@@ -176,3 +176,11 @@ A auditoria dos fluxos de pagamento e matrícula para **Cursos Fechados (Tipo 1)
 2. **Criação de Sessão e Preços**: Para cursos pagos, o gateway garante a criação ou recuperação do preço no Stripe e gera a sessão de pagamento com metadados vinculados ao ID do usuário e do curso.
 3. **Cumprimento de Compra (*Fulfillment*)**: O webhook do Stripe (`/api/stripe/webhook`) e a função `fulfillCoursePurchase` registram a transação na tabela `coursePurchases` de forma idempotente e criam automaticamente a matrícula ativa na tabela `enrollments` caso ainda não exista.
 4. **Testes automatizados**: O arquivo `app/api/stripe/checkout-types.test.ts` foi criado para certificar os contratos de checkout e webhooks. A suíte completa passou com **333 testes aprovados**.
+
+### Filtros Administrativos por Tipo de Curso e Modalidade
+
+Para agilizar a gestão e o controle pedagógico no painel administrativo (`/admin/cursos`), foram implementados seletores combináveis de **tipo de curso** e **modalidade síncrona**:
+1. **Seletores Dedicados**: O cabeçalho de listagem foi estendido com dois filtros select adicionais (Tipo de Curso e Modalidade de Atendimento), integrados à barra de busca por texto e ao filtro de nível.
+2. **Filtragem Reativa**: O gancho `useMemo` agora avalia simultaneamente o texto de busca, o nível, o tipo numérico do curso (`courseType`) e a modalidade de atendimento (`syncModality`), garantindo precisão instantânea.
+3. **Limpeza e Feedback**: Quando qualquer filtro está ativo, aparece um botão de redefinição rápida (“Limpar filtros”) acompanhado de contadores reativos de itens exibidos.
+4. **Testes automatizados**: Criado o teste de contrato `app/admin/cursos/admin-filters.test.ts`. A suíte completa passou com **334 testes aprovados**.
