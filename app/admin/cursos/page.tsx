@@ -31,6 +31,8 @@ export default function AdminCursos() {
   const [coverRemovalPending, setCoverRemovalPending] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [modalityFilter, setModalityFilter] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"courses" | "trash">("courses");
@@ -163,12 +165,19 @@ export default function AdminCursos() {
     return courses.filter((course) => {
       const matchesLevel = levelFilter === "all" || course.level === levelFilter;
       if (!matchesLevel) return false;
+
+      const matchesType = typeFilter === "all" || Number(course.courseType ?? 1) === Number(typeFilter);
+      if (!matchesType) return false;
+
+      const matchesModality = modalityFilter === "all" || (course.syncModality || "none") === modalityFilter;
+      if (!matchesModality) return false;
+
       if (!query) return true;
       return [course.title, course.category, course.instructor, course.description]
         .filter(Boolean)
         .some((value) => String(value).toLocaleLowerCase("pt-BR").includes(query));
     });
-  }, [courses, levelFilter, searchTerm]);
+  }, [courses, levelFilter, typeFilter, modalityFilter, searchTerm]);
 
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [trashCourseToPermanentDelete, setTrashCourseToPermanentDelete] = useState<Course | null>(null);
@@ -780,7 +789,7 @@ export default function AdminCursos() {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
               <label className="relative block">
                 <span className="sr-only">Buscar cursos</span>
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} aria-hidden="true" />
@@ -798,7 +807,43 @@ export default function AdminCursos() {
                   <option value="C2">Avançado · C2</option>
                 </select>
               </label>
+              <label>
+                <span className="sr-only">Filtrar por tipo de curso</span>
+                <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
+                  <option value="all">Todos os tipos</option>
+                  {COURSE_TYPE_OPTIONS.map((opt) => (
+                    <option key={opt.id} value={opt.id}>{opt.id}. {opt.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="sr-only">Filtrar por modalidade</span>
+                <select value={modalityFilter} onChange={(event) => setModalityFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
+                  <option value="all">Todas as modalidades</option>
+                  <option value="none">Sem encontros síncronos</option>
+                  <option value="online_individual">Online individual</option>
+                  <option value="online_group">Online em grupo</option>
+                  <option value="presencial">Presencial</option>
+                </select>
+              </label>
             </div>
+            {(searchTerm || levelFilter !== "all" || typeFilter !== "all" || modalityFilter !== "all") && (
+              <div className="flex items-center justify-between pt-2">
+                <p className="text-xs text-muted-foreground font-medium">Exibindo resultados filtrados na listagem administrativa.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchTerm("");
+                    setLevelFilter("all");
+                    setTypeFilter("all");
+                    setModalityFilter("all");
+                  }}
+                  className="text-xs font-bold text-red-600 hover:underline"
+                >
+                  Limpar filtros
+                </button>
+              </div>
+            )}
           </div>
 
           {activeTab === "courses" ? (

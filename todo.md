@@ -1319,3 +1319,10 @@
 - [ ] Garantir que o botão de compra exiba feedback claro de redirecionamento e tratamento de erros do gateway.
 - [ ] Criar ou atualizar testes unitários do fluxo de checkout e pagamento.
 - [ ] Executar testes Vitest, validar build e salvar checkpoint.
+
+## Filtros Administrativos por Tipo e Modalidade — 20/08/2026
+- [x] Adicionar seletores de filtro por tipo de curso e modalidade síncrona no painel de administração (`/admin/cursos`).
+- [x] Garantir filtragem reativa combinada com a busca por nome e nível.
+- [x] Adicionar botão de limpar filtros e mensagem clara de estado vazio quando nenhum curso corresponder.
+- [x] Criar testes unitários para a filtragem administrativa de cursos.
+- [x] Executar testes Vitest, validar build e salvar checkpoint.
