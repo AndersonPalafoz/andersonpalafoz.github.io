@@ -1117,3 +1117,20 @@
 - [x] Implementar paginação e carregamento incremental na listagem de cursos do painel.
 - [x] Adicionar menu de ações rápidas (Ver, Editar, Enviar para lixeira) em cada item da lista.
 - [x] Validar testes automatizados e build de produção.
+
+## Modal de Seleção de Dias da Semana em Turmas Externas — 19/08/2026
+- [x] Implementar modal interativo para selecionar ou não os dias da semana de aula no cadastro/edição de turmas externas.
+- [x] Validar testes automatizados e build de produção.
+
+## Modalidade (Remota/Presencial) e Modal de Dias da Semana em Turmas Externas — 19/08/2026
+- [x] Adicionar seletor de modalidade (Remota / Presencial) no formulário de turmas externas.
+- [x] Implementar modal interativo para escolher dias específicos da semana ou optar por não definir.
+- [x] Validar testes automatizados e build de produção.
+
+## Link Online e Sala Presencial em Turmas Externas — 19/08/2026
+- [x] Adicionar suporte a `meetingLink` e `classroomLocation` no schema, API e formulário de turmas externas.
+- [x] Validar testes automatizados e build de produção.
+
+## Exclusão Definitiva de Cursos em /admin e /professor — 19/08/2026
+- [x] Adicionar botões de exclusão definitiva com modal de segurança nas listagens de cursos de /admin e /professor.
+- [x] Validar testes automatizados e build de produção.

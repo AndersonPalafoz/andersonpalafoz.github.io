@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2 } from "lucide-react";
+import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -19,6 +19,9 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   const [visibleCount, setVisibleCount] = useState(4);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id?: number; title?: string }>({
+    isOpen: false,
+  });
 
   const paginatedCourses = useMemo(() => {
     return courses.slice(0, visibleCount);
@@ -37,6 +40,23 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
     } finally {
       setActionLoading(null);
       setOpenMenuId(null);
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (!deleteModal.id) return;
+    const { id, title } = deleteModal;
+    setDeleteModal({ isOpen: false });
+    try {
+      setActionLoading(id);
+      const res = await fetch(`/api/admin/courses?id=${id}&permanent=true`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Falha ao excluir permanentemente o curso.");
+      setCourses((prev) => prev.filter((c) => c.id !== id));
+      toast.success(`Curso "${title}" excluído permanentemente do sistema.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir permanentemente.");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -87,7 +107,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                     </Button>
 
                     {isMenuOpen && (
-                      <div className="absolute right-0 top-11 z-20 w-48 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95">
+                      <div className="absolute right-0 top-11 z-20 w-52 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95">
                         <Link
                           href={`/admin/cursos?edit=${course.id}`}
                           onClick={() => setOpenMenuId(null)}
@@ -98,9 +118,19 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                         <button
                           onClick={() => void handleSoftDelete(course.id, course.title)}
                           disabled={actionLoading === course.id}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition text-left"
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-xl transition text-left"
                         >
                           {actionLoading === course.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Enviar para Lixeira
+                        </button>
+                        <button
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            setDeleteModal({ isOpen: true, id: course.id, title: course.title });
+                          }}
+                          disabled={actionLoading === course.id}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition text-left border-t border-border mt-1 pt-2"
+                        >
+                          <Trash2 size={13} /> Excluir Definitivamente
                         </button>
                       </div>
                     )}
@@ -123,6 +153,37 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmação de Exclusão Definitiva */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-4 font-sans animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3 text-red-600">
+              <AlertCircle size={28} />
+              <h3 className="text-lg font-black text-foreground">Exclusão Definitiva de Curso</h3>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Tem certeza absoluta que deseja excluir permanentemente o curso <strong className="text-foreground">"{deleteModal.title}"</strong>? Esta ação apagará todos os dados associados do banco de dados e não poderá ser desfeita.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteModal({ isOpen: false })}
+                className="rounded-xl text-xs font-bold"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => void handlePermanentDelete()}
+                className="rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white gap-1"
+              >
+                <Trash2 size={14} /> Sim, Excluir Definitivamente
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
