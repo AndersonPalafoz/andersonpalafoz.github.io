@@ -9,8 +9,11 @@ import { MaterialProgressButton } from "@/components/material-progress-button";
 import { MaterialCommentsSection } from "@/components/material-comments-section";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
 import { SaveMaterialButton } from "@/components/save-material-button";
+import { MaterialLoginLock } from "@/components/material-login-lock";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
+  const session = await getServerSession(authOptions);
+  const isAuthenticated = Boolean(session?.user?.email);
   const material = await getMaterialById(materialId);
 
   if (!material) {
@@ -74,6 +77,7 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
               </section>
             )}
             <div className="flex flex-wrap items-center gap-3">
+              {!isAuthenticated && <MaterialLoginLock materialId={material.id} />}
               <MaterialProgressButton materialId={material.id} />
               {material.fileUrl ? (
                 <DownloadMaterialButton materialId={material.id} fileUrl={material.fileUrl} />

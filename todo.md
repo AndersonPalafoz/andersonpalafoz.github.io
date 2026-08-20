@@ -1472,3 +1472,15 @@
 - [x] Assegurar que usuários autenticados consigam abrir ou baixar o arquivo (Google Drive / S3) com segurança e feedback visual
 - [x] Criar testes automatizados cobrindo download anônimo vs. logado
 - [x] Executar suíte Vitest e validar build de produção
+
+## Cadeado e Tooltip de Login em Materiais para Visitantes (Agosto 2026)
+- [x] Exibir ícone de cadeado e tooltip interativo para usuários não logados nos botões e cards de materiais
+- [x] Direcionar o visitante para a página de login ao clicar no material protegido
+- [x] Criar teste automatizado para verificar a presença do cadeado e do tooltip em modo anônimo
+- [ ] Validar suíte Vitest e build de produção — Vitest aprovado; build encerrado por SIGTERM por pressão de memória do sandbox
+
+## Revisão Ant-FOUC do Script de Tema no Head (Agosto 2026)
+- [x] Auditar o script síncrono no head de `app/layout.tsx` para garantir detecção correta de modo escuro, claro, sistema e alto contraste
+- [x] Sincronizar o estado do ThemeProvider (`attribute="class"`, `enableSystem`) com o `localStorage` para evitar hidratação divergente
+- [x] Criar teste automatizado verificando o tratamento de FOUC e rodar suíte Vitest
+- [ ] Validar build de produção e salvar checkpoint — build encerrado por SIGTERM por pressão de memória do sandbox; checkpoint será salvo com esta limitação documentada
