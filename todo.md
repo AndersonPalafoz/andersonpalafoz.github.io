@@ -1274,3 +1274,7 @@
 ## Plano Estratégico dos Cinco Tipos de Curso — Concluído
 - [x] Criar arquivo `PLANO_ESTRATEGICO_CINCO_CURSOS.md` detalhando o mapeamento de rotas, fases de implementação e critérios de sucesso.
 - [x] Executar validação e salvar checkpoint.
+
+## Auditoria de Schema para a Fase 1 — Concluído
+- [x] Criar arquivo `AUDITORIA_SCHEMA_FASE_1.md` detalhando a análise do schema atual, lacunas e script SQL proposto.
+- [x] Executar validação e salvar checkpoint.
