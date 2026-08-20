@@ -965,15 +965,15 @@
 - [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Aba "Meus Certificados" no Perfil do Aluno — 19/08/2026
-- [ ] Localizar a página de perfil do aluno (`/dashboard/perfil` ou equivalente).
-- [ ] Adicionar a aba "Meus Certificados" utilizando os registros reais retornados pelo banco de dados (`getCertificates`).
-- [ ] Exibir cards com título do curso, nível CEFR, data de emissão, código de autenticidade e botão de download do certificado em PDF.
+- [x] Localizar a página de perfil do aluno (`/dashboard/perfil` ou equivalente).
+- [x] Adicionar a aba "Meus Certificados" utilizando os registros reais retornados pelo banco de dados (`getCertificates`).
+- [x] Exibir cards com título do curso, nível CEFR, data de emissão, código de autenticidade e botão de download do certificado em PDF.
 - [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Inclusão de CPF, Nome Social, Celular e E-mail de Alunos — 19/08/2026
-- [ ] Atualizar o schema Drizzle (`drizzle/schema.ts`) nas tabelas de usuários e estudantes externos para adicionar `cpf`, `socialName` e `phone` (celular).
-- [ ] Atualizar a API de perfil e os formulários de edição do aluno (`/dashboard/perfil`).
-- [ ] Atualizar as listagens de alunos para professores e administradores (`/admin/usuarios`, `/professor/alunos`, `/professor/turmas-externas`) exibindo CPF, nome social, celular e e-mail.
+- [x] Atualizar o schema Drizzle (`drizzle/schema.ts`) nas tabelas de usuários e estudantes externos para adicionar `cpf`, `socialName` e `phone` (celular).
+- [x] Atualizar a API de perfil e os formulários de edição do aluno (`/dashboard/perfil`).
+- [x] Atualizar as listagens de alunos para professores e administradores (`/admin/usuarios`, `/professor/alunos`, `/professor/turmas-externas`) exibindo CPF, nome social, celular e e-mail.
 - [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Auditoria e Correção de Deploy no Vercel — 19/08/2026
@@ -997,10 +997,10 @@
 - [x] Executar testes Vitest e validar estabilidade.
 
 ## Assinatura Digital de Certificados via gov.br — 19/08/2026
-- [ ] Pesquisar e documentar os requisitos da API de Assinatura Eletrônica Avançada do gov.br (ITI / Secretaria de Governo Digital) [1].
-- [ ] Implementar fluxo de autenticação OAuth com escopo de assinatura e integração com o endpoint REST de assinatura de documentos PDF.
-- [ ] Disponibilizar painel administrativo para o professor/administrador assinar digitalmente os certificados antes de liberá-los para download pelos alunos.
-- [ ] Executar testes automatizados e validar conformidade com o padrão ICP-Brasil.
+- [x] Pesquisar e documentar os requisitos da API de Assinatura Eletrônica Avançada do gov.br (ITI / Secretaria de Governo Digital) [1].
+- [x] Implementar fluxo de autenticação OAuth com escopo de assinatura e integração com o endpoint REST de assinatura de documentos PDF.
+- [x] Disponibilizar painel administrativo para o professor/administrador assinar digitalmente os certificados antes de liberá-los para download pelos alunos.
+- [x] Executar testes automatizados e validar conformidade com o padrão ICP-Brasil.
 
 ### Referências
 - [1] [Roteiro de Integração da API de Assinatura Eletrônica GOV.BR](https://manual-integracao-assinatura-eletronica.servicos.gov.br/)
@@ -1032,9 +1032,9 @@
 
 ## Aprimoramento Visual e Responsivo: Cursos, Turmas Externas, Materiais e Blog — 19/08/2026
 - [x] Auditar rotas e componentes de cursos (`/cursos`, `/admin/cursos`), turmas externas (`/professor/turmas-externas`), materiais (`/materiais`, `/admin/materiais`) e blog (`/blog`, `/admin/blog`).
-- [ ] Padronizar cartões, grids, tipografia Poppins e espaçamento em todas as listagens.
-- [ ] Refinar páginas de detalhes, modais, formulários e barras de busca/filtros com estados de carregamento impecáveis.
-- [ ] Validar estabilidade com testes automatizados e criar checkpoint de entrega.
+- [x] Padronizar cartões, grids, tipografia Poppins e espaçamento em todas as listagens.
+- [x] Refinar páginas de detalhes, modais, formulários e barras de busca/filtros com estados de carregamento impecáveis.
+- [x] Validar estabilidade com testes automatizados e criar checkpoint de entrega.
 
 ## Aprimoramento Visual e Responsivo Completo: Dashboard, Cursos, Turmas, Materiais e Blog — 19/08/2026
 - [x] Unificar o Design System, fontes Poppins e cartões em todo o ecossistema.
@@ -1221,10 +1221,10 @@
 - [x] Executar bateria completa de testes automatizados e salvar checkpoint final.
 
 ## Governança de Autoria e Permissões (RBAC) para Professores e Administradores
-- [ ] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
-- [ ] Permitir que administradores e superadministradores gerenciem itens criados por qualquer usuário.
-- [ ] Adicionar testes automatizados para validar as regras de permissão por autoria.
-- [ ] Validar build e salvar checkpoint.
+- [x] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
+- [x] Permitir que administradores e superadministradores gerenciem itens criados por qualquer usuário.
+- [x] Adicionar testes automatizados para validar as regras de permissão por autoria.
+- [x] Validar build e salvar checkpoint.
 
 ## Governança de Autoria e Permissões (RBAC) para Professores e Administradores — Concluído
 - [x] Implementar verificação de que professores só podem excluir, mover para lixeira ou restaurar cursos, turmas e materiais criados por eles mesmos.
