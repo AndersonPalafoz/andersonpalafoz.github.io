@@ -136,3 +136,7 @@ Consolidar a experiência visual e interativa dos cinco tipos de curso na vitrin
 Foi criado o componente client-side `components/external-course-cta.tsx` e integrado à página pública `app/cursos/[id]/page.tsx`. Quando o usuário clica em um CTA de ambiente externo dos Tipos 1 ou 4, o botão muda imediatamente para o estado **“Abrindo ambiente externo...”**, mostra um indicador de carregamento e informa via região `aria-live` que o destino será aberto em uma nova aba. Cliques duplicados são bloqueados durante o estado de transição, enquanto o link mantém `target="_blank"` e `rel="noopener noreferrer"`.
 
 O teste de contrato `components/external-course-cta.test.ts` confirma o destino em nova aba, os atributos de segurança, o feedback textual, o estado `aria-disabled` e a região acessível de status. A suíte passou com **329 testes aprovados**. A validação do build permanece pendente porque o worker do Next.js foi encerrado pelo limite de recursos do sandbox em tentativas anteriores; isso não gerou erro de TypeScript no servidor reiniciado.
+
+### Validação de build após os CTAs externos
+
+O build de produção foi executado com sucesso após liberar processos concorrentes do sandbox e executar o Next.js 15 com um worker controlado. A compilação concluiu sem erros de TypeScript ou de módulos, e as rotas `/aulas` e `/cursos/[id]` foram geradas no relatório final do build. O encerramento anterior do worker foi confirmado como limitação de memória do ambiente, não como falha introduzida pelo componente `ExternalCourseCta`.
