@@ -931,12 +931,17 @@
 - [x] Executar suíte de testes Vitest e validar build de produção (320 testes aprovados).
 
 ## Alerta Visual de Limite de Faltas no Boletim do Aluno — 19/08/2026
-- [ ] Auditar a rota e o componente do boletim individual do aluno (`/professor/boletim/[studentId]` ou equivalente).
-- [ ] Calcular dinamicamente o percentual de faltas com base nas chamadas registradas e comparar com `maxAbsencePercent` da turma.
-- [ ] Adicionar selo/alerta visual (destaque em vermelho ou amarelo) e mensagem explicativa de reprovação por frequência caso o limite seja atingido.
+- [x] Auditar a rota e o componente do boletim individual do aluno (`/professor/boletim/[studentId]` ou equivalente).
+- [x] Calcular dinamicamente o percentual de faltas com base nas chamadas registradas e comparar com `maxAbsencePercent` da turma.
+- [x] Adicionar selo/alerta visual (destaque em vermelho ou amarelo) e mensagem explicativa de reprovação por frequência caso o limite seja atingido.
 - [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Correção Crítica de ID de Usuário em Progresso de Aulas — 19/08/2026
 - [x] Substituir o uso incorreto de `parseInt(session.user.email.split('@')[0])` por `session.user.id` em `app/api/lessons/[id]/progress/route.ts`.
 - [x] Criar teste automatizado cobrindo o endpoint de progresso de aula com autenticação válida.
 - [x] Executar suíte de testes Vitest e validar build de produção.
+
+## Correção de Tipagem no Formulário de Cursos em `/admin/cursos` — 19/08/2026
+- [x] Atualizar a função `handleEdit` em `app/admin/cursos/page.tsx` para incluir todas as propriedades do calendário acadêmico e regra de faltas (`classDays`, `classTime`, `workloadHours`, `startDate`, `endDate`, `maxAbsencePercent`).
+- [x] Executar build de produção (`pnpm build`) para verificar se o TypeScript compila sem erros.
+- [x] Executar suíte de testes Vitest e salvar checkpoint.
