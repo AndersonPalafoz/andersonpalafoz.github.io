@@ -143,6 +143,7 @@ export const materials = pgTable("materials", {
   courseId: integer("courseId").references(() => courses.id),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
 });
 
 export type Material = typeof materials.$inferSelect;

@@ -591,3 +591,51 @@ export async function getResumeLesson(userId: number, courseId: number) {
   const next = lessonRows.find((lesson) => !completedIds.has(lesson.id)) || lessonRows[lessonRows.length - 1];
   return { lesson: next, completedLessons: completedIds.size, totalLessons: lessonRows.length, percentage: Math.round((completedIds.size / lessonRows.length) * 100) };
 }
+
+
+// --- Materiais: Lixeira, Restauração e Exclusão Permanente ---
+export async function getMaterials() {
+  return await db.select().from(schema.materials).where(isNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.createdAt));
+}
+
+export async function getTrashMaterials() {
+  return await db.select().from(schema.materials).where(isNotNull(schema.materials.deletedAt)).orderBy(desc(schema.materials.updatedAt));
+}
+
+export async function softDeleteMaterial(id: number) {
+  return await db.update(schema.materials).set({ deletedAt: new Date() }).where(eq(schema.materials.id, id)).returning();
+}
+
+export async function restoreMaterial(id: number) {
+  return await db.update(schema.materials).set({ deletedAt: null }).where(eq(schema.materials.id, id)).returning();
+}
+
+export async function deleteMaterial(id: number) {
+  await db.delete(schema.materialProgress).where(eq(schema.materialProgress.materialId, id));
+  await db.delete(schema.savedMaterials).where(eq(schema.savedMaterials.materialId, id));
+  return await db.delete(schema.materials).where(eq(schema.materials.id, id)).returning();
+}
+
+// --- Alunos/Usuários: Lixeira, Restauração e Exclusão Permanente ---
+export async function getUsersList() {
+  return await db.select().from(schema.users).where(isNull(schema.users.deletedAt)).orderBy(desc(schema.users.createdAt));
+}
+
+export async function getTrashUsers() {
+  return await db.select().from(schema.users).where(isNotNull(schema.users.deletedAt)).orderBy(desc(schema.users.updatedAt));
+}
+
+export async function softDeleteUser(id: number) {
+  return await db.update(schema.users).set({ deletedAt: new Date() }).where(eq(schema.users.id, id)).returning();
+}
+
+export async function restoreUser(id: number) {
+  return await db.update(schema.users).set({ deletedAt: null }).where(eq(schema.users.id, id)).returning();
+}
+
+export async function deleteUserPermanently(id: number) {
+  await db.delete(schema.enrollments).where(eq(schema.enrollments.userId, id));
+  await db.delete(schema.certificates).where(eq(schema.certificates.userId, id));
+  await db.delete(schema.coursePurchases).where(eq(schema.coursePurchases.userId, id));
+  return await db.delete(schema.users).where(eq(schema.users.id, id)).returning();
+}
