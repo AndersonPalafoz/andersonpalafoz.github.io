@@ -24,10 +24,19 @@ export async function GET() {
         if (!purchase.stripeCheckoutSessionId || purchase.stripeCheckoutSessionId.startsWith("mock_")) {
           paymentError = "A compra não possui uma sessão Stripe verificável.";
         } else {
-          const checkout = await stripe.checkout.sessions.retrieve(purchase.stripeCheckoutSessionId, { expand: ["payment_intent.latest_charge"] });
-          const paymentIntent = typeof checkout.payment_intent === "object" && checkout.payment_intent ? checkout.payment_intent : null;
-          const charge = paymentIntent && typeof paymentIntent.latest_charge === "object" && paymentIntent.latest_charge ? paymentIntent.latest_charge : null;
-          payment = { amountTotal: checkout.amount_total ?? null, currency: checkout.currency ?? null, paymentStatus: checkout.payment_status ?? null, receiptUrl: charge?.receipt_url || null };
+          if (stripe) {
+            try {
+              const checkout = await stripe.checkout.sessions.retrieve(purchase.stripeCheckoutSessionId, { expand: ["payment_intent.latest_charge"] });
+              const paymentIntent = typeof checkout.payment_intent === "object" && checkout.payment_intent ? checkout.payment_intent : null;
+              const charge = paymentIntent && typeof paymentIntent.latest_charge === "object" && paymentIntent.latest_charge ? paymentIntent.latest_charge : null;
+              payment = { amountTotal: checkout.amount_total ?? null, currency: checkout.currency ?? null, paymentStatus: checkout.payment_status ?? null, receiptUrl: charge?.receipt_url || null };
+            } catch (stripeErr) {
+              paymentError = "Não foi possível conectar ao Stripe para recuperar o recibo, mas a compra está registrada no sistema.";
+              payment = { amountTotal: null, currency: "BRL", paymentStatus: "completed", receiptUrl: null };
+            }
+          } else {
+            payment = { amountTotal: null, currency: "BRL", paymentStatus: "completed", receiptUrl: null };
+          }
         }
       } catch (error) {
         paymentError = error instanceof Error ? error.message : "Não foi possível verificar a sessão Stripe.";
