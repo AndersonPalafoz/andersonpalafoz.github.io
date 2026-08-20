@@ -1150,3 +1150,8 @@
 - [x] Adicionar botões de filtro rápido por status no topo da lista de cursos.
 - [x] Incluir animação suave e notificação visual de sucesso ao alterar o status do curso pela tag.
 - [x] Validar testes automatizados e build de produção.
+
+## Correção Urgente de Build: Substituição de jspdf por Exportação Nativa em PDF/HTML — 19/08/2026
+- [x] Remover dependência de jspdf não instalada em components/professor-courses-list.tsx.
+- [x] Implementar exportação de relatório PDF nativa e robusta.
+- [x] Validar build de produção local e testes automatizados.
