@@ -1484,3 +1484,11 @@
 - [x] Sincronizar o estado do ThemeProvider (`attribute="class"`, `enableSystem`) com o `localStorage` para evitar hidratação divergente
 - [x] Criar teste automatizado verificando o tratamento de FOUC e rodar suíte Vitest
 - [ ] Validar build de produção e salvar checkpoint — build encerrado por SIGTERM por pressão de memória do sandbox; checkpoint será salvo com esta limitação documentada
+
+## Auditoria e Refinamento do Blog — Administrativo e Público (Agosto 2026)
+- [x] Auditar schema e rotas de API do blog (`/api/admin/articles` e afins) para criação, edição, publicação e exclusão
+- [x] Auditar painel administrativo de artigos para garantir RBAC, autoria e feedback visual de rascunhos vs publicados
+- [x] Auditar catálogo público (`/blog`) e páginas individuais (`/blog/[slug]`) quanto a SEO, metadados, tempo de leitura e tags
+- [x] Validar a integração de artigos relacionados e materiais didáticos recomendados
+- [x] Criar testes automatizados cobrindo o fluxo editorial e de leitura do blog
+- [x] Executar suíte Vitest e validar build e responsividade

@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db, getLessonById, getModuleById, getCourseById } from "@/lib/db";
-import { activities, materials, lessonProgress, userActivityProgress, users } from "@/drizzle/schema";
+import { activities, coursePurchases as schemaCoursePurchases, enrollments as schemaEnrollments, materials, lessonProgress, userActivityProgress, users } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +22,26 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const module = await getModuleById(lesson.moduleId);
     const course = module ? await getCourseById(module.courseId) : null;
+
+    const isExternalCourse = course?.courseType === 4;
+    const isPrivilegedUser = session?.user?.role === "admin" || session?.user?.role === "professor" || session?.user?.email === "palafozanderson@gmail.com";
+    let hasExternalCourseAccess = !isExternalCourse || isPrivilegedUser;
+
+    if (isExternalCourse && !hasExternalCourseAccess && user) {
+      const [enrollment, purchase] = await Promise.all([
+        db.query.enrollments.findFirst({
+          where: and(eq(schemaEnrollments.userId, user.id), eq(schemaEnrollments.courseId, course.id)),
+        }),
+        db.query.coursePurchases.findFirst({
+          where: and(eq(schemaCoursePurchases.userId, user.id), eq(schemaCoursePurchases.courseId, course.id)),
+        }),
+      ]);
+      hasExternalCourseAccess = Boolean(enrollment || purchase);
+    }
+
+    if (isExternalCourse && !hasExternalCourseAccess) {
+      return NextResponse.json({ error: "Este curso externo exige autorização." }, { status: 403 });
+    }
 
     const lessonMaterials = await db.query.materials.findMany({
       where: eq(materials.lessonId, lessonId),

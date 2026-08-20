@@ -9,7 +9,7 @@ import { EnrollButton } from "@/components/enroll-button";
 import { CertificateModal } from "@/components/certificate-modal";
 import { CourseEngagement } from "@/components/course-engagement";
 import { BookOpen, Layers, PlayCircle, Clock, CheckCircle, ExternalLink, HardDrive } from "lucide-react";
-import { lessonProgress } from "@/drizzle/schema";
+import { coursePurchases, enrollments, lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import { getCourseTypeDefinition, getSyncModalityLabel } from "@/lib/course-types";
@@ -141,6 +141,38 @@ async function CourseDetail({ courseId }: { courseId: number }) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <p className="text-gray-700 dark:text-gray-300">Curso não encontrado.</p>
+      </div>
+    );
+  }
+
+  const isExternalCourse = course.courseType === 4;
+  const isPrivilegedUser = user?.role === "admin" || user?.role === "professor" || user?.email === "palafozanderson@gmail.com";
+  let hasExternalCourseAccess = !isExternalCourse || isPrivilegedUser;
+
+  if (isExternalCourse && !hasExternalCourseAccess && Number.isInteger(Number(user?.id)) && Number(user?.id) > 0) {
+    const userId = Number(user.id);
+    const [enrollment, purchase] = await Promise.all([
+      db.query.enrollments.findFirst({
+        where: and(eq(enrollments.userId, userId), eq(enrollments.courseId, course.id)),
+      }),
+      db.query.coursePurchases.findFirst({
+        where: and(eq(coursePurchases.userId, userId), eq(coursePurchases.courseId, course.id)),
+      }),
+    ]);
+    hasExternalCourseAccess = Boolean(enrollment || purchase);
+  }
+
+  if (isExternalCourse && !hasExternalCourseAccess) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-background px-4 py-20">
+        <div className="mx-auto max-w-xl rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center shadow-sm dark:border-amber-800 dark:bg-amber-950/30">
+          <h1 className="text-2xl font-black text-amber-950 dark:text-amber-100">Curso externo com acesso restrito</h1>
+          <p className="mt-3 text-sm leading-6 text-amber-900 dark:text-amber-200">Este curso é administrado para uma turma ou organização específica. Entre na sua conta autorizada ou fale com o professor para solicitar acesso.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href={`/login?callbackUrl=${encodeURIComponent(`/cursos/${course.id}`)}`} className="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700">Entrar para continuar</Link>
+            <Link href="/contato" className="rounded-xl border border-amber-700 px-5 py-3 text-sm font-bold text-amber-950 hover:bg-amber-100 dark:text-amber-100 dark:hover:bg-amber-900/40">Falar com o professor</Link>
+          </div>
+        </div>
       </div>
     );
   }
