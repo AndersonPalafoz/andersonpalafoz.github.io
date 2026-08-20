@@ -107,14 +107,17 @@ export default function AdminCursos() {
   };
 
   const handlePermanentDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir permanentemente este curso? Esta ação não pode ser desfeita.")) return;
     try {
+      setDeletingCourse(true);
       const response = await fetch(`/api/admin/courses?id=${id}&permanent=true`, { method: "DELETE" });
       if (!response.ok) throw new Error("Falha ao excluir permanentemente.");
       toast.success("Curso excluído permanentemente do sistema.");
+      setTrashCourseToPermanentDelete(null);
       fetchTrash();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao excluir.");
+    } finally {
+      setDeletingCourse(false);
     }
   };
 
@@ -131,6 +134,7 @@ export default function AdminCursos() {
   }, [courses, levelFilter, searchTerm]);
 
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [trashCourseToPermanentDelete, setTrashCourseToPermanentDelete] = useState<Course | null>(null);
   const [deletingCourse, setDeletingCourse] = useState(false);
 
   const confirmDeleteCourse = async () => {
@@ -737,7 +741,7 @@ export default function AdminCursos() {
                         Restaurar
                       </button>
                       <button
-                        onClick={() => handlePermanentDelete(course.id)}
+                        onClick={() => setTrashCourseToPermanentDelete(course)}
                         className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm"
                       >
                         Excluir Permanentemente
@@ -792,6 +796,63 @@ export default function AdminCursos() {
               >
                 {deletingCourse && <Loader2 className="animate-spin" size={14} />}
                 {deletingCourse ? "Excluindo..." : "Sim, excluir curso"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Confirmação Detalhada para Exclusão Permanente na Lixeira */}
+      {trashCourseToPermanentDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="trash-permanent-delete-title">
+          <div className="w-full max-w-lg rounded-3xl bg-card text-card-foreground p-6 sm:p-8 shadow-2xl border border-border space-y-6 animate-in fade-in zoom-in-95 duration-150 font-sans">
+            <div className="flex items-start gap-4 text-red-600 border-b border-border pb-4">
+              <div className="p-3.5 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600">
+                <Trash2 size={28} />
+              </div>
+              <div className="space-y-1">
+                <h2 id="trash-permanent-delete-title" className="text-xl font-black text-foreground">Exclusão Definitiva da Lixeira</h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Atenção: Esta operação apagará permanentemente o curso e todos os dados vinculados do banco de dados. Os alunos perderão acesso.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-border/80 bg-muted/50 p-4 space-y-3">
+              <p className="text-xs font-black uppercase tracking-wider text-muted-foreground">Detalhes do Curso Selecionado</p>
+              <div className="space-y-1">
+                <p className="text-base font-bold text-foreground">{trashCourseToPermanentDelete.title}</p>
+                <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground pt-1">
+                  <span className="px-2.5 py-0.5 rounded-md bg-background border border-border font-bold">Nível {trashCourseToPermanentDelete.level}</span>
+                  {trashCourseToPermanentDelete.category && <span className="px-2.5 py-0.5 rounded-md bg-background border border-border font-bold">Categoria: {trashCourseToPermanentDelete.category}</span>}
+                  <span className="px-2.5 py-0.5 rounded-md bg-background border border-border font-bold">{trashCourseToPermanentDelete.modules} Módulos</span>
+                  {trashCourseToPermanentDelete.instructor && <span className="px-2.5 py-0.5 rounded-md bg-background border border-border font-bold">Prof. {trashCourseToPermanentDelete.instructor}</span>}
+                </div>
+              </div>
+              {trashCourseToPermanentDelete.description && (
+                <p className="text-xs text-muted-foreground pt-1 border-t border-border/60 line-clamp-3">
+                  {trashCourseToPermanentDelete.description}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
+              <button
+                type="button"
+                disabled={deletingCourse}
+                onClick={() => setTrashCourseToPermanentDelete(null)}
+                className="px-5 py-2.5 rounded-xl border border-border text-foreground font-bold text-xs hover:bg-muted/60 transition disabled:opacity-50"
+              >
+                Cancelar e Manter na Lixeira
+              </button>
+              <button
+                type="button"
+                disabled={deletingCourse}
+                onClick={() => handlePermanentDelete(trashCourseToPermanentDelete.id)}
+                className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-black text-xs transition flex items-center gap-2 shadow-md shadow-red-600/20 disabled:opacity-50"
+              >
+                {deletingCourse && <Loader2 className="animate-spin" size={14} />}
+                {deletingCourse ? "Excluindo..." : "Sim, Excluir Definitivamente"}
               </button>
             </div>
           </div>

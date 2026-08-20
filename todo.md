@@ -1183,3 +1183,7 @@
 - [x] Atualizar API de estatísticas administrativas (`/api/admin/stats` e `getAdminStats`) para incluir a série temporal de cursos criados por mês.
 - [x] Implementar gráfico interativo SVG no painel do administrador comparando mensalmente o volume de matrículas e cursos criados.
 - [x] Executar bateria de 321 testes automatizados (Vitest) com 100% de aprovação.
+
+## Modal de Confirmação Segura para Exclusão Permanente de Cursos na Lixeira — 19/08/2026
+- [x] Implementar modal interativo e detalhado com exibição de título, nível, categoria, módulos e descrição antes de executar a exclusão permanente de um curso na lixeira do admin.
+- [x] Executar bateria de 321 testes automatizados (Vitest) com 100% de aprovação.
