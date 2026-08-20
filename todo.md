@@ -957,3 +957,9 @@
 - [x] Renderizar o botão de "Baixar Certificado" apenas quando `progressPercentage === 100` e o aluno estiver autenticado.
 - [x] Conectar o botão ao modal de certificado com feedback visual claro e acessível.
 - [x] Executar suíte de testes Vitest e validar estabilidade de build.
+
+## Personalização Completa do Certificado (Nome, Data e Carga Horária) — 19/08/2026
+- [x] Auditar a API de emissão de certificados (`/api/certificate/route.ts` ou equivalente) e o componente de visualização.
+- [x] Incluir nome completo do aluno, data de conclusão formatada e carga horária do curso no payload e no modal.
+- [x] Atualizar o layout do certificado para destacar formalmente as credenciais acadêmicas do professor Anderson Palafoz.
+- [x] Executar suíte de testes Vitest e validar build de produção.

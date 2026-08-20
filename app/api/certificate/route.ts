@@ -30,6 +30,8 @@ export async function GET(request: NextRequest) {
       issueDate: result.certificate?.issuedAt?.toLocaleDateString("pt-BR") || null,
       certificateCode: result.certificate?.certificateCode || null,
       certificateUrl: result.certificate?.certificateUrl || null,
+      workloadHours: result.course.workloadHours || 40,
+      level: result.course.level || "A1",
     });
   } catch (error) {
     console.error("Error generating certificate:", error);
