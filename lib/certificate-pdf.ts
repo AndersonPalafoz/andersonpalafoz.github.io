@@ -6,6 +6,7 @@ export interface CertificatePdfInput {
   level: string;
   issuedAt: Date;
   certificateCode: string;
+  workloadHours?: number;
 }
 
 export async function buildCertificatePdf(input: CertificatePdfInput) {
@@ -27,8 +28,8 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   page.drawLine({ start: { x: 70, y: 342 }, end: { x: 772, y: 342 }, thickness: 1.5, color: red });
   page.drawText("concluiu com aproveitamento o curso", { x: 70, y: 300, size: 16, font: regular, color: muted });
   page.drawText(input.courseTitle, { x: 70, y: 258, size: 23, font: bold, color: graphite, maxWidth: 700 });
-  page.drawText(`Nível: ${input.level}`, { x: 70, y: 218, size: 14, font: regular, color: muted });
-  page.drawText(`Emitido em: ${input.issuedAt.toLocaleDateString("pt-BR")}`, { x: 70, y: 155, size: 13, font: regular, color: muted });
+  page.drawText(`Nível: ${input.level}  •  Carga Horária: ${input.workloadHours || 40} horas`, { x: 70, y: 218, size: 14, font: regular, color: muted });
+  page.drawText(`Data de Conclusão e Emissão: ${input.issuedAt.toLocaleDateString("pt-BR")}`, { x: 70, y: 155, size: 13, font: regular, color: muted });
   page.drawText(`Código de autenticidade: ${input.certificateCode}`, { x: 70, y: 125, size: 11, font: regular, color: muted });
   page.drawText("Anderson Palafoz · Ensino de Inglês", { x: 560, y: 155, size: 12, font: bold, color: graphite });
   page.drawLine({ start: { x: 560, y: 180 }, end: { x: 772, y: 180 }, thickness: 1, color: graphite });
