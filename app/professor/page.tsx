@@ -7,6 +7,7 @@ import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-ex
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
 import { ProfessorSummaryDashboard } from "@/components/professor-summary-dashboard";
 import { ProfessorCoursesTrashManager } from "@/components/professor-courses-trash-manager";
+import { ProfessorCoursesList } from "@/components/professor-courses-list";
 import { authOptions } from "@/lib/auth";
 
 export const metadata = {
@@ -144,37 +145,8 @@ export default async function TeacherDashboardPage() {
 
         {/* Seções de Conteúdo Recente */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Cursos Recentes */}
-          <div className="surface-card space-y-6 p-6 sm:p-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-black text-foreground flex items-center gap-2">
-                Cursos <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">({allCourses.length})</span>
-              </h2>
-              <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1">
-                Gerenciar <ArrowRight size={16} />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {allCourses.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Nenhum curso cadastrado ainda.</p>
-              ) : (
-                allCourses.map((course) => (
-                  <div key={course.id} className="rounded-2xl border border-border/70 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-red-200">
-                    <div>
-                      <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">Nível <span className="font-extrabold text-foreground">{course.level}</span> {course.category ? `• ${course.category}` : ""}</p>
-                    </div>
-                    <Link
-                      href={`/cursos/${course.id}`}
-                      className="inline-flex items-center justify-center text-xs font-bold px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-700 transition shadow-sm"
-                    >
-                      Ver
-                    </Link>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          {/* Lista de Cursos com Paginação e Ações Rápidas */}
+          <ProfessorCoursesList initialCourses={allCourses} />
 
           {/* Materiais Recentes */}
           <div className="surface-card space-y-6 p-6 sm:p-8">
