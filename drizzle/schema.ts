@@ -125,7 +125,9 @@ export const enrollments = pgTable("enrollments", {
   status: enrollmentStatusEnum("status").notNull().default("active"),
   enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
   completedAt: timestamp("completedAt"),
-});
+}, (table) => ({
+  userCourseIdentity: uniqueIndex("enrollments_user_course_unique_idx").on(table.userId, table.courseId),
+}));
 
 export type Enrollment = typeof enrollments.$inferSelect;
 export type InsertEnrollment = typeof enrollments.$inferInsert;
