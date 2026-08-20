@@ -1161,3 +1161,9 @@
 - [x] Integrar resumo estatístico do dashboard nas páginas principais de admin (/admin/page.tsx) e professor (/professor/page.tsx).
 - [x] Auditar responsividade, comportamento em dispositivos móveis e design system em todas as abas.
 - [x] Executar testes automatizados e validar build de produção sem erros.
+
+## Skeleton Loading, Gráfico de Matrículas e Resiliência na API de Professor — 19/08/2026
+- [x] Implementar skeleton loading nos painéis estatísticos de Administrador e Professor.
+- [x] Incluir gráfico de barras interativo de evolução de matrículas no painel do administrador.
+- [x] Corrigir erro 500 no endpoint `/api/professor/resumo` com tolerância a falhas e retorno estruturado seguro.
+- [x] Executar bateria de 321 testes automatizados (Vitest) e validar build de produção.

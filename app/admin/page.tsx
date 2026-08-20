@@ -235,13 +235,40 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
+        {/* Gráfico de Barras de Evolução de Matrículas ao Longo do Tempo */}
+        <div className="surface-card p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-base font-black text-foreground flex items-center gap-2">
+                <BarChart3 className="text-red-600" size={20} /> Evolução de Matrículas Acadêmicas por Mês
+              </h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                Visualização detalhada do crescimento das matrículas e engajamento dos alunos na plataforma.
+              </p>
+            </div>
+            <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600">
+              Banco de Dados Neon PostgreSQL
+            </span>
+          </div>
+
+          {stats?.monthlyActivity && stats.monthlyActivity.length > 0 ? (
+            <div className="pt-2">
+              <MonthlyActivityChart data={stats.monthlyActivity} />
+            </div>
+          ) : (
+            <div className="py-12 text-center text-muted-foreground text-xs font-semibold">
+              Nenhum dado de matrícula registrado nos últimos meses.
+            </div>
+          )}
+        </div>
+
         {/* Monthly Activity Chart */}
         <div className="surface-card p-6 sm:p-8 space-y-4">
           <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-            <BarChart3 className="text-red-600" size={18} /> Evolução de Matrículas e Sessões Ativas
+            <BarChart3 className="text-red-600" size={18} /> Resumo Geral de Atividade do Sistema
           </h3>
           <p className="text-xs text-muted-foreground">
-            Dados extraídos diretamente do Neon PostgreSQL sobre a atividade dos usuários nos últimos meses.
+            Visão consolidade comparativa entre novas matrículas e sessões ativas registradas.
           </p>
           {stats?.monthlyActivity && stats.monthlyActivity.length > 0 ? (
             <MonthlyActivityChart data={stats.monthlyActivity} />
