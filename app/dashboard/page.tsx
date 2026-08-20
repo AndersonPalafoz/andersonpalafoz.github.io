@@ -129,6 +129,73 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Seção de Histórico de Cursos Acessados e Progresso de Conclusão */}
+      <section className="space-y-4 pt-4 border-t border-border/70">
+        <div>
+          <span className="muted-label">Registro acadêmico</span>
+          <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground">Histórico de cursos acessados e progresso</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Linha do tempo completa de todos os cursos em que você se matriculou ou teve acesso.</p>
+        </div>
+
+        {enrollments.length === 0 ? (
+          <div className="surface-card p-6 text-center text-sm text-muted-foreground">
+            Nenhum histórico de curso registrado até o momento.
+          </div>
+        ) : (
+          <div className="surface-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-muted/55 text-xs uppercase tracking-wide text-muted-foreground">
+                  <tr>
+                    <th className="px-5 py-3 font-semibold">Curso / Nível</th>
+                    <th className="px-5 py-3 font-semibold">Data de Matrícula</th>
+                    <th className="px-5 py-3 font-semibold">Status</th>
+                    <th className="px-5 py-3 font-semibold">Progresso</th>
+                    <th className="px-5 py-3 text-right font-semibold">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {enrollments.map((enr) => {
+                    const pct = enr.progress ?? 0;
+                    const isCompleted = pct >= 100 || enr.status === "completed";
+                    const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
+                    return (
+                      <tr key={enr.id} className="hover:bg-muted/30 transition-colors">
+                        <td className="px-5 py-4">
+                          <p className="font-bold text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p>
+                          <p className="text-xs text-muted-foreground uppercase">{enr.course?.level || "Geral"}</p>
+                        </td>
+                        <td className="px-5 py-4 text-xs font-semibold text-muted-foreground">{formattedDate}</td>
+                        <td className="px-5 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>
+                            {isCompleted ? "Concluído" : "Em andamento"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="w-32 space-y-1">
+                            <div className="flex justify-between text-[11px] font-bold text-muted-foreground">
+                              <span>{pct}%</span>
+                            </div>
+                            <div className="h-2 overflow-hidden rounded-full bg-muted">
+                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 text-right">
+                          <Button asChild size="sm" variant="outline">
+                            <Link href={`/cursos/${enr.courseId}`}>Acessar</Link>
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
