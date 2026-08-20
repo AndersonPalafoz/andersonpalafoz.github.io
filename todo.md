@@ -1203,3 +1203,8 @@
 ## Atualização Imediata do Contador da Lixeira — 19/08/2026
 - [x] Atualizar todas as mutações de cursos (`confirmDeleteCourse`, `handleRestore`, `handlePermanentDelete`, `handleBatchAction`) para disparar `fetchTrash()` e `fetchCourses()` imediatamente, garantindo atualização em tempo real do contador e listagens.
 - [x] Validar bateria completa de 321 testes automatizados (Vitest) com 100% de sucesso.
+
+## Paginação na Auditoria e Correção da Restauração em Lote — 19/08/2026
+- [x] Implementar paginação robusta com controle de limite, deslocamento e total de registros (`/api/admin/activity-logs` e `/admin/cursos/audit`).
+- [x] Garantir a restauração e operações em lote corretas de todos os itens selecionados na lixeira, sincronizando contadores imediatamente.
+- [x] Validar bateria completa de 321 testes automatizados (Vitest) com 100% de aprovação.
