@@ -1266,3 +1266,7 @@
 - [x] Adicionar opções de filtro por categoria (Cursos, Alunos, Materiais, Turmas Externas) na interface da lixeira.
 - [x] Atualizar contadores e ações em lote para respeitar a categoria selecionada.
 - [x] Executar testes Vitest e salvar checkpoint estável.
+
+## Documentação dos Cinco Tipos de Curso — Concluído
+- [x] Criar arquivo `TIPOS_DE_CURSOS_ESPECIFICACAO.md` detalhando os cinco tipos de cursos, regras de acesso, cores, tags e fluxos.
+- [x] Executar testes Vitest e salvar checkpoint estável.
