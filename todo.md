@@ -1344,3 +1344,10 @@
 - [x] Atualizar `components/contact-form.tsx` com suporte a fundo e texto legíveis no modo escuro.
 - [x] Garantir que a coluna `instructorId` exista no banco de dados de testes para materiais.
 - [x] Executar suíte completa Vitest e build de produção.
+
+
+## Fase 5: Homologação em Produção, Webhook Stripe e Retenção Automática de 30 Dias (Agosto 2026)
+- [ ] Validar integridade das variáveis de ambiente na Vercel e realizar teste de fumaça nas rotas críticas
+- [ ] Configurar e validar o webhook do Stripe em produção para liberação automática de matrículas (Tipos 1 e 2)
+- [ ] Implementar rotina periódica (Heartbeat) para exclusão automática de itens na lixeira após 30 dias
+- [ ] Executar bateria completa de testes Vitest e validar build de produção do Next.js 15
