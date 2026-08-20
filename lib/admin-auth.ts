@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, courses, externalClasses } from "@/drizzle/schema";
+import { users, courses, externalClasses, materials } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -93,6 +93,12 @@ export async function canManageMaterial(session: AdminAuthSession, materialId: n
   const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
   if (!dbUser || dbUser.role !== "professor") return false;
 
-  // Materiais não possuem teacherId direto no schema atual, então admin/super-admin gerenciam todos, e professor pode gerenciar se cadastrado por ele ou todos na visão docente padrão.
+  const material = await db.query.materials.findFirst({ where: eq(materials.id, materialId) });
+  if (!material) return false;
+
+  if (material.instructorId && material.instructorId !== dbUser.id) {
+    return false;
+  }
   return true;
 }
+

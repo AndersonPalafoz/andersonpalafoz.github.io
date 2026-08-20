@@ -1283,11 +1283,11 @@
 - [x] Executar script SQL para adicionar as colunas `course_type`, `external_redirect_url` e `sync_modality` na tabela `courses`.
 - [x] Validar a estrutura pós-migração no banco de desenvolvimento com sucesso.
 
-## Atualização do Formulário e Páginas dos Cinco Tipos de Curso — Em andamento
-- [ ] Auditar e atualizar o formulário administrativo de criação e edição de cursos com tipo, URL externa e modalidade.
-- [ ] Atualizar contratos de API e validações para persistir os novos campos.
-- [ ] Atualizar listagens, detalhes e páginas públicas com sinalização visual e comportamento adequado por modalidade.
-- [ ] Criar ou atualizar testes Vitest, validar build e responsividade.
+## Atualização do Formulário e Páginas dos Cinco Tipos de Curso — Concluído
+- [x] Auditar e atualizar o formulário administrativo de criação e edição de cursos com tipo, URL externa e modalidade.
+- [x] Atualizar contratos de API e validações para persistir os novos campos.
+- [x] Atualizar listagens, detalhes e páginas públicas com sinalização visual e comportamento adequado por modalidade.
+- [x] Criar ou atualizar testes Vitest, validar build e responsividade.
 
 ## Fase 2 — Refinamento da Vitrine Pública dos Cinco Tipos de Curso
 - [x] Adicionar legenda interativa explicando os cinco tipos de curso na página pública de aulas.
@@ -1310,15 +1310,15 @@
 - [x] Auditar e conectar a página de contato aos parâmetros reais de curso para Tipos 3 e 5.
 - [x] Implementar pré-preenchimento contextual da mensagem de contato/agendamento pelo curso selecionado.
 - [x] Validar o comportamento de matrícula e acesso dos Tipos 1 e 2 sem alterar regras de pagamento existentes.
-- [ ] Auditar a rota de turmas externas para o Tipo 4 e registrar os resultados no plano estratégico.
+- [x] Auditar a rota de turmas externas para o Tipo 4 e registrar os resultados no plano estratégico.
 - [x] Criar testes de integração/regressão da primeira entrega da Fase 3.
 
-## Validação de Checkout e Conversão (Tipos 1 e 2) — 20/08/2026
-- [ ] Auditar rotas de API do Stripe (sessão, compras e webhooks) para cursos EAD fechados e híbridos.
-- [ ] Verificar o tratamento de gratuidade versus preço pago em cursos dos Tipos 1 e 2.
-- [ ] Garantir que o botão de compra exiba feedback claro de redirecionamento e tratamento de erros do gateway.
-- [ ] Criar ou atualizar testes unitários do fluxo de checkout e pagamento.
-- [ ] Executar testes Vitest, validar build e salvar checkpoint.
+## Validação de Checkout e Conversão (Tipos 1 e 2) — Concluído
+- [x] Auditar rotas de API do Stripe (sessão, compras e webhooks) para cursos EAD fechados e híbridos.
+- [x] Verificar o tratamento de gratuidade versus preço pago em cursos dos Tipos 1 e 2.
+- [x] Garantir que o botão de compra exiba feedback claro de redirecionamento e tratamento de erros do gateway.
+- [x] Criar ou atualizar testes unitários do fluxo de checkout e pagamento.
+- [x] Executar testes Vitest, validar build e salvar checkpoint.
 
 ## Filtros Administrativos por Tipo e Modalidade — 20/08/2026
 - [x] Adicionar seletores de filtro por tipo de curso e modalidade síncrona no painel de administração (`/admin/cursos`).
@@ -1326,3 +1326,20 @@
 - [x] Adicionar botão de limpar filtros e mensagem clara de estado vazio quando nenhum curso corresponder.
 - [x] Criar testes unitários para a filtragem administrativa de cursos.
 - [x] Executar testes Vitest, validar build e salvar checkpoint.
+
+## Fase 4 — Governança, Regressão e Homologação
+- [ ] Auditar contratos de RBAC por autoria para cursos, turmas e materiais.
+  - [x] Materiais: adicionar `instructorId`, restringir listagens e validar operações individuais por autoria.
+  - [ ] Cursos e turmas externas: concluir verificação dos contratos de autoria.
+- [ ] Auditar a retenção de 30 dias, contadores e operações da lixeira.
+- [ ] Criar testes de regressão para as regras de governança e lixeira.
+  - [x] Materiais: teste de contrato de RBAC criado e aprovado.
+  - [x] Contato: teste de contrato de contraste no modo escuro criado e aprovado.
+- [x] Executar a suíte completa Vitest e o build de produção da primeira entrega da Fase 4.
+- [x] Atualizar o plano estratégico com os achados e o primeiro resultado da Fase 4.
+
+## Correção do Modo Escuro na Página de Contato — 20/08/2026
+- [x] Atualizar `app/contato/page.tsx` com classes semânticas de modo escuro (`dark:bg-background dark:text-foreground`).
+- [x] Atualizar `components/contact-form.tsx` com suporte a fundo e texto legíveis no modo escuro.
+- [x] Garantir que a coluna `instructorId` exista no banco de dados de testes para materiais.
+- [x] Executar suíte completa Vitest e build de produção.

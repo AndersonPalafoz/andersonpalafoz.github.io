@@ -184,3 +184,37 @@ Para agilizar a gestão e o controle pedagógico no painel administrativo (`/adm
 2. **Filtragem Reativa**: O gancho `useMemo` agora avalia simultaneamente o texto de busca, o nível, o tipo numérico do curso (`courseType`) e a modalidade de atendimento (`syncModality`), garantindo precisão instantânea.
 3. **Limpeza e Feedback**: Quando qualquer filtro está ativo, aparece um botão de redefinição rápida (“Limpar filtros”) acompanhado de contadores reativos de itens exibidos.
 4. **Testes automatizados**: Criado o teste de contrato `app/admin/cursos/admin-filters.test.ts`. A suíte completa passou com **334 testes aprovados**.
+
+---
+
+## Conclusão da Fase 3
+
+A **Fase 3** foi concluída com sucesso. Os fluxos de conversão e atendimento foram otimizados e validados por testes automatizados:
+1. **Contato Contextual (Tipos 3 e 5)**: A página `/contato` recebe o parâmetro de URL `?curso=...`, recupera o curso persistido e pré-preenche o assunto e a mensagem para percursos particulares e agendamentos presenciais.
+2. **Checkout e Conversão (Tipos 1 e 2)**: Os pagamentos e matrículas para cursos EAD fechados e híbridos foram auditados, assegurando proteção contra itens gratuitos e fulfillment idempotente via webhook.
+3. **Turmas Externas e Corporativas (Tipo 4)**: A rota `/professor/turmas-externas` opera com filtros por ano e semestre letivo, matrículas institucionais (UFBA e SIMAL) e relatórios validados.
+
+---
+
+## Fase 4: Governança, Testes de Regressão e Homologação
+
+### Objetivo
+Consolidar a estabilidade estrutural da plataforma, assegurando que as regras de controle de acesso baseado em papéis (RBAC) por autoria, a lixeira de 30 dias com exclusão automática e as listagens administrativas e de professor operem sem regressões, validadas por uma suíte de testes robusta.
+
+### Tarefas da Fase 4
+1. **Auditoria de RBAC por Autoria e Globais**:
+   * Garantir que professores gerenciem estritamente seus próprios itens enquanto administradores mantenham acesso irrestrito.
+2. **Homologação da Lixeira e Retenção de 30 Dias**:
+   * Verificar contadores em tempo real, restauração em lote, exclusão definitiva e esvaziamento seguro protegido por modal de confirmação.
+3. **Bateria Completa de Regressão e Build**:
+   * Executar a suíte completa de testes Vitest e validar o build de produção do Next.js 15 sem erros de compilação.
+
+### Primeira Entrega da Fase 4 — Governança de Materiais e Contraste no Contato
+
+A revisão da Fase 3 confirmou a conclusão dos fluxos de contato contextual, checkout dos Tipos 1 e 2 e auditoria das turmas externas do Tipo 4. Com isso, a Fase 4 foi iniciada pela auditoria de autoria dos materiais e pela correção de legibilidade apontada na página de contato.
+
+A auditoria encontrou uma lacuna objetiva: a tabela `materials` não possuía um identificador persistente de autoria, enquanto `canManageMaterial` permitia que qualquer professor gerenciasse materiais sem verificar o criador. A correção adicionou `instructorId` ao schema e ao banco Neon ativo, restringiu listagens normais e da lixeira ao professor autenticado, vinculou novos materiais ao professor que os cria e passou a exigir verificação de autoria nas edições, restaurações e exclusões. Administradores e superadministradores continuam com escopo global.
+
+Também foi corrigido o contraste no modo escuro de `/contato` e `ContactForm`: fundos, textos, rótulos, campos, placeholders, cartões e estados de sucesso/erro agora têm variantes explícitas para tema escuro. A página foi revisada visualmente em `/contato` e recebeu teste de contrato dedicado.
+
+A validação desta entrega alcançou **336 testes Vitest aprovados** e build de produção concluído com sucesso. A próxima tarefa da Fase 4 é auditar sistematicamente RBAC de cursos e turmas, retenção de 30 dias e operações da lixeira antes da homologação final.
