@@ -953,7 +953,7 @@
 - [x] Executar suíte de testes Vitest e validar build de produção.
 
 ## Botão Condicional de Download de Certificado no Painel do Curso — 19/08/2026
-- [ ] Verificar o componente `CertificateModal` e a lógica de elegibilidade em `/cursos/[id]/page.tsx`.
-- [ ] Renderizar o botão de "Baixar Certificado" apenas quando `progressPercentage === 100` e o aluno estiver autenticado.
-- [ ] Conectar o botão ao modal de certificado com feedback visual claro e acessível.
-- [ ] Executar suíte de testes Vitest e validar estabilidade de build.
+- [x] Verificar o componente `CertificateModal` e a lógica de elegibilidade em `/cursos/[id]/page.tsx`.
+- [x] Renderizar o botão de "Baixar Certificado" apenas quando `progressPercentage === 100` e o aluno estiver autenticado.
+- [x] Conectar o botão ao modal de certificado com feedback visual claro e acessível.
+- [x] Executar suíte de testes Vitest e validar estabilidade de build.
