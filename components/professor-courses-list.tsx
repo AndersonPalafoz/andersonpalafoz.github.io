@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle } from "lucide-react";
+import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
 
 interface Course {
   id: number;
@@ -12,10 +13,13 @@ interface Course {
   level: string;
   category?: string | null;
   modules?: number;
+  isFree?: boolean;
+  price?: number;
 }
 
 export function ProfessorCoursesList({ initialCourses }: { initialCourses: Course[] }) {
   const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [searchTerm, setSearchTerm] = useState("");
   const [visibleCount, setVisibleCount] = useState(4);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -23,9 +27,17 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
     isOpen: false,
   });
 
+  const filteredCourses = useMemo(() => {
+    return courses.filter((c) => {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = !term || c.title.toLowerCase().includes(term) || c.level.toLowerCase().includes(term) || (c.category && c.category.toLowerCase().includes(term));
+      return matchesSearch;
+    });
+  }, [courses, searchTerm]);
+
   const paginatedCourses = useMemo(() => {
-    return courses.slice(0, visibleCount);
-  }, [courses, visibleCount]);
+    return filteredCourses.slice(0, visibleCount);
+  }, [filteredCourses, visibleCount]);
 
   const handleSoftDelete = async (id: number, title: string) => {
     try {
@@ -37,7 +49,6 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
       setCourses((prev) => prev.filter((c) => c.id !== id));
       setOpenMenuId(null);
 
-      // Toast com opção de desfazer
       toast.success(`Curso "${title}" enviado para a lixeira.`, {
         action: {
           label: "Desfazer",
@@ -80,28 +91,135 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
     }
   };
 
+  const exportCSV = () => {
+    const headers = ["ID", "Titulo", "Nivel", "Categoria", "Modulos", "Tipo"];
+    const rows = filteredCourses.map((c) => [
+      c.id,
+      `"${c.title.replace(/"/g, '""')}"`,
+      c.level,
+      `"${(c.category || "Geral").replace(/"/g, '""')}"`,
+      c.modules || 0,
+      c.isFree ? "Gratuito" : "Pago",
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `relatorio_cursos_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Relatório CSV de cursos exportado com sucesso!");
+  };
+
+  const exportPDF = () => {
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Anderson Palafoz Platform - Relatório de Cursos", 14, 20);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 28);
+    doc.text(`Total de cursos listados: ${filteredCourses.length}`, 14, 34);
+
+    let y = 44;
+    doc.setFont("helvetica", "bold");
+    doc.text("ID", 14, y);
+    doc.text("Título do Curso", 28, y);
+    doc.text("Nível", 130, y);
+    doc.text("Módulos", 165, y);
+
+    y += 6;
+    doc.line(14, y, 196, y);
+    y += 8;
+
+    doc.setFont("helvetica", "normal");
+    filteredCourses.forEach((c, idx) => {
+      if (y > 270) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(String(c.id), 14, y);
+      doc.text(c.title.length > 55 ? c.title.substring(0, 52) + "..." : c.title, 28, y);
+      doc.text(c.level, 130, y);
+      doc.text(String(c.modules || 4), 165, y);
+      y += 8;
+    });
+
+    doc.save(`relatorio_cursos_${new Date().toISOString().split("T")[0]}.pdf`);
+    toast.success("Relatório PDF de cursos exportado com sucesso!");
+  };
+
   return (
     <div className="surface-card space-y-6 p-6 sm:p-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-black text-foreground flex items-center gap-2">
-          Cursos <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">({courses.length})</span>
-        </h2>
-        <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1">
-          Gerenciar <ArrowRight size={16} />
-        </Link>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+            Cursos <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400">({filteredCourses.length})</span>
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Gerenciamento, pesquisa e exportação do catálogo acadêmico.</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportCSV}
+            className="rounded-xl text-xs font-bold gap-1.5 border-border hover:bg-muted"
+          >
+            <Download size={13} /> CSV
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={exportPDF}
+            className="rounded-xl text-xs font-bold gap-1.5 border-border hover:bg-muted"
+          >
+            <FileText size={13} /> PDF
+          </Button>
+          <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1 pl-2">
+            Gerenciar <ArrowRight size={16} />
+          </Link>
+        </div>
+      </div>
+
+      {/* Barra de Pesquisa em Tempo Real */}
+      <div className="relative">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Pesquisar curso por nome, nível (A1-C2) ou categoria..."
+          className="w-full rounded-2xl border border-border bg-muted/30 pl-10 pr-4 py-3 text-xs sm:text-sm font-semibold text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-red-600 transition"
+        />
       </div>
 
       <div className="space-y-3">
-        {courses.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-4 text-center">Nenhum curso cadastrado ainda.</p>
+        {filteredCourses.length === 0 ? (
+          <p className="text-muted-foreground text-sm py-8 text-center">Nenhum curso encontrado para a busca realizada.</p>
         ) : (
           paginatedCourses.map((course) => {
             const isMenuOpen = openMenuId === course.id;
+            
+            // Critério real para badge de status
+            const hasModules = (course.modules || 0) > 0;
+            const statusLabel = hasModules ? "Ativo & Pronto" : "Em Breve";
+            const statusBadgeClass = hasModules
+              ? "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+              : "bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800";
+
             return (
               <div key={course.id} className="relative rounded-2xl border border-border/70 bg-muted/40 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition hover:border-red-200">
-                <div>
-                  <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-foreground text-sm sm:text-base">{course.title}</h3>
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${statusBadgeClass}`}>
+                      {statusLabel}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
                     Nível <span className="font-extrabold text-foreground">{course.level}</span> {course.category ? `• ${course.category}` : ""} {course.modules !== undefined ? `• ${course.modules} módulos` : ""}
                   </p>
                 </div>
@@ -161,14 +279,14 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
           })
         )}
 
-        {visibleCount < courses.length && (
+        {visibleCount < filteredCourses.length && (
           <div className="pt-2 text-center">
             <Button
               variant="outline"
               onClick={() => setVisibleCount((prev) => prev + 4)}
               className="rounded-xl text-xs font-bold border-border hover:bg-muted w-full sm:w-auto"
             >
-              Carregar Mais Cursos ({courses.length - visibleCount} restantes)
+              Carregar Mais Cursos ({filteredCourses.length - visibleCount} restantes)
             </Button>
           </div>
         )}
