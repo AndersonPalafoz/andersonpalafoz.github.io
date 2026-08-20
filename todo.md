@@ -1062,3 +1062,11 @@
 ## Botão "Continuar de Onde Parou" no Dashboard — 19/08/2026
 - [x] Implementar botão de destaque "Continuar de onde parou" no topo do dashboard para o último curso e aula acessados.
 - [x] Garantir validação com testes automatizados e checkpoint.
+
+- [x] Corrigir import de `@/server/db` para `@/lib/db` na rota de exportação de usuários (`app/api/admin/export-users/route.ts`).
+- [x] Validar build de produção do Next.js 15 e aprovação de 321 testes automatizados (Vitest).
+- [x] Criar seção de histórico de cursos acessados e progresso no dashboard do usuário.
+
+## Botão de Exportação de Relatório de Progresso em PDF no Dashboard — 19/08/2026
+- [x] Implementar botão de exportação do relatório de progresso individual do aluno em PDF no dashboard.
+- [x] Garantir validação com testes automatizados e checkpoint.

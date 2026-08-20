@@ -10,6 +10,7 @@ import { OnboardingModal } from "@/components/onboarding-modal";
 import { ClassroomImportAction } from "@/components/classroom-import-action";
 import { WeeklyProgressChart } from "@/components/weekly-progress-chart";
 import { StreakCelebrationModal } from "@/components/streak-celebration-modal";
+import { DashboardPdfExport } from "./dashboard-pdf-export";
 
 export const dynamic = "force-dynamic";
 
@@ -57,8 +58,22 @@ export default async function DashboardPage() {
           <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Olá, {primeiroNome}</h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Aqui está um resumo do seu progresso e dos próximos passos da sua jornada.</p>
         </div>
-        <div className="hidden items-center gap-2 rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-bold text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200 sm:flex">
-          <Sparkles size={16} /> Aprenda com clareza e propósito
+        <div className="flex items-center gap-3">
+          <div className="hidden items-center gap-2 rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-bold text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200 sm:flex">
+            <Sparkles size={16} /> Aprenda com clareza e propósito
+          </div>
+          <DashboardPdfExport
+            userName={session?.user?.name || "Aluno(a)"}
+            enrollmentsCount={enrollments.length}
+            certificatesCount={certificates.length}
+            pendingActivitiesCount={atividadesPendentes.length}
+            coursesData={enrollments.map((e) => ({
+              title: e.course?.title || `Curso #${e.courseId}`,
+              level: e.course?.level || "Geral",
+              progress: e.progress ?? 0,
+              status: e.status,
+            }))}
+          />
         </div>
       </header>
 
