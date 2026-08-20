@@ -1084,3 +1084,8 @@
 ## Correção do Erro de Carregamento do Histórico de Compras em /dashboard/perfil — 19/08/2026
 - [x] Auditar e corrigir a API e o componente de histórico de compras na página de perfil do usuário.
 - [x] Validar com testes automatizados e build de produção.
+
+## Recibo Individual em PDF e Skeleton no Histórico de Compras — 19/08/2026
+- [x] Implementar botão de download de recibo individual em PDF para cada transação no histórico de compras do perfil.
+- [x] Adicionar skeleton de carregamento suave para a seção de faturamento.
+- [x] Validar testes e build de produção.
