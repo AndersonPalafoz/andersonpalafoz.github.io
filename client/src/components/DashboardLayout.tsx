@@ -29,6 +29,28 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [customAvatar, setCustomAvatar] = useState<string | null>(null);
+  const [trashCount, setTrashCount] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchTrashCount = async () => {
+      try {
+        const res = await fetch("/api/admin/trash-count", { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          setTrashCount(data.total || 0);
+        }
+      } catch (err) {
+        // silencioso
+      }
+    };
+    fetchTrashCount();
+
+    const handleTrashUpdate = () => {
+      fetchTrashCount();
+    };
+    window.addEventListener("trash-updated", handleTrashUpdate);
+    return () => window.removeEventListener("trash-updated", handleTrashUpdate);
+  }, []);
 
   const navItems = [
     { href: "/dashboard", label: "Visão Geral", icon: Home },
@@ -144,18 +166,26 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+            const isTrashLink = item.href === "/admin/cursos" || item.label.includes("Admin") || item.label.includes("Professor");
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
+                className={`flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all ${
                   isActive
                     ? "bg-red-600 text-white shadow-md shadow-red-600/20"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
                 }`}
               >
-                <Icon size={18} />
-                <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon size={18} />
+                  <span>{item.label}</span>
+                </div>
+                {(item.href === "/admin" || item.href === "/professor") && trashCount > 0 && (
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${isActive ? "bg-white text-red-600" : "bg-red-600 text-white"}`}>
+                    {trashCount}
+                  </span>
+                )}
               </Link>
             );
           })}
