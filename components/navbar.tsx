@@ -7,6 +7,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
 import { Heart, Menu, X, LogIn, LayoutDashboard, LogOut, User, Receipt, Moon, Sun, Eye, Check, Palette, Laptop } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
+import { StreakBadge } from "@/components/streak-badge";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -221,10 +222,8 @@ export function Navbar() {
                 {/* Links de Professor e Admin movidos estritamente para o dashboard conforme solicitado */}
                 <Link href="/dashboard" className="inline-flex h-10 items-center gap-1.5 rounded-full bg-red-600 px-4 text-xs font-black text-white shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><LayoutDashboard size={15} /> Minha área</Link>
                 
-                {/* Indicador de Ofensiva Diária (Streak) */}
-                <div className="hidden sm:flex items-center gap-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 px-3 py-1.5 rounded-full text-xs font-black text-amber-700 dark:text-amber-400" title="14 dias de ofensiva contínua!">
-                  <span>🔥</span> 14d
-                </div>
+                {/* Indicador de Ofensiva Diária (Streak) Dinâmico */}
+                <StreakBadge />
 
                 {/* Menu de Avatar com Dropdown */}
                 <div className="relative ml-1" ref={dropdownRef}>
