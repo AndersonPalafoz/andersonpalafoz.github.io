@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
 
 interface Course {
   id: number;
@@ -149,42 +148,66 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.text("Anderson Palafoz Platform - Relatório de Cursos", 14, 20);
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Permita pop-ups no navegador para gerar o PDF.");
+      return;
+    }
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")}`, 14, 28);
-    doc.text(`Total de cursos listados: ${filteredCourses.length}`, 14, 34);
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Relatório de Cursos - Anderson Palafoz Platform</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 30px; color: #111; }
+            h1 { font-size: 20px; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 5px; }
+            .meta { font-size: 12px; color: #555; margin-bottom: 25px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 12px; }
+            th { background-color: #f8fafc; color: #1e293b; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <h1>Anderson Palafoz Platform - Relatório de Cursos</h1>
+          <div class="meta">
+            Gerado em: ${new Date().toLocaleDateString("pt-BR")} | Total de cursos: ${filteredCourses.length}
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Título do Curso</th>
+                <th>Nível</th>
+                <th>Categoria</th>
+                <th>Módulos</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredCourses.map(c => `
+                <tr>
+                  <td>${c.id}</td>
+                  <td><b>${c.title}</b></td>
+                  <td>${c.level}</td>
+                  <td>${c.category || "Geral"}</td>
+                  <td>${c.modules || 4}</td>
+                  <td>${c.status || ((c.modules || 0) > 0 ? "Ativo & Pronto" : "Em Breve")}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `;
 
-    let y = 44;
-    doc.setFont("helvetica", "bold");
-    doc.text("ID", 14, y);
-    doc.text("Título do Curso", 28, y);
-    doc.text("Nível", 130, y);
-    doc.text("Módulos", 165, y);
-
-    y += 6;
-    doc.line(14, y, 196, y);
-    y += 8;
-
-    doc.setFont("helvetica", "normal");
-    filteredCourses.forEach((c) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.text(String(c.id), 14, y);
-      doc.text(c.title.length > 55 ? c.title.substring(0, 52) + "..." : c.title, 28, y);
-      doc.text(c.level, 130, y);
-      doc.text(String(c.modules || 4), 165, y);
-      y += 8;
-    });
-
-    doc.save(`relatorio_cursos_${new Date().toISOString().split("T")[0]}.pdf`);
-    toast.success("Relatório PDF de cursos exportado com sucesso!");
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    toast.success("Janela de impressão em PDF gerada com sucesso!");
   };
 
   return (
