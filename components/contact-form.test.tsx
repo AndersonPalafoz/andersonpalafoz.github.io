@@ -20,6 +20,24 @@ describe("ContactForm interaction", () => {
     expect(onMailto).not.toHaveBeenCalled();
   });
 
+  it("prefills the subject and message for a contextual course request", () => {
+    render(
+      <ContactForm
+        courseContext={{
+          courseId: 7,
+          courseName: "Aulas presenciais de conversação",
+          courseType: 5,
+          initialSubject: "Agendamento de aula presencial",
+          initialMessage: "Olá, Anderson. Tenho interesse em agendar uma aula presencial.",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("note").textContent).toContain("Aulas presenciais de conversação");
+    expect((screen.getByLabelText(/Assunto/) as HTMLSelectElement).value).toBe("Agendamento de aula presencial");
+    expect((screen.getByLabelText(/Mensagem/) as HTMLTextAreaElement).value).toBe("Olá, Anderson. Tenho interesse em agendar uma aula presencial.");
+  });
+
   it("shows loading while preparing and then submits valid data with success feedback", async () => {
     const onMailto = vi.fn();
     render(<ContactForm onMailto={onMailto} />);
