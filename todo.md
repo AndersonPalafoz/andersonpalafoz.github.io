@@ -1270,3 +1270,7 @@
 ## Documentação dos Cinco Tipos de Curso — Concluído
 - [x] Criar arquivo `TIPOS_DE_CURSOS_ESPECIFICACAO.md` detalhando os cinco tipos de cursos, regras de acesso, cores, tags e fluxos.
 - [x] Executar testes Vitest e salvar checkpoint estável.
+
+## Plano Estratégico dos Cinco Tipos de Curso — Concluído
+- [x] Criar arquivo `PLANO_ESTRATEGICO_CINCO_CURSOS.md` detalhando o mapeamento de rotas, fases de implementação e critérios de sucesso.
+- [x] Executar validação e salvar checkpoint.
