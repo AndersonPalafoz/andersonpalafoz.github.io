@@ -1465,3 +1465,10 @@
 - [ ] Ocultar cursos com `courseType === 4` (cursos externos institucionais/terceiros) da listagem pública em `/aulas`
 - [ ] Criar teste automatizado verificando que nenhum curso externo é retornado na rota pública ou componente de catálogo
 - [ ] Validar build e integridade da suíte Vitest
+
+## Download de Materiais Restrito a Usuários Autenticados (Agosto 2026)
+- [x] Auditar a rota e componente de download de materiais (`/components/download-material-button.tsx` e API associada)
+- [x] Garantir que usuários não logados recebam redirecionamento para login ou aviso amigável ao tentar baixar
+- [x] Assegurar que usuários autenticados consigam abrir ou baixar o arquivo (Google Drive / S3) com segurança e feedback visual
+- [x] Criar testes automatizados cobrindo download anônimo vs. logado
+- [x] Executar suíte Vitest e validar build de produção
