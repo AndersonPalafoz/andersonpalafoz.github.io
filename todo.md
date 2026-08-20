@@ -1295,10 +1295,13 @@
 - [x] Auditar contraste, foco visível, navegação por teclado e modo escuro das tags e filtros.
 - [x] Ajustar CTAs públicos para cursos particulares e aulas presenciais/agendamento.
 - [x] Criar testes Vitest para legenda, filtros e CTAs públicos.
-- [ ] Validar build, responsividade e atualizar o markdown com o resultado da Fase 2.
+- [x] Validar build, responsividade e atualizar o markdown com o resultado da Fase 2.
 
 ## Feedback Visual para Redirecionamento Externo — 20/08/2026
 - [x] Criar componente interativo de redirecionamento com indicador de carregamento e mensagem visual.
 - [x] Integrar o feedback nos CTAs de cursos EAD fechados e corporativos com link externo.
 - [x] Criar teste Vitest para verificar o comportamento de redirecionamento.
-- [ ] Validar build e salvar checkpoint.
+- [x] Validar build e salvar checkpoint.
+
+## Validação de Build de Produção — 20/08/2026
+- [x] Executar build de produção do Next.js 15 e verificar ausência de erros de compilação.
