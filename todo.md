@@ -1014,3 +1014,18 @@
 - [x] Atualizar a lógica de filtro `filteredUsers` em `/admin/usuarios/page.tsx` para buscar também por CPF (com ou sem pontuação) e nome social.
 - [x] Atualizar o placeholder da barra de pesquisa para indicar "Buscar por nome, CPF, email ou telefone".
 - [x] Executar testes Vitest e validar build de produção.
+
+## Paginação na Gestão de Usuários do Admin — 19/08/2026
+- [x] Adicionar estado de página atual e itens por página (ex: 10 ou 15 por página) em `/admin/usuarios/page.tsx`.
+- [x] Implementar controles de paginação (Anterior, Próxima e indicador de páginas) na tabela de usuários.
+- [x] Executar testes Vitest e validar estabilidade.
+
+## Aprimoramento Visual e Responsivo dos Painéis Admin e Professor — 19/08/2026
+- [x] Refinar `/app/admin/page.tsx` com cartões acadêmicos unificados, sombras suaves e espaçamento responsivo.
+- [x] Refinar `/app/professor/page.tsx` com o mesmo padrão visual de excelência e hierarquia clara.
+- [x] Executar testes Vitest e validar estabilidade.
+
+## Aprimoramento Visual e Responsivo das Subpáginas Admin e Professor — 19/08/2026
+- [x] Padronizar cabeçalhos, cartões, tipografia e navegação em todas as subpáginas de `/admin/*`.
+- [x] Padronizar componentes e espaçamento em todas as subpáginas de `/professor/*`.
+- [x] Garantir responsividade perfeita em dispositivos móveis e desktop com testes validados.
