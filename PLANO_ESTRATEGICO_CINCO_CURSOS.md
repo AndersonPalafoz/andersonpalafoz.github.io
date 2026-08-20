@@ -225,3 +225,23 @@ A Fase 4 foi integralmente concluída com a auditoria e consolidação das regra
 1. **RBAC por Autoria**: Validado e aprimorado para cursos (`canManageCourse`), turmas externas (`canManageExternalClass`) e materiais (`canManageMaterial`), assegurando que professores gerenciem estritamente seus próprios registros, enquanto administradores e superadministradores possuem acesso global inegociável.
 2. **Lixeira e Retenção de 30 Dias**: Mantida a política de exclusão lógica (*soft delete*), contadores reativos por escopo de usuário e exclusão permanente controlada com modais de segurança.
 3. **Testes e Qualidade**: Suíte com **338 testes Vitest** aprovados com 100% de sucesso e build de produção validado.
+
+---
+
+## Fase 5: Homologação em Produção, Webhook Stripe e Retenção Automática de 30 Dias
+
+### Objetivo
+Garantir a operação autônoma e segura da plataforma em ambiente de produção (Vercel), formalizando a automação real do webhook do Stripe para os cursos dos Tipos 1 e 2, implementando a rotina de retenção e exclusão automática de 30 dias na lixeira, e consolidando a homologação por testes de integração e cenários de homologação.
+
+### Tarefas da Fase 5
+1. **Homologação em Produção e Verificação de Deploy**:
+   * Validar a integridade das variáveis de ambiente na Vercel (`DATABASE_URL`, chaves do Stripe, `NEXTAUTH_URL`).
+   * Executar teste de fumaça nas rotas críticas (/aulas, /cursos/[id], /admin, /professor) após o deploy.
+2. **Automação do Webhook Stripe em Produção**:
+   * Validar o contrato do endpoint de webhook para eventos `checkout.session.completed` e `invoice.paid`.
+   * Assegurar o cumprimento (*fulfillment*) idempotente com criação de registros de compra e liberação automática de matrícula para cursos pagos.
+3. **Retenção Automática e Limpeza da Lixeira (30 Dias)**:
+   * Implementar e registrar uma rotina baseada no Heartbeat/cron do projeto para apagar permanentemente itens cujo `deletedAt` ultrapasse 30 dias, evitando acúmulo desnecessário de dados.
+   * Manter logs de auditoria para cada remoção automática efetuada pelo sistema.
+4. **Relatório Final de Homologação**:
+   * Consolidar os resultados dos testes automatizados (mantendo a meta de 100% de aprovação na suíte Vitest) e apresentar o status operacional final ao usuário.
