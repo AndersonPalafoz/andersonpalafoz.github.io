@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageCourse } from "@/lib/admin-auth";
 import { db, restoreCourse, softDeleteCourse, deleteCourse } from "@/lib/db";
 import { adminActivityLogs } from "@/drizzle/schema";
 
@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
 
     const results = [];
     for (const id of ids) {
+      const allowed = await canManageCourse(admin, id);
+      if (!allowed) {
+        return NextResponse.json({ error: `Forbidden: professor não possui permissão para gerenciar o curso ID ${id}.` }, { status: 403 });
+      }
       if (action === "restore") {
         results.push(await restoreCourse(id));
       } else if (action === "permanent_delete") {

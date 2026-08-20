@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMaterials, getTrashMaterials, createMaterial, updateMaterial, softDeleteMaterial, restoreMaterial, deleteMaterial } from "@/lib/db";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin, canManageMaterial } from "@/lib/admin-auth";
 
 export async function GET(request: NextRequest) {
   try {
@@ -74,6 +74,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     const materialId = parseInt(id);
+
+    const allowed = await canManageMaterial(admin, materialId);
+    if (!allowed) {
+      return NextResponse.json({ error: "Forbidden: professores só podem gerenciar seus próprios materiais." }, { status: 403 });
+    }
 
     if (restore) {
       const restored = await restoreMaterial(materialId);
