@@ -137,6 +137,9 @@ export default async function AulasPage() {
                 isFree: curso.isFree,
                 price: curso.price,
                 category: curso.category,
+                courseType: curso.courseType,
+                externalRedirectUrl: curso.externalRedirectUrl,
+                syncModality: curso.syncModality,
               }))}
               purchasedCourseIds={Array.from(purchasedCourseIds)}
               enrolledCourseIds={Array.from(enrolledCourseIds)}

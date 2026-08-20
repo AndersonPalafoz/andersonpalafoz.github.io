@@ -12,6 +12,7 @@ import { BookOpen, Layers, PlayCircle, Clock, CheckCircle, ExternalLink, HardDri
 import { lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
+import { getCourseTypeDefinition, getSyncModalityLabel } from "@/lib/course-types";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
   let modules: any[] = [];
@@ -151,6 +152,8 @@ async function CourseDetail({ courseId }: { courseId: number }) {
   }
 
   const driveLinks = parseGoogleDriveLinks((course as any).googleDriveLinks);
+  const courseType = getCourseTypeDefinition(course.courseType);
+  const syncLabel = getSyncModalityLabel(course.syncModality);
 
   // Calcular progresso total do curso para exibição visual de forma segura
   let totalLessonsCount = 0;
@@ -197,6 +200,32 @@ async function CourseDetail({ courseId }: { courseId: number }) {
           </div>
 
           <h1 className="text-4xl font-bold text-gray-900">{course.title}</h1>
+
+          <section className={`rounded-3xl border p-5 shadow-sm sm:p-6 ${courseType.className}`} aria-labelledby="course-type-title">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.16em]">Modalidade do curso</p>
+                <h2 id="course-type-title" className="mt-1 text-xl font-black">{courseType.label}</h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6">{courseType.description}</p>
+              </div>
+              <span className="w-fit rounded-full bg-white/80 px-3 py-1.5 text-xs font-black shadow-sm">{courseType.tag}</span>
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-bold">
+              <span className="rounded-full bg-white/75 px-3 py-1.5">{syncLabel}</span>
+              {courseType.id === 1 && <span className="rounded-full bg-white/75 px-3 py-1.5">Acesso assíncrono</span>}
+              {courseType.id === 4 && <span className="rounded-full bg-white/75 px-3 py-1.5">Gestão de turma institucional</span>}
+            </div>
+            {course.externalRedirectUrl && (courseType.id === 1 || courseType.id === 4) && (
+              <a href={course.externalRedirectUrl} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
+                Acessar ambiente externo autorizado <ExternalLink size={16} aria-hidden="true" />
+              </a>
+            )}
+            {courseType.id === 5 && (
+              <Link href="/contato" className="mt-5 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-black shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2">
+                Entrar em contato para agendar <ExternalLink size={16} aria-hidden="true" />
+              </Link>
+            )}
+          </section>
 
           {/* Barra de Progresso Visual */}
           {user && (

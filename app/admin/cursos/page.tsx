@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Plus, Edit2, Trash2, ArrowLeft, Loader2, BookOpen, Layers, User, FileText, Search } from "lucide-react";
 import { toast } from "sonner";
 import { describeHttpError, type HttpErrorDescription } from "@/lib/error-codes";
+import { COURSE_TYPE_OPTIONS, getCourseTypeDefinition, getSyncModalityLabel, validateCourseTypeFields, type SyncModality } from "@/lib/course-types";
 
 interface Course {
   id: number;
@@ -15,6 +16,9 @@ interface Course {
   instructor?: string | null;
   description: string | null;
   googleDriveLinks?: string | null;
+  courseType?: number;
+  externalRedirectUrl?: string | null;
+  syncModality?: SyncModality;
 }
 
 export default function AdminCursos() {
@@ -55,6 +59,9 @@ export default function AdminCursos() {
     startDate: "",
     endDate: "",
     maxAbsencePercent: 25,
+    courseType: 1,
+    externalRedirectUrl: "",
+    syncModality: "none" as SyncModality,
   });
 
   useEffect(() => {
@@ -256,6 +263,9 @@ export default function AdminCursos() {
       startDate: course.startDate || "",
       endDate: course.endDate || "",
       maxAbsencePercent: course.maxAbsencePercent ?? 25,
+      courseType: course.courseType ?? 1,
+      externalRedirectUrl: course.externalRedirectUrl || "",
+      syncModality: course.syncModality || "none",
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -292,6 +302,12 @@ export default function AdminCursos() {
     e.preventDefault();
     if (!formData.title || !formData.level) {
       toast.error("Preencha o título e o nível do curso.");
+      return;
+    }
+
+    const courseTypeError = validateCourseTypeFields(formData);
+    if (courseTypeError) {
+      toast.error(courseTypeError);
       return;
     }
 
@@ -334,6 +350,9 @@ export default function AdminCursos() {
           startDate: "",
           endDate: "",
           maxAbsencePercent: 25,
+          courseType: 1,
+          externalRedirectUrl: "",
+          syncModality: "none" as SyncModality,
         });
       } else {
         const response = await fetch("/api/admin/courses", {
@@ -407,6 +426,9 @@ export default function AdminCursos() {
                 startDate: "",
                 endDate: "",
                 maxAbsencePercent: 25,
+                courseType: 1,
+                externalRedirectUrl: "",
+                syncModality: "none" as SyncModality,
               });
             }}
             className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-red-600/20"
@@ -470,6 +492,60 @@ export default function AdminCursos() {
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2">Categoria pedagógica</label>
                   <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="Ex: Inglês Geral, Gramática, Conversação" className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition" />
+                </div>
+
+                <div className="md:col-span-2 rounded-2xl border border-border bg-muted/30 p-4 sm:p-5">
+                  <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <div>
+                      <label htmlFor="course-type" className="block text-sm font-semibold text-foreground mb-2">Tipo oficial do curso *</label>
+                      <select
+                        id="course-type"
+                        value={formData.courseType}
+                        onChange={(event) => {
+                          const nextType = Number(event.target.value);
+                          setFormData({
+                            ...formData,
+                            courseType: nextType,
+                            syncModality: nextType === 1 ? "none" : formData.syncModality,
+                          });
+                        }}
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
+                      >
+                        {COURSE_TYPE_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.id}. {option.label}</option>)}
+                      </select>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{getCourseTypeDefinition(formData.courseType).description}</p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="course-sync-modality" className="block text-sm font-semibold text-foreground mb-2">Modalidade de atendimento</label>
+                      <select
+                        id="course-sync-modality"
+                        value={formData.syncModality}
+                        onChange={(event) => setFormData({ ...formData, syncModality: event.target.value as SyncModality })}
+                        disabled={formData.courseType === 1}
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <option value="none">Sem encontros síncronos</option>
+                        <option value="online_individual">Encontros online individuais</option>
+                        <option value="online_group">Encontros online em grupo</option>
+                        <option value="presencial">Encontros presenciais</option>
+                      </select>
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">{getSyncModalityLabel(formData.courseType === 1 ? "none" : formData.syncModality)}</p>
+                    </div>
+
+                    <div>
+                      <label htmlFor="course-external-url" className="block text-sm font-semibold text-foreground mb-2">URL externa do curso</label>
+                      <input
+                        id="course-external-url"
+                        type="url"
+                        value={formData.externalRedirectUrl}
+                        onChange={(event) => setFormData({ ...formData, externalRedirectUrl: event.target.value })}
+                        placeholder="https://classroom.google.com/..."
+                        className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
+                      />
+                      <p className="mt-2 text-xs leading-5 text-muted-foreground">Use para Hotmart, Google Classroom ou outro ambiente autorizado. O link ficará visível conforme a regra da modalidade.</p>
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -747,6 +823,9 @@ export default function AdminCursos() {
                         <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300">
                           Nível {course.level}
                         </span>
+                        <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-black ${getCourseTypeDefinition(course.courseType).className}`}>
+                          {getCourseTypeDefinition(course.courseType).tag}
+                        </span>
                         <span className="text-xs text-muted-foreground font-semibold flex items-center gap-1">
                           <Layers size={14} /> {course.modules} Módulos
                         </span>
@@ -758,6 +837,7 @@ export default function AdminCursos() {
                       </div>
                       <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
+                      <p className="text-xs font-semibold text-muted-foreground">{getSyncModalityLabel(course.syncModality)}{course.externalRedirectUrl ? " • Ambiente externo vinculado" : ""}</p>
                     </div>
 
                     <div className="flex items-center gap-3">
