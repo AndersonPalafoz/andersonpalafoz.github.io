@@ -1,3 +1,38 @@
+import "./globals.css";
+import { ThemeProvider } from "@/components/theme-provider";
+import { SessionProviderWrapper } from "@/components/session-provider";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { ToastProvider } from "@/components/toast-provider";
+import { InactivityMonitor } from "@/components/inactivity-monitor";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Anderson Palafoz | Ensino de Inglês",
+  description:
+    "Plataforma educacional completa para ensino de inglês com Anderson Palafoz. Cursos, materiais, blog e muito mais.",
+  keywords: [
+    "inglês",
+    "ensino",
+    "cursos",
+    "materiais",
+    "educação",
+    "Anderson Palafoz",
+  ],
+  authors: [{ name: "Anderson Palafoz" }],
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: "https://andersonpalafoz.com",
+    siteName: "Anderson Palafoz Platform",
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
@@ -16,14 +51,14 @@
               try {
                 const mode = localStorage.getItem("themeMode");
                 const root = document.documentElement;
+                root.classList.remove("dark", "high-contrast");
                 if (mode === "contrast") {
                   root.classList.add("high-contrast", "dark");
                 } else if (mode === "dark") {
                   root.classList.add("dark");
                 } else if (mode === "light") {
-                  root.classList.remove("dark", "high-contrast");
-                } else {
-                  // system
+                  // O estado limpo representa o modo claro.
+                } else if (mode === "system" || (!mode && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
                   if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
                     root.classList.add("dark");
                   }
@@ -35,7 +70,7 @@
       </head>
       <body className="bg-slate-50 font-sans text-slate-900 antialiased">
         <SessionProviderWrapper>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider>
             <Navbar />
             <main className="min-h-screen bg-slate-50 pt-[4.5rem]">{children}</main>
             <Footer />
@@ -46,3 +81,4 @@
       </body>
     </html>
   );
+}
