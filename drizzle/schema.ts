@@ -24,6 +24,8 @@ export const users = pgTable("users", {
   /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
+  socialName: varchar("socialName", { length: 160 }),
+  cpf: varchar("cpf", { length: 20 }),
   email: varchar("email", { length: 320 }),
   passwordHash: text("passwordHash"),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
@@ -31,7 +33,7 @@ export const users = pgTable("users", {
   role: roleEnum("role").notNull().default("user"), // user, professor, admin
   requestedRole: varchar("requestedRole", { length: 32 }).default("student"), // student, professor
   approvalStatus: approvalStatusEnum("approvalStatus").notNull().default("pending"), // pending, approved, rejected
-  phone: varchar("phone", { length: 32 }),
+  phone: varchar("phone", { length: 32 }), // celular
   location: varchar("location", { length: 120 }),
   bio: text("bio"),
   teacherId: integer("teacherId"),
@@ -671,7 +673,10 @@ export const externalStudents = pgTable("external_students", {
   id: serial("id").primaryKey(),
   externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 180 }).notNull(),
+  socialName: varchar("socialName", { length: 160 }),
+  cpf: varchar("cpf", { length: 20 }),
   email: varchar("email", { length: 320 }),
+  phone: varchar("phone", { length: 32 }), // celular
   studentIdNumber: varchar("studentIdNumber", { length: 64 }), // ex: Matrícula institucional
   status: varchar("status", { length: 32 }).notNull().default("active"), // active, inactive, completed
   notes: text("notes"),

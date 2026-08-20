@@ -10,7 +10,7 @@ export async function GET() {
     if (!session?.user?.email) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     const user = await getUserByEmail(session.user.email);
     if (!user || user.deletedAt) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-    return NextResponse.json({ user: { id: user.id, name: user.name, email: user.email, avatarUrl: user.avatarUrl } });
+    return NextResponse.json({ user: { id: user.id, name: user.name, socialName: user.socialName, cpf: user.cpf, email: user.email, phone: user.phone, location: user.location, bio: user.bio, avatarUrl: user.avatarUrl } });
   } catch (error) {
     console.error("Error loading profile:", error);
     return NextResponse.json({ error: "Falha ao carregar perfil" }, { status: 500 });
@@ -52,7 +52,7 @@ export async function PUT(request: Request) {
     }
 
     const body = await request.json();
-    const { name, phone, location, bio } = body;
+    const { name, socialName, cpf, phone, location, bio } = body;
 
     if (typeof name === "string" && name.trim().length === 0) {
       return NextResponse.json({ error: "Nome não pode ficar vazio" }, { status: 400 });
@@ -60,6 +60,8 @@ export async function PUT(request: Request) {
 
     const updated = await updateUserProfile(currentUser.id, {
       ...(typeof name === "string" && { name: name.trim() }),
+      ...(typeof socialName === "string" && { socialName: socialName.trim() || undefined }),
+      ...(typeof cpf === "string" && { cpf: cpf.trim() || undefined }),
       ...(typeof phone === "string" && { phone: phone.trim() || undefined }),
       ...(typeof location === "string" && { location: location.trim() || undefined }),
       ...(typeof bio === "string" && { bio: bio.trim() || undefined }),

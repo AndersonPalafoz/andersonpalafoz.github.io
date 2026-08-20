@@ -963,3 +963,21 @@
 - [x] Incluir nome completo do aluno, data de conclusão formatada e carga horária do curso no payload e no modal.
 - [x] Atualizar o layout do certificado para destacar formalmente as credenciais acadêmicas do professor Anderson Palafoz.
 - [x] Executar suíte de testes Vitest e validar build de produção.
+
+## Aba "Meus Certificados" no Perfil do Aluno — 19/08/2026
+- [ ] Localizar a página de perfil do aluno (`/dashboard/perfil` ou equivalente).
+- [ ] Adicionar a aba "Meus Certificados" utilizando os registros reais retornados pelo banco de dados (`getCertificates`).
+- [ ] Exibir cards com título do curso, nível CEFR, data de emissão, código de autenticidade e botão de download do certificado em PDF.
+- [ ] Executar suíte de testes Vitest e validar build de produção.
+
+## Inclusão de CPF, Nome Social, Celular e E-mail de Alunos — 19/08/2026
+- [ ] Atualizar o schema Drizzle (`drizzle/schema.ts`) nas tabelas de usuários e estudantes externos para adicionar `cpf`, `socialName` e `phone` (celular).
+- [ ] Atualizar a API de perfil e os formulários de edição do aluno (`/dashboard/perfil`).
+- [ ] Atualizar as listagens de alunos para professores e administradores (`/admin/usuarios`, `/professor/alunos`, `/professor/turmas-externas`) exibindo CPF, nome social, celular e e-mail.
+- [ ] Executar suíte de testes Vitest e validar build de produção.
+
+## Auditoria e Correção de Deploy no Vercel — 19/08/2026
+- [ ] Acessar painel do Vercel via navegador para auditar o log detalhado do erro de build.
+- [ ] Corrigir qualquer incompatibilidade de tipo ou configuração detectada nos logs do Vercel.
+- [ ] Executar build de produção local simulada (`NODE_ENV=production pnpm build`) para certificar sucesso.
+- [ ] Salvar checkpoint e orientar nova publicação.
