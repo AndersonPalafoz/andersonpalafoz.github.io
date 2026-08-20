@@ -330,6 +330,13 @@
       "when": 1787186039806,
       "tag": "0046_sour_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1787191719346,
+      "tag": "0047_fluffy_vargas",
+      "breakpoints": true
     }
   ]
 }

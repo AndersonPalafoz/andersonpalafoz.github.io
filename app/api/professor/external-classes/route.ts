@@ -115,13 +115,22 @@ export async function POST(request: NextRequest) {
     const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userRole === "professor" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
 
     const body = await request.json();
-    const {
+      const {
       action,
       institution,
       className,
       courseName,
       academicTerm,
       description,
+      classDays,
+      classTime,
+      workloadHours,
+      startDate,
+      endDate,
+      maxAbsencePercent,
+      modality,
+      meetingLink,
+      classroomLocation,
       classId,
       studentName,
       studentEmail,
@@ -156,6 +165,15 @@ export async function POST(request: NextRequest) {
         courseName: courseName.trim(),
         academicTerm: academicTerm.trim(),
         description: description ? description.trim() : null,
+        classDays: classDays ? classDays.trim() : null,
+        classTime: classTime ? classTime.trim() : null,
+        workloadHours: workloadHours ? Number(workloadHours) : 40,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        maxAbsencePercent: maxAbsencePercent ? Number(maxAbsencePercent) : 25,
+        modality: modality ? modality.trim() : "Remota",
+        meetingLink: meetingLink ? meetingLink.trim() : null,
+        classroomLocation: classroomLocation ? classroomLocation.trim() : null,
       }).returning();
 
       return NextResponse.json({ success: true, classItem: inserted[0] });
@@ -179,6 +197,15 @@ export async function POST(request: NextRequest) {
           courseName: courseName.trim(),
           academicTerm: academicTerm.trim(),
           description: description ? description.trim() : null,
+          classDays: classDays !== undefined ? (classDays ? classDays.trim() : null) : existing.classDays,
+          classTime: classTime !== undefined ? (classTime ? classTime.trim() : null) : existing.classTime,
+          workloadHours: workloadHours !== undefined ? Number(workloadHours) : existing.workloadHours,
+          startDate: startDate ? new Date(startDate) : existing.startDate,
+          endDate: endDate ? new Date(endDate) : existing.endDate,
+          maxAbsencePercent: maxAbsencePercent !== undefined ? Number(maxAbsencePercent) : existing.maxAbsencePercent,
+          modality: modality !== undefined ? (modality ? modality.trim() : "Remota") : existing.modality,
+          meetingLink: meetingLink !== undefined ? (meetingLink ? meetingLink.trim() : null) : existing.meetingLink,
+          classroomLocation: classroomLocation !== undefined ? (classroomLocation ? classroomLocation.trim() : null) : existing.classroomLocation,
           updatedAt: new Date(),
         })
         .where(eq(externalClasses.id, Number(classId)))

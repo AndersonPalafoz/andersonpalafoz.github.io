@@ -136,6 +136,10 @@ export default function TurmasExternasPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [maxAbsencePercent, setMaxAbsencePercent] = useState(25);
+  const [modality, setModality] = useState("Remota");
+  const [meetingLink, setMeetingLink] = useState("");
+  const [classroomLocation, setClassroomLocation] = useState("");
+  const [isDaysModalOpen, setIsDaysModalOpen] = useState(false);
   const [touchedClassFields, setTouchedClassFields] = useState<Partial<Record<ClassFormField, boolean>>>({});
 
   const finalInstitutionValue = isCustomInstitution ? customInstitutionInput.trim() : institution.trim();
@@ -380,8 +384,8 @@ export default function TurmasExternasPage() {
       setSubmitting(true);
       const action = editingClassId ? "updateClass" : "createClass";
       const body = editingClassId
-        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description }
-        : { action, institution: finalInstitution, className, courseName, academicTerm, description };
+        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation }
+        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -416,6 +420,15 @@ export default function TurmasExternasPage() {
     setCourseName(cls.courseName);
     setAcademicTerm(cls.academicTerm);
     setDescription(cls.description || "");
+    setClassDays((cls as any).classDays || "Segundas e Quartas");
+    setClassTime((cls as any).classTime || "19:00 - 20:30");
+    setWorkloadHours((cls as any).workloadHours || 40);
+    setStartDate((cls as any).startDate ? new Date((cls as any).startDate).toISOString().split('T')[0] : "");
+    setEndDate((cls as any).endDate ? new Date((cls as any).endDate).toISOString().split('T')[0] : "");
+    setMaxAbsencePercent((cls as any).maxAbsencePercent || 25);
+    setModality((cls as any).modality || "Remota");
+    setMeetingLink((cls as any).meetingLink || "");
+    setClassroomLocation((cls as any).classroomLocation || "");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -428,6 +441,15 @@ export default function TurmasExternasPage() {
     setCourseName("");
     setAcademicTerm("2026.1");
     setDescription("");
+    setClassDays("Segundas e Quartas");
+    setClassTime("19:00 - 20:30");
+    setWorkloadHours(40);
+    setStartDate("");
+    setEndDate("");
+    setMaxAbsencePercent(25);
+    setModality("Remota");
+    setMeetingLink("");
+    setClassroomLocation("");
     resetClassValidation();
   };
 
@@ -1054,28 +1076,102 @@ export default function TurmasExternasPage() {
                   />
                   {renderClassFieldMessage("academicTerm")}
                 </div>
-                {/* Calendário e Frequência */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200 dark:border-slate-800">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Dias de Aula</label>
-                    <input
-                      type="text"
-                      value={classDays}
-                      onChange={(e) => setClassDays(e.target.value)}
-                      placeholder="Ex: Segundas e Quartas"
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
+                {/* Calendário, Modalidade e Frequência */}
+                <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-slate-800">
+                  <div className="flex items-center justify-between bg-gray-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-gray-200 dark:border-slate-800">
+                    <div>
+                      <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${modality === "Remota" ? "bg-blue-500" : "bg-emerald-500"}`}></span>
+                        Modalidade: {modality}
+                      </p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">Dias: <span className="font-semibold text-gray-700 dark:text-gray-300">{classDays}</span></p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsDaysModalOpen(true)}
+                      className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition shadow-xs flex items-center gap-1.5"
+                    >
+                      <Calendar size={14} /> Configurar Aulas
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Horário</label>
-                    <input
-                      type="text"
-                      value={classTime}
-                      onChange={(e) => setClassTime(e.target.value)}
-                      placeholder="Ex: 19:00 - 20:30"
-                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                    />
+
+                  {modality === "Remota" ? (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Link da Sala Online (Zoom, Meet, Teams)</label>
+                      <input
+                        type="url"
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        placeholder="https://meet.google.com/abc-defg-hij"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Local / Sala Presencial</label>
+                      <input
+                        type="text"
+                        value={classroomLocation}
+                        onChange={(e) => setClassroomLocation(e.target.value)}
+                        placeholder="Ex: Sala 302, Pavilhão de Aulas UFBA"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Horário</label>
+                      <input
+                        type="text"
+                        value={classTime}
+                        onChange={(e) => setClassTime(e.target.value)}
+                        placeholder="Ex: 19:00 - 20:30"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Carga Horária (h)</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={500}
+                        value={workloadHours}
+                        onChange={(e) => setWorkloadHours(parseInt(e.target.value) || 40)}
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Máx. Faltas (%)</label>
+                      <input
+                        type="number"
+                        min={5}
+                        max={50}
+                        value={maxAbsencePercent}
+                        onChange={(e) => setMaxAbsencePercent(parseInt(e.target.value) || 25)}
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Início</label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Término</label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
                   </div>
+                </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Carga Horária (h)</label>
                     <input
