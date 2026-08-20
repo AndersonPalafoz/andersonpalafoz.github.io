@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMaterials, createMaterial, updateMaterial, deleteMaterial } from "@/lib/db";
+import { getMaterials, getTrashMaterials, createMaterial, updateMaterial, softDeleteMaterial, restoreMaterial, deleteMaterial } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin-auth";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const admin = await requireAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const mode = searchParams.get("mode");
+
+    if (mode === "trash") {
+      const trash = await getTrashMaterials();
+      return NextResponse.json(trash);
     }
 
     const materials = await getMaterials();
@@ -58,12 +66,27 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const permanent = searchParams.get("permanent") === "true";
+    const restore = searchParams.get("restore") === "true";
+
     if (!id) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
-    const material = await deleteMaterial(parseInt(id));
-    return NextResponse.json(material);
+    const materialId = parseInt(id);
+
+    if (restore) {
+      const restored = await restoreMaterial(materialId);
+      return NextResponse.json(restored);
+    }
+
+    if (permanent) {
+      const deleted = await deleteMaterial(materialId);
+      return NextResponse.json(deleted);
+    }
+
+    const softDeleted = await softDeleteMaterial(materialId);
+    return NextResponse.json(softDeleted);
   } catch (error) {
     console.error("Error deleting material:", error);
     return NextResponse.json({ error: "Failed to delete material" }, { status: 500 });
