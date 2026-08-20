@@ -1177,3 +1177,9 @@
 - [x] Ajustar loaders do servidor (`lib/teacher.ts`) para excluir estritamente cursos movidos para a lixeira (`deletedAt IS NOT NULL`), garantindo persistência após atualização da página em `/professor` e `/admin`.
 - [x] Harmonizar o cabeçalho e design visual do painel administrativo (`/admin`) com o padrão refinado do painel do professor, implementando o princípio onde o superadmin possui todas as prerrogativas docentes e gerenciais estendidas.
 - [x] Validar 321 testes automatizados (Vitest) com 100% de aprovação.
+
+## Gestão da Lixeira no Admin e Gráfico Comparativo Mensal — 19/08/2026
+- [x] Disponibilizar aba completa de lixeira no painel de administração (`/admin/cursos`) com ações persistentes de restaurar e excluir permanentemente.
+- [x] Atualizar API de estatísticas administrativas (`/api/admin/stats` e `getAdminStats`) para incluir a série temporal de cursos criados por mês.
+- [x] Implementar gráfico interativo SVG no painel do administrador comparando mensalmente o volume de matrículas e cursos criados.
+- [x] Executar bateria de 321 testes automatizados (Vitest) com 100% de aprovação.
