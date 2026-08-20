@@ -1029,3 +1029,14 @@
 - [x] Padronizar cabeçalhos, cartões, tipografia e navegação em todas as subpáginas de `/admin/*`.
 - [x] Padronizar componentes e espaçamento em todas as subpáginas de `/professor/*`.
 - [x] Garantir responsividade perfeita em dispositivos móveis e desktop com testes validados.
+
+## Aprimoramento Visual e Responsivo: Cursos, Turmas Externas, Materiais e Blog — 19/08/2026
+- [x] Auditar rotas e componentes de cursos (`/cursos`, `/admin/cursos`), turmas externas (`/professor/turmas-externas`), materiais (`/materiais`, `/admin/materiais`) e blog (`/blog`, `/admin/blog`).
+- [ ] Padronizar cartões, grids, tipografia Poppins e espaçamento em todas as listagens.
+- [ ] Refinar páginas de detalhes, modais, formulários e barras de busca/filtros com estados de carregamento impecáveis.
+- [ ] Validar estabilidade com testes automatizados e criar checkpoint de entrega.
+
+## Aprimoramento Visual e Responsivo Completo: Dashboard, Cursos, Turmas, Materiais e Blog — 19/08/2026
+- [x] Unificar o Design System, fontes Poppins e cartões em todo o ecossistema.
+- [x] Aprimorar o dashboard do aluno (`/dashboard`) e suas subpáginas de perfil, cursos, certificados, calendário e anotações.
+- [x] Garantir responsividade perfeita e testes Vitest validados.
