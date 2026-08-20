@@ -75,6 +75,8 @@ export default async function PerfilPage() {
             <h3 className="font-bold text-gray-900 mb-6">Editar Informações</h3>
             <ProfileForm
               initialName={dbUser?.name ?? session?.user?.name ?? ""}
+              initialSocialName={dbUser?.socialName ?? ""}
+              initialCpf={dbUser?.cpf ?? ""}
               initialPhone={dbUser?.phone ?? ""}
               initialLocation={dbUser?.location ?? ""}
               initialBio={dbUser?.bio ?? ""}

@@ -977,7 +977,12 @@
 - [ ] Executar suíte de testes Vitest e validar build de produção.
 
 ## Auditoria e Correção de Deploy no Vercel — 19/08/2026
-- [ ] Acessar painel do Vercel via navegador para auditar o log detalhado do erro de build.
-- [ ] Corrigir qualquer incompatibilidade de tipo ou configuração detectada nos logs do Vercel.
-- [ ] Executar build de produção local simulada (`NODE_ENV=production pnpm build`) para certificar sucesso.
-- [ ] Salvar checkpoint e orientar nova publicação.
+- [x] Acessar painel do Vercel via navegador para auditar o log detalhado do erro de build.
+- [x] Corrigir qualquer incompatibilidade de tipo ou configuração detectada nos logs do Vercel.
+- [x] Executar build de produção local simulada (`NODE_ENV=production pnpm build`) para certificar sucesso.
+- [x] Salvar checkpoint e orientar nova publicação.
+
+## Máscaras de Formatação para CPF e Celular no Perfil do Aluno — 19/08/2026
+- [x] Atualizar o componente `ProfileForm` em `components/profile-form.tsx` para incluir campos de CPF e nome social com funções auxiliares de máscara (`000.000.000-00` e `(00) 00000-0000`).
+- [x] Atualizar a API `/api/user/profile` e a página `/dashboard/perfil/page.tsx` para carregar e salvar CPF e nome social corretamente.
+- [x] Executar suíte de testes Vitest e validar estabilidade de build.
