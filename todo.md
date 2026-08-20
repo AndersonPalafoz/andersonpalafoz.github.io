@@ -1108,3 +1108,7 @@
 - [x] Implementar barra de pesquisa e filtros por nível na aba da lixeira.
 - [x] Adicionar modal de confirmação de segurança para exclusão permanente de cursos.
 - [x] Validar testes automatizados e build de produção.
+
+## Gestão Unificada de Cursos no Painel — 19/08/2026
+- [x] Padronizar a listagem de cursos no painel com contagem, níveis e botão "Ver" semelhante às listagens de alunos e professores.
+- [x] Validar testes automatizados e build de produção.
