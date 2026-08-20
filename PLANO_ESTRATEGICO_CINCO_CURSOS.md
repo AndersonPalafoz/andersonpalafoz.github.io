@@ -77,3 +77,37 @@ A implementação bem-sucedida deste plano será medida através dos seguintes i
 
 ---
 *Plano estratégico elaborado para a Plataforma Anderson Palafoz.*
+
+
+---
+
+## 5. Log de Execução e Atualizações Contínuas
+
+* **[Concluído]** Criação do documento de especificação técnica dos cinco tipos de curso (`TIPOS_DE_CURSOS_ESPECIFICACAO.md`).
+* **[Concluído]** Auditoria de schema e inclusão das colunas `course_type`, `external_redirect_url` e `sync_modality` no banco de dados Neon PostgreSQL e Drizzle ORM (`drizzle/schema.ts`).
+* **[Em Andamento]** Atualização do formulário administrativo de cursos (`app/admin/cursos/page.tsx`) e da listagem para permitir definir o tipo de curso, o link externo e a modalidade síncrona.
+* **[Próximo Passo]** Refinar as páginas públicas de listagem e detalhe de cursos (`/cursos` e `/cursos/[id]`) para exibir as tags coloridas oficiais, o link de redirecionamento externo (para cursos do Tipo 1 e Tipo 4) e as informações de agendamento (Tipo 5).
+
+### Atualização de execução — 20/08/2026
+
+A camada compartilhada `lib/course-types.ts` foi criada com a taxonomia oficial, rótulos, cores, descrições, modalidades síncronas e validações de URL. O formulário administrativo em `app/admin/cursos/page.tsx` agora permite criar e editar o tipo do curso, a URL externa e a modalidade de atendimento, com bloqueio de encontros síncronos para o Tipo 1 e mensagens de validação.
+
+A API administrativa e as funções de persistência em `app/api/admin/courses/route.ts` e `lib/db.ts` foram alinhadas para validar e gravar os campos novos, mantendo as regras de RBAC existentes e respostas com códigos de erro. As listagens administrativas passaram a exibir a tag do tipo e a modalidade.
+
+O catálogo público em `/aulas` e a página pública de detalhe em `/cursos/[id]` foram atualizados. O catálogo possui filtro por tipo e tags coloridas; o detalhe apresenta a descrição da modalidade, a forma de atendimento, o acesso a ambiente externo autorizado quando aplicável e o CTA de contato para o Tipo 5.
+
+Durante a primeira validação, a suíte detectou que o ambiente de desenvolvimento ainda não possuía as três colunas embora o código já as consultasse. A migração idempotente foi reaplicada no banco de desenvolvimento e o schema Drizzle confirmou que não há uma nova migração pendente. Também foi preservado o contrato de acessibilidade existente para a origem “Curso interno”.
+
+**Próximas ações:** executar novamente os 325 testes, validar o build de produção, revisar a responsividade das páginas `/aulas`, `/cursos/[id]` e `/admin/cursos`, e só então marcar esta etapa como concluída no `todo.md` e salvar o checkpoint.
+
+### Diagnóstico adicional de compatibilidade
+
+A suíte Vitest passou em **323 de 325 testes** após a correção do contrato de acessibilidade e dos testes unitários dos tipos. Os dois testes restantes falham porque o DSN `NEON_DATABASE_URL` usado pelo processo local aponta para um banco PostgreSQL em que a tabela `courses` ainda tem 26 colunas e não contém `course_type`, `external_redirect_url` e `sync_modality`. A execução pelo painel de banco foi concluída em outra conexão de desenvolvimento, mas o processo local e os testes continuam apontando para o banco `neondb` no endereço local mascarado pelo ambiente.
+
+A tentativa de executar `pnpm db:migrate` não foi aplicada porque o histórico de migrações desse DSN não corresponde ao banco existente: a primeira migração tenta recriar tabelas que já existem. Portanto, não será feita uma migração ampla ou destrutiva. O próximo passo seguro é alinhar o DSN de desenvolvimento ao banco que recebeu a alteração ou executar somente uma migração de reparo idempotente nesse banco específico, depois validar novamente as 325 verificações. Até essa sincronização, a implementação de frontend e backend está pronta, mas o checkpoint final não deve ser salvo como homologado.
+
+### Conclusão da Auditoria de Banco de Dados
+
+O teste efetuado diretamente no DSN configurado no ambiente atual confirmou que a tabela `courses` possui atualmente 26 colunas e ainda não contém as colunas `course_type`, `external_redirect_url` e `sync_modality`. Como este é o banco ativo nas variáveis do projeto, os testes que consultam a listagem de cursos falham por falta dessas colunas.
+
+Para solucionar definitivamente o problema apontado nos testes e garantir que o ambiente local e o Vercel operem com a mesma estrutura sem erros 500 ou colunas ausentes, aplicarei imediatamente o comando SQL idempotente para adicionar as três colunas neste mesmo banco. Em seguida, reexecutarei toda a suíte de testes Vitest para validar a aprovação de 100% dos testes.
