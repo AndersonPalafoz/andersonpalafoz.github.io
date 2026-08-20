@@ -1,9 +1,7 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BarChart3, BookOpen, FileText, Users, Loader, Award } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Users, Loader, Award, ShieldCheck, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
@@ -132,63 +130,67 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="site-shell">
-      <div className="bg-primary text-primary-foreground px-4 py-8 sm:px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold">Painel do Administrador</h1>
-            <p className="text-red-100 text-xs sm:text-sm mt-1">
-              Visão geral e governança completa do ecossistema acadêmico.
+    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+      <div className="page-container space-y-8">
+        {/* Header Harmonizado com o Painel do Professor */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl shadow-sm border border-border/70 bg-card">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+              <ShieldCheck size={16} />
+              Governança Global & Administração
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do Administrador</h1>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+              Visão geral, controle total do ecossistema acadêmico, gerenciamento de cursos, lixeira e auditoria de acessos.
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
             <Link
               href="/admin/relatorios-academicos"
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
-              Relatórios Acadêmicos & Classroom
+              Relatórios & Classroom
             </Link>
             <Link
               href="/admin/medalhas"
-              className="rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2 text-xs font-bold text-white transition shadow-md"
+              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
               Conceder Medalhas
             </Link>
             <Link
               href="/admin/cms"
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
-              CMS & Seletor de Logo
+              CMS & Logo
             </Link>
             <Link
               href="/admin/auditoria"
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
-              Auditoria de Acessos
+              Auditoria
             </Link>
             <Link
               href="/admin/cupons"
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
-              Cupons e Descontos
+              Cupons
             </Link>
             <Link
-              href="/admin/liberacao-acesso"
-              className="rounded-xl bg-white/10 hover:bg-white/20 px-4 py-2 text-xs font-bold text-white transition border border-white/20"
+              href="/admin/cursos"
+              className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
-              Liberação de Acesso Pago
+              Gerenciar Cursos
             </Link>
           </div>
         </div>
-      </div>
 
-      <div className="page-container py-8 sm:py-12 space-y-8">
-        {/* Painel Estatístico Estilo Dashboard do Aluno */}
+        {/* Painel Estatístico Estilo Dashboard do Aluno com Skeleton */}
         <StudentStyleDashboardStats
           coursesCount={stats?.totalCourses || 0}
           studentsCount={stats?.totalUsers || 0}
           materialsCount={stats?.totalMaterials || 0}
           enrollmentsCount={stats?.totalEnrollments || 0}
+          isLoading={loading && !stats}
         />
 
         {/* Admin Unified Search Widget */}
@@ -268,7 +270,7 @@ export default function AdminDashboardPage() {
             <BarChart3 className="text-red-600" size={18} /> Resumo Geral de Atividade do Sistema
           </h3>
           <p className="text-xs text-muted-foreground">
-            Visão consolidade comparativa entre novas matrículas e sessões ativas registradas.
+            Visão consolidada comparativa entre novas matrículas e sessões ativas registradas.
           </p>
           {stats?.monthlyActivity && stats.monthlyActivity.length > 0 ? (
             <MonthlyActivityChart data={stats.monthlyActivity} />
