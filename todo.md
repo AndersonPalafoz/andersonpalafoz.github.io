@@ -1074,3 +1074,9 @@
 ## Compartilhamento no LinkedIn de Relatório e Certificados — 19/08/2026
 - [x] Implementar botões de compartilhamento direto no LinkedIn para o relatório de progresso acadêmico e certificados do aluno no dashboard.
 - [x] Validar compilação e testes automatizados.
+
+## Aprimoramento do StreakBadge (Tooltip, Skeleton e Popover de Calendário) — 19/08/2026
+- [x] Implementar skeleton de carregamento suave no StreakBadge.
+- [x] Adicionar tooltip explicativo detalhado sobre o cálculo da ofensiva por conclusão diária.
+- [x] Criar popover interativo com calendário visual dos dias de atividade recentes.
+- [x] Validar testes e build de produção.
