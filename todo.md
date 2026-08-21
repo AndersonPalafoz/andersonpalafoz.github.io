@@ -1615,3 +1615,7 @@
 - [x] Corrigido o erro de referência (`course.id` indefinido) na listagem de módulos de cursos sem aulas publicadas (`/cursos/[id]`), eliminando o erro HTTP 500 relatado.
 - [x] Implementada a geração automatizada e idempotente de certificados em PDF personalizável via `pdf-lib` antes da assinatura.
 - [x] Adicionada opção de notificação automática por e-mail ao aluno imediatamente após o upload do PDF assinado no painel do administrador (`/admin/certificados`).
+- [x] Adicionada funcionalidade de pré-visualização no painel administrativo de certificados.
+- [x] Criada a galeria segura de certificados no painel do aluno (`StudentCertificatesGallery`), permitindo visualização, download e compartilhamento no LinkedIn.
+- [x] Implementado upload de imagem de assinatura digital para aplicação automática nos certificados gerados.
+- [x] Permitido o upload manual de certificados criados externamente diretamente pelo administrador ou superadmin.
