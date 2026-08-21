@@ -1755,3 +1755,8 @@
 - [ ] Ajustar o serviço de armazenamento e tratamento de templates para aceitar documentos Word (.docx), convertendo-os ou extraindo seus campos de texto e variáveis para preenchimento dinâmico.
 - [ ] Cadastrar automaticamente os dois modelos na base de dados (um voltado a Internacionalização/IsF e outro como certificado padrão customizado).
 - [ ] Validar a pré-visualização, a opção de incluir ou não a logo do site e a emissão integrada para alunos cadastrados e não cadastrados.
+
+## Compartilhamento LinkedIn e Editor Drag-and-Drop de Certificados — 21/08/2026
+- [ ] Adicionar botão de compartilhamento direto no LinkedIn na galeria de certificados do aluno (`/dashboard/certificados`).
+- [ ] Transformar a pré-visualização de templates em um editor visual interativo com drag-and-drop para reposicionar as variáveis no certificado.
+- [ ] Persistir as coordenadas e mapeamentos ajustados visualmente no banco de dados para utilização automática pelo gerador de PDF.

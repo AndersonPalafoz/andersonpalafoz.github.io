@@ -150,10 +150,15 @@ export function validateCertificateTemplate(input: {
     input.mimeType === "image/png" ||
     (input.mimeType === "application/octet-stream" &&
       fileName.endsWith(".png"));
-  if (!isPdf && !isPng)
+  const isDocx =
+    input.mimeType ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    (input.mimeType === "application/octet-stream" &&
+      fileName.endsWith(".docx"));
+  if (!isPdf && !isPng && !isDocx)
     return {
       valid: false as const,
-      error: "Envie um modelo de certificado em PDF ou PNG.",
+      error: "Envie um modelo de certificado em PDF, PNG ou DOCX.",
     };
   if (
     !Number.isFinite(input.size) ||
@@ -180,10 +185,15 @@ export async function uploadCertificateTemplate(adminId: number, file: File) {
     mimeTypes: CERTIFICATE_TEMPLATE_MIME_TYPES,
     fileSizeLimit: CERTIFICATE_TEMPLATE_MAX_BYTES,
   });
+  const fileName = file.name.toLowerCase();
   const extension =
-    file.type === "image/png" || file.name.toLowerCase().endsWith(".png")
+    file.type === "image/png" || fileName.endsWith(".png")
       ? "png"
-      : "pdf";
+      : file.type ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+          fileName.endsWith(".docx")
+        ? "docx"
+        : "pdf";
   const objectPath = `admin/${adminId}/templates/${crypto.randomUUID()}.${extension}`;
   const { error } = await supabase.storage
     .from(CERTIFICATE_TEMPLATE_BUCKET)
@@ -192,7 +202,9 @@ export async function uploadCertificateTemplate(adminId: number, file: File) {
         file.type === "application/octet-stream"
           ? extension === "png"
             ? "image/png"
-            : "application/pdf"
+            : extension === "docx"
+              ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              : "application/pdf"
           : file.type,
       cacheControl: "31536000",
       upsert: false,
@@ -200,7 +212,12 @@ export async function uploadCertificateTemplate(adminId: number, file: File) {
   if (error) throw error;
   return {
     objectPath,
-    mimeType: extension === "png" ? "image/png" : "application/pdf",
+    mimeType:
+      extension === "png"
+        ? "image/png"
+        : extension === "docx"
+          ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          : "application/pdf",
   };
 }
 

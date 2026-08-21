@@ -1,7 +1,14 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { Award, Download, Search, Filter, ShieldCheck, FileText } from "lucide-react";
+import {
+  Award,
+  Download,
+  Search,
+  Filter,
+  ShieldCheck,
+  FileText,
+} from "lucide-react";
 import { CertificateShareButton } from "@/components/certificate-share-button";
 import { toast } from "sonner";
 
@@ -29,7 +36,9 @@ export function StudentCertificatesGallery() {
   useEffect(() => {
     async function fetchCertificates() {
       try {
-        const res = await fetch("/api/user/certificates", { cache: "no-store" });
+        const res = await fetch("/api/user/certificates", {
+          cache: "no-store",
+        });
         const data = await res.json();
         if (res.ok) {
           setCertificates(data.certificates || []);
@@ -44,7 +53,7 @@ export function StudentCertificatesGallery() {
   }, []);
 
   const filteredCertificates = useMemo(() => {
-    const filtered = certificates.filter((cert) => {
+    const filtered = certificates.filter(cert => {
       const normalizedSearch = searchQuery.trim().toLowerCase();
       const matchSearch =
         cert.courseTitle.toLowerCase().includes(normalizedSearch) ||
@@ -53,14 +62,16 @@ export function StudentCertificatesGallery() {
       const matchModel =
         modelFilter === "all" ||
         (modelFilter === "platform" && !cert.certificateTemplateId) ||
-        (modelFilter === "institutional" && Boolean(cert.certificateTemplateId)) ||
+        (modelFilter === "institutional" &&
+          Boolean(cert.certificateTemplateId)) ||
         (modelFilter === "branded" && cert.includeSiteBranding === true) ||
         (modelFilter === "unbranded" && cert.includeSiteBranding === false);
       return matchSearch && matchLevel && matchModel;
     });
 
     return filtered.sort((a, b) => {
-      const difference = new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime();
+      const difference =
+        new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime();
       return sortOrder === "newest" ? -difference : difference;
     });
   }, [certificates, searchQuery, levelFilter, modelFilter, sortOrder]);
@@ -68,7 +79,9 @@ export function StudentCertificatesGallery() {
   const handleExportHistoryPdf = () => {
     const printWindow = window.open("", "_blank");
     if (!printWindow) {
-      toast.error("Permita pop-ups no navegador para exportar o relatório em PDF.");
+      toast.error(
+        "Permita pop-ups no navegador para exportar o relatório em PDF."
+      );
       return;
     }
 
@@ -110,7 +123,9 @@ export function StudentCertificatesGallery() {
             </tr>
           </thead>
           <tbody>
-            ${filteredCertificates.map(c => `
+            ${filteredCertificates
+              .map(
+                c => `
               <tr>
                 <td><b>${c.courseTitle}</b></td>
                 <td>${c.level}</td>
@@ -118,7 +133,9 @@ export function StudentCertificatesGallery() {
                 <td>${new Date(c.issuedAt).toLocaleDateString("pt-BR")}</td>
                 <td>${c.signatureType === "govbr" ? "Assinado via gov.br" : "Assinado manualmente"}</td>
               </tr>
-            `).join("")}
+            `
+              )
+              .join("")}
           </tbody>
         </table>
         <div class="footer">
@@ -140,7 +157,8 @@ export function StudentCertificatesGallery() {
   if (loading) {
     return (
       <div className="surface-card flex items-center justify-center p-12 text-muted-foreground">
-        <Award className="animate-spin text-red-600 mr-2" size={20} /> Carregando certificados e histórico...
+        <Award className="animate-spin text-red-600 mr-2" size={20} />{" "}
+        Carregando certificados e histórico...
       </div>
     );
   }
@@ -149,8 +167,13 @@ export function StudentCertificatesGallery() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
         <div>
-          <h2 className="text-xl font-black text-foreground">Histórico de Conquistas & Certificados</h2>
-          <p className="text-sm text-muted-foreground">Pesquise, filtre e exporte seus certificados oficiais e históricos de conclusão.</p>
+          <h2 className="text-xl font-black text-foreground">
+            Histórico de Conquistas & Certificados
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Pesquise, filtre e exporte seus certificados oficiais e históricos
+            de conclusão.
+          </p>
         </div>
         <button
           type="button"
@@ -163,11 +186,14 @@ export function StudentCertificatesGallery() {
 
       <div className="grid gap-4 surface-card p-4 border border-border/70 rounded-2xl sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative sm:col-span-2">
-          <Search className="absolute left-3.5 top-3.5 text-muted-foreground" size={16} />
+          <Search
+            className="absolute left-3.5 top-3.5 text-muted-foreground"
+            size={16}
+          />
           <input
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome do curso ou código..."
             className="w-full rounded-xl border border-border bg-background pl-10 pr-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
           />
@@ -175,7 +201,7 @@ export function StudentCertificatesGallery() {
         <div>
           <select
             value={levelFilter}
-            onChange={(e) => setLevelFilter(e.target.value)}
+            onChange={e => setLevelFilter(e.target.value)}
             aria-label="Filtrar certificados por nível"
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
           >
@@ -188,7 +214,7 @@ export function StudentCertificatesGallery() {
         <div>
           <select
             value={modelFilter}
-            onChange={(e) => setModelFilter(e.target.value)}
+            onChange={e => setModelFilter(e.target.value)}
             aria-label="Filtrar certificados por tipo de modelo"
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
           >
@@ -202,7 +228,7 @@ export function StudentCertificatesGallery() {
         <div>
           <select
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+            onChange={e => setSortOrder(e.target.value as "newest" | "oldest")}
             aria-label="Ordenar certificados por data de emissão"
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
           >
@@ -215,24 +241,42 @@ export function StudentCertificatesGallery() {
       {filteredCertificates.length === 0 ? (
         <div className="surface-card p-12 text-center">
           <Award className="mx-auto text-muted-foreground/40 mb-3" size={48} />
-          <h3 className="text-lg font-bold text-foreground">Nenhum certificado encontrado</h3>
-          <p className="mt-1 text-sm text-muted-foreground">Tente ajustar sua busca ou filtros para localizar o certificado desejado.</p>
+          <h3 className="text-lg font-bold text-foreground">
+            Nenhum certificado encontrado
+          </h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tente ajustar sua busca ou filtros para localizar o certificado
+            desejado.
+          </p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {filteredCertificates.map((cert) => {
+          {filteredCertificates.map(cert => {
             const downloadUrl = cert.signedPdfUrl || cert.certificateUrl || "#";
+            const shareUrl = cert.certificateCode
+              ? `/verificar/${encodeURIComponent(cert.certificateCode)}`
+              : downloadUrl;
             return (
-              <div key={cert.id} className="surface-card flex flex-col justify-between border border-border/70 p-6 shadow-sm">
+              <div
+                key={cert.id}
+                className="surface-card flex flex-col justify-between border border-border/70 p-6 shadow-sm"
+              >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1 text-xs font-black uppercase text-red-700 dark:bg-red-950/50 dark:text-red-300">
                       <ShieldCheck size={14} /> Nível {cert.level}
                     </span>
-                    <span className="text-xs text-muted-foreground">Emitido em {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Emitido em{" "}
+                      {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}
+                    </span>
                   </div>
-                  <h3 className="text-lg font-black text-foreground">{cert.courseTitle}</h3>
-                  <p className="text-xs font-mono text-muted-foreground">Código: {cert.certificateCode || "VERIFICADO"}</p>
+                  <h3 className="text-lg font-black text-foreground">
+                    {cert.courseTitle}
+                  </h3>
+                  <p className="text-xs font-mono text-muted-foreground">
+                    Código: {cert.certificateCode || "VERIFICADO"}
+                  </p>
                 </div>
 
                 <div className="mt-6 space-y-4 pt-4 border-t border-border/60">
@@ -247,12 +291,19 @@ export function StudentCertificatesGallery() {
                         <Download size={14} /> Baixar PDF Assinado
                       </a>
                     ) : (
-                      <span className="text-xs text-muted-foreground italic">Disponível em breve</span>
+                      <span className="text-xs text-muted-foreground italic">
+                        Disponível em breve
+                      </span>
                     )}
                   </div>
                   <div>
-                    <p className="text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">Compartilhar Conquista</p>
-                    <CertificateShareButton certificateUrl={downloadUrl} courseTitle={cert.courseTitle} />
+                    <p className="text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">
+                      Compartilhar Conquista
+                    </p>
+                    <CertificateShareButton
+                      certificateUrl={shareUrl}
+                      courseTitle={cert.courseTitle}
+                    />
                   </div>
                 </div>
               </div>
