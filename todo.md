@@ -1656,10 +1656,10 @@
 - [x] Validar a adaptação com testes automatizados e build de produção
 
 ## Auditoria Definitiva de Erro 500 em Turmas Externas — 21/08/2026
-- [ ] Auditar a rota GET `/api/professor/external-classes` e verificar falhas de query, relacionamentos Drizzle e dados nulos em produção
-- [ ] Verificar compatibilidade do schema Neon PostgreSQL com colunas recentes (`category`, `university`, `component`, `instructor_name`, `monitors`, `level`)
-- [ ] Implementar tratamento robusto com try/catch detalhado e logs de erro específicos no backend
-- [ ] Criar teste de integração para o endpoint de turmas externas
+- [x] Auditar a rota GET `/api/professor/external-classes` e verificar falhas de query, relacionamentos Drizzle e dados nulos em produção
+- [x] Verificar compatibilidade do schema Neon PostgreSQL com colunas recentes (`category`, `university`, `component`, `instructor_name`, `monitors`, `level`)
+- [x] Implementar tratamento robusto com try/catch detalhado e logs de erro específicos no backend
+- [x] Criar teste de integração/contrato para o endpoint de turmas externas
 - [ ] Executar build de produção e salvar checkpoint
 
 ## Auditoria e Correção Definitiva de Turmas Externas (IsF/PROFICI) — 21/08/2026
@@ -1667,3 +1667,12 @@
 - [x] Adicionar imports explícitos de `NextRequest` e `NextResponse` de `"next/server"` para evitar erros HTTP 500 em produção
 - [x] Criar suíte de testes de contrato para validar o comportamento da API de turmas externas (`external-classes-api-contract.test.ts`)
 - [x] Validar todos os 383 testes automatizados Vitest com 100% de sucesso
+
+## Re-investigação e Correção Definitiva do Erro 500 em Turmas Externas — 21/08/2026
+- [x] Reproduzir e inspecionar a rota `/api/professor/external-classes` e confirmar no log Vercel que o erro vinha do schema Neon incompleto
+- [x] Verificar compatibilidade da sessão de autenticação na rota Next.js App Router (`getServerSession(authOptions)`); requisições sem sessão retornam 403, não 500
+- [x] Blindar a rota com tratamento de erro estruturado e contexto seguro de operação no backend
+- [x] Adicionar testes de contrato e alinhamento de schema para detectar tabelas/colunas ausentes
+- [x] Aplicar no branch principal Neon as migrações idempotentes das colunas acadêmicas ausentes e das tabelas auxiliares de turmas externas
+- [ ] Validar o fluxo autenticado em produção após o usuário recarregar a sessão administrativa
+- [ ] Executar build de produção; a validação local permanece bloqueada por OOM do sandbox, embora os 386 testes Vitest estejam aprovados
