@@ -36,15 +36,25 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => null);
-    if (!body || !body.userId || !body.courseId) {
+    if (!body || !body.courseId) {
       return NextResponse.json(
-        { error: "Informe userId e courseId para emitir o certificado." },
+        { error: "Informe pelo menos o courseId para emitir o certificado." },
         { status: 400 }
       );
     }
 
-    const userId = Number(body.userId);
     const courseId = Number(body.courseId);
+    let userId = body.userId ? Number(body.userId) : null;
+    const directStudentName = typeof body.studentName === "string" ? body.studentName.trim() : "";
+    const directStudentEmail = typeof body.studentEmail === "string" ? body.studentEmail.trim() : "";
+    const directStudentCpf = typeof body.studentCpf === "string" ? body.studentCpf.trim() : "";
+
+    if (!userId && !directStudentName) {
+      return NextResponse.json(
+        { error: "Informe o aluno cadastrado (userId) ou o nome completo para emitir certificado a pessoa sem cadastro." },
+        { status: 400 }
+      );
+    }
     const templateId =
       body.templateId == null || body.templateId === ""
         ? null
@@ -72,10 +82,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [student, course] = await Promise.all([
-      db.query.users.findFirst({ where: eq(users.id, userId) }),
-      db.query.courses.findFirst({ where: eq(courses.id, courseId) }),
-    ]);
+    let student: any = null;
+    if (userId) {
+      student = await db.query.users.findFirst({ where: eq(users.id, userId) });
+    } else if (directStudentName) {
+      // Cria ou localiza um registro de usuário placeholder para a pessoa sem cadastro
+      const placeholderEmail = directStudentEmail || `nao-cadastrado-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@external.placeholder`;
+      const existingPlaceholder = await db.query.users.findFirst({
+        where: eq(users.email, placeholderEmail),
+      });
+      if (existingPlaceholder) {
+        student = existingPlaceholder;
+        userId = student.id;
+      } else {
+        const [insertedUser] = await db
+          .insert(users)
+          .values({
+            fullName: directStudentName,
+            email: placeholderEmail,
+            role: "student",
+          })
+          .$returningId();
+        student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
+        userId = student.id;
+      }
+    }
+
+    const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
 
     if (!student || !course) {
       return NextResponse.json(
