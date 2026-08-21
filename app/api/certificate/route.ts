@@ -1,8 +1,8 @@
-import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { NextRequest, NextResponse } from "next/server";
-import { issueCertificateIfEligible } from "@/lib/certificate-service";
 import { db } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { issueCertificateIfEligible } from "@/lib/certificate-service";
 import { users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
@@ -30,6 +30,9 @@ export async function GET(request: NextRequest) {
       issueDate: result.certificate?.issuedAt?.toLocaleDateString("pt-BR") || null,
       certificateCode: result.certificate?.certificateCode || null,
       certificateUrl: result.certificate?.certificateUrl || null,
+      signedCertificateDownloadUrl: result.certificate?.signedPdfUrl ? `/api/certificates/${result.certificate.id}/download` : null,
+      signatureType: result.certificate?.signatureType || "none",
+      signedAt: result.certificate?.signedAt || null,
       workloadHours: result.course.workloadHours || 40,
       level: result.course.level || "A1",
     });
