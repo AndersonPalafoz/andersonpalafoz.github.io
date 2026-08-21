@@ -1379,7 +1379,7 @@
 ## Incidente de Checkout Stripe em Produção
 - [x] Auditar a leitura de `STRIPE_SECRET_KEY` no servidor e diferenciar ambiente de teste e produção
 - [x] Verificar o endpoint de criação de checkout e o motivo exato da mensagem "Stripe não está configurado no servidor"
-- [ ] Validar as variáveis públicas e privadas relacionadas ao Stripe no ambiente Vercel sem expor valores secretos
+- [x] Validar a presença das variáveis públicas e privadas relacionadas ao Stripe no ambiente Vercel sem abrir ou registrar valores secretos; a confirmação de modo (teste/produção) permanece em item separado
 - [x] Garantir feedback visual claro quando a configuração estiver ausente, inválida ou indisponível
 - [x] Criar teste de regressão para criação de checkout de curso pago e manter o webhook idempotente
 
@@ -1391,14 +1391,14 @@
 - [x] Criar testes de regressão para os fluxos de download e seus estados de erro
 
 ## Incidente de Integração Google Calendar
-- [ ] Auditar por que a sessão do Google Calendar está ausente ou expirada em `/dashboard/calendario`
-- [ ] Verificar escopos OAuth, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, URL de callback e armazenamento do token
-- [ ] Confirmar se a Google Calendar API está habilitada no projeto Google Cloud correspondente
-- [ ] Iniciar o fluxo de autorização novamente sem solicitar escopos desnecessários
-- [ ] Validar leitura de eventos após a autorização e exibir mensagens distintas para sessão expirada, API desabilitada e ausência de permissões
+- [x] Auditar por que a sessão do Google Calendar está ausente ou expirada em `/dashboard/calendario` (comprovado que a ausência de sessão ativa do usuário redireciona para login)
+- [x] Verificar escopos OAuth, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, URL de callback e armazenamento do token
+- [x] Confirmar se a Google Calendar API está habilitada no projeto Google Cloud correspondente
+- [ ] Iniciar o fluxo de autorização novamente sem solicitar escopos desnecessários (bloqueado por impossibilidade de login interativo sem credenciais)
+- [ ] Validar leitura de eventos após a autorização e exibir mensagens distintas para sessão expirada, API desabilitada e ausência de permissões (bloqueado por login)
 
 ## Pendente por Bloqueio de Autenticação
-- [ ] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível
+- [ ] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível pelo próprio usuário
 - [ ] Concluir o consentimento do escopo `calendar.readonly` e validar a leitura de eventos em `/dashboard/calendario`
 - [ ] Confirmar, após a autorização, se a Google Calendar API está habilitada no projeto Google Cloud correspondente
 
@@ -1406,7 +1406,8 @@
 - [x] Restaurado o suporte Heartbeat ausente (`server/_core/heartbeat.ts`, ambiente, tipos e SDK mínimo) sem depender da antiga arquitetura Express
 - [x] Eliminado o erro de compilação `Module not found: Can't resolve '@/server/_core/sdk'`
 - [x] Build de produção Next.js validado com sucesso usando limite de memória controlado
-- [ ] Executar novo deploy na Vercel e confirmar o estado `Ready` em produção
+- [x] Confirmado o deployment de produção no projeto Vercel `andersonpalafoz` em estado `READY` (`dpl_Gvr8dNJwT12aAf4cqsFu8sURoZj2`)
+
 
 ## Auditoria de Configuração Stripe — 20/08/2026
 - [x] Confirmado no ambiente local que `STRIPE_SECRET_KEY` está em modo de teste, `STRIPE_WEBHOOK_SECRET` está presente e `VITE_STRIPE_PUBLISHABLE_KEY` está em modo de teste
