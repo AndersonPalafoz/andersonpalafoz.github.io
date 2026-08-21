@@ -1642,3 +1642,6 @@
 - [x] Implementado o botão de download em lote (ZIP) no painel do aluno para baixar todos os certificados emitidos de uma só vez.
 - [x] Implementada paginação dinâmica nas listagens públicas de blog e materiais.
 - [x] Adicionados botões de compartilhamento social (LinkedIn, WhatsApp, X/Twitter e cópia de link) nas páginas individuais de artigos e materiais.
+- [x] Implementados skeleton loaders e transições suaves ao navegar entre páginas no blog e materiais.
+- [x] Adicionadas seções de "Artigos Relacionados" e "Materiais Recomendados" nas páginas individuais para manter o engajamento.
+- [x] Implementado o botão de avaliação "Curtir / Útil" com persistência nas páginas individuais do blog e de materiais.
