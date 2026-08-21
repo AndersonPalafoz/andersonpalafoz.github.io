@@ -32,3 +32,41 @@ export const academicReportFilterLabel = (filter: AcademicReportFilter) => {
   if (filter === "any") return "Qualquer reprovação";
   return "Todos os alunos";
 };
+
+export type AcademicReportSummary = {
+  total: number;
+  approved: number;
+  failed: number;
+  insufficientData: number;
+  approvedPercent: number;
+  failedPercent: number;
+  insufficientDataPercent: number;
+  failedByGrade: number;
+  failedByAttendance: number;
+};
+
+export const summarizeAcademicReportRows = <T extends AcademicReportEligibility>(rows: T[]): AcademicReportSummary => {
+  const failedByGrade = rows.filter(hasFailedByGrade).length;
+  const failedByAttendance = rows.filter(hasFailedByAttendance).length;
+  const failed = rows.filter((row) => hasFailedByGrade(row) || hasFailedByAttendance(row)).length;
+  const insufficientData = rows.filter((row) => (
+    !hasFailedByGrade(row) &&
+    !hasFailedByAttendance(row) &&
+    (row.averageGrade === null || row.attendancePercent === null)
+  )).length;
+  const approved = rows.length - failed - insufficientData;
+  const total = rows.length;
+  const percent = (value: number) => total > 0 ? (value / total) * 100 : 0;
+
+  return {
+    total,
+    approved,
+    failed,
+    insufficientData,
+    approvedPercent: percent(approved),
+    failedPercent: percent(failed),
+    insufficientDataPercent: percent(insufficientData),
+    failedByGrade,
+    failedByAttendance,
+  };
+};
