@@ -1694,3 +1694,10 @@
 - [x] Atualizar as funções `exportAcademicCsv` e `exportAcademicPdf` para aceitar o critério de filtro selecionado
 - [x] Criar testes automatizados unitários e de contrato para verificar a exatidão do recorte de reprovação por nota e falta
 - [x] Executar suíte Vitest completa com 396 testes aprovados, build de produção aprovado após liberação de memória e validação móvel da rota
+
+## Gráfico de Resumo em Relatório PDF Acadêmico — 21/08/2026
+- [x] Adicionar cálculo de proporção de aprovados e reprovados ao helper de relatório acadêmico
+- [x] Implementar gráfico de barras horizontais proporcional em HTML/CSS corporativo no início do relatório PDF
+- [x] Incluir estatísticas detalhadas de aprovação, reprovação por nota, reprovação por falta e dados insuficientes no resumo do PDF
+- [x] Criar testes automatizados para verificar o cálculo das proporções no resumo do PDF, inclusive recorte vazio
+- [x] Executar suíte Vitest completa com 397 testes aprovados, build de produção aprovado após liberação de memória e reinício do preview

@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
-import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance } from "@/lib/external-academic-report";
+import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 
@@ -885,6 +885,7 @@ export default function TurmasExternasPage() {
 
   const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
     const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter);
+    const reportSummary = summarizeAcademicReportRows(reportRows);
     const generatedAt = new Date().toLocaleString("pt-BR");
     const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => `
       <tr>
@@ -899,6 +900,14 @@ export default function TurmasExternasPage() {
         <td>${escapeReportHtml(grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas")}</td>
         <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
       </tr>`).join("");
+    const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
+    const reportSummaryHtml = `<section class="summary" aria-label="Resumo de aprovação e reprovação">
+      <div class="summary-title"><strong>Resumo do desempenho acadêmico</strong><span>${reportSummary.total} aluno(s) no recorte</span></div>
+      <div class="chart-row"><span class="chart-label approved-label">Aprovados</span><div class="bar-track"><span class="bar-approved" style="width:${clampPercent(reportSummary.approvedPercent)}%"></span></div><strong>${reportSummary.approved} (${formatReportNumber(reportSummary.approvedPercent)}%)</strong></div>
+      <div class="chart-row"><span class="chart-label failed-label">Reprovados</span><div class="bar-track"><span class="bar-failed" style="width:${clampPercent(reportSummary.failedPercent)}%"></span></div><strong>${reportSummary.failed} (${formatReportNumber(reportSummary.failedPercent)}%)</strong></div>
+      <div class="chart-row"><span class="chart-label insufficient-label">Dados insuficientes</span><div class="bar-track"><span class="bar-insufficient" style="width:${clampPercent(reportSummary.insufficientDataPercent)}%"></span></div><strong>${reportSummary.insufficientData} (${formatReportNumber(reportSummary.insufficientDataPercent)}%)</strong></div>
+      <div class="summary-details"><span>Nota abaixo do limite: <b>${reportSummary.failedByGrade}</b></span><span>Frequência abaixo do limite: <b>${reportSummary.failedByAttendance}</b></span></div>
+    </section>`;
     const printWindow = window.open("", "_blank", "width=1200,height=800");
     if (!printWindow) {
       notifyError("Não foi possível abrir a pré-visualização. Permita pop-ups para exportar o PDF.");
@@ -906,8 +915,9 @@ export default function TurmasExternasPage() {
     }
     printWindow.opener = null;
     printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
-      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 8px; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 5px; vertical-align: top; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
+      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #047857; } .failed-label { color: #b91c1c; } .insufficient-label { color: #92400e; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #059669; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #d97706; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 8px; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 5px; vertical-align: top; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
+      ${reportSummaryHtml}
       <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter))}</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
       <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Média</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="10">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
       <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${REPORT_MIN_GRADE.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
