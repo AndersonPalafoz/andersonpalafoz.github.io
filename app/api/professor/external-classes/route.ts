@@ -132,14 +132,21 @@ export async function POST(request: NextRequest) {
       meetingLink,
       classroomLocation,
       level,
+      instructorName,
+      monitors,
       classId,
       studentName,
       studentEmail,
       studentIdNumber,
+      studentCpf,
+      studentCategory,
+      studentUniversity,
+      studentComponent,
       studentNotes,
       studentStatus,
       studentId,
       csvData,
+      classMetadata,
       // Attendance, Grades, Materials fields
       date,
       attendanceData,
@@ -176,6 +183,8 @@ export async function POST(request: NextRequest) {
         meetingLink: meetingLink ? meetingLink.trim() : null,
         classroomLocation: classroomLocation ? classroomLocation.trim() : null,
         level: level ? level.trim() : "Básico (A1-A2)",
+        instructorName: instructorName ? instructorName.trim() : null,
+        monitors: monitors ? monitors.trim() : null,
       }).returning();
 
       return NextResponse.json({ success: true, classItem: inserted[0] });
@@ -209,6 +218,8 @@ export async function POST(request: NextRequest) {
           meetingLink: meetingLink !== undefined ? (meetingLink ? meetingLink.trim() : null) : existing.meetingLink,
           classroomLocation: classroomLocation !== undefined ? (classroomLocation ? classroomLocation.trim() : null) : existing.classroomLocation,
           level: level !== undefined ? (level ? level.trim() : "Básico (A1-A2)") : existing.level,
+          instructorName: instructorName !== undefined ? (instructorName ? instructorName.trim() : null) : existing.instructorName,
+          monitors: monitors !== undefined ? (monitors ? monitors.trim() : null) : existing.monitors,
           updatedAt: new Date(),
         })
         .where(eq(externalClasses.id, Number(classId)))
@@ -257,6 +268,10 @@ export async function POST(request: NextRequest) {
         name: studentName.trim(),
         email: studentEmail ? studentEmail.trim().toLowerCase() : null,
         studentIdNumber: studentIdNumber ? studentIdNumber.trim() : null,
+        cpf: studentCpf ? studentCpf.trim() : null,
+        category: studentCategory ? studentCategory.trim() : null,
+        university: studentUniversity ? studentUniversity.trim() : null,
+        component: studentComponent ? studentComponent.trim() : null,
         status: studentStatus ? studentStatus.trim() : "active",
         notes: studentNotes ? studentNotes.trim() : null,
       }).returning();
@@ -282,6 +297,10 @@ export async function POST(request: NextRequest) {
           name: studentName.trim(),
           email: studentEmail ? studentEmail.trim().toLowerCase() : null,
           studentIdNumber: studentIdNumber ? studentIdNumber.trim() : null,
+          cpf: studentCpf !== undefined ? (studentCpf ? studentCpf.trim() : null) : student.cpf,
+          category: studentCategory !== undefined ? (studentCategory ? studentCategory.trim() : null) : student.category,
+          university: studentUniversity !== undefined ? (studentUniversity ? studentUniversity.trim() : null) : student.university,
+          component: studentComponent !== undefined ? (studentComponent ? studentComponent.trim() : null) : student.component,
           status: studentStatus ? studentStatus.trim() : student.status,
           notes: studentNotes !== undefined ? studentNotes.trim() : student.notes,
           updatedAt: new Date(),
@@ -297,40 +316,126 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Dados CSV inválidos ou turma não informada." }, { status: 400 });
       }
 
-      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      const externalClassId = Number(classId);
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, externalClassId) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
       if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
-      let importedCount = 0;
-      for (const row of csvData) {
-        const name = row.name || row.nome;
-        if (!name) continue;
-        const email = row.email || row.e_mail || null;
-        const studentIdNumber = row.studentIdNumber || row.matricula || row.id || null;
+      const metadata = classMetadata && typeof classMetadata === "object" ? classMetadata as Record<string, unknown> : {};
+      const importedClassDays = typeof metadata.classDays === "string" ? metadata.classDays.trim() : "";
+      const importedClassTime = typeof metadata.classTime === "string" ? metadata.classTime.trim() : "";
+      const importedLevel = typeof metadata.level === "string" ? metadata.level.trim() : "";
+      const importedInstructor = typeof metadata.instructorName === "string" ? metadata.instructorName.trim() : "";
+      const importedMonitors = typeof metadata.monitors === "string" ? metadata.monitors.trim() : "";
+      const importedWorkload = Number(metadata.workloadHours);
+      const hasClassMetadata = Boolean(importedClassDays || importedClassTime || importedLevel || importedInstructor || importedMonitors || (Number.isFinite(importedWorkload) && importedWorkload > 0));
 
-        if (email) {
-          const exists = await db.query.externalStudents.findFirst({
-            where: and(
-              eq(externalStudents.externalClassId, Number(classId)),
-              eq(externalStudents.email, String(email).trim().toLowerCase())
-            )
-          });
-          if (exists) continue;
-        }
-
-        await db.insert(externalStudents).values({
-          externalClassId: Number(classId),
-          name: String(name).trim(),
-          email: email ? String(email).trim().toLowerCase() : null,
-          studentIdNumber: studentIdNumber ? String(studentIdNumber).trim() : null,
-          status: "active",
-        });
-        importedCount++;
+      if (hasClassMetadata) {
+        await db.update(externalClasses).set({
+          classDays: importedClassDays || existingClass.classDays,
+          classTime: importedClassTime || existingClass.classTime,
+          level: importedLevel || existingClass.level,
+          instructorName: importedInstructor || existingClass.instructorName,
+          monitors: importedMonitors || existingClass.monitors,
+          workloadHours: Number.isFinite(importedWorkload) && importedWorkload > 0 ? importedWorkload : existingClass.workloadHours,
+          updatedAt: new Date(),
+        }).where(eq(externalClasses.id, externalClassId));
       }
 
-      return NextResponse.json({ success: true, importedCount });
+      const attendanceByDate = new Map<string, Record<string, string>>();
+      let importedCount = 0;
+      let updatedCount = 0;
+      let skippedCount = 0;
+      let attendanceImportedCount = 0;
+
+      for (const rawRow of csvData) {
+        const row = rawRow as Record<string, unknown>;
+        const name = row.name || row.nome || row["nome completo"];
+        if (!name) {
+          skippedCount++;
+          continue;
+        }
+        const normalizedEmail = String(row.email || row.e_mail || row["e-mail"] || "").trim().toLowerCase();
+        const normalizedCpf = String(row.cpf || "").trim().replace(/\D/g, "");
+        const normalizedId = String(row.studentIdNumber || row.matricula || row.id || row["número de matrícula"] || "").trim();
+        const normalizedCategory = String(row.category || row.categoria || "").trim();
+        const normalizedUniversity = String(row.university || row.universidade || row.instituicao || "").trim();
+        const normalizedComponent = String(row.component || row.componente || row.nivel || "").trim();
+
+        const duplicateWhere = normalizedEmail
+          ? and(eq(externalStudents.externalClassId, externalClassId), eq(externalStudents.email, normalizedEmail))
+          : normalizedCpf
+            ? and(eq(externalStudents.externalClassId, externalClassId), eq(externalStudents.cpf, normalizedCpf))
+            : null;
+        const existingStudent = duplicateWhere ? await db.query.externalStudents.findFirst({ where: duplicateWhere }) : null;
+        let studentRecord;
+
+        if (existingStudent) {
+          const updated = await db.update(externalStudents).set({
+            name: String(name).trim(),
+            email: normalizedEmail || existingStudent.email,
+            studentIdNumber: normalizedId || existingStudent.studentIdNumber,
+            cpf: normalizedCpf || existingStudent.cpf,
+            category: normalizedCategory || existingStudent.category,
+            university: normalizedUniversity || existingStudent.university,
+            component: normalizedComponent || existingStudent.component,
+            updatedAt: new Date(),
+          }).where(eq(externalStudents.id, existingStudent.id)).returning();
+          studentRecord = updated[0];
+          updatedCount++;
+        } else {
+          const inserted = await db.insert(externalStudents).values({
+            externalClassId,
+            name: String(name).trim(),
+            email: normalizedEmail || null,
+            studentIdNumber: normalizedId || null,
+            cpf: normalizedCpf || null,
+            category: normalizedCategory || null,
+            university: normalizedUniversity || null,
+            component: normalizedComponent || null,
+            status: "active",
+          }).returning();
+          studentRecord = inserted[0];
+          importedCount++;
+        }
+
+        const attendanceRecords = Array.isArray(row.attendanceRecords) ? row.attendanceRecords : [];
+        for (const rawAttendance of attendanceRecords) {
+          const attendance = rawAttendance as { date?: unknown; status?: unknown };
+          const attendanceDate = String(attendance.date || "").trim();
+          const attendanceStatus = String(attendance.status || "").trim();
+          if (!studentRecord?.id || !/^\d{4}-\d{2}-\d{2}$/.test(attendanceDate) || !["present", "absent", "late", "excused"].includes(attendanceStatus)) continue;
+          const dateMap = attendanceByDate.get(attendanceDate) || {};
+          dateMap[String(studentRecord.id)] = attendanceStatus;
+          attendanceByDate.set(attendanceDate, dateMap);
+        }
+      }
+
+      for (const [attendanceDate, attendanceData] of attendanceByDate.entries()) {
+        const existingAttendance = await db.query.externalClassAttendance.findFirst({
+          where: and(eq(externalClassAttendance.externalClassId, externalClassId), eq(externalClassAttendance.date, attendanceDate)),
+        });
+        let currentData: Record<string, string> = {};
+        if (existingAttendance) {
+          try {
+            const parsed = JSON.parse(existingAttendance.attendanceData);
+            if (parsed && typeof parsed === "object") currentData = parsed as Record<string, string>;
+          } catch {
+            currentData = {};
+          }
+        }
+        const mergedAttendance = { ...currentData, ...attendanceData };
+        if (existingAttendance) {
+          await db.update(externalClassAttendance).set({ attendanceData: JSON.stringify(mergedAttendance) }).where(eq(externalClassAttendance.id, existingAttendance.id));
+        } else {
+          await db.insert(externalClassAttendance).values({ externalClassId, date: attendanceDate, attendanceData: JSON.stringify(mergedAttendance) });
+        }
+        attendanceImportedCount += Object.keys(attendanceData).length;
+      }
+
+      return NextResponse.json({ success: true, importedCount, updatedCount, skippedCount, attendanceImportedCount });
     }
 
     if (action === "deleteStudent") {

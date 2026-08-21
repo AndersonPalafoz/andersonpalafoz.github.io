@@ -677,6 +677,8 @@ export const externalClasses = pgTable("external_classes", {
   meetingLink: varchar("meeting_link", { length: 500 }),
   classroomLocation: varchar("classroom_location", { length: 255 }),
   level: varchar("level", { length: 50 }).default("Básico (A1-A2)"),
+  instructorName: varchar("instructor_name", { length: 180 }),
+  monitors: varchar("monitors", { length: 500 }),
   deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -694,6 +696,9 @@ export const externalStudents = pgTable("external_students", {
   email: varchar("email", { length: 320 }),
   phone: varchar("phone", { length: 32 }), // celular
   studentIdNumber: varchar("studentIdNumber", { length: 64 }), // ex: Matrícula institucional
+  category: varchar("category", { length: 100 }), // ex: Estudante de pós-graduação
+  university: varchar("university", { length: 120 }), // ex: UFBA
+  component: varchar("component", { length: 100 }), // ex: Básico
   status: varchar("status", { length: 32 }).notNull().default("active"), // active, inactive, completed
   notes: text("notes"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

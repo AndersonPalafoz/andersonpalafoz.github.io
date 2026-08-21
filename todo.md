@@ -1647,3 +1647,10 @@
 - [x] Implementado o botão de avaliação "Curtir / Útil" com persistência nas páginas individuais do blog e de materiais.
 - [x] Adicionada seção completa de comentários e interação com selo de resposta do professor nas páginas individuais do blog.
 - [x] Implementado o recurso de "Salvar para depois" / Favoritos unificado para artigos e materiais na plataforma.
+
+## Adaptação de Importação de Turmas IsF e PROFICI — 21/08/2026
+- [x] Reconhecer automaticamente os cabeçalhos dos layouts IsF e PROFICI na importação de alunos
+- [x] Importar e persistir CPF, categoria, universidade e componente sem descartar dados
+- [x] Interpretar colunas de presença por data do layout PROFICI sem criar registros ausentes
+- [x] Exibir relatório de linhas importadas, atualizadas, duplicadas e rejeitadas
+- [x] Validar a adaptação com testes automatizados e build de produção
