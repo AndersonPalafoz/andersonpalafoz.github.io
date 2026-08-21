@@ -1710,3 +1710,36 @@
 - [x] Atualizar as etiquetas e os indicadores do cabeçalho do PDF para refletirem a mesma paleta semântica
 - [x] Atualizar testes unitários e de contrato para validar as classes de cor corretas no HTML gerado
 - [x] Executar suíte Vitest completa com 397 testes aprovados e build de produção Next.js aprovado após liberação controlada de memória
+
+## Modelos de Certificados Flexíveis (IsF, PROFICI, SIMAL, Terceiros e Cursos Internos) — Agosto 2026
+- [x] Criar schema e migração Drizzle para tabelas de modelos de certificados (`certificate_templates`) com suporte a templates próprios e de terceiros, campos preenchíveis e associação opcional a cursos internos ou turmas externas.
+- [x] Implementar upload e gerenciamento de arquivos de modelo PDF ou imagem no painel administrativo.
+- [ ] Desenvolver mecanismo de mapeamento e substituição dinâmica de campos em branco (nome do aluno, CPF, curso, carga horária, data, notas, frequência, código de verificação, assinatura).
+- [x] Atualizar o painel de emissão (`/admin/certificados` e `/professor/certificados`) para permitir escolher o modelo desejado (site, IsF, PROFICI, SIMAL ou customizado) ao emitir para cursos internos ou turmas externas.
+- [ ] Atualizar a área do aluno (`/dashboard/certificados`) para exibir e permitir download do certificado gerado com o template específico escolhido.
+- [ ] Criar testes automatizados de contrato, emissão, mapeamento de campos e segurança RBAC.
+- [x] Executar suíte Vitest (402 testes aprovados) e validar build de produção; checkpoint desta entrega será salvo ao final.
+
+## Certificados com Branding Configurável — 21/08/2026
+- [x] Permitir que o administrador escolha, no contexto de cada emissão vinculada ao curso/turma externa e na configuração do modelo, se a logo e a identificação do site serão incluídas.
+- [x] Exibir confirmação explícita antes da emissão de certificado externo: “Incluir logo do site?” com as opções “Incluir” e “Não incluir”.
+- [x] Garantir que templates institucionais de terceiros preservem sua identidade visual e recebam apenas os campos autorizados pelo administrador.
+- [x] Auditar a lógica atual de geração para remover a regra fixa que presume ausência de branding em todo certificado externo.
+- [x] Criar testes cobrindo certificado externo com logo, sem logo e com template institucional.
+- [x] Validar build de produção com sucesso e preparar checkpoint após a implementação.
+
+> Decisão funcional pendente de confirmação: o sistema não deve impor uma regra global. A escolha de incluir ou não a logo deverá ser feita no contexto da emissão/configuração do certificado externo, com a decisão registrada no template ou na emissão para fins de auditoria.
+
+## Itens herdados — certificados e integrações pendentes
+- [x] Implementar a interface administrativa de upload e gestão de templates de certificados PDF/PNG.
+- [ ] Implementar mapeamento visual/dinâmico de campos em templates de terceiros.
+- [x] Atualizar a emissão em /admin/certificados e /professor/certificados para seleção de template e confirmação de branding.
+- [ ] Retomar autorização interativa do Google Calendar e validar token, escopo calendar.readonly e leitura de eventos.
+- [ ] Validar checkout e webhook Stripe em ambiente live após autenticação do usuário.
+- [ ] Monitorar a primeira execução do Heartbeat nightly-trash-cleanup.
+- [ ] Auditar e concluir a substituição planejada das referências públicas a CEFR por Básico, Intermediário e Avançado, sem quebrar filtros nem dados existentes.
+- [ ] Revisar itens desmarcados no TODO desde 20/08/2026 e preservar o histórico de pendências.
+- [x] Validar downloads em lote, prévias, assinatura gov.br/manual e área do aluno para certificados emitidos; o payload agora entrega a rota protegida do PDF assinado.
+- [ ] Validar rotas públicas, acessibilidade, legibilidade em modo escuro e responsividade ao final da fila.
+
+> Nota de governança: certificados externos podem usar ou não a logo do site conforme decisão explícita do administrador; quando houver template institucional, não inserir elementos automaticamente sem autorização.
