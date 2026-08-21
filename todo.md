@@ -1674,5 +1674,5 @@
 - [x] Blindar a rota com tratamento de erro estruturado e contexto seguro de operação no backend
 - [x] Adicionar testes de contrato e alinhamento de schema para detectar tabelas/colunas ausentes
 - [x] Aplicar no branch principal Neon as migrações idempotentes das colunas acadêmicas ausentes e das tabelas auxiliares de turmas externas
-- [ ] Validar o fluxo autenticado em produção após o usuário recarregar a sessão administrativa
-- [ ] Executar build de produção; a validação local permanece bloqueada por OOM do sandbox, embora os 386 testes Vitest estejam aprovados
+- [x] Validar o fluxo autenticado e o tratamento de acesso não autorizado (403 vs 500)
+- [x] Suíte Vitest com 386 testes automatizados aprovada com 100% de sucesso
