@@ -784,6 +784,132 @@ export default function TurmasExternasPage() {
     }
   };
 
+  const formatReportNumber = (value: number | null) => value === null ? "—" : new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 }).format(value);
+
+  const escapeReportHtml = (value: unknown) => String(value ?? "—")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const getAcademicReportRows = (cls: ExternalClassItem) => {
+    const attendanceByStudent = new Map<number, { present: number; absent: number; late: number; excused: number; total: number }>();
+    for (const attendance of cls.attendance || []) {
+      try {
+        const attendanceData = JSON.parse(attendance.attendanceData) as Record<string, string>;
+        for (const student of cls.students) {
+          const status = attendanceData[String(student.id)];
+          if (!status) continue;
+          const current = attendanceByStudent.get(student.id) || { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+          current.total += 1;
+          if (status === "present") current.present += 1;
+          else if (status === "absent") current.absent += 1;
+          else if (status === "late") current.late += 1;
+          else current.excused += 1;
+          attendanceByStudent.set(student.id, current);
+        }
+      } catch {
+        // Registros inválidos não interrompem a exportação dos demais dados persistidos.
+      }
+    }
+
+    return cls.students.map((student) => {
+      const attendance = attendanceByStudent.get(student.id) || { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
+      const studentGrades = (cls.grades || []).filter((grade) => grade.studentId === student.id);
+      const averageGrade = studentGrades.length > 0
+        ? studentGrades.reduce((sum, grade) => sum + (Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : 0), 0) / studentGrades.length
+        : null;
+      const attendancePercent = attendance.total > 0 ? (attendance.present / attendance.total) * 100 : null;
+      return {
+        student,
+        attendance,
+        attendancePercent,
+        grades: studentGrades,
+        averageGrade,
+      };
+    });
+  };
+
+  const exportAcademicCsv = (cls: ExternalClassItem) => {
+    const rows = getAcademicReportRows(cls);
+    const csvRows = [
+      ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
+      ["Instituição", cls.institution],
+      ["Turma", cls.className],
+      ["Curso / Disciplina", cls.courseName],
+      ["Período", cls.academicTerm],
+      ["Nível", (cls as any).level || "Não informado"],
+      ["Modalidade", (cls as any).modality || "Não informada"],
+      ["Gerado em", new Date().toLocaleString("pt-BR")],
+      [],
+      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Média (0–10)"],
+      ...rows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => [
+        student.name,
+        student.cpf || "",
+        student.email || "",
+        student.category || "",
+        student.university || "",
+        student.component || "",
+        student.status,
+        attendance.present,
+        attendance.absent,
+        attendance.late,
+        attendance.excused,
+        attendance.total,
+        attendancePercent === null ? "" : formatReportNumber(attendancePercent),
+        grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; "),
+        averageGrade === null ? "" : formatReportNumber(averageGrade),
+      ]),
+    ];
+    const content = "\uFEFF" + csvRows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `relatorio_academico_${cls.id}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    notifySuccess("Relatório acadêmico CSV exportado com sucesso.");
+  };
+
+  const exportAcademicPdf = (cls: ExternalClassItem) => {
+    const reportRows = getAcademicReportRows(cls);
+    const generatedAt = new Date().toLocaleString("pt-BR");
+    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => `
+      <tr>
+        <td><strong>${escapeReportHtml(student.name)}</strong><br><small>${escapeReportHtml(student.email || "E-mail não informado")}</small></td>
+        <td>${escapeReportHtml(student.cpf || "—")}</td>
+        <td>${attendance.present}</td>
+        <td>${attendance.absent}</td>
+        <td>${attendance.late}</td>
+        <td>${attendance.excused}</td>
+        <td>${attendance.total}</td>
+        <td>${escapeReportHtml(formatReportNumber(attendancePercent))}</td>
+        <td>${escapeReportHtml(grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas")}</td>
+        <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
+      </tr>`).join("");
+    const printWindow = window.open("", "_blank", "width=1200,height=800");
+    if (!printWindow) {
+      notifyError("Não foi possível abrir a pré-visualização. Permita pop-ups para exportar o PDF.");
+      return;
+    }
+    printWindow.opener = null;
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
+      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 8px; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 5px; vertical-align: top; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
+      <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
+      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div></div>
+      <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Média</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="10">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
+      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação.</footer>
+      </body></html>`);
+    printWindow.document.close();
+    printWindow.focus();
+    window.setTimeout(() => printWindow.print(), 250);
+    notifySuccess("Pré-visualização do relatório PDF aberta. Escolha ‘Salvar como PDF’ na caixa de impressão.");
+  };
+
   // Importação real de CSV/TSV/XLS/XLSX para os layouts IsF e PROFICI.
   const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1669,38 +1795,19 @@ export default function TurmasExternasPage() {
                           </label>
                           <button
                             type="button"
-                            onClick={() => {
-                              const rows = [
-                                ["RELATÓRIO DA TURMA EXTERNA"],
-                                ["Instituição", cls.institution],
-                                ["Turma", cls.className],
-                                ["Curso", cls.courseName],
-                                ["Período", cls.academicTerm],
-                                ["Nível", (cls as any).level || "Básico"],
-                                ["Modalidade", (cls as any).modality || "Remota"],
-                                [],
-                                ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
-                              ];
-                              cls.students.forEach(st => {
-                                const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id).map(g => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`).join("; ");
-                                rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status, studentGrades]);
-                              });
-                              const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
-                              const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
-                              const url = URL.createObjectURL(blob);
-                              const link = document.createElement("a");
-                              link.href = url;
-                              link.download = `turma_${cls.id}_excel.xls`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                              notifySuccess("Planilha Excel exportada com sucesso!");
-                            }}
-                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                            title="Exportar para Excel"
+                            onClick={() => exportAcademicCsv(cls)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-emerald-300 hover:bg-emerald-50 dark:hover:border-emerald-900/60 dark:hover:bg-emerald-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                            title="Exportar relatório acadêmico em CSV"
                           >
-                            <FileSpreadsheet size={14} className="text-emerald-600" /> Excel (.xls)
+                            <FileSpreadsheet size={14} className="text-emerald-600" /> Relatório CSV
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => exportAcademicPdf(cls)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-red-300 hover:bg-red-50 dark:hover:border-red-900/60 dark:hover:bg-red-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                            title="Abrir relatório acadêmico para salvar em PDF"
+                          >
+                            <FileText size={14} className="text-red-600" /> Relatório PDF
                           </button>
                           <button
                             type="button"
@@ -1764,34 +1871,21 @@ export default function TurmasExternasPage() {
                                 type="button"
                                 onClick={() => {
                                   setActiveQuickActionsId(null);
-                                  // Exportar Excel
-                                  const rows = [
-                                    ["RELATÓRIO DA TURMA EXTERNA"],
-                                    ["Instituição", cls.institution],
-                                    ["Turma", cls.className],
-                                    ["Curso", cls.courseName],
-                                    ["Período", cls.academicTerm],
-                                    [],
-                                    ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status"]
-                                  ];
-                                  cls.students.forEach(st => {
-                                    rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status]);
-                                  });
-                                  const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
-                                  const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
-                                  const url = URL.createObjectURL(blob);
-                                  const link = document.createElement("a");
-                                  link.href = url;
-                                  link.download = `turma_${cls.id}_excel.xls`;
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                  URL.revokeObjectURL(url);
-                                  notifySuccess("Excel exportado com sucesso!");
+                                  exportAcademicCsv(cls);
                                 }}
-                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
                               >
-                                <FileSpreadsheet size={14} className="text-emerald-600" /> Baixar Excel (.xls)
+                                <FileSpreadsheet size={14} className="text-emerald-600" /> Relatório acadêmico CSV
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  exportAcademicPdf(cls);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <FileText size={14} className="text-red-600" /> Relatório acadêmico PDF
                               </button>
 
                               <div className="border-t border-gray-100 dark:border-slate-800 my-1" />
