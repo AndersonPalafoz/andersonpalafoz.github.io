@@ -1763,3 +1763,6 @@
 
 ## Resolução de Incidente: Erro 500/Acesso ao Listar Certificados no Admin — 21/08/2026
 - [ ] Auditar e robustecer a rota `/api/admin/certificates` para evitar falhas de join ou permissão ao carregar a lista de assinaturas finais.
+
+## Resolução de Schema: Colunas certificateTemplateId e includeSiteBranding em certificates — 21/08/2026
+- [x] Aplicar migração aditiva para garantir que a tabela `certificates` possua `certificateTemplateId` e `includeSiteBranding`.
