@@ -52,14 +52,24 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
 
   const modulesWithLessons = await Promise.all(
     modules.map(async (mod) => {
-      const lessons = await getLessonsByModule(mod.id);
+      const lessons = await getLessonsByModule(mod.id).catch((error) => {
+        console.error("CourseModulesList: failed to fetch lessons", { moduleId: mod.id, error });
+        return [];
+      });
       const completedInMod = lessons.filter(l => completedLessonIds.has(l.id)).length;
       return { mod, lessons, completedInMod };
     })
   );
+  const totalLessons = modulesWithLessons.reduce((total, item) => total + item.lessons.length, 0);
 
   return (
     <div className="space-y-6">
+      {totalLessons === 0 && (
+        <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="font-bold">Conteúdo em preparação</p>
+          <p>Este curso já possui módulos cadastrados, mas nenhuma aula foi publicada ainda. O progresso e o certificado permanecerão bloqueados até que as aulas sejam disponibilizadas.</p>
+        </div>
+      )}
       {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
         return (
           <div key={mod.id} className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-6 shadow-sm">
@@ -233,8 +243,8 @@ async function CourseDetail({ courseId }: { courseId: number }) {
               {formatLevel(course.level)}
             </span>
             {user && (
-              <span className="text-sm font-bold text-gray-700 bg-gray-100 px-4 py-1.5 rounded-full">
-                Progresso: {progressPercentage}% concluído ({completedLessonsCount}/{totalLessonsCount} aulas)
+                <span className="text-sm font-bold text-gray-700 bg-gray-100 px-4 py-1.5 rounded-full">
+                Progresso: {progressPercentage}% concluído {totalLessonsCount > 0 ? `(${completedLessonsCount}/${totalLessonsCount} aulas)` : "(aulas ainda não publicadas)"}
               </span>
             )}
           </div>
@@ -293,7 +303,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
           <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 text-sm">
             <div className="flex items-center gap-2">
               <Layers size={18} className="text-red-600" />
-              <span>{course.modules ?? modules.length} módulos</span>
+              <span>{modules.length} {modules.length === 1 ? "módulo" : "módulos"}</span>
             </div>
             {course.instructor && (
               <div className="flex items-center gap-2">
