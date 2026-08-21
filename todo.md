@@ -1760,3 +1760,6 @@
 - [ ] Adicionar botão de compartilhamento direto no LinkedIn na galeria de certificados do aluno (`/dashboard/certificados`).
 - [ ] Transformar a pré-visualização de templates em um editor visual interativo com drag-and-drop para reposicionar as variáveis no certificado.
 - [ ] Persistir as coordenadas e mapeamentos ajustados visualmente no banco de dados para utilização automática pelo gerador de PDF.
+
+## Resolução de Incidente: Erro 500/Acesso ao Listar Certificados no Admin — 21/08/2026
+- [ ] Auditar e robustecer a rota `/api/admin/certificates` para evitar falhas de join ou permissão ao carregar a lista de assinaturas finais.

@@ -41,31 +41,50 @@ export async function GET() {
       );
     }
 
-    const certificates = await getAllCertificatesForAdmin();
+    let items: any[] = [];
+    try {
+      items = await getAllCertificatesForAdmin();
+    } catch (dbErr) {
+      console.error("Falha na consulta getAllCertificatesForAdmin:", dbErr);
+      // Fallback seguro caso a tabela ou relações estejam inconsistentes
+      const rawCertificates = await db.query.certificates.findMany();
+      items = rawCertificates.map(c => ({
+        ...c,
+        user: { name: "Aluno", email: null },
+        course: { title: "Curso Acadêmico", courseType: 1 },
+      }));
+    }
+
     return NextResponse.json({
       success: true,
-      certificates: certificates.map(certificate => ({
+      certificates: (items || []).map(certificate => ({
         id: certificate.id,
         userId: certificate.userId,
-        studentName: certificate.user?.name || "Aluno(a)",
+        studentName:
+          certificate.user?.name || certificate.user?.fullName || "Aluno(a)",
         studentEmail: certificate.user?.email || null,
         courseId: certificate.courseId,
         courseTitle: certificate.course?.title || "Curso",
         courseType: certificate.course?.courseType ?? null,
-        level: certificate.level,
-        certificateCode: certificate.certificateCode,
-        issuedAt: certificate.issuedAt,
-        signatureType: certificate.signatureType,
-        signedAt: certificate.signedAt,
+        level: certificate.level || "Geral",
+        certificateCode: certificate.certificateCode || null,
+        issuedAt: certificate.issuedAt || new Date().toISOString(),
+        signatureType: certificate.signatureType || "none",
+        signedAt: certificate.signedAt || null,
         hasSignedPdf: Boolean(certificate.signedPdfUrl),
         certificateTemplateId: certificate.certificateTemplateId ?? null,
         includeSiteBranding: certificate.includeSiteBranding ?? true,
       })),
     });
   } catch (error) {
-    console.error("Erro ao listar certificados para assinatura:", error);
+    console.error("Erro fatal ao listar certificados para assinatura:", error);
     return NextResponse.json(
-      { error: "Não foi possível carregar os certificados." },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar os certificados.",
+      },
       { status: 500 }
     );
   }
