@@ -1538,3 +1538,10 @@
 - [x] Integrar links de download seguro de certificados assinados (manual / gov.br) na nova seção do perfil
 - [x] Criar testes automatizados cobrindo a exibição do histórico e dos certificados no perfil
 - [x] Executar suíte Vitest e validar build de produção e responsividade
+
+## Compartilhamento de Certificados no LinkedIn (Agosto 2026)
+- [x] Adicionar botão de compartilhamento no LinkedIn à galeria de certificados e ao resumo do perfil do aluno
+- [x] Gerar URL de compartilhamento com o certificado verificável por meio da URL pública do PDF original; o PDF assinado permanece protegido por rota privada
+- [x] Incluir feedback visual e acessibilidade no botão de compartilhamento
+- [x] Criar testes automatizados do contrato da URL e da renderização dos botões
+- [x] Executar suíte Vitest, validar build e salvar checkpoint

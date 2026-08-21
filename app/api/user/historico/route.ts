@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { db, getUserEnrollments } from "@/lib/db";
 import { attendances, classSessions, userActivityProgress, users } from "@/drizzle/schema";
 
 export async function GET() {
@@ -20,13 +20,16 @@ export async function GET() {
       return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
     }
 
-    const activitiesProgress = await db.select({
+    const [enrollments, activitiesProgress] = await Promise.all([
+      getUserEnrollments(dbUser.id),
+      db.select({
       id: userActivityProgress.id,
       score: userActivityProgress.score,
       status: userActivityProgress.status,
       teacherFeedback: userActivityProgress.teacherFeedback,
       submittedAt: userActivityProgress.submittedAt,
-    }).from(userActivityProgress).where(eq(userActivityProgress.userId, dbUser.id));
+      }).from(userActivityProgress).where(eq(userActivityProgress.userId, dbUser.id)),
+    ]);
 
     const studentAttendances = await db.select({
       id: attendances.id,
@@ -42,6 +45,7 @@ export async function GET() {
       .where(eq(attendances.studentId, dbUser.id));
 
     return NextResponse.json({
+      enrollments,
       activities: activitiesProgress,
       attendances: studentAttendances,
     });

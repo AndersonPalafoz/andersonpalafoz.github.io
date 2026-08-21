@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getCertificates } from "@/lib/db";
-import { Award, Download, Linkedin, ShieldCheck } from "lucide-react";
+import { Award, Download, ShieldCheck } from "lucide-react";
+import { CertificateShareButton } from "@/components/certificate-share-button";
 import Link from "next/link";
 
 export default async function CertificadosPage() {
@@ -69,9 +70,7 @@ export default async function CertificadosPage() {
                       <Download size={16} /> Baixar certificado em PDF
                     </a>
                   )}
-                  <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(cert.certificateUrl)}`} target="_blank" rel="noopener noreferrer" className="w-full border border-[#0A66C2] text-[#0A66C2] hover:bg-blue-50 py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
-                    <Linkedin size={16} /> Compartilhar no LinkedIn
-                  </a>
+                  <CertificateShareButton certificateUrl={cert.certificateUrl} courseTitle={cert.course?.title} />
                   <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-gray-500">
                     <span className="inline-flex items-center gap-1"><ShieldCheck size={13} className="text-emerald-600" /> PDF emitido ao concluir 100% do curso</span>
                     {cert.signedPdfUrl && <span className="rounded-full bg-emerald-50 px-2 py-1 font-semibold text-emerald-700">{cert.signatureType === "govbr" ? "Assinado via gov.br" : "Assinado manualmente"}</span>}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Award, BookOpen, CheckCircle2, Download, GraduationCap, ShieldCheck, Clock, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
+import { CertificateShareButton } from "@/components/certificate-share-button";
 
 interface EnrollmentItem {
   id: number;
@@ -24,7 +24,7 @@ interface CertificateItem {
   level: string;
   certificateCode: string | null;
   certificateUrl: string | null;
-  signedPdfUrl: string | null;
+  hasSignedPdf: boolean;
   signatureType: "none" | "manual" | "govbr" | null;
   course: {
     title: string;
@@ -41,7 +41,7 @@ export function ProfileLearningHistoryAndCertificates() {
       try {
         const [enrollRes, certRes] = await Promise.all([
           fetch("/api/user/historico", { cache: "no-store" }),
-          fetch("/api/dashboard/certificados", { cache: "no-store" }).catch(() => null),
+          fetch("/api/user/certificates", { cache: "no-store" }).catch(() => null),
         ]);
 
         if (enrollRes.ok) {
@@ -49,9 +49,8 @@ export function ProfileLearningHistoryAndCertificates() {
           setEnrollments(data.enrollments || []);
         }
 
-        // Tentar carregar certificados por rota dedicada ou fallback
-        const certsData = certRes && certRes.ok ? await certRes.json() : [];
-        setCertificates(Array.isArray(certsData) ? certsData : []);
+        const certsData = certRes && certRes.ok ? await certRes.json() : { certificates: [] };
+        setCertificates(certsData.certificates || []);
       } catch (error) {
         console.error("Erro ao carregar histórico no perfil:", error);
       } finally {
@@ -147,7 +146,7 @@ export function ProfileLearningHistoryAndCertificates() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-gray-900 text-sm">{cert.course?.title}</h4>
-                    {cert.signedPdfUrl && (
+                    {cert.hasSignedPdf && (
                       <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
                         <ShieldCheck size={12} /> {cert.signatureType === "govbr" ? "Assinado gov.br" : "Assinado"}
                       </span>
@@ -156,27 +155,30 @@ export function ProfileLearningHistoryAndCertificates() {
                   <p className="text-xs text-gray-500">Concluído em {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}</p>
                 </div>
 
-                {cert.signedPdfUrl ? (
-                  <a
-                    href={`/api/certificates/${cert.id}/download`}
-                    download
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2 transition"
-                  >
-                    <Download size={14} /> Baixar PDF Assinado
-                  </a>
-                ) : cert.certificateUrl ? (
-                  <a
-                    href={cert.certificateUrl}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg inline-flex items-center justify-center gap-2 transition"
-                  >
-                    <Download size={14} /> Baixar PDF
-                  </a>
-                ) : (
-                  <span className="text-xs text-gray-400 italic">Disponível em breve</span>
-                )}
+                <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[220px]">
+                  {cert.hasSignedPdf ? (
+                    <a
+                      href={`/api/certificates/${cert.id}/download`}
+                      download
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                    >
+                      <Download size={14} /> Baixar PDF Assinado
+                    </a>
+                  ) : cert.certificateUrl ? (
+                    <a
+                      href={cert.certificateUrl}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
+                    >
+                      <Download size={14} /> Baixar PDF
+                    </a>
+                  ) : (
+                    <span className="text-center text-xs italic text-gray-400">Disponível em breve</span>
+                  )}
+                  <CertificateShareButton certificateUrl={cert.certificateUrl} courseTitle={cert.course?.title} />
+                </div>
               </div>
             ))}
           </div>
