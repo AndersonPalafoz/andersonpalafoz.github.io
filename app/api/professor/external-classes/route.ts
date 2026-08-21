@@ -13,6 +13,21 @@ import {
 } from "@/drizzle/schema";
 import { eq, desc, and, isNull, isNotNull } from "drizzle-orm";
 
+type ExternalClassesDbError = Error & {
+  code?: string;
+  query?: string;
+};
+
+function logExternalClassesError(operation: string, error: unknown) {
+  const dbError = error as ExternalClassesDbError;
+  console.error("[external-classes] database operation failed", {
+    operation,
+    code: dbError?.code ?? "unknown",
+    message: dbError?.message ?? String(error),
+    query: dbError?.query ?? undefined,
+  });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -82,7 +97,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, classes: result });
   } catch (error) {
-    console.error("Erro ao listar turmas externas:", error);
+    logExternalClassesError("GET /api/professor/external-classes", error);
     return NextResponse.json({ error: "Erro interno ao buscar turmas externas." }, { status: 500 });
   }
 }
