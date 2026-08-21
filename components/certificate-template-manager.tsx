@@ -25,6 +25,12 @@ export function CertificateTemplateManager() {
   } | null>(null);
   const [category, setCategory] = useState<"internal" | "external">("internal");
   const [includeSiteBranding, setIncludeSiteBranding] = useState(true);
+  const [previewName, setPreviewName] = useState("Estudante Exemplo da Silva");
+  const [previewCourse, setPreviewCourse] = useState("English Mastery B2");
+  const [previewCode, setPreviewCode] = useState("AP-2026-9876");
+  const [previewDate, setPreviewDate] = useState(
+    new Date().toLocaleDateString("pt-BR")
+  );
 
   async function loadTemplates() {
     setLoading(true);
@@ -213,6 +219,82 @@ export function CertificateTemplateManager() {
           <p className="text-xs text-muted-foreground">
             Somente PDF ou PNG, até 10 MB.
           </p>
+        </div>
+
+        <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">
+          <h3 className="text-sm font-black text-foreground">
+            Mapeamento dinâmico e pré-visualização em tempo real
+          </h3>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Informe abaixo os valores de teste para visualizar em tempo real
+            como as variáveis preencherão o certificado.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label className="block text-xs font-bold text-foreground">
+              Nome de teste
+              <input
+                type="text"
+                value={previewName}
+                onChange={(e) => setPreviewName(e.target.value)}
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+              />
+            </label>
+            <label className="block text-xs font-bold text-foreground">
+              Curso de teste
+              <input
+                type="text"
+                value={previewCourse}
+                onChange={(e) => setPreviewCourse(e.target.value)}
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+              />
+            </label>
+            <label className="block text-xs font-bold text-foreground">
+              Código de autenticidade
+              <input
+                type="text"
+                value={previewCode}
+                onChange={(e) => setPreviewCode(e.target.value)}
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+              />
+            </label>
+            <label className="block text-xs font-bold text-foreground">
+              Data de emissão
+              <input
+                type="text"
+                value={previewDate}
+                onChange={(e) => setPreviewDate(e.target.value)}
+                className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+              />
+            </label>
+          </div>
+          <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-6 shadow-sm">
+            <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
+              Pré-visualização do Modelo (Variáveis Ativas)
+            </p>
+            <div className="mt-4 space-y-3 rounded-lg bg-muted/30 p-5 text-center">
+              {includeSiteBranding && (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-0.5 text-[10px] font-bold text-white">
+                  Anderson Palafoz — Plataforma Acadêmica
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Certificamos para os devidos fins que
+              </p>
+              <h4 className="text-xl font-black text-foreground">
+                {previewName}
+              </h4>
+              <p className="text-xs text-muted-foreground">
+                concluiu com êxito o programa acadêmico
+              </p>
+              <p className="text-sm font-bold text-foreground">
+                {previewCourse}
+              </p>
+              <div className="flex items-center justify-between pt-3 text-[11px] text-muted-foreground border-t border-border/40">
+                <span>Emitido em: {previewDate}</span>
+                <span className="font-mono">Ref: {previewCode}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <fieldset className="rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">

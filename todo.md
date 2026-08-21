@@ -1743,3 +1743,9 @@
 - [ ] Validar rotas públicas, acessibilidade, legibilidade em modo escuro e responsividade ao final da fila.
 
 > Nota de governança: certificados externos podem usar ou não a logo do site conforme decisão explícita do administrador; quando houver template institucional, não inserir elementos automaticamente sem autorização.
+
+## Novas Funcionalidades de Certificados e Relatórios — 21/08/2026
+- [ ] Implementar mapeamento dinâmico de campos com pré-visualização em tempo real na interface de templates de certificados.
+- [ ] Adicionar filtros por data de emissão e tipo de modelo/branding na galeria de certificados da área do aluno (`/dashboard/certificados`).
+- [ ] Criar funcionalidade para exportar a lista de pendências históricas e tarefas pendentes em formato CSV no painel administrativo.
+- [ ] Permitir a emissão de certificados para destinatários ainda não cadastrados na plataforma, inserindo diretamente nome, CPF, e-mail, curso, template, logo e preferências de branding.

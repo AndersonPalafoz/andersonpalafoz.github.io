@@ -80,6 +80,15 @@ export function CertificateSignatureManager() {
   >([]);
   const [issuingId, setIssuingId] = useState<number | null>(null);
 
+  // Modal para emitir a pessoa sem cadastro
+  const [showUnregisteredModal, setShowUnregisteredModal] = useState(false);
+  const [unregisteredName, setUnregisteredName] = useState("");
+  const [unregisteredEmail, setUnregisteredEmail] = useState("");
+  const [unregisteredCourseId, setUnregisteredCourseId] = useState("");
+  const [unregisteredTemplateId, setUnregisteredTemplateId] = useState("");
+  const [unregisteredBranding, setUnregisteredBranding] = useState(true);
+  const [unregisteredIssuing, setUnregisteredIssuing] = useState(false);
+
   async function loadCertificates() {
     setLoading(true);
     setLoadingError(null);
@@ -88,6 +97,11 @@ export function CertificateSignatureManager() {
         cache: "no-store",
       });
       const payload = await response.json();
+      if (response.status === 403) {
+        throw new Error(
+          "Acesso restrito. Faça login com uma conta de administrador ou professor autorizada (ex: palafozanderson@gmail.com)."
+        );
+      }
       if (!response.ok)
         throw new Error(
           payload.error || "Não foi possível carregar os certificados."
@@ -131,6 +145,96 @@ export function CertificateSignatureManager() {
         ? String(certificate.certificateTemplateId)
         : ""
     );
+  }
+
+  async function handleIssueUnregistered(e: React.FormEvent) {
+    e.preventDefault();
+    if (!unregisteredName || !unregisteredCourseId) {
+      setMessage({
+        type: "error",
+        text: "Informe o nome e selecione o curso para emitir o certificado.",
+      });
+      return;
+    }
+    setUnregisteredIssuing(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/admin/certificates/issue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentName: unregisteredName,
+          studentEmail: unregisteredEmail,
+          courseId: Number(unregisteredCourseId),
+          templateId: unregisteredTemplateId
+            ? Number(unregisteredTemplateId)
+            : null,
+          includeSiteBranding: unregisteredBranding,
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok)
+        throw new Error(
+          payload.error || "Não foi possível emitir o certificado."
+        );
+      setMessage({
+        type: "success",
+        text:
+          payload.message ||
+          "Certificado emitido com sucesso para a pessoa sem cadastro.",
+      });
+      setShowUnregisteredModal(false);
+      setUnregisteredName("");
+      setUnregisteredEmail("");
+      setUnregisteredCourseId("");
+      setUnregisteredTemplateId("");
+      await loadCertificates();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível emitir o certificado.",
+      });
+    } finally {
+      setUnregisteredIssuing(false);
+    }
+  }
+
+  function handleExportPendingCsv() {
+    const pendingItems = certificates.filter(c => !c.hasSignedPdf);
+    const headers = [
+      "ID",
+      "Aluno",
+      "Email",
+      "Curso",
+      "Nível",
+      "Data de Emissão",
+      "Código",
+    ];
+    const rows = pendingItems.map(c => [
+      c.id,
+      `"${c.studentName.replace(/"/g, '""')}"`,
+      `"${(c.studentEmail || "").replace(/"/g, '""')}"`,
+      `"${c.courseTitle.replace(/"/g, '""')}"`,
+      `"${c.level}"`,
+      `"${new Date(c.issuedAt).toLocaleDateString("pt-BR")}"`,
+      `"${c.certificateCode || ""}"`,
+    ]);
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute(
+      "download",
+      `pendencias_certificados_${new Date().toISOString().slice(0, 10)}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   async function handleIssueCertificate() {
@@ -347,6 +451,34 @@ export function CertificateSignatureManager() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
+        <div>
+          <h2 className="text-xl font-black text-foreground">
+            Gestão e Assinatura de Certificados
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Assine digitalmente, visualize prévias, faça uploads de PDFs
+            assinados e emite certificados com templates configuráveis.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowUnregisteredModal(true)}
+            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
+          >
+            <Sparkles size={15} /> Emitir para pessoa sem cadastro
+          </button>
+          <button
+            type="button"
+            onClick={handleExportPendingCsv}
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground transition hover:bg-muted"
+          >
+            <Download size={15} /> Exportar pendências (CSV)
+          </button>
+        </div>
+      </div>
+
       {message && (
         <div
           role="status"
@@ -792,6 +924,170 @@ export function CertificateSignatureManager() {
                 Confirmar emissão
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para emitir a pessoa sem cadastro */}
+      {showUnregisteredModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unregistered-cert-title"
+        >
+          <div className="surface-card w-full max-w-lg space-y-6 rounded-2xl border border-border bg-background p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">
+                  Emissão Avulsa
+                </p>
+                <h3
+                  id="unregistered-cert-title"
+                  className="mt-1 text-lg font-black text-foreground"
+                >
+                  Emitir para pessoa sem cadastro
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowUnregisteredModal(false)}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+                aria-label="Fechar modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleIssueUnregistered} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-foreground">
+                  Nome completo do destinatário{" "}
+                  <span className="text-red-600">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={unregisteredName}
+                  onChange={e => setUnregisteredName(e.target.value)}
+                  placeholder="Ex: Maria Clara Souza"
+                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-foreground">
+                  E-mail de contato{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (opcional)
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  value={unregisteredEmail}
+                  onChange={e => setUnregisteredEmail(e.target.value)}
+                  placeholder="exemplo@email.com"
+                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-foreground">
+                  Curso ou Turma <span className="text-red-600">*</span>
+                </label>
+                <select
+                  required
+                  value={unregisteredCourseId}
+                  onChange={e => setUnregisteredCourseId(e.target.value)}
+                  aria-label="Selecionar curso ou programa para emissão avulsa"
+                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
+                >
+                  <option value="">Selecione o curso ou programa</option>
+                  {Array.from(
+                    new Map(
+                      certificates.map(c => [c.courseId, c.courseTitle])
+                    ).entries()
+                  ).map(([id, title]) => (
+                    <option key={id} value={id}>
+                      {title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-foreground">
+                  Modelo de certificado{" "}
+                  <span className="font-normal text-muted-foreground">
+                    (opcional)
+                  </span>
+                </label>
+                <select
+                  value={unregisteredTemplateId}
+                  onChange={e => setUnregisteredTemplateId(e.target.value)}
+                  aria-label="Selecionar modelo de certificado para emissão avulsa"
+                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
+                >
+                  <option value="">Modelo gerado pela plataforma</option>
+                  {templateOptions.map(template => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}{" "}
+                      {template.institution ? `· ${template.institution}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-3 rounded-xl border border-border p-4 bg-muted/20">
+                <p className="text-xs font-black uppercase tracking-wider text-foreground">
+                  Identidade visual e branding
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <label
+                    className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition ${unregisteredBranding ? "border-red-600 bg-red-500/10" : "border-border bg-background"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="unregistered-branding"
+                      checked={unregisteredBranding}
+                      onChange={() => setUnregisteredBranding(true)}
+                      className="mt-0.5 accent-red-600"
+                    />
+                    <span className="text-xs font-bold text-foreground">
+                      Incluir logo do site
+                    </span>
+                  </label>
+                  <label
+                    className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 transition ${!unregisteredBranding ? "border-red-600 bg-red-500/10" : "border-border bg-background"}`}
+                  >
+                    <input
+                      type="radio"
+                      name="unregistered-branding"
+                      checked={!unregisteredBranding}
+                      onChange={() => setUnregisteredBranding(false)}
+                      className="mt-0.5 accent-red-600"
+                    />
+                    <span className="text-xs font-bold text-foreground">
+                      Não incluir logo
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUnregisteredModal(false)}
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={unregisteredIssuing}
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700 disabled:opacity-60"
+                >
+                  {unregisteredIssuing && (
+                    <Loader2 size={15} className="animate-spin" />
+                  )}
+                  Emitir certificado
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

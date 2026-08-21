@@ -14,6 +14,8 @@ type CertificateItem = {
   signatureType: string;
   signedPdfUrl: string | null;
   certificateUrl: string | null;
+  certificateTemplateId?: number | null;
+  includeSiteBranding?: boolean;
 };
 
 export function StudentCertificatesGallery() {
@@ -21,6 +23,8 @@ export function StudentCertificatesGallery() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [levelFilter, setLevelFilter] = useState("all");
+  const [modelFilter, setModelFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
     async function fetchCertificates() {
@@ -40,13 +44,26 @@ export function StudentCertificatesGallery() {
   }, []);
 
   const filteredCertificates = useMemo(() => {
-    return certificates.filter((cert) => {
-      const matchSearch = cert.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (cert.certificateCode && cert.certificateCode.toLowerCase().includes(searchQuery.toLowerCase()));
+    const filtered = certificates.filter((cert) => {
+      const normalizedSearch = searchQuery.trim().toLowerCase();
+      const matchSearch =
+        cert.courseTitle.toLowerCase().includes(normalizedSearch) ||
+        Boolean(cert.certificateCode?.toLowerCase().includes(normalizedSearch));
       const matchLevel = levelFilter === "all" || cert.level === levelFilter;
-      return matchSearch && matchLevel;
+      const matchModel =
+        modelFilter === "all" ||
+        (modelFilter === "platform" && !cert.certificateTemplateId) ||
+        (modelFilter === "institutional" && Boolean(cert.certificateTemplateId)) ||
+        (modelFilter === "branded" && cert.includeSiteBranding === true) ||
+        (modelFilter === "unbranded" && cert.includeSiteBranding === false);
+      return matchSearch && matchLevel && matchModel;
     });
-  }, [certificates, searchQuery, levelFilter]);
+
+    return filtered.sort((a, b) => {
+      const difference = new Date(a.issuedAt).getTime() - new Date(b.issuedAt).getTime();
+      return sortOrder === "newest" ? -difference : difference;
+    });
+  }, [certificates, searchQuery, levelFilter, modelFilter, sortOrder]);
 
   const handleExportHistoryPdf = () => {
     const printWindow = window.open("", "_blank");
@@ -144,7 +161,7 @@ export function StudentCertificatesGallery() {
         </button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3 surface-card p-4 border border-border/70 rounded-2xl">
+      <div className="grid gap-4 surface-card p-4 border border-border/70 rounded-2xl sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative sm:col-span-2">
           <Search className="absolute left-3.5 top-3.5 text-muted-foreground" size={16} />
           <input
@@ -159,12 +176,38 @@ export function StudentCertificatesGallery() {
           <select
             value={levelFilter}
             onChange={(e) => setLevelFilter(e.target.value)}
+            aria-label="Filtrar certificados por nível"
             className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
           >
             <option value="all">Todos os Níveis</option>
             <option value="Básico">Básico</option>
             <option value="Intermediário">Intermediário</option>
             <option value="Avançado">Avançado</option>
+          </select>
+        </div>
+        <div>
+          <select
+            value={modelFilter}
+            onChange={(e) => setModelFilter(e.target.value)}
+            aria-label="Filtrar certificados por tipo de modelo"
+            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            <option value="all">Todos os modelos</option>
+            <option value="platform">Modelo da plataforma</option>
+            <option value="institutional">Modelo institucional</option>
+            <option value="branded">Com logo do site</option>
+            <option value="unbranded">Sem logo do site</option>
+          </select>
+        </div>
+        <div>
+          <select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+            aria-label="Ordenar certificados por data de emissão"
+            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
+          >
+            <option value="newest">Mais recentes primeiro</option>
+            <option value="oldest">Mais antigos primeiro</option>
           </select>
         </div>
       </div>
