@@ -1622,3 +1622,8 @@
 - [x] Implementada rota pública de verificação de autenticidade de certificados com QR code / link exclusivo (`/api/certificates/verify/[code]`).
 - [x] Adicionadas seções de galeria de certificados do aluno (`/dashboard/certificados`), alertas de emissão e requisitos de conclusão no curso.
 - [x] Corrigidas e validadas as páginas de perfil, certificados e histórico com suporte a exportação em PDF.
+- [x] Corrigido o gerenciamento de turmas externas, horários e modalidades no painel do professor.
+- [x] Corrigido o seletor de alunos e medalhas em `/admin/medalhas` para listar todos os usuários ativos sem filtros restritos.
+- [x] Adicionados botões de compartilhamento direto para LinkedIn, WhatsApp, X (Twitter) e cópia de link na visualização do certificado.
+- [x] Implementados busca por texto e filtros por nível/curso na página de histórico de certificados do aluno.
+- [x] Aprimorado o layout do PDF exportado no histórico do aluno com cabeçalho personalizado e logotipo da plataforma.

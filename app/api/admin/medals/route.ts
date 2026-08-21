@@ -29,7 +29,7 @@ export async function GET() {
       .orderBy(desc(userMedals.createdAt))
       .limit(100);
 
-    const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt)));
+    const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(isNull(users.deletedAt)).orderBy(users.name);
 
     return NextResponse.json({ catalog, grantedList, allUsers });
   } catch (error) {
