@@ -1492,3 +1492,12 @@
 - [x] Validar a integração de artigos relacionados e materiais didáticos recomendados
 - [x] Criar testes automatizados cobrindo o fluxo editorial e de leitura do blog
 - [x] Executar suíte Vitest e validar build e responsividade
+
+## Filtros Públicos de Categoria e Tags no Blog e Central Admin de Mensagens (Agosto 2026)
+- [x] Adicionar suporte a tags e filtros combinados de categoria/tags na interface pública do blog (`/blog`)
+- [x] Criar tabela ou entidade de mensagens de contato no schema Drizzle para persistir as submissões de `/contato`
+- [x] Criar rota de submissão do formulário de contato salvando no banco e enviando notificação opcional
+- [x] Criar painel administrativo em `/admin/mensagens` restrito a `admin` e superadmin (`palafozanderson@gmail.com`)
+- [x] Permitir visualizar, filtrar, marcar status (lida/respondida) e responder mensagens enviadas pelo form de contato
+- [x] Criar testes automatizados para segurança, filtros do blog e central de mensagens
+- [x] Executar suíte Vitest e validar build e responsividade
