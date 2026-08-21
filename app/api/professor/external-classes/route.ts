@@ -131,6 +131,7 @@ export async function POST(request: NextRequest) {
       modality,
       meetingLink,
       classroomLocation,
+      level,
       classId,
       studentName,
       studentEmail,
@@ -174,6 +175,7 @@ export async function POST(request: NextRequest) {
         modality: modality ? modality.trim() : "Remota",
         meetingLink: meetingLink ? meetingLink.trim() : null,
         classroomLocation: classroomLocation ? classroomLocation.trim() : null,
+        level: level ? level.trim() : "Básico (A1-A2)",
       }).returning();
 
       return NextResponse.json({ success: true, classItem: inserted[0] });
@@ -206,6 +208,7 @@ export async function POST(request: NextRequest) {
           modality: modality !== undefined ? (modality ? modality.trim() : "Remota") : existing.modality,
           meetingLink: meetingLink !== undefined ? (meetingLink ? meetingLink.trim() : null) : existing.meetingLink,
           classroomLocation: classroomLocation !== undefined ? (classroomLocation ? classroomLocation.trim() : null) : existing.classroomLocation,
+          level: level !== undefined ? (level ? level.trim() : "Básico (A1-A2)") : existing.level,
           updatedAt: new Date(),
         })
         .where(eq(externalClasses.id, Number(classId)))
