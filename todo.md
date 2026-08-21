@@ -1612,3 +1612,4 @@
 - [x] Concluído o relatório detalhado do status atual de todas as rotas e páginas da plataforma.
 - [x] Auditadas as APIs de comentários e avaliações no blog e nos cursos, garantindo tratamento robusto de erros e persistência correta.
 - [x] Testada e blindada a restrição de downloads de materiais para usuários não autenticados nas páginas e rotas de materiais.
+- [x] Corrigido o erro de referência (`course.id` indefinido) na listagem de módulos de cursos sem aulas publicadas (`/cursos/[id]`), eliminando o erro HTTP 500 relatado.
