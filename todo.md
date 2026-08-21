@@ -1613,3 +1613,5 @@
 - [x] Auditadas as APIs de comentários e avaliações no blog e nos cursos, garantindo tratamento robusto de erros e persistência correta.
 - [x] Testada e blindada a restrição de downloads de materiais para usuários não autenticados nas páginas e rotas de materiais.
 - [x] Corrigido o erro de referência (`course.id` indefinido) na listagem de módulos de cursos sem aulas publicadas (`/cursos/[id]`), eliminando o erro HTTP 500 relatado.
+- [x] Implementada a geração automatizada e idempotente de certificados em PDF personalizável via `pdf-lib` antes da assinatura.
+- [x] Adicionada opção de notificação automática por e-mail ao aluno imediatamente após o upload do PDF assinado no painel do administrador (`/admin/certificados`).
