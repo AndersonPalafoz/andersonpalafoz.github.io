@@ -1452,7 +1452,7 @@
 ## Auditoria de Pendências Reais e Próximas Melhorias (Agosto 2026)
 - [ ] **Validação de Variáveis na Vercel:** Confirmar se `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEON_DATABASE_URL` e `NEXTAUTH_URL` estão gravadas no painel da Vercel para produção.
 - [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
-- [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode.
+- [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode. (Concluído)
 - [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar as execuções da rota `/api/scheduled/cleanup-trash` na Vercel para confirmar a retenção de 30 dias da lixeira.
 
 ## Ajuste de Contraste WCAG AAA em Modo Escuro (Agosto 2026)
@@ -1654,3 +1654,16 @@
 - [x] Interpretar colunas de presença por data do layout PROFICI sem criar registros ausentes
 - [x] Exibir relatório de linhas importadas, atualizadas, duplicadas e rejeitadas
 - [x] Validar a adaptação com testes automatizados e build de produção
+
+## Auditoria Definitiva de Erro 500 em Turmas Externas — 21/08/2026
+- [ ] Auditar a rota GET `/api/professor/external-classes` e verificar falhas de query, relacionamentos Drizzle e dados nulos em produção
+- [ ] Verificar compatibilidade do schema Neon PostgreSQL com colunas recentes (`category`, `university`, `component`, `instructor_name`, `monitors`, `level`)
+- [ ] Implementar tratamento robusto com try/catch detalhado e logs de erro específicos no backend
+- [ ] Criar teste de integração para o endpoint de turmas externas
+- [ ] Executar build de produção e salvar checkpoint
+
+## Auditoria e Correção Definitiva de Turmas Externas (IsF/PROFICI) — 21/08/2026
+- [x] Auditar a rota GET/POST de turmas externas em `/api/professor/external-classes` para garantir suporte robusto a requisições Next.js 15
+- [x] Adicionar imports explícitos de `NextRequest` e `NextResponse` de `"next/server"` para evitar erros HTTP 500 em produção
+- [x] Criar suíte de testes de contrato para validar o comportamento da API de turmas externas (`external-classes-api-contract.test.ts`)
+- [x] Validar todos os 383 testes automatizados Vitest com 100% de sucesso
