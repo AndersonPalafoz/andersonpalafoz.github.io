@@ -7,6 +7,7 @@ import { ProfileBillingSection } from "@/components/profile-billing-section";
 import { ProfileNotesSection } from "@/components/profile-notes-section";
 import { ProfileInactivitySettings } from "@/components/profile-inactivity-settings";
 import { ProfileMedalsGallery } from "@/components/profile-medals-gallery";
+import { ProfileLearningHistoryAndCertificates } from "@/components/profile-learning-history-and-certificates";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Administrador",
@@ -84,6 +85,7 @@ export default async function PerfilPage() {
             />
           </div>
           <ProfileMedalsGallery />
+          <ProfileLearningHistoryAndCertificates />
           <ProfileNotesSection />
           <ProfileBillingSection />
         </div>
