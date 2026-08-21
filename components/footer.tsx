@@ -5,7 +5,7 @@ import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowUpRight } from
 const navigation = [
   ["Home", "/"],
   ["Sobre", "/sobre"],
-  ["Aulas", "/aulas"],
+  ["Cursos", "/aulas"],
   ["Materiais", "/materiais"],
   ["Blog", "/blog"],
 ] as const;
