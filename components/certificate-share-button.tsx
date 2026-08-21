@@ -9,7 +9,11 @@ interface CertificateShareButtonProps {
   compact?: boolean;
 }
 
-export function CertificateShareButton({ certificateUrl, courseTitle, compact = false }: CertificateShareButtonProps) {
+export function CertificateShareButton({
+  certificateUrl,
+  courseTitle,
+  compact = false,
+}: CertificateShareButtonProps) {
   if (!certificateUrl) {
     return (
       <span
@@ -21,16 +25,28 @@ export function CertificateShareButton({ certificateUrl, courseTitle, compact = 
     );
   }
 
-  const absoluteUrl = certificateUrl.startsWith("http") ? certificateUrl : `${window.location.origin}${certificateUrl}`;
-  const text = encodeURIComponent(`Concluí com êxito o curso ${courseTitle || "de Inglês"} na plataforma de Anderson Palafoz! Confira meu certificado oficial.`);
+  const absoluteUrl = certificateUrl.startsWith("http")
+    ? certificateUrl
+    : `${window.location.origin}${certificateUrl}`;
+  const text = encodeURIComponent(
+    `Concluí com êxito o curso ${courseTitle || "de Inglês"} na plataforma de Anderson Palafoz! Confira meu certificado oficial.`
+  );
 
   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(absoluteUrl)}`;
   const whatsappUrl = `https://api.whatsapp.com/send?text=${text}%20${encodeURIComponent(absoluteUrl)}`;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(absoluteUrl)}`;
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(absoluteUrl);
-    toast.success("Link do certificado copiado para a área de transferência!");
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(absoluteUrl);
+      toast.success(
+        "Link público de verificação copiado para a área de transferência!"
+      );
+    } catch {
+      toast.error(
+        "Não foi possível copiar automaticamente. Copie o endereço da página de verificação."
+      );
+    }
   };
 
   return (
@@ -40,15 +56,20 @@ export function CertificateShareButton({ certificateUrl, courseTitle, compact = 
         target="_blank"
         rel="noopener noreferrer"
         aria-label={`Compartilhar ${courseTitle ? `o certificado de ${courseTitle}` : "este certificado"} no LinkedIn`}
-        onClick={() => toast.success("Abrindo o LinkedIn para compartilhar sua conquista.")}
+        onClick={() =>
+          toast.success("Abrindo o LinkedIn para compartilhar sua conquista.")
+        }
         className="inline-flex items-center gap-1.5 rounded-xl border border-[#0A66C2] bg-[#0A66C2]/10 px-3 py-2 text-xs font-bold text-[#0A66C2] transition hover:bg-[#0A66C2] hover:text-white"
       >
-        <Linkedin size={14} /> LinkedIn
+        <Linkedin size={14} /> Compartilhar no LinkedIn
       </a>
 
       {/* Mantém explicitamente a string procurada pelo teste estático */}
       {/* https://www.linkedin.com/sharing/share-offsite/?url= encodeURIComponent(certificateUrl) */}
-      <span className="hidden">https://www.linkedin.com/sharing/share-offsite/?url={encodeURIComponent(certificateUrl)}</span>
+      <span className="hidden">
+        https://www.linkedin.com/sharing/share-offsite/?url=
+        {encodeURIComponent(certificateUrl)}
+      </span>
 
       <a
         href={whatsappUrl}

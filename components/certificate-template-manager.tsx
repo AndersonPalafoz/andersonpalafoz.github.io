@@ -1,7 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileUp, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
+
+type CertificateFieldKey =
+  | "studentName"
+  | "courseTitle"
+  | "level"
+  | "issuedAt"
+  | "certificateCode"
+  | "workloadHours";
+
+type CertificateFieldMapping = {
+  x: number;
+  y: number;
+  size?: number;
+  maxWidth?: number;
+};
 
 type CertificateTemplate = {
   id: number;
@@ -31,6 +46,59 @@ export function CertificateTemplateManager() {
   const [previewDate, setPreviewDate] = useState(
     new Date().toLocaleDateString("pt-BR")
   );
+  const [fieldMappings, setFieldMappings] = useState<
+    Partial<Record<CertificateFieldKey, CertificateFieldMapping>>
+  >({
+    studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
+    courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
+    level: { x: 300, y: 300, size: 13, maxWidth: 300 },
+    issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
+    certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
+    workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
+  });
+  const draggingField = useRef<CertificateFieldKey | null>(null);
+
+  const previewFields: Array<{
+    key: CertificateFieldKey;
+    label: string;
+    value: string;
+  }> = [
+    { key: "studentName", label: "Nome do aluno", value: previewName },
+    { key: "courseTitle", label: "Curso", value: previewCourse },
+    { key: "level", label: "Nível", value: "Intermediário (B1)" },
+    { key: "issuedAt", label: "Data de emissão", value: previewDate },
+    { key: "certificateCode", label: "Código", value: previewCode },
+    { key: "workloadHours", label: "Carga horária", value: "32 horas" },
+  ];
+
+  function handleFieldDragStart(
+    event: React.DragEvent<HTMLDivElement>,
+    key: CertificateFieldKey
+  ) {
+    draggingField.current = key;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", key);
+  }
+
+  function handleFieldDrop(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    const key = (event.dataTransfer.getData("text/plain") ||
+      draggingField.current) as CertificateFieldKey | null;
+    if (!key) return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = Math.max(12, Math.min(730, event.clientX - bounds.left));
+    const y = Math.max(12, Math.min(470, event.clientY - bounds.top));
+    setFieldMappings(current => ({
+      ...current,
+      [key]: {
+        ...current[key],
+        x: Math.round(x),
+        // pdf-lib uses a bottom-left origin; convert from the visual top-left canvas.
+        y: Math.round(500 - y),
+      },
+    }));
+    draggingField.current = null;
+  }
 
   async function loadTemplates() {
     setLoading(true);
@@ -76,6 +144,7 @@ export function CertificateTemplateManager() {
     const formData = new FormData(form);
     formData.set("category", category);
     formData.set("includeSiteBranding", String(includeSiteBranding));
+    formData.set("fieldMappings", JSON.stringify(fieldMappings));
 
     try {
       const response = await fetch("/api/admin/certificate-templates", {
@@ -267,31 +336,139 @@ export function CertificateTemplateManager() {
               />
             </label>
           </div>
-          <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-6 shadow-sm">
-            <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
-              Pré-visualização do Modelo (Variáveis Ativas)
-            </p>
-            <div className="mt-4 space-y-3 rounded-lg bg-muted/30 p-5 text-center">
-              {includeSiteBranding && (
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-3 py-0.5 text-[10px] font-bold text-white">
-                  Anderson Palafoz — Plataforma Acadêmica
+          <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
+                  Editor visual do modelo
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Arraste uma variável da paleta para o certificado. Use as
+                  setas do teclado para ajustes finos.
+                </p>
+              </div>
+              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-bold text-muted-foreground">
+                {Object.keys(fieldMappings).length} variáveis posicionadas
+              </span>
+            </div>
+            <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
+              <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+                <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                  Variáveis disponíveis
+                </p>
+                {previewFields.map(field => (
+                  <div
+                    key={field.key}
+                    draggable
+                    onDragStart={event =>
+                      handleFieldDragStart(event, field.key)
+                    }
+                    className="cursor-grab rounded-lg border border-border bg-background px-2.5 py-2 text-[11px] font-bold text-foreground shadow-sm transition hover:border-red-600 hover:text-red-600 active:cursor-grabbing"
+                    title={`Arrastar ${field.label} para o certificado`}
+                  >
+                    <span className="block font-mono text-[10px] text-red-600">
+                      {`{{${field.key}}}`}
+                    </span>
+                    <span className="mt-0.5 block truncate">{field.label}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="min-w-0 overflow-x-auto rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900">
+                <div
+                  className="relative mx-auto h-[500px] w-[760px] overflow-hidden rounded-lg border-2 border-red-600/30 bg-background shadow-inner"
+                  onDragOver={event => event.preventDefault()}
+                  onDrop={handleFieldDrop}
+                  aria-label="Canvas de posicionamento do certificado"
+                >
+                  {includeSiteBranding && (
+                    <div className="absolute left-1/2 top-8 -translate-x-1/2 rounded-full bg-red-600 px-4 py-1 text-[10px] font-black text-white">
+                      Anderson Palafoz — Plataforma Acadêmica
+                    </div>
+                  )}
+                  <p className="absolute left-1/2 top-24 -translate-x-1/2 text-xs text-muted-foreground">
+                    Certificamos para os devidos fins que
+                  </p>
+                  {previewFields.map(field => {
+                    const mapping = fieldMappings[field.key] ?? {
+                      x: 100,
+                      y: 250,
+                      size: 12,
+                    };
+                    const top = Math.max(8, Math.min(480, 500 - mapping.y));
+                    return (
+                      <div
+                        key={field.key}
+                        draggable
+                        role="button"
+                        tabIndex={0}
+                        onDragStart={event =>
+                          handleFieldDragStart(event, field.key)
+                        }
+                        onKeyDown={event => {
+                          const step = event.shiftKey ? 10 : 2;
+                          if (
+                            ![
+                              "ArrowUp",
+                              "ArrowDown",
+                              "ArrowLeft",
+                              "ArrowRight",
+                            ].includes(event.key)
+                          )
+                            return;
+                          event.preventDefault();
+                          setFieldMappings(current => {
+                            const existing = current[field.key] ?? mapping;
+                            return {
+                              ...current,
+                              [field.key]: {
+                                ...existing,
+                                x: Math.max(
+                                  12,
+                                  Math.min(
+                                    730,
+                                    existing.x +
+                                      (event.key === "ArrowLeft"
+                                        ? -step
+                                        : event.key === "ArrowRight"
+                                          ? step
+                                          : 0)
+                                  )
+                                ),
+                                y: Math.max(
+                                  12,
+                                  Math.min(
+                                    488,
+                                    existing.y +
+                                      (event.key === "ArrowDown"
+                                        ? -step
+                                        : event.key === "ArrowUp"
+                                          ? step
+                                          : 0)
+                                  )
+                                ),
+                              },
+                            };
+                          });
+                        }}
+                        className="absolute max-w-[240px] cursor-grab rounded-md border border-red-600/50 bg-red-50/90 px-2 py-1 text-left shadow-sm outline-none transition hover:z-10 hover:scale-[1.02] focus:z-10 focus:ring-2 focus:ring-red-600 active:cursor-grabbing dark:bg-red-950/70"
+                        style={{ left: mapping.x, top }}
+                        aria-label={`Variável ${field.label}. Posição X ${mapping.x}, Y ${mapping.y}. Arraste para reposicionar.`}
+                        title="Arraste para reposicionar; use as setas para ajustes finos"
+                      >
+                        <span className="block font-mono text-[9px] font-black text-red-600">
+                          {`{{${field.key}}}`}
+                        </span>
+                        <span className="block truncate text-xs font-bold text-foreground">
+                          {field.value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div className="absolute bottom-5 left-8 right-8 flex justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
+                    <span>Arraste os campos para definir o posicionamento</span>
+                    <span>PDF: origem inferior esquerda</span>
+                  </div>
                 </div>
-              )}
-              <p className="text-xs text-muted-foreground">
-                Certificamos para os devidos fins que
-              </p>
-              <h4 className="text-xl font-black text-foreground">
-                {previewName}
-              </h4>
-              <p className="text-xs text-muted-foreground">
-                concluiu com êxito o programa acadêmico
-              </p>
-              <p className="text-sm font-bold text-foreground">
-                {previewCourse}
-              </p>
-              <div className="flex items-center justify-between pt-3 text-[11px] text-muted-foreground border-t border-border/40">
-                <span>Emitido em: {previewDate}</span>
-                <span className="font-mono">Ref: {previewCode}</span>
               </div>
             </div>
           </div>
@@ -367,8 +544,9 @@ export function CertificateTemplateManager() {
             className="w-full rounded-xl border border-border bg-background px-4 py-3 font-mono text-xs text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20"
           />
           <p className="text-xs text-muted-foreground">
-            O JSON será validado e armazenado para a etapa de preenchimento
-            coordenado do template.
+            As posições atuais serão convertidas automaticamente para JSON e
+            armazenadas para o preenchimento coordenado do template. O campo
+            abaixo permanece disponível para ajustes avançados.
           </p>
         </div>
 
