@@ -1608,3 +1608,7 @@
 - [x] Tratada a falha de sincronização do Classroom em ambiente sem CLI gws local (`/api/admin/classroom-sync`), garantindo resiliência em produção.
 - [x] Blindada a rota de download de materiais (`/api/materials/[id]/download`) para exigir autenticação e autorização server-side em conteúdos pagos/privados.
 - [x] Restaurado e validado o endpoint de comentários e avaliações do blog (`/api/articles/[id]/comments`), permitindo o envio correto de opiniões em artigos públicos.
+- [x] Renomeado o rótulo "Aulas" para "Cursos" no menu de navegação (`navbar.tsx`) e no rodapé (`footer.tsx`), mantendo intactas as rotas e URLs.
+- [x] Concluído o relatório detalhado do status atual de todas as rotas e páginas da plataforma.
+- [x] Auditadas as APIs de comentários e avaliações no blog e nos cursos, garantindo tratamento robusto de erros e persistência correta.
+- [x] Testada e blindada a restrição de downloads de materiais para usuários não autenticados nas páginas e rotas de materiais.
