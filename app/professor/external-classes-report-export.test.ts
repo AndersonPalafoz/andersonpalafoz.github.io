@@ -102,6 +102,13 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("Resumo do desempenho acadêmico");
     expect(source).toContain("bar-approved");
     expect(source).toContain("bar-failed");
+    expect(source).toContain("bar-insufficient");
+    expect(source).toContain("background: #16a34a");
+    expect(source).toContain("background: #dc2626");
+    expect(source).toContain("background: #9ca3af");
+    expect(source).toContain(".approved-label { color: #166534; }");
+    expect(source).toContain(".failed-label { color: #991b1b; }");
+    expect(source).toContain(".insufficient-label { color: #4b5563; }");
     expect(source).toContain("Dados insuficientes");
   });
 
