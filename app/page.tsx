@@ -16,9 +16,9 @@ async function getPublishedLessonCount() {
 
 function normalizeLevelCopy(value: string) {
   return value
-    .replace(/Aulas organizadas do A1 ao B2 e materiais que podem chegar aos níveis C1 e C2\.?/gi, "Aulas organizadas do Básico ao Avançado [A1-C2].")
-    .replace(/Aulas organizadas Básico a Intermediário \[A1-B2\] e materiais que podem chegar aos níveis Avançado \[C1-C2\]\.?/gi, "Aulas organizadas do Básico ao Avançado [A1-C2].")
-    .replace(/Aulas organizadas do Básico ao Avançado \./gi, "Aulas organizadas do Básico ao Avançado [A1-C2].");
+    .replace(/Aulas organizadas do A1 ao B2 e materiais que podem chegar aos níveis C1 e C2\.?/gi, "Aulas organizadas do Básico ao Avançado.")
+    .replace(/Aulas organizadas Básico a Intermediário \[A1-B2\] e materiais que podem chegar aos níveis Avançado \[C1-C2\]\.?/gi, "Aulas organizadas do Básico ao Avançado.")
+    .replace(/\[A1-C2\]/gi, "Básico, Intermediário e Avançado");
 }
 
 export const metadata = {

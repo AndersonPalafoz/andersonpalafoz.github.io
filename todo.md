@@ -1531,3 +1531,10 @@
 - [x] Comparar cada item com o código, banco, testes, build e validação visual realmente disponíveis
 - [x] Separar pendências reais, bloqueios externos (ex: chaves de produção Stripe/Google Calendar e reautorização OAuth externa), tarefas duplicadas e itens marcados prematuramente
 - [x] Manter a ordem histórica e atualizar os estados somente após evidência verificável
+
+## Correção de Nomenclatura CEFR e Seção de Histórico e Certificados no Perfil (Agosto 2026)
+- [x] Substituir referências `A1-C2` por `Básico, Intermediário e Avançado` na Home (`app/page.tsx`) e em componentes públicos
+- [x] Criar seção de histórico de aprendizado acadêmico e certificados assinados dentro da página de perfil do aluno (`/dashboard/perfil`)
+- [x] Integrar links de download seguro de certificados assinados (manual / gov.br) na nova seção do perfil
+- [x] Criar testes automatizados cobrindo a exibição do histórico e dos certificados no perfil
+- [x] Executar suíte Vitest e validar build de produção e responsividade
