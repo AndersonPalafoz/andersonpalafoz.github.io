@@ -1619,3 +1619,6 @@
 - [x] Criada a galeria segura de certificados no painel do aluno (`StudentCertificatesGallery`), permitindo visualização, download e compartilhamento no LinkedIn.
 - [x] Implementado upload de imagem de assinatura digital para aplicação automática nos certificados gerados.
 - [x] Permitido o upload manual de certificados criados externamente diretamente pelo administrador ou superadmin.
+- [x] Implementada rota pública de verificação de autenticidade de certificados com QR code / link exclusivo (`/api/certificates/verify/[code]`).
+- [x] Adicionadas seções de galeria de certificados do aluno (`/dashboard/certificados`), alertas de emissão e requisitos de conclusão no curso.
+- [x] Corrigidas e validadas as páginas de perfil, certificados e histórico com suporte a exportação em PDF.

@@ -33,6 +33,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   page.drawText(`Nível: ${input.level}  •  Carga Horária: ${input.workloadHours || 40} horas`, { x: 70, y: 218, size: 14, font: regular, color: muted });
   page.drawText(`Data de Conclusão e Emissão: ${input.issuedAt.toLocaleDateString("pt-BR")}`, { x: 70, y: 155, size: 13, font: regular, color: muted });
   page.drawText(`Código de autenticidade: ${input.certificateCode}`, { x: 70, y: 125, size: 11, font: regular, color: muted });
+  page.drawText(`Validação online: https://andersonpalafoz.vercel.app/verificar/${input.certificateCode}`, { x: 70, y: 105, size: 10, font: bold, color: red });
 
   if (input.signatureImageBytes) {
     try {

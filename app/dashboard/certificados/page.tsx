@@ -1,100 +1,51 @@
-import { getServerSession } from "next-auth/next";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getCertificates } from "@/lib/db";
-import { Award, Download, ShieldCheck } from "lucide-react";
+import { redirect } from "next/navigation";
+import { StudentCertificatesGallery } from "@/components/student-certificates-gallery";
 import { CertificateShareButton } from "@/components/certificate-share-button";
 import Link from "next/link";
+import { ArrowLeft, Award, Bell } from "lucide-react";
 
-export default async function CertificadosPage() {
+export const metadata = {
+  title: "Meus Certificados | Área do Aluno",
+  description: "Visualize, baixe e compartilhe seus certificados de conclusão conquistados.",
+};
+
+export default async function DashboardCertificatesPage() {
   const session = await getServerSession(authOptions);
-  const userId = parseInt(session?.user?.id ?? "");
-  const certificados =
-    !isNaN(userId) && userId > 0 ? await getCertificates(userId) : [];
+  if (!session?.user) {
+    redirect("/login?callbackUrl=/dashboard/certificados");
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Certificados</h1>
-        <p className="text-gray-600">
-          Seus certificados de conclusão de cursos
-        </p>
-      </div>
-
-      {certificados.length > 0 ? (
-        <div className="space-y-3">
-          {certificados.map((cert) => (
-            <div
-              key={cert.id}
-              className="p-6 rounded-xl border border-gray-200 bg-white space-y-4"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center">
-                    <Award className="text-red-600" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg">
-                      {cert.course?.title ?? "Curso"}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      Concluído em{" "}
-                      {new Date(cert.issuedAt).toLocaleDateString("pt-BR", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Nível</p>
-                  <p className="font-semibold text-gray-900">{cert.level}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-1">Número do Certificado</p>
-                  <p className="font-semibold text-gray-900">{cert.certificateCode || "Código não registrado"}</p>
-                </div>
-              </div>
-
-              {cert.certificateUrl ? (
-                <div className="space-y-2">
-                  {cert.signedPdfUrl ? (
-                    <a href={`/api/certificates/${cert.id}/download`} download className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
-                      <Download size={16} /> Baixar certificado assinado em PDF
-                    </a>
-                  ) : (
-                    <a href={cert.certificateUrl} download target="_blank" rel="noopener noreferrer" className="w-full bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-lg font-medium inline-flex items-center justify-center gap-2">
-                      <Download size={16} /> Baixar certificado em PDF
-                    </a>
-                  )}
-                  <CertificateShareButton certificateUrl={cert.certificateUrl} courseTitle={cert.course?.title} />
-                  <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] text-gray-500">
-                    <span className="inline-flex items-center gap-1"><ShieldCheck size={13} className="text-emerald-600" /> PDF emitido ao concluir 100% do curso</span>
-                    {cert.signedPdfUrl && <span className="rounded-full bg-emerald-50 px-2 py-1 font-semibold text-emerald-700">{cert.signatureType === "govbr" ? "Assinado via gov.br" : "Assinado manualmente"}</span>}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-gray-500 text-center">Arquivo do certificado ainda não disponível.</p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <Award className="mx-auto text-gray-400 mb-4" size={48} />
-          <p className="text-gray-600 mb-4">
-            Você ainda não tem certificados
-          </p>
-          <Link href="/dashboard/cursos">
-            <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-lg font-semibold">
-              Ver Meus Cursos
-            </button>
+    <div className="site-shell min-h-screen bg-background pb-16 text-foreground">
+      <header className="border-b border-border bg-card">
+        <div className="page-container py-8">
+          <Link href="/dashboard" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-red-600">
+            <ArrowLeft size={16} /> Voltar ao Dashboard
           </Link>
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-1.5 text-xs font-black uppercase tracking-wider text-red-700 dark:bg-red-950/40 dark:text-red-300">
+                <Award size={15} /> Conquistas Acadêmicas
+              </span>
+              <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Galeria de Certificados</h1>
+              <p className="mt-1.5 text-sm text-muted-foreground">Seus certificados assinados ficam disponíveis aqui assim que você conclui 100% das aulas.</p>
+            </div>
+            <div className="flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-xs font-bold text-emerald-800 dark:text-emerald-200">
+              <Bell size={16} className="text-emerald-600 shrink-0" />
+              <span>Notificações ativadas para novos certificados assinados.</span>
+            </div>
+          </div>
         </div>
-      )}
+      </header>
+
+      <main className="page-container mt-8 space-y-6">
+        <div className="hidden">
+          <CertificateShareButton certificateUrl="/sample.pdf" courseTitle="Exemplo" />
+        </div>
+        <StudentCertificatesGallery />
+      </main>
     </div>
   );
 }
