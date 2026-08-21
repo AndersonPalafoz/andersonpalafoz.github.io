@@ -1627,3 +1627,6 @@
 - [x] Adicionados botões de compartilhamento direto para LinkedIn, WhatsApp, X (Twitter) e cópia de link na visualização do certificado.
 - [x] Implementados busca por texto e filtros por nível/curso na página de histórico de certificados do aluno.
 - [x] Aprimorado o layout do PDF exportado no histórico do aluno com cabeçalho personalizado e logotipo da plataforma.
+- [x] Conectado o formulário de contato (`/contato`) à central administrativa em `/admin/mensagens`, permitindo leitura, busca, filtros e resposta direta por e-mail.
+- [x] Adicionadas meta tags Open Graph dinâmicas na página pública de verificação de certificados (`/verificar/[code]`) para otimizar o compartilhamento no LinkedIn e WhatsApp.
+- [x] Implementada a visualização em formato de calendário e agenda interativa para as turmas externas no painel correspondente.
