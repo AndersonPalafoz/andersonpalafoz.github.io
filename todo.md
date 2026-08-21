@@ -1545,3 +1545,16 @@
 - [x] Incluir feedback visual e acessibilidade no botão de compartilhamento
 - [x] Criar testes automatizados do contrato da URL e da renderização dos botões
 - [x] Executar suíte Vitest, validar build e salvar checkpoint
+
+## Correção da Página de Detalhes do Curso (0/0 Aulas) e Aviso do Stripe (Agosto 2026)
+- [ ] Investigar a consulta de módulos e aulas na página de detalhes do curso (`/app/cursos/[id]/page.tsx` ou equivalentes) para corrigir a contagem e listagem 0/0
+- [ ] Revisar o tratamento de chaves do Stripe no checkout para fornecer fallback claro ou instrução de configuração sem quebrar a experiência
+- [ ] Criar testes automatizados de regressão para a renderização de aulas e contagem de módulos no curso
+- [ ] Executar suíte Vitest, validar build e salvar checkpoint
+
+## Auditoria Sistêmica de Cursos, Módulos, Aulas e Checkout Stripe (Agosto 2026)
+- [x] Conduzir auditoria automatizada em todos os cursos do banco Neon para identificar módulos sem aulas, contagens desatualizadas e inconsistências de relacionamento
+- [x] Robustecer a API de detalhes do curso e componentes de listagem para lidar com módulos vazios de forma transparente e informativa
+- [x] Auditar a configuração de pagamento do Stripe e criar fallback resiliente para cursos pagos quando credenciais estiverem pendentes de ativação em produção
+- [x] Criar testes automatizados de contrato cobrindo a integridade sistêmica e o tratamento de checkout
+- [x] Executar suíte Vitest, validar build e salvar checkpoint
