@@ -5,6 +5,7 @@ import {
   filterAcademicReportRows,
   hasFailedByAttendance,
   hasFailedByGrade,
+  summarizeAcademicReportRows,
 } from "@/lib/external-academic-report";
 
 describe("critérios de reprovação dos relatórios acadêmicos", () => {
@@ -30,6 +31,29 @@ describe("critérios de reprovação dos relatórios acadêmicos", () => {
     expect(filterAcademicReportRows(rows, "grade").map((row) => row.id)).toEqual(["nota", "ambos"]);
     expect(filterAcademicReportRows(rows, "attendance").map((row) => row.id)).toEqual(["falta", "ambos"]);
     expect(filterAcademicReportRows(rows, "any").map((row) => row.id)).toEqual(["nota", "falta", "ambos"]);
+  });
+
+  it("calcula proporções reais de aprovados, reprovados e dados insuficientes", () => {
+    expect(summarizeAcademicReportRows(rows)).toMatchObject({
+      total: 5,
+      approved: 1,
+      failed: 3,
+      insufficientData: 1,
+      approvedPercent: 20,
+      failedPercent: 60,
+      insufficientDataPercent: 20,
+      failedByGrade: 2,
+      failedByAttendance: 2,
+    });
+    expect(summarizeAcademicReportRows([])).toMatchObject({
+      total: 0,
+      approved: 0,
+      failed: 0,
+      insufficientData: 0,
+      approvedPercent: 0,
+      failedPercent: 0,
+      insufficientDataPercent: 0,
+    });
   });
 });
 
@@ -74,6 +98,11 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("Relatório acadêmico PDF");
     expect(source).toContain("academicReportFilterLabel(filter)");
     expect(source).toContain("Critérios de reprovação");
+    expect(source).toContain("summarizeAcademicReportRows(reportRows)");
+    expect(source).toContain("Resumo do desempenho acadêmico");
+    expect(source).toContain("bar-approved");
+    expect(source).toContain("bar-failed");
+    expect(source).toContain("Dados insuficientes");
   });
 
   it("oferece o filtro e as ações de exportação no desktop e no menu de ações rápidas", () => {
