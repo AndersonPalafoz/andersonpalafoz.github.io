@@ -23,8 +23,9 @@ function shiftUtcDate(date: Date, days: number) {
   return shifted;
 }
 
-export function calculateStreakDays(activityDates: readonly Date[], today = new Date()) {
-  const dateKeys = new Set(activityDates.map(utcDateKey));
+export function calculateStreakDays(activityDates: readonly (Date | null | undefined)[], today = new Date()) {
+  const validDates = (activityDates || []).filter((d): d is Date => d instanceof Date && !isNaN(d.getTime()));
+  const dateKeys = new Set(validDates.map(utcDateKey));
   const currentDay = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
   let streak = 0;
   let cursor = currentDay;
