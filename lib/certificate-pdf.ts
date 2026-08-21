@@ -7,6 +7,7 @@ export interface CertificatePdfInput {
   issuedAt: Date;
   certificateCode: string;
   workloadHours?: number;
+  signatureImageBytes?: Uint8Array;
 }
 
 export async function buildCertificatePdf(input: CertificatePdfInput) {
@@ -21,6 +22,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   page.drawRectangle({ x: 0, y: 0, width: 842, height: 595, color: rgb(1, 1, 1) });
   page.drawRectangle({ x: 0, y: 0, width: 18, height: 595, color: red });
   page.drawRectangle({ x: 824, y: 0, width: 18, height: 595, color: red });
+  
   page.drawText("ANDERSON PALAFOZ", { x: 70, y: 520, size: 15, font: bold, color: red });
   page.drawText("CERTIFICADO DE CONCLUSÃO", { x: 70, y: 455, size: 31, font: bold, color: graphite });
   page.drawText("Certificamos que", { x: 70, y: 402, size: 16, font: regular, color: muted });
@@ -31,9 +33,24 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   page.drawText(`Nível: ${input.level}  •  Carga Horária: ${input.workloadHours || 40} horas`, { x: 70, y: 218, size: 14, font: regular, color: muted });
   page.drawText(`Data de Conclusão e Emissão: ${input.issuedAt.toLocaleDateString("pt-BR")}`, { x: 70, y: 155, size: 13, font: regular, color: muted });
   page.drawText(`Código de autenticidade: ${input.certificateCode}`, { x: 70, y: 125, size: 11, font: regular, color: muted });
-  page.drawText("Anderson Palafoz · Ensino de Inglês", { x: 560, y: 155, size: 12, font: bold, color: graphite });
-  page.drawLine({ start: { x: 560, y: 180 }, end: { x: 772, y: 180 }, thickness: 1, color: graphite });
-  page.drawText("Documento digital", { x: 560, y: 125, size: 11, font: regular, color: muted });
+
+  if (input.signatureImageBytes) {
+    try {
+      let image;
+      try {
+        image = await pdf.embedPng(input.signatureImageBytes);
+      } catch {
+        image = await pdf.embedJpg(input.signatureImageBytes);
+      }
+      page.drawImage(image, { x: 560, y: 140, width: 160, height: 50 });
+    } catch (e) {
+      console.error("Failed to embed signature image in PDF", e);
+    }
+  }
+
+  page.drawText("Anderson Palafoz · Ensino de Inglês", { x: 560, y: 115, size: 12, font: bold, color: graphite });
+  page.drawLine({ start: { x: 560, y: 135 }, end: { x: 772, y: 135 }, thickness: 1, color: graphite });
+  page.drawText("Documento digital assinado", { x: 560, y: 98, size: 10, font: regular, color: muted });
 
   return pdf.save();
 }
