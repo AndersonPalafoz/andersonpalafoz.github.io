@@ -1432,7 +1432,7 @@
 
 ## Auditoria de Compatibilidade com Vercel e Variáveis de Produção (Agosto 2026)
 - [x] Consolidar o estado atual das correções de build, Heartbeat, rotinas de banco Neon e player multimídia
-- [ ] Auditar e validar a integridade das variáveis de ambiente exigidas em produção pela Vercel (`DATABASE_URL`, `NEON_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`)
+- [x] Auditar a presença nominal das variáveis de ambiente exigidas em produção pela Vercel (`DATABASE_URL`, `NEON_DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEXTAUTH_SECRET`, `NEXTAUTH_URL`, `SUPABASE_URL` e chaves Supabase equivalentes) sem abrir valores; validade operacional e correspondência do modo Stripe permanecem em itens próprios
 - [x] Validar a compatibilidade do Next.js 15 App Router e server actions/endpoints — build de produção aprovado; checagem TypeScript isolada permanece limitada pela memória do sandbox
 - [x] Registrar instruções passo a passo para o usuário configurar variáveis de ambiente na Vercel caso algum conector exija autenticação manual no painel
 
@@ -1451,10 +1451,11 @@
 - [x] Criar testes de contrato e validar build e comportamento responsivo antes do checkpoint
 
 ## Auditoria de Pendências Reais e Próximas Melhorias (Agosto 2026)
-- [ ] **Validação de Variáveis na Vercel:** Confirmar se `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEON_DATABASE_URL` e `NEXTAUTH_URL` estão gravadas no painel da Vercel para produção.
+- [x] **Validação nominal de Variáveis na Vercel:** Confirmada no painel a presença em produção de `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEON_DATABASE_URL` e `NEXTAUTH_URL`, sem exposição de valores; a validação de modo/funcionamento permanece separada.
 - [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
 - [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode. (Concluído)
-- [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar as execuções da rota `/api/scheduled/cleanup-trash` na Vercel para confirmar a retenção de 30 dias da lixeira.
+- [x] **Configuração do Heartbeat em Produção:** Criado o job `nightly-trash-cleanup` com task UID `eADcpQiwaxLfPmQHvpoNbz`, execução diária às 03:00 UTC e callback `/api/scheduled/cleanup-trash`.
+- [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar a primeira execução da rota `/api/scheduled/cleanup-trash` para confirmar a retenção de 30 dias; o histórico inicial ainda não possui execuções.
 
 ## Ajuste de Contraste WCAG AAA em Modo Escuro (Agosto 2026)
 - [x] Auditar e ajustar classes de texto secundário em `/app/cursos/[id]/page.tsx` para garantir alto contraste (WCAG AAA) no modo escuro
