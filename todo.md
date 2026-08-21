@@ -1353,7 +1353,7 @@
 - [x] Executar bateria completa de testes Vitest (339 testes aprovados com 100% de sucesso)
 
 ## Correção Crítica de Erro 500 em Turmas Externas (Agosto 2026)
-- [ ] Auditar e corrigir a rota de API e componentes da página de turmas externas (`/professor/turmas-externas`) para eliminar o erro HTTP 500 em produção
+- [x] Auditar e corrigir a rota de API e componentes da página de turmas externas (`/professor/turmas-externas`) para eliminar o erro HTTP 500 em produção; schema Neon alinhado e desaparecimento do erro confirmado
 
 ## Novas Pendências Relatadas — Continuidade de Curso e Modo Escuro (Agosto 2026)
 - [x] Auditar e corrigir o botão/fluxo "Continuar" no dashboard e no player de cursos, incluindo navegação para a próxima aula, persistência de progresso e finalização
@@ -1660,7 +1660,7 @@
 - [x] Verificar compatibilidade do schema Neon PostgreSQL com colunas recentes (`category`, `university`, `component`, `instructor_name`, `monitors`, `level`)
 - [x] Implementar tratamento robusto com try/catch detalhado e logs de erro específicos no backend
 - [x] Criar teste de integração/contrato para o endpoint de turmas externas
-- [ ] Executar build de produção e salvar checkpoint
+- [x] Executar build de produção com sucesso após liberação de memória do sandbox e salvar checkpoint subsequente
 
 ## Auditoria e Correção Definitiva de Turmas Externas (IsF/PROFICI) — 21/08/2026
 - [x] Auditar a rota GET/POST de turmas externas em `/api/professor/external-classes` para garantir suporte robusto a requisições Next.js 15
@@ -1685,6 +1685,6 @@
 - [x] Validar a página em viewport móvel e aprovar 389 testes Vitest; a inspeção autenticada permanece pendente por falta de login no preview
 
 ## Relatórios Acadêmicos de Turmas Externas — 21/08/2026
-- [ ] Implementar exportação de notas e presenças em CSV
-- [ ] Implementar exportação de notas e presenças em PDF
-- [ ] Adicionar testes automatizados para os formatos e permissões de exportação
+- [x] Implementar exportação de notas e presenças em CSV, incluindo CPF, categoria, universidade, componente, status, presença, frequência, notas e média
+- [x] Implementar pré-visualização imprimível em formato A4 paisagem para salvar o relatório em PDF, com cabeçalho institucional e metadados da turma
+- [x] Adicionar testes automatizados de contrato para dados, formatos, ações desktop/mobile e permissões herdadas da página protegida; suíte completa aprovada com 393 testes
