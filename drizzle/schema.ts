@@ -209,8 +209,14 @@ export const certificates = pgTable("certificates", {
   issuedAt: timestamp("issuedAt").defaultNow().notNull(),
   certificateUrl: varchar("certificateUrl", { length: 500 }),
   certificateCode: varchar("certificateCode", { length: 64 }),
+  signatureType: varchar("signatureType", { length: 16 }).notNull().default("none"),
+  signedPdfUrl: varchar("signedPdfUrl", { length: 500 }),
+  signedAt: timestamp("signedAt"),
+  signedBy: integer("signedBy").references(() => users.id),
 });
 
+export const certificateSignatureTypes = ["none", "manual", "govbr"] as const;
+export type CertificateSignatureType = (typeof certificateSignatureTypes)[number];
 export type Certificate = typeof certificates.$inferSelect;
 export type InsertCertificate = typeof certificates.$inferInsert;
 

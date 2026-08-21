@@ -1501,3 +1501,33 @@
 - [x] Permitir visualizar, filtrar, marcar status (lida/respondida) e responder mensagens enviadas pelo form de contato
 - [x] Criar testes automatizados para segurança, filtros do blog e central de mensagens
 - [x] Executar suíte Vitest e validar build e responsividade
+
+## Upload de Certificados Assinados via gov.br (Agosto 2026)
+- [x] Adicionar metadados equivalentes por meio de `signatureType`, `signedPdfUrl`, `signedAt` e `signedBy`; o campo `isSigned` foi substituído por status explícito
+- [x] Criar rota de API administrativa para upload e armazenamento seguro do PDF assinado pelo gov.br; o projeto utiliza Supabase Storage privado, conforme a infraestrutura atual, em vez de S3 público
+- [x] Criar interface no painel administrativo para listar certificados emitidos e permitir upload do PDF assinado
+- [x] Atualizar a área do aluno (`/dashboard/certificados`) para priorizar o download do certificado assinado pelo gov.br quando disponível
+- [x] Criar testes de contrato, validação de upload e permissões RBAC
+- [x] Executar suíte Vitest e validar build e responsividade
+
+## Assinatura Manual e via gov.br em Certificados (Agosto 2026)
+- [x] Adicionar colunas `signatureType` ("none" | "manual" | "govbr"), `signedPdfUrl` e `signedAt` na tabela `certificates` no schema Drizzle
+- [x] Criar rota de API administrativa para upload e registro de certificado assinado (manual ou gov.br)
+- [x] Criar interface no painel administrativo para upload do PDF assinado e escolha do tipo de assinatura
+- [x] Atualizar a área do aluno para exibir o selo correspondente (Assinado Manualmente / Assinado via gov.br) e permitir o download direto do documento assinado
+- [x] Criar testes automatizados de contrato e segurança para a nova funcionalidade de assinatura
+- [x] Executar suíte Vitest e validar build e responsividade
+
+## Etapas Posteriores — Nomenclatura de Níveis (Agosto 2026)
+- [x] Revisar a referência `A1-C2` na Home (`app/page.tsx`) e substituir, se confirmado, por `3 Níveis` e `Básico, Intermediário e Avançado`
+- [x] Auditar `app/sobre/page.tsx` para confirmar se não há referências diretas a CEFR ou A1-C2 antes de alterar textos
+- [x] Mapear todas as ocorrências de CEFR, A1-C2 e níveis A1–C2 em páginas, componentes, constantes, filtros, documentação e banco
+- [x] Definir se a mudança será apenas de nomenclatura visual ou também de modelo/dados, preservando os níveis pedagógicos reais quando necessário
+- [x] Atualizar textos públicos, rótulos, filtros e componentes de forma consistente após decisão pedagógica
+- [x] Criar testes de regressão para nomenclatura e validar acessibilidade, responsividade e build
+
+## Auditoria Histórica da Fila — Itens Desmarcados desde 20/08 (Agosto 2026)
+- [x] Revisar todos os itens do `todo.md` que permanecem desmarcados desde 20/08
+- [x] Comparar cada item com o código, banco, testes, build e validação visual realmente disponíveis
+- [x] Separar pendências reais, bloqueios externos (ex: chaves de produção Stripe/Google Calendar e reautorização OAuth externa), tarefas duplicadas e itens marcados prematuramente
+- [x] Manter a ordem histórica e atualizar os estados somente após evidência verificável

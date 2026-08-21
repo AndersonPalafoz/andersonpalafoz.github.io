@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 
 export const LEARNING_AUDIO_BUCKET = "learning-audio";
 export const CERTIFICATE_BUCKET = "certificates";
+export const SIGNED_CERTIFICATE_BUCKET = "signed-certificates";
+export const SIGNED_CERTIFICATE_MAX_BYTES = 5 * 1024 * 1024;
 export const LEARNING_AUDIO_MAX_BYTES = 15 * 1024 * 1024;
 export const LEARNING_AUDIO_MIME_TYPES = ["audio/webm", "audio/ogg", "audio/mpeg", "audio/wav", "audio/mp4"] as const;
 
@@ -66,4 +68,44 @@ export async function uploadCertificatePdf(userId: number, courseId: number, byt
   if (error) throw error;
   const { data } = supabase.storage.from(CERTIFICATE_BUCKET).getPublicUrl(objectPath);
   return { objectPath, url: data.publicUrl };
+}
+
+export function validateSignedCertificate(input: { mimeType: string; size: number; fileName?: string }) {
+  const fileName = input.fileName?.toLowerCase() ?? "";
+  const isPdf = input.mimeType === "application/pdf" || (input.mimeType === "application/octet-stream" && fileName.endsWith(".pdf"));
+  if (!isPdf) return { valid: false as const, error: "Envie um arquivo PDF assinado pelo gov.br ou assinado manualmente." };
+  if (!Number.isFinite(input.size) || input.size <= 0 || input.size > SIGNED_CERTIFICATE_MAX_BYTES) {
+    return { valid: false as const, error: "O certificado assinado deve ter no máximo 5 MB." };
+  }
+  return { valid: true as const };
+}
+
+/**
+ * Guarda o PDF assinado em bucket privado. O valor retornado em `objectPath`
+ * deve ser persistido em certificates.signedPdfUrl; uma URL pública nunca é
+ * criada para o documento assinado.
+ */
+export async function uploadSignedCertificatePdf(adminId: number, certificateId: number, file: File) {
+  const validation = validateSignedCertificate({ mimeType: file.type, size: file.size, fileName: file.name });
+  if (!validation.valid) throw new Error(validation.error);
+  const supabase = await ensureBucket(SIGNED_CERTIFICATE_BUCKET, {
+    public: false,
+    mimeTypes: ["application/pdf"],
+    fileSizeLimit: SIGNED_CERTIFICATE_MAX_BYTES,
+  });
+  const objectPath = `admin/${adminId}/certificates/${certificateId}/${crypto.randomUUID()}.pdf`;
+  const { error } = await supabase.storage.from(SIGNED_CERTIFICATE_BUCKET).upload(objectPath, new Uint8Array(await file.arrayBuffer()), {
+    contentType: "application/pdf",
+    cacheControl: "31536000",
+    upsert: false,
+  });
+  if (error) throw error;
+  return { objectPath };
+}
+
+export async function createSignedCertificateUrl(objectPath: string, expiresIn = 300) {
+  const supabase = await ensureBucket(SIGNED_CERTIFICATE_BUCKET, { public: false, mimeTypes: ["application/pdf"], fileSizeLimit: SIGNED_CERTIFICATE_MAX_BYTES });
+  const { data, error } = await supabase.storage.from(SIGNED_CERTIFICATE_BUCKET).createSignedUrl(objectPath, expiresIn);
+  if (error || !data?.signedUrl) throw error ?? new Error("Não foi possível gerar o link seguro do certificado.");
+  return data.signedUrl;
 }

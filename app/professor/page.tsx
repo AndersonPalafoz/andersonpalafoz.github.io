@@ -68,6 +68,12 @@ export default async function TeacherDashboardPage() {
               Aprovar Alunos
             </Link>
             <Link
+              href="/professor/certificados"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+            >
+              Assinar Certificados
+            </Link>
+            <Link
               href="/admin/cursos"
               className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
