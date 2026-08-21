@@ -60,6 +60,7 @@
     "googleapis": "^175.0.0",
     "input-otp": "^1.4.2",
     "jose": "6.1.0",
+    "jszip": "^3.10.1",
     "lucide-react": "^0.453.0",
     "marked": "^18.0.10",
     "next": "^15.5.21",
