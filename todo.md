@@ -1571,3 +1571,9 @@
 - [x] Validar rotas de webhook do Stripe (`/api/stripe/webhook`) e garantir criação idempotente de matrículas ao confirmar o pagamento
 - [x] Criar testes automatizados para simular o fluxo de compra de cursos pagos e o tratamento de erros do Stripe
 - [x] Executar suíte Vitest, validar build e salvar checkpoint
+
+## Verificação de Compra de Cursos via Stripe (Agosto 2026)
+- [x] Inspecionar cursos pagos cadastrados e verificar se possuem preço e status válidos
+- [x] Auditar a API de checkout para assegurar que a criação de produtos e preços no Stripe esteja correta e idempotente
+- [x] Verificar a simulação de webhook de confirmação e gravação da matrícula no banco Neon
+- [x] Executar testes automatizados da suíte Vitest e validar build de produção
