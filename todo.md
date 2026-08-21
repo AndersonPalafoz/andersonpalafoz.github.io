@@ -1676,3 +1676,15 @@
 - [x] Aplicar no branch principal Neon as migrações idempotentes das colunas acadêmicas ausentes e das tabelas auxiliares de turmas externas
 - [x] Validar o fluxo autenticado e o tratamento de acesso não autorizado (403 vs 500)
 - [x] Suíte Vitest com 386 testes automatizados aprovada com 100% de sucesso
+
+## Refinamento Visual da Página de Cursos Externos — 21/08/2026
+- [x] Melhorar a hierarquia visual do cabeçalho, indicadores, busca, filtros e lista de cursos externos
+- [x] Refinar cards de turmas, status, metadados institucionais e menu de ações rápidas
+- [x] Melhorar estados de carregamento, erro, vazio e feedback das ações
+- [x] Garantir responsividade mobile, contraste no modo escuro, foco visível e labels acessíveis
+- [x] Validar a página em viewport móvel e aprovar 389 testes Vitest; a inspeção autenticada permanece pendente por falta de login no preview
+
+## Relatórios Acadêmicos de Turmas Externas — 21/08/2026
+- [ ] Implementar exportação de notas e presenças em CSV
+- [ ] Implementar exportação de notas e presenças em PDF
+- [ ] Adicionar testes automatizados para os formatos e permissões de exportação
