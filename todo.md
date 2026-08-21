@@ -1635,3 +1635,6 @@
 - [x] Implementados filtros avançados de busca por data e status (lida/não lida) na central de mensagens administrativas.
 - [x] Adicionadas cores e legendas visuais no calendário de turmas externas para diferenciar modalidades e níveis de ensino.
 - [x] Corrigido o erro de importação de armazenamento na rota de emissão de certificados, garantindo sucesso no build de produção do Vercel.
+- [x] Implementado tooltip interativo no calendário de turmas externas para exibição detalhada de horários e períodos ao passar o mouse.
+- [x] Configurada notificação por e-mail automática ao aluno imediatamente após a emissão do certificado.
+- [x] Auditadas e validadas todas as 8 páginas públicas (Home, Sobre, Cursos, Materiais, Blog, Contato, FAQ, Política de Privacidade).
