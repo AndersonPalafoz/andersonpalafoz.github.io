@@ -12,7 +12,7 @@ import { StreakBadge } from "@/components/streak-badge";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/sobre", label: "Sobre" },
-  { href: "/aulas", label: "Cursos" },
+  { href: "/cursos", label: "Cursos" },
   { href: "/materiais", label: "Materiais" },
   { href: "/blog", label: "Blog" },
   { href: "/contato", label: "Contato" },
