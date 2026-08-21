@@ -1770,3 +1770,6 @@
 ## Badges de Branding, Pesquisa e Paginação no Admin — 21/08/2026
 - [x] Criar badges visuais diferenciados na tabela de certificados do admin para indicar se o certificado possui ou não a marca do site (`includeSiteBranding`).
 - [x] Adicionar barra de pesquisa por nome do aluno, e-mail ou curso e sistema de paginação na tabela de assinaturas finais.
+
+## Resolução de Incidente: Unexpected end of JSON input em certificate-templates — 21/08/2026
+- [x] Blindar o carregamento de modelos no gerenciador frontend com parser resiliente para evitar erro de JSON vazio ou corrompido.

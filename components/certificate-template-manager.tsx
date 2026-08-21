@@ -106,7 +106,13 @@ export function CertificateTemplateManager() {
       const response = await fetch("/api/admin/certificate-templates", {
         cache: "no-store",
       });
-      const payload = await response.json();
+      const text = await response.text();
+      let payload: any = {};
+      try {
+        payload = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error("Resposta inválida do servidor ao carregar modelos.");
+      }
       if (!response.ok)
         throw new Error(
           payload.error || "Não foi possível carregar os modelos."
