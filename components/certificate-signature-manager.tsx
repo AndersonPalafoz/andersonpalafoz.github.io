@@ -66,6 +66,8 @@ export function CertificateSignatureManager() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [startDateFilter, setStartDateFilter] = useState<string>("");
   const [endDateFilter, setEndDateFilter] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const certificatesPerPage = 12;
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
@@ -312,6 +314,23 @@ export function CertificateSignatureManager() {
       return matchesSearch && matchesStatus && matchesDate;
     });
   }, [certificates, searchQuery, statusFilter, startDateFilter, endDateFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, startDateFilter, endDateFilter]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCertificates.length / certificatesPerPage)
+  );
+  const paginatedCertificates = filteredCertificates.slice(
+    (currentPage - 1) * certificatesPerPage,
+    currentPage * certificatesPerPage
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredCertificates.length) {
@@ -610,181 +629,236 @@ export function CertificateSignatureManager() {
           Nenhum certificado corresponde aos filtros aplicados.
         </div>
       ) : (
-        <div className="grid gap-5 xl:grid-cols-2">
-          {filteredCertificates.map(certificate => {
-            const isSelected = selectedIds.includes(certificate.id);
-            return (
-              <article
-                key={certificate.id}
-                className={`surface-card space-y-5 border p-5 sm:p-6 transition ${isSelected ? "border-red-600/60 bg-red-500/[0.02]" : "border-border/70"}`}
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="flex items-start gap-3 min-w-0">
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleSelectOne(certificate.id)}
-                      className="mt-1 rounded border-border text-red-600 focus:ring-red-600 w-4 h-4 cursor-pointer"
-                    />
-                    <div className="min-w-0">
-                      <p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">
-                        Certificado #{certificate.id}
-                      </p>
-                      <h2 className="mt-1 truncate text-lg font-black text-foreground">
-                        {certificate.courseTitle}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {certificate.studentName}
-                        {certificate.studentEmail
-                          ? ` · ${certificate.studentEmail}`
-                          : ""}
-                      </p>
+        <>
+          <div className="grid gap-5 xl:grid-cols-2">
+            {paginatedCertificates.map(certificate => {
+              const isSelected = selectedIds.includes(certificate.id);
+              return (
+                <article
+                  key={certificate.id}
+                  className={`surface-card space-y-5 border p-5 sm:p-6 transition ${isSelected ? "border-red-600/60 bg-red-500/[0.02]" : "border-border/70"}`}
+                >
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleSelectOne(certificate.id)}
+                        className="mt-1 rounded border-border text-red-600 focus:ring-red-600 w-4 h-4 cursor-pointer"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">
+                          Certificado #{certificate.id}
+                        </p>
+                        <h2 className="mt-1 truncate text-lg font-black text-foreground">
+                          {certificate.courseTitle}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {certificate.studentName}
+                          {certificate.studentEmail
+                            ? ` · ${certificate.studentEmail}`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${certificate.hasSignedPdf ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "bg-muted text-muted-foreground"}`}
+                      >
+                        <FileSignature size={14} />{" "}
+                        {signatureLabel(certificate.signatureType)}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-bold ${certificate.includeSiteBranding ? "border-red-600/30 bg-red-500/10 text-red-700 dark:text-red-200" : "border-slate-400/40 bg-slate-500/10 text-slate-700 dark:text-slate-200"}`}
+                        title={
+                          certificate.includeSiteBranding
+                            ? "A logo e a identificação do site estão autorizadas neste certificado."
+                            : "Este certificado não deve receber a logo ou identificação do site."
+                        }
+                      >
+                        <ShieldCheck size={14} />{" "}
+                        {certificate.includeSiteBranding
+                          ? "Com marca do site"
+                          : "Sem marca do site"}
+                      </span>
+                      <span className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1 text-xs font-bold text-muted-foreground">
+                        {certificate.certificateTemplateId
+                          ? "Modelo institucional"
+                          : "Modelo da plataforma"}
+                      </span>
                     </div>
                   </div>
-                  <span
-                    className={`inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-xs font-bold ${certificate.hasSignedPdf ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "bg-muted text-muted-foreground"}`}
-                  >
-                    <FileSignature size={14} />{" "}
-                    {signatureLabel(certificate.signatureType)}
-                  </span>
-                </div>
 
-                <dl className="grid grid-cols-2 gap-3 border-y border-border/60 py-4 text-xs">
-                  <div>
-                    <dt className="text-muted-foreground">Aluno</dt>
-                    <dd className="mt-1 font-bold text-foreground">
-                      {certificate.studentName}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Nível</dt>
-                    <dd className="mt-1 font-bold text-foreground">
-                      {certificate.level}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Código</dt>
-                    <dd className="mt-1 break-all font-bold text-foreground">
-                      {certificate.certificateCode || "Não registrado"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Emissão</dt>
-                    <dd className="mt-1 font-bold text-foreground">
-                      {new Date(certificate.issuedAt).toLocaleDateString(
-                        "pt-BR"
-                      )}
-                    </dd>
-                  </div>
-                </dl>
+                  <dl className="grid grid-cols-2 gap-3 border-y border-border/60 py-4 text-xs">
+                    <div>
+                      <dt className="text-muted-foreground">Aluno</dt>
+                      <dd className="mt-1 font-bold text-foreground">
+                        {certificate.studentName}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Nível</dt>
+                      <dd className="mt-1 font-bold text-foreground">
+                        {certificate.level}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Código</dt>
+                      <dd className="mt-1 break-all font-bold text-foreground">
+                        {certificate.certificateCode || "Não registrado"}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="text-muted-foreground">Emissão</dt>
+                      <dd className="mt-1 font-bold text-foreground">
+                        {new Date(certificate.issuedAt).toLocaleDateString(
+                          "pt-BR"
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <button
-                    type="button"
-                    onClick={() => setPreviewCert(certificate)}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
-                  >
-                    <Eye size={16} className="text-red-600" /> Pré-visualizar
-                    certificado
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => openIssueModal(certificate)}
-                    disabled={issuingId === certificate.id}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-600/30 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-500/20 dark:text-red-200 disabled:opacity-50"
-                  >
-                    <Sparkles size={16} /> Emitir / atualizar
-                  </button>
-                  {certificate.certificateUrl && (
-                    <a
-                      href={certificate.certificateUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewCert(certificate)}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
                     >
-                      <Download size={16} className="text-red-600" /> Baixar PDF
-                    </a>
-                  )}
-                </div>
-
-                <form
-                  onSubmit={handleUpload}
-                  className="space-y-3 pt-2 border-t border-border/60"
-                  encType="multipart/form-data"
-                >
-                  <input
-                    type="hidden"
-                    name="certificateId"
-                    value={certificate.id}
-                  />
-                  <label className="block text-sm font-bold text-foreground">
-                    Tipo de assinatura
-                    <select
-                      name="signatureType"
-                      defaultValue={
-                        certificate.signatureType === "none"
-                          ? "manual"
-                          : certificate.signatureType
-                      }
-                      className="mt-1.5 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm font-normal text-foreground outline-none focus:border-red-600"
+                      <Eye size={16} className="text-red-600" /> Pré-visualizar
+                      certificado
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => openIssueModal(certificate)}
+                      disabled={issuingId === certificate.id}
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-600/30 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-500/20 dark:text-red-200 disabled:opacity-50"
                     >
-                      <option value="manual">Assinatura manual</option>
-                      <option value="govbr">Assinatura via gov.br</option>
-                    </select>
-                  </label>
-                  <label className="block text-sm font-bold text-foreground">
-                    PDF assinado
-                    <input
-                      name="file"
-                      type="file"
-                      accept="application/pdf,.pdf"
-                      required
-                      className="mt-1.5 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
-                    />
-                  </label>
-                  <label className="flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      name="sendEmail"
-                      value="true"
-                      defaultChecked
-                      className="rounded border-border text-red-600 focus:ring-red-600"
-                    />
-                    Enviar certificado por e-mail ao aluno automaticamente após
-                    upload
-                  </label>
-                  <button
-                    type="submit"
-                    disabled={uploadingId === certificate.id}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {uploadingId === certificate.id ? (
-                      <>
-                        <Loader2 className="animate-spin" size={17} /> Enviando
-                        PDF e e-mail...
-                      </>
-                    ) : (
-                      <>
-                        <Upload size={17} />{" "}
-                        {certificate.hasSignedPdf
-                          ? "Substituir e Notificar Aluno"
-                          : "Enviar e Notificar Aluno"}
-                      </>
+                      <Sparkles size={16} /> Emitir / atualizar
+                    </button>
+                    {certificate.certificateUrl && (
+                      <a
+                        href={certificate.certificateUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
+                      >
+                        <Download size={16} className="text-red-600" /> Baixar
+                        PDF
+                      </a>
                     )}
-                  </button>
-                </form>
+                  </div>
 
-                {certificate.signedAt && (
-                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle2 size={14} className="text-emerald-600" />{" "}
-                    Última assinatura registrada em{" "}
-                    {new Date(certificate.signedAt).toLocaleString("pt-BR")}.
-                  </p>
-                )}
-              </article>
-            );
-          })}
-        </div>
+                  <form
+                    onSubmit={handleUpload}
+                    className="space-y-3 pt-2 border-t border-border/60"
+                    encType="multipart/form-data"
+                  >
+                    <input
+                      type="hidden"
+                      name="certificateId"
+                      value={certificate.id}
+                    />
+                    <label className="block text-sm font-bold text-foreground">
+                      Tipo de assinatura
+                      <select
+                        name="signatureType"
+                        defaultValue={
+                          certificate.signatureType === "none"
+                            ? "manual"
+                            : certificate.signatureType
+                        }
+                        className="mt-1.5 h-10 w-full rounded-xl border border-border bg-background px-3 text-sm font-normal text-foreground outline-none focus:border-red-600"
+                      >
+                        <option value="manual">Assinatura manual</option>
+                        <option value="govbr">Assinatura via gov.br</option>
+                      </select>
+                    </label>
+                    <label className="block text-sm font-bold text-foreground">
+                      PDF assinado
+                      <input
+                        name="file"
+                        type="file"
+                        accept="application/pdf,.pdf"
+                        required
+                        className="mt-1.5 block w-full rounded-xl border border-border bg-background px-3 py-2 text-xs text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white"
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer pt-1">
+                      <input
+                        type="checkbox"
+                        name="sendEmail"
+                        value="true"
+                        defaultChecked
+                        className="rounded border-border text-red-600 focus:ring-red-600"
+                      />
+                      Enviar certificado por e-mail ao aluno automaticamente
+                      após upload
+                    </label>
+                    <button
+                      type="submit"
+                      disabled={uploadingId === certificate.id}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {uploadingId === certificate.id ? (
+                        <>
+                          <Loader2 className="animate-spin" size={17} />{" "}
+                          Enviando PDF e e-mail...
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={17} />{" "}
+                          {certificate.hasSignedPdf
+                            ? "Substituir e Notificar Aluno"
+                            : "Enviar e Notificar Aluno"}
+                        </>
+                      )}
+                    </button>
+                  </form>
+
+                  {certificate.signedAt && (
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <CheckCircle2 size={14} className="text-emerald-600" />{" "}
+                      Última assinatura registrada em{" "}
+                      {new Date(certificate.signedAt).toLocaleString("pt-BR")}.
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+          {totalPages > 1 && (
+            <nav
+              className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-border/70 bg-background p-4"
+              aria-label="Paginação dos certificados"
+            >
+              <button
+                type="button"
+                onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Anterior
+              </button>
+              <span
+                className="text-xs font-bold text-muted-foreground"
+                aria-live="polite"
+              >
+                Página {currentPage} de {totalPages} ·{" "}
+                {filteredCertificates.length} resultados
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setCurrentPage(page => Math.min(totalPages, page + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Próxima
+              </button>
+            </nav>
+          )}
+        </>
       )}
 
       {issueCert && (

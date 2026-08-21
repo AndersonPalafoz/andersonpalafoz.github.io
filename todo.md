@@ -1766,3 +1766,7 @@
 
 ## Resolução de Schema: Colunas certificateTemplateId e includeSiteBranding em certificates — 21/08/2026
 - [x] Aplicar migração aditiva para garantir que a tabela `certificates` possua `certificateTemplateId` e `includeSiteBranding`.
+
+## Badges de Branding, Pesquisa e Paginação no Admin — 21/08/2026
+- [x] Criar badges visuais diferenciados na tabela de certificados do admin para indicar se o certificado possui ou não a marca do site (`includeSiteBranding`).
+- [x] Adicionar barra de pesquisa por nome do aluno, e-mail ou curso e sistema de paginação na tabela de assinaturas finais.
