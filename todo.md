@@ -1645,3 +1645,5 @@
 - [x] Implementados skeleton loaders e transições suaves ao navegar entre páginas no blog e materiais.
 - [x] Adicionadas seções de "Artigos Relacionados" e "Materiais Recomendados" nas páginas individuais para manter o engajamento.
 - [x] Implementado o botão de avaliação "Curtir / Útil" com persistência nas páginas individuais do blog e de materiais.
+- [x] Adicionada seção completa de comentários e interação com selo de resposta do professor nas páginas individuais do blog.
+- [x] Implementado o recurso de "Salvar para depois" / Favoritos unificado para artigos e materiais na plataforma.
