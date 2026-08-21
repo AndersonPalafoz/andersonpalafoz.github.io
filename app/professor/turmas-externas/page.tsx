@@ -115,6 +115,8 @@ export default function TurmasExternasPage() {
   const [studentAttendanceFilter, setStudentAttendanceFilter] = useState("all");
   const [selectedYearFilter, setSelectedYearFilter] = useState("all");
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
+  const [selectedModalityFilter, setSelectedModalityFilter] = useState("all");
+  const [selectedLevelFilter, setSelectedLevelFilter] = useState("all");
 
   // Edit class mode
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
@@ -366,12 +368,18 @@ export default function TurmasExternasPage() {
       const matchesYear = selectedYearFilter === "all" || termYear.includes(selectedYearFilter);
       const matchesSemester = selectedSemesterFilter === "all" || termYear.includes(`.${selectedSemesterFilter}`) || termYear.includes(`/${selectedSemesterFilter}`) || termYear.includes(`-${selectedSemesterFilter}`) || termYear.toLowerCase().includes(`${selectedSemesterFilter}º`);
 
+      const classModality = (cls as any).modality || "Remota";
+      const matchesModality = selectedModalityFilter === "all" || classModality.toLowerCase() === selectedModalityFilter.toLowerCase();
+
+      const classLevel = (cls as any).level || "Básico (A1-A2)";
+      const matchesLevel = selectedLevelFilter === "all" || classLevel.toLowerCase().includes(selectedLevelFilter.toLowerCase());
+
       const term = searchTerm.toLowerCase();
       const matchesClassSearch = !term || cls.className.toLowerCase().includes(term) || cls.courseName.toLowerCase().includes(term) || cls.institution.toLowerCase().includes(term);
       const hasMatchingStudents = cls.filteredStudents.length > 0;
-      return matchesInstitution && matchesYear && matchesSemester && (matchesClassSearch || hasMatchingStudents);
+      return matchesInstitution && matchesYear && matchesSemester && matchesModality && matchesLevel && (matchesClassSearch || hasMatchingStudents);
     });
-  }, [classes, selectedInstitutionFilter, studentStatusFilter, selectedYearFilter, selectedSemesterFilter, searchTerm]);
+  }, [classes, selectedInstitutionFilter, studentStatusFilter, selectedYearFilter, selectedSemesterFilter, selectedModalityFilter, selectedLevelFilter, searchTerm]);
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -700,7 +708,7 @@ export default function TurmasExternasPage() {
     }
   };
 
-  // Importação CSV em lote
+  // Importação Excel (.xls/.xlsx tab-separated) ou CSV em lote
   const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -713,26 +721,32 @@ export default function TurmasExternasPage() {
 
         const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
         if (lines.length < 2) {
-          notifyError("O arquivo CSV precisa de um cabeçalho e ao menos uma linha de dados.");
+          notifyError("O arquivo precisa de um cabeçalho e ao menos uma linha de dados.");
           return;
         }
 
-        const headers = lines[0].split(",").map(h => h.trim().toLowerCase().replace(/['"]+/g, ""));
+        const separator = lines[0].includes("\t") ? "\t" : ",";
+        const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/['"]+/g, ""));
         const csvData = [];
 
         for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(",").map(v => v.trim().replace(/['"]+/g, ""));
+          const values = lines[i].split(separator).map(v => v.trim().replace(/['"]+/g, ""));
           const row: Record<string, string> = {};
           headers.forEach((header, index) => {
             row[header] = values[index] || "";
           });
-          if (row.name || row.nome) {
-            csvData.push(row);
+          const nameVal = row.name || row.nome || row["nome do aluno"] || row["student name"];
+          if (nameVal) {
+            csvData.push({
+              name: nameVal,
+              email: row.email || row["e-mail"] || row["correio eletrônico"] || "",
+              studentIdNumber: row.studentIdNumber || row.matricula || row.id || row["número de matrícula"] || "",
+            });
           }
         }
 
         if (csvData.length === 0) {
-          notifyError("Nenhum aluno válido encontrado no arquivo CSV.");
+          notifyError("Nenhum aluno válido encontrado no arquivo (verifique as colunas de Nome e E-mail).");
           return;
         }
 
@@ -743,11 +757,11 @@ export default function TurmasExternasPage() {
           body: JSON.stringify({ action: "importCsvStudents", classId, csvData }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Erro ao importar CSV.");
-        notifySuccess(`${data.importedCount} alunos importados com sucesso via CSV!`);
+        if (!res.ok) throw new Error(data.error || "Erro ao importar alunos.");
+        notifySuccess(`${data.importedCount} alunos importados com sucesso para a turma!`);
         void loadClasses();
       } catch (err) {
-        notifyError(err instanceof Error ? err.message : "Erro ao processar arquivo CSV.");
+        notifyError(err instanceof Error ? err.message : "Erro ao processar arquivo de alunos.");
       } finally {
         setSubmitting(false);
         e.target.value = "";
