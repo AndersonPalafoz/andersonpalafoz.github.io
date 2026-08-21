@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
-import { getAdminStats } from "@/lib/db";
+import { getAdminCommerceStats, getAdminStats } from "@/lib/db";
 
 export async function GET() {
   try {
@@ -10,8 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const stats = await getAdminStats();
-    return NextResponse.json(stats);
+    const [stats, commerce] = await Promise.all([getAdminStats(), getAdminCommerceStats()]);
+    return NextResponse.json({ ...stats, commerce });
   } catch (error) {
     console.error("Error fetching admin stats:", error);
     return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });

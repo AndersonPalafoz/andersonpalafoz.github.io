@@ -23,6 +23,7 @@ describe("ProfileForm avatar upload", () => {
   afterEach(() => {
     cleanup();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("rejects unsupported image formats before making a request", () => {
