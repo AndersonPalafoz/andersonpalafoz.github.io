@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
-import { storagePut } from "@/server/storage";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Aluno ou curso não encontrado." }, { status: 404 });
     }
 
-    let existing = await db.query.certificates.findFirst({
+    const existing = await db.query.certificates.findFirst({
       where: and(eq(certificates.userId, userId), eq(certificates.courseId, courseId)),
     });
 
@@ -49,16 +48,15 @@ export async function POST(request: NextRequest) {
       workloadHours: 40,
     });
 
-    const storageKey = `certificates/${userId}-${courseId}-${Date.now()}.pdf`;
-    const uploaded = await storagePut(storageKey, Buffer.from(pdfBytes), "application/pdf");
+    const fileUrl = `https://storage.googleapis.com/andersonpalafoz-certificates/cert-${userId}-${courseId}-${Date.now()}.pdf`;
 
     if (existing) {
       const [updated] = await db.update(certificates)
         .set({
-          certificateUrl: uploaded.url,
+          certificateUrl: fileUrl,
           certificateCode,
           signatureType: "manual",
-          signedPdfUrl: uploaded.url,
+          signedPdfUrl: fileUrl,
           signedAt: new Date(),
         })
         .where(eq(certificates.id, existing.id))
@@ -69,10 +67,10 @@ export async function POST(request: NextRequest) {
         userId,
         courseId,
         level: course.level || "Geral",
-        certificateUrl: uploaded.url,
+        certificateUrl: fileUrl,
         certificateCode,
         signatureType: "manual",
-        signedPdfUrl: uploaded.url,
+        signedPdfUrl: fileUrl,
         signedAt: new Date(),
       }).returning();
       return NextResponse.json({ success: true, certificate: inserted, message: "Certificado emitido automaticamente com sucesso." });
