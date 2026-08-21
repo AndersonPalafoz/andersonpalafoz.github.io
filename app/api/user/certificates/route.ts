@@ -16,24 +16,42 @@ export async function GET() {
       where: eq(users.email, session.user.email),
     });
     if (!user) {
-      return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
+      return NextResponse.json(
+        { error: "Usuário não encontrado." },
+        { status: 404 }
+      );
     }
 
     const certificates = await getCertificates(user.id);
     return NextResponse.json({
-      certificates: certificates.map((certificate) => ({
+      certificates: certificates.map(certificate => ({
         id: certificate.id,
         issuedAt: certificate.issuedAt,
         level: certificate.level,
         certificateCode: certificate.certificateCode,
         certificateUrl: certificate.certificateUrl,
+        signedPdfUrl: certificate.signedPdfUrl
+          ? `/api/certificates/${certificate.id}/download`
+          : null,
+        courseTitle: certificate.course?.title || "Curso",
+
         signatureType: certificate.signatureType,
         hasSignedPdf: Boolean(certificate.signedPdfUrl),
-        course: certificate.course ? { title: certificate.course.title } : null,
+        certificateTemplateId: certificate.certificateTemplateId ?? null,
+        includeSiteBranding: certificate.includeSiteBranding ?? true,
+        course: certificate.course
+          ? {
+              title: certificate.course.title,
+              courseType: certificate.course.courseType ?? null,
+            }
+          : null,
       })),
     });
   } catch (error) {
     console.error("Erro ao carregar certificados do aluno:", error);
-    return NextResponse.json({ error: "Não foi possível carregar seus certificados." }, { status: 500 });
+    return NextResponse.json(
+      { error: "Não foi possível carregar seus certificados." },
+      { status: 500 }
+    );
   }
 }

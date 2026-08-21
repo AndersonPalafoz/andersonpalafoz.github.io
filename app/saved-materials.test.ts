@@ -8,7 +8,7 @@ const read = (relativePath: string) => readFileSync(join(root, relativePath), "u
 describe("Saved materials contract", () => {
   it("defines a unique user/material persistence model", () => {
     const schema = read("drizzle/schema.ts");
-    expect(schema).toContain('pgTable("saved_materials"');
+    expect(schema).toMatch(/pgTable\(\s*["']saved_materials["']/);
     expect(schema).toContain("saved_materials_user_material_idx");
     expect(schema).toContain("references(() => materials.id");
   });

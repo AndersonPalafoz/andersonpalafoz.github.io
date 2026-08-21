@@ -1,7 +1,16 @@
-'use client';
+"use client";
 
 import { useEffect, useState } from "react";
-import { Award, BookOpen, CheckCircle2, Download, GraduationCap, ShieldCheck, Clock, ArrowRight } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  CheckCircle2,
+  Download,
+  GraduationCap,
+  ShieldCheck,
+  Clock,
+  ArrowRight,
+} from "lucide-react";
 import Link from "next/link";
 import { CertificateShareButton } from "@/components/certificate-share-button";
 
@@ -24,11 +33,15 @@ interface CertificateItem {
   level: string;
   certificateCode: string | null;
   certificateUrl: string | null;
+  signedPdfUrl: string | null;
   hasSignedPdf: boolean;
+  includeSiteBranding: boolean;
+  certificateTemplateId: number | null;
+
   signatureType: "none" | "manual" | "govbr" | null;
   course: {
     title: string;
-  };
+  } | null;
 }
 
 export function ProfileLearningHistoryAndCertificates() {
@@ -41,7 +54,9 @@ export function ProfileLearningHistoryAndCertificates() {
       try {
         const [enrollRes, certRes] = await Promise.all([
           fetch("/api/user/historico", { cache: "no-store" }),
-          fetch("/api/user/certificates", { cache: "no-store" }).catch(() => null),
+          fetch("/api/user/certificates", { cache: "no-store" }).catch(
+            () => null
+          ),
         ]);
 
         if (enrollRes.ok) {
@@ -49,7 +64,8 @@ export function ProfileLearningHistoryAndCertificates() {
           setEnrollments(data.enrollments || []);
         }
 
-        const certsData = certRes && certRes.ok ? await certRes.json() : { certificates: [] };
+        const certsData =
+          certRes && certRes.ok ? await certRes.json() : { certificates: [] };
         setCertificates(certsData.certificates || []);
       } catch (error) {
         console.error("Erro ao carregar histórico no perfil:", error);
@@ -80,33 +96,61 @@ export function ProfileLearningHistoryAndCertificates() {
               <GraduationCap size={22} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">Histórico de Aprendizado</h3>
-              <p className="text-xs text-gray-500">Cursos matriculados, andamento e progresso geral</p>
+              <h3 className="font-bold text-gray-900 text-base">
+                Histórico de Aprendizado
+              </h3>
+              <p className="text-xs text-gray-500">
+                Cursos matriculados, andamento e progresso geral
+              </p>
             </div>
           </div>
-          <Link href="/dashboard/meus-cursos" className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+          <Link
+            href="/dashboard/meus-cursos"
+            className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+          >
             Ver todos <ArrowRight size={14} />
           </Link>
         </div>
 
         {enrollments.length > 0 ? (
           <div className="space-y-3">
-            {enrollments.map((enrol) => (
-              <div key={enrol.id} className="p-4 rounded-lg border border-gray-100 bg-gray-50/50 space-y-3">
+            {enrollments.map(enrol => (
+              <div
+                key={enrol.id}
+                className="p-4 rounded-lg border border-gray-100 bg-gray-50/50 space-y-3"
+              >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <h4 className="font-bold text-gray-900 text-sm">{enrol.course?.title}</h4>
-                    <p className="text-xs text-gray-500">Nível: <span className="font-semibold text-gray-700">{enrol.course?.level || "Geral"}</span></p>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {enrol.course?.title}
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      Nível:{" "}
+                      <span className="font-semibold text-gray-700">
+                        {enrol.course?.level || "Geral"}
+                      </span>
+                    </p>
                   </div>
-                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-                    enrol.progress >= 100 ? "bg-emerald-50 text-emerald-700" : "bg-blue-50 text-blue-700"
-                  }`}>
-                    {enrol.progress >= 100 ? <CheckCircle2 size={13} /> : <Clock size={13} />}
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+                      enrol.progress >= 100
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-blue-50 text-blue-700"
+                    }`}
+                  >
+                    {enrol.progress >= 100 ? (
+                      <CheckCircle2 size={13} />
+                    ) : (
+                      <Clock size={13} />
+                    )}
                     {enrol.progress}% Concluído
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-red-600 h-full transition-all duration-300" style={{ width: `${Math.min(100, enrol.progress)}%` }} />
+                  <div
+                    className="bg-red-600 h-full transition-all duration-300"
+                    style={{ width: `${Math.min(100, enrol.progress)}%` }}
+                  />
                 </div>
               </div>
             ))}
@@ -114,8 +158,13 @@ export function ProfileLearningHistoryAndCertificates() {
         ) : (
           <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
             <BookOpen className="mx-auto text-gray-400 mb-2" size={32} />
-            <p className="text-sm text-gray-600">Você ainda não se matriculou em nenhum curso.</p>
-            <Link href="/cursos" className="mt-3 inline-block bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-700 transition">
+            <p className="text-sm text-gray-600">
+              Você ainda não se matriculou em nenhum curso.
+            </p>
+            <Link
+              href="/cursos"
+              className="mt-3 inline-block bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-red-700 transition"
+            >
               Explorar Cursos
             </Link>
           </div>
@@ -130,35 +179,61 @@ export function ProfileLearningHistoryAndCertificates() {
               <Award size={22} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-base">Certificados e Conquistas</h3>
-              <p className="text-xs text-gray-500">Baixe certificados assinados (manual ou gov.br) ao concluir 100%</p>
+              <h3 className="font-bold text-gray-900 text-base">
+                Certificados e Conquistas
+              </h3>
+              <p className="text-xs text-gray-500">
+                Baixe certificados assinados (manual ou gov.br) ao concluir 100%
+              </p>
             </div>
           </div>
-          <Link href="/dashboard/certificados" className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1">
+          <Link
+            href="/dashboard/certificados"
+            className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1"
+          >
             Galeria completa <ArrowRight size={14} />
           </Link>
         </div>
 
         {certificates.length > 0 ? (
           <div className="space-y-3">
-            {certificates.map((cert) => (
-              <div key={cert.id} className="p-4 rounded-lg border border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {certificates.map(cert => (
+              <div
+                key={cert.id}
+                className="p-4 rounded-lg border border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-gray-900 text-sm">{cert.course?.title}</h4>
+                    <h4 className="font-bold text-gray-900 text-sm">
+                      {cert.course?.title || "Curso"}
+                    </h4>
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">
+                      {cert.includeSiteBranding
+                        ? "Logo da plataforma"
+                        : "Modelo institucional"}
+                    </span>
                     {cert.hasSignedPdf && (
                       <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        <ShieldCheck size={12} /> {cert.signatureType === "govbr" ? "Assinado gov.br" : "Assinado"}
+                        <ShieldCheck size={12} />{" "}
+                        {cert.signatureType === "govbr"
+                          ? "Assinado gov.br"
+                          : "Assinado"}
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">Concluído em {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}</p>
+                  <p className="text-xs text-gray-500">
+                    Concluído em{" "}
+                    {new Date(cert.issuedAt).toLocaleDateString("pt-BR")}
+                  </p>
                 </div>
 
                 <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-[220px]">
                   {cert.hasSignedPdf ? (
                     <a
-                      href={`/api/certificates/${cert.id}/download`}
+                      href={
+                        cert.signedPdfUrl ||
+                        `/api/certificates/${cert.id}/download`
+                      }
                       download
                       className="inline-flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
                     >
@@ -175,9 +250,14 @@ export function ProfileLearningHistoryAndCertificates() {
                       <Download size={14} /> Baixar PDF
                     </a>
                   ) : (
-                    <span className="text-center text-xs italic text-gray-400">Disponível em breve</span>
+                    <span className="text-center text-xs italic text-gray-400">
+                      Disponível em breve
+                    </span>
                   )}
-                  <CertificateShareButton certificateUrl={cert.certificateUrl} courseTitle={cert.course?.title} />
+                  <CertificateShareButton
+                    certificateUrl={cert.signedPdfUrl || cert.certificateUrl}
+                    courseTitle={cert.course?.title || "Curso"}
+                  />
                 </div>
               </div>
             ))}
@@ -185,7 +265,10 @@ export function ProfileLearningHistoryAndCertificates() {
         ) : (
           <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200">
             <Award className="mx-auto text-gray-400 mb-2" size={32} />
-            <p className="text-sm text-gray-600">Nenhum certificado emitido ainda. Conclua os módulos para conquistar o seu!</p>
+            <p className="text-sm text-gray-600">
+              Nenhum certificado emitido ainda. Conclua os módulos para
+              conquistar o seu!
+            </p>
           </div>
         )}
       </div>

@@ -1,14 +1,48 @@
-import { pgTable, pgEnum, serial, varchar, text, timestamp, integer, boolean, uniqueIndex, jsonb, numeric } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  pgEnum,
+  serial,
+  varchar,
+  text,
+  timestamp,
+  integer,
+  boolean,
+  uniqueIndex,
+  jsonb,
+  numeric,
+} from "drizzle-orm/pg-core";
 
 // Enums
 // Nota: a migração 0003_skinny_vermin.sql adicionou 'professor' ao enum no banco.
 // Nenhuma rota/UI usa esse valor ainda -- apenas alinhando o schema TS à realidade do banco.
 export const roleEnum = pgEnum("role", ["user", "professor", "admin"]);
-export const approvalStatusEnum = pgEnum("approval_status", ["pending", "approved", "rejected"]);
-export const enrollmentStatusEnum = pgEnum("enrollment_status", ["active", "completed", "paused", "cancelled"]);
-export const activityTypeEnum = pgEnum("activity_type", ["quiz", "exercise", "assignment", "speaking", "listening"]);
-export const progressStatusEnum = pgEnum("progress_status", ["pending", "in_progress", "completed"]);
-export const lessonProgressApprovalStatusEnum = pgEnum("lesson_progress_approval_status", ["pending", "approved", "rejected"]);
+export const approvalStatusEnum = pgEnum("approval_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+export const enrollmentStatusEnum = pgEnum("enrollment_status", [
+  "active",
+  "completed",
+  "paused",
+  "cancelled",
+]);
+export const activityTypeEnum = pgEnum("activity_type", [
+  "quiz",
+  "exercise",
+  "assignment",
+  "speaking",
+  "listening",
+]);
+export const progressStatusEnum = pgEnum("progress_status", [
+  "pending",
+  "in_progress",
+  "completed",
+]);
+export const lessonProgressApprovalStatusEnum = pgEnum(
+  "lesson_progress_approval_status",
+  ["pending", "approved", "rejected"]
+);
 
 /**
  * Core user table backing auth flow.
@@ -30,7 +64,9 @@ export const users = pgTable("users", {
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").notNull().default("user"), // user, professor, admin
   requestedRole: varchar("requestedRole", { length: 32 }).default("student"), // student, professor
-  approvalStatus: approvalStatusEnum("approvalStatus").notNull().default("pending"), // pending, approved, rejected
+  approvalStatus: approvalStatusEnum("approvalStatus")
+    .notNull()
+    .default("pending"), // pending, approved, rejected
   phone: varchar("phone", { length: 32 }), // celular
   location: varchar("location", { length: 120 }),
   bio: text("bio"),
@@ -49,7 +85,9 @@ export type InsertUser = typeof users.$inferInsert;
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id),
   tokenHash: varchar("tokenHash", { length: 128 }).notNull().unique(),
   expiresAt: timestamp("expiresAt").notNull(),
   usedAt: timestamp("usedAt"),
@@ -68,7 +106,9 @@ export const courses = pgTable("courses", {
   level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
   category: varchar("category", { length: 120 }),
   modules: integer("modules").default(0),
-  instructor: varchar("instructor", { length: 255 }).default("Anderson Palafoz"),
+  instructor: varchar("instructor", { length: 255 }).default(
+    "Anderson Palafoz"
+  ),
   modality: varchar("modality", { length: 32 }).default("individual"),
   isFree: boolean("isFree").default(true).notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).default("0"),
@@ -101,9 +141,15 @@ export type InsertCourse = typeof courses.$inferInsert;
  */
 export const coursePurchases = pgTable("course_purchases", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
-  courseId: integer("courseId").notNull().references(() => courses.id),
-  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 }).notNull().unique(),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id),
+  courseId: integer("courseId")
+    .notNull()
+    .references(() => courses.id),
+  stripeCheckoutSessionId: varchar("stripeCheckoutSessionId", { length: 255 })
+    .notNull()
+    .unique(),
   stripePaymentIntentId: varchar("stripePaymentIntentId", { length: 255 }),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   fulfilledAt: timestamp("fulfilledAt"),
@@ -116,18 +162,25 @@ export type InsertCoursePurchase = typeof coursePurchases.$inferInsert;
 /**
  * Enrollments table - Inscrições de alunos em cursos
  */
-export const enrollments = pgTable("enrollments", {
-  id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
-  courseId: serial("courseId").notNull(),
-  progress: integer("progress").default(0).notNull(), // 0-100
-  currentModule: integer("currentModule").default(0).notNull(),
-  status: enrollmentStatusEnum("status").notNull().default("active"),
-  enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
-  completedAt: timestamp("completedAt"),
-}, (table) => ({
-  userCourseIdentity: uniqueIndex("enrollments_user_course_unique_idx").on(table.userId, table.courseId),
-}));
+export const enrollments = pgTable(
+  "enrollments",
+  {
+    id: serial("id").primaryKey(),
+    userId: serial("userId").notNull(),
+    courseId: serial("courseId").notNull(),
+    progress: integer("progress").default(0).notNull(), // 0-100
+    currentModule: integer("currentModule").default(0).notNull(),
+    status: enrollmentStatusEnum("status").notNull().default("active"),
+    enrolledAt: timestamp("enrolledAt").defaultNow().notNull(),
+    completedAt: timestamp("completedAt"),
+  },
+  table => ({
+    userCourseIdentity: uniqueIndex("enrollments_user_course_unique_idx").on(
+      table.userId,
+      table.courseId
+    ),
+  })
+);
 
 export type Enrollment = typeof enrollments.$inferSelect;
 export type InsertEnrollment = typeof enrollments.$inferInsert;
@@ -155,28 +208,50 @@ export const materials = pgTable("materials", {
 export type Material = typeof materials.$inferSelect;
 export type InsertMaterial = typeof materials.$inferInsert;
 
-export const materialProgress = pgTable("material_progress", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  materialId: integer("materialId").notNull().references(() => materials.id, { onDelete: "cascade" }),
-  completed: boolean("completed").default(false).notNull(),
-  completedAt: timestamp("completedAt"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-}, (table) => ({
-  userMaterialIdentity: uniqueIndex("material_progress_user_material_idx").on(table.userId, table.materialId),
-}));
+export const materialProgress = pgTable(
+  "material_progress",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    materialId: integer("materialId")
+      .notNull()
+      .references(() => materials.id, { onDelete: "cascade" }),
+    completed: boolean("completed").default(false).notNull(),
+    completedAt: timestamp("completedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    userMaterialIdentity: uniqueIndex("material_progress_user_material_idx").on(
+      table.userId,
+      table.materialId
+    ),
+  })
+);
 export type MaterialProgress = typeof materialProgress.$inferSelect;
 export type InsertMaterialProgress = typeof materialProgress.$inferInsert;
 
-export const savedMaterials = pgTable("saved_materials", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  materialId: integer("materialId").notNull().references(() => materials.id, { onDelete: "cascade" }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => ({
-  userMaterialIdentity: uniqueIndex("saved_materials_user_material_idx").on(table.userId, table.materialId),
-}));
+export const savedMaterials = pgTable(
+  "saved_materials",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    materialId: integer("materialId")
+      .notNull()
+      .references(() => materials.id, { onDelete: "cascade" }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    userMaterialIdentity: uniqueIndex("saved_materials_user_material_idx").on(
+      table.userId,
+      table.materialId
+    ),
+  })
+);
 export type SavedMaterial = typeof savedMaterials.$inferSelect;
 export type InsertSavedMaterial = typeof savedMaterials.$inferInsert;
 
@@ -209,14 +284,21 @@ export const certificates = pgTable("certificates", {
   issuedAt: timestamp("issuedAt").defaultNow().notNull(),
   certificateUrl: varchar("certificateUrl", { length: 500 }),
   certificateCode: varchar("certificateCode", { length: 64 }),
-  signatureType: varchar("signatureType", { length: 16 }).notNull().default("none"),
+  signatureType: varchar("signatureType", { length: 16 })
+    .notNull()
+    .default("none"),
   signedPdfUrl: varchar("signedPdfUrl", { length: 500 }),
   signedAt: timestamp("signedAt"),
   signedBy: integer("signedBy").references(() => users.id),
+  /** Template selecionado para a emissão; pode ser interno ou institucional externo. */
+  certificateTemplateId: integer("certificateTemplateId"),
+  /** Decisão explícita do administrador sobre a logo do site para esta emissão. */
+  includeSiteBranding: boolean("includeSiteBranding").notNull().default(true),
 });
 
 export const certificateSignatureTypes = ["none", "manual", "govbr"] as const;
-export type CertificateSignatureType = (typeof certificateSignatureTypes)[number];
+export type CertificateSignatureType =
+  (typeof certificateSignatureTypes)[number];
 export type Certificate = typeof certificates.$inferSelect;
 export type InsertCertificate = typeof certificates.$inferInsert;
 
@@ -230,13 +312,15 @@ export const activities = pgTable("activities", {
   description: text("description"),
   type: activityTypeEnum("type").notNull(),
   dueDate: timestamp("dueDate"),
-  metadata: jsonb("metadata").$type<{
-    tag?: string;
-    status?: "pending" | "completed";
-    subtasks?: Array<{ id: string; title: string; completed: boolean }>;
-    attachments?: Array<{ id: string; name: string; url: string }>;
-    order?: number;
-  }>().default({}),
+  metadata: jsonb("metadata")
+    .$type<{
+      tag?: string;
+      status?: "pending" | "completed";
+      subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+      attachments?: Array<{ id: string; name: string; url: string }>;
+      order?: number;
+    }>()
+    .default({}),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
@@ -260,28 +344,39 @@ export const userActivityProgress = pgTable("userActivityProgress", {
 });
 
 export type UserActivityProgress = typeof userActivityProgress.$inferSelect;
-export type InsertUserActivityProgress = typeof userActivityProgress.$inferInsert;
+export type InsertUserActivityProgress =
+  typeof userActivityProgress.$inferInsert;
 
 /**
  * Speaking attempts - histórico não destrutivo de gravações e feedbacks
  */
-export const speakingAttempts = pgTable("speaking_attempts", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
-  activityId: integer("activityId").notNull(),
-  attemptNumber: integer("attemptNumber").notNull().default(1),
-  audioResponseUrl: varchar("audioResponseUrl", { length: 1000 }).notNull(),
-  transcript: text("transcript"),
-  aiScore: integer("aiScore"),
-  aiFeedback: text("aiFeedback"),
-  aiSuggestions: text("aiSuggestions"),
-  teacherFeedback: text("teacherFeedback"),
-  teacherAudioFeedbackUrl: varchar("teacherAudioFeedbackUrl", { length: 1000 }),
-  submittedAt: timestamp("submittedAt").defaultNow().notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => ({
-  speakingAttemptIdentity: uniqueIndex("speaking_attempt_identity_idx").on(table.userId, table.activityId, table.attemptNumber),
-}));
+export const speakingAttempts = pgTable(
+  "speaking_attempts",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId").notNull(),
+    activityId: integer("activityId").notNull(),
+    attemptNumber: integer("attemptNumber").notNull().default(1),
+    audioResponseUrl: varchar("audioResponseUrl", { length: 1000 }).notNull(),
+    transcript: text("transcript"),
+    aiScore: integer("aiScore"),
+    aiFeedback: text("aiFeedback"),
+    aiSuggestions: text("aiSuggestions"),
+    teacherFeedback: text("teacherFeedback"),
+    teacherAudioFeedbackUrl: varchar("teacherAudioFeedbackUrl", {
+      length: 1000,
+    }),
+    submittedAt: timestamp("submittedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    speakingAttemptIdentity: uniqueIndex("speaking_attempt_identity_idx").on(
+      table.userId,
+      table.activityId,
+      table.attemptNumber
+    ),
+  })
+);
 
 export type SpeakingAttempt = typeof speakingAttempts.$inferSelect;
 export type InsertSpeakingAttempt = typeof speakingAttempts.$inferInsert;
@@ -325,34 +420,46 @@ export type InsertLesson = typeof lessons.$inferInsert;
 /**
  * Lesson Progress - Progresso do aluno em aulas
  */
-export const lessonProgress = pgTable("lessonProgress", {
-  id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
-  lessonId: serial("lessonId").notNull(),
-  completed: integer("completed").default(0), // 0 ou 1
-  watchedDuration: integer("watchedDuration").default(0), // em segundos
-  completedAt: timestamp("completedAt"),
-  approvalStatus: lessonProgressApprovalStatusEnum("approvalStatus").notNull().default("pending"),
-  approvedBy: integer("approvedBy").references(() => users.id),
-  approvedAt: timestamp("approvedAt"),
-  approvalNote: text("approvalNote"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-}, (table) => ({
-  userLessonIdentity: uniqueIndex("lesson_progress_user_lesson_idx").on(table.userId, table.lessonId),
-}));
+export const lessonProgress = pgTable(
+  "lessonProgress",
+  {
+    id: serial("id").primaryKey(),
+    userId: serial("userId").notNull(),
+    lessonId: serial("lessonId").notNull(),
+    completed: integer("completed").default(0), // 0 ou 1
+    watchedDuration: integer("watchedDuration").default(0), // em segundos
+    completedAt: timestamp("completedAt"),
+    approvalStatus: lessonProgressApprovalStatusEnum("approvalStatus")
+      .notNull()
+      .default("pending"),
+    approvedBy: integer("approvedBy").references(() => users.id),
+    approvedAt: timestamp("approvedAt"),
+    approvalNote: text("approvalNote"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    userLessonIdentity: uniqueIndex("lesson_progress_user_lesson_idx").on(
+      table.userId,
+      table.lessonId
+    ),
+  })
+);
 
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type InsertLessonProgress = typeof lessonProgress.$inferInsert;
-
 
 /**
  * Progress table - Rastreamento de progresso do aluno em cursos
  */
 export const progress = pgTable("progress", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
-  courseId: integer("courseId").notNull().references(() => courses.id),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id),
+  courseId: integer("courseId")
+    .notNull()
+    .references(() => courses.id),
   enrollmentId: integer("enrollmentId").references(() => enrollments.id),
   lessonsCompleted: integer("lessonsCompleted").default(0),
   totalLessons: integer("totalLessons").default(0),
@@ -402,14 +509,17 @@ export const contactMessages = pgTable("contact_messages", {
 export type ContactMessageRecord = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = typeof contactMessages.$inferInsert;
 
-
 /**
  * Direct Messages table - mensagens diretas entre alunos e professores.
  */
 export const directMessages = pgTable("direct_messages", {
   id: serial("id").primaryKey(),
-  senderId: integer("senderId").notNull().references(() => users.id),
-  receiverId: integer("receiverId").notNull().references(() => users.id),
+  senderId: integer("senderId")
+    .notNull()
+    .references(() => users.id),
+  receiverId: integer("receiverId")
+    .notNull()
+    .references(() => users.id),
   subject: varchar("subject", { length: 200 }).notNull(),
   body: text("body").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
@@ -420,12 +530,29 @@ export const directMessages = pgTable("direct_messages", {
 export type DirectMessageRecord = typeof directMessages.$inferSelect;
 export type InsertDirectMessage = typeof directMessages.$inferInsert;
 
-
 // Novos Enums para Multimídia, Modalidade e Trilha de Eventos
-export const modalityEnum = pgEnum("modality", ["individual", "group", "hybrid"]);
-export const sessionStatusEnum = pgEnum("session_status", ["scheduled", "completed", "cancelled"]);
-export const eventTypeEnum = pgEnum("event_type", ["login", "material_submission", "activity_complete", "course_enroll", "role_change"]);
-export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "absent", "justified"]);
+export const modalityEnum = pgEnum("modality", [
+  "individual",
+  "group",
+  "hybrid",
+]);
+export const sessionStatusEnum = pgEnum("session_status", [
+  "scheduled",
+  "completed",
+  "cancelled",
+]);
+export const eventTypeEnum = pgEnum("event_type", [
+  "login",
+  "material_submission",
+  "activity_complete",
+  "course_enroll",
+  "role_change",
+]);
+export const attendanceStatusEnum = pgEnum("attendance_status", [
+  "present",
+  "absent",
+  "justified",
+]);
 
 /**
  * Class Sessions table - Aulas/Sessões (individuais ou em grupo) para controle de chamada
@@ -433,7 +560,9 @@ export const attendanceStatusEnum = pgEnum("attendance_status", ["present", "abs
 export const classSessions = pgTable("class_sessions", {
   id: serial("id").primaryKey(),
   courseId: integer("courseId").references(() => courses.id),
-  teacherId: integer("teacherId").notNull().references(() => users.id),
+  teacherId: integer("teacherId")
+    .notNull()
+    .references(() => users.id),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   modality: modalityEnum("modality").notNull().default("individual"),
@@ -452,8 +581,12 @@ export type InsertClassSession = typeof classSessions.$inferInsert;
  */
 export const attendances = pgTable("attendances", {
   id: serial("id").primaryKey(),
-  sessionId: integer("sessionId").notNull().references(() => classSessions.id, { onDelete: "cascade" }),
-  studentId: integer("studentId").notNull().references(() => users.id),
+  sessionId: integer("sessionId")
+    .notNull()
+    .references(() => classSessions.id, { onDelete: "cascade" }),
+  studentId: integer("studentId")
+    .notNull()
+    .references(() => users.id),
   present: boolean("present").default(true).notNull(),
   status: attendanceStatusEnum("status").notNull().default("present"),
   notes: text("notes"),
@@ -479,13 +612,14 @@ export const eventLogs = pgTable("event_logs", {
 export type EventLog = typeof eventLogs.$inferSelect;
 export type InsertEventLog = typeof eventLogs.$inferInsert;
 
-
 /**
  * Article Comments & Ratings table - Comentários e avaliações por estrelas em artigos do blog.
  */
 export const articleComments = pgTable("article_comments", {
   id: serial("id").primaryKey(),
-  articleId: integer("articleId").notNull().references(() => articles.id, { onDelete: "cascade" }),
+  articleId: integer("articleId")
+    .notNull()
+    .references(() => articles.id, { onDelete: "cascade" }),
   userName: varchar("userName", { length: 160 }).notNull(),
   userEmail: varchar("userEmail", { length: 320 }),
   rating: integer("rating").notNull().default(5), // 1 a 5 estrelas
@@ -498,7 +632,9 @@ export type InsertArticleComment = typeof articleComments.$inferInsert;
 
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   type: varchar("type", { length: 64 }).notNull(),
   title: varchar("title", { length: 180 }).notNull(),
   message: text("message").notNull(),
@@ -511,48 +647,84 @@ export type InsertNotification = typeof notifications.$inferInsert;
 
 export const courseReviewReplies = pgTable("course_review_replies", {
   id: serial("id").primaryKey(),
-  reviewId: integer("reviewId").notNull().references(() => courseReviews.id, { onDelete: "cascade" }),
-  authorId: integer("authorId").notNull().references(() => users.id),
+  reviewId: integer("reviewId")
+    .notNull()
+    .references(() => courseReviews.id, { onDelete: "cascade" }),
+  authorId: integer("authorId")
+    .notNull()
+    .references(() => users.id),
   message: text("message").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 export type CourseReviewReply = typeof courseReviewReplies.$inferSelect;
 export type InsertCourseReviewReply = typeof courseReviewReplies.$inferInsert;
 
-
-export const wishlistItems = pgTable("wishlist_items", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
-  courseId: integer("courseId").notNull().references(() => courses.id),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => ({
-  userCourseIdentity: uniqueIndex("wishlist_user_course_idx").on(table.userId, table.courseId),
-}));
+export const wishlistItems = pgTable(
+  "wishlist_items",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id),
+    courseId: integer("courseId")
+      .notNull()
+      .references(() => courses.id),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    userCourseIdentity: uniqueIndex("wishlist_user_course_idx").on(
+      table.userId,
+      table.courseId
+    ),
+  })
+);
 export type WishlistItem = typeof wishlistItems.$inferSelect;
 
-export const lessonNotes = pgTable("lesson_notes", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
-  lessonId: integer("lessonId").notNull().references(() => lessons.id),
-  note: text("note").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-}, (table) => ({
-  userLessonIdentity: uniqueIndex("lesson_notes_user_lesson_idx").on(table.userId, table.lessonId),
-}));
+export const lessonNotes = pgTable(
+  "lesson_notes",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id),
+    lessonId: integer("lessonId")
+      .notNull()
+      .references(() => lessons.id),
+    note: text("note").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    userLessonIdentity: uniqueIndex("lesson_notes_user_lesson_idx").on(
+      table.userId,
+      table.lessonId
+    ),
+  })
+);
 export type LessonNote = typeof lessonNotes.$inferSelect;
 
-export const courseReviews = pgTable("course_reviews", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id),
-  courseId: integer("courseId").notNull().references(() => courses.id),
-  rating: integer("rating").notNull(),
-  comment: text("comment"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-}, (table) => ({
-  userCourseIdentity: uniqueIndex("course_reviews_user_course_idx").on(table.userId, table.courseId),
-}));
+export const courseReviews = pgTable(
+  "course_reviews",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id),
+    courseId: integer("courseId")
+      .notNull()
+      .references(() => courses.id),
+    rating: integer("rating").notNull(),
+    comment: text("comment"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    userCourseIdentity: uniqueIndex("course_reviews_user_course_idx").on(
+      table.userId,
+      table.courseId
+    ),
+  })
+);
 export type CourseReview = typeof courseReviews.$inferSelect;
 
 /**
@@ -580,7 +752,9 @@ export type InsertSiteContentBlock = typeof siteContentBlocks.$inferInsert;
  */
 export const siteContentRevisions = pgTable("site_content_revisions", {
   id: serial("id").primaryKey(),
-  blockId: integer("blockId").notNull().references(() => siteContentBlocks.id, { onDelete: "cascade" }),
+  blockId: integer("blockId")
+    .notNull()
+    .references(() => siteContentBlocks.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content").notNull(),
   status: varchar("status", { length: 32 }).default("published").notNull(),
@@ -588,21 +762,30 @@ export const siteContentRevisions = pgTable("site_content_revisions", {
 });
 
 export type SiteContentRevision = typeof siteContentRevisions.$inferSelect;
-export type InsertSiteContentRevision = typeof siteContentRevisions.$inferInsert;
+export type InsertSiteContentRevision =
+  typeof siteContentRevisions.$inferInsert;
 
 /**
  * Gamification User Points & Leaderboard table
  */
-export const userGamificationPoints = pgTable("user_gamification_points", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  points: integer("points").default(0).notNull(),
-  level: varchar("level", { length: 50 }).default("Explorer (A1)").notNull(),
-  streakDays: integer("streakDays").default(0).notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-}, (table) => ({
-  userGamificationUnique: uniqueIndex("user_gamification_user_idx").on(table.userId),
-}));
+export const userGamificationPoints = pgTable(
+  "user_gamification_points",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    points: integer("points").default(0).notNull(),
+    level: varchar("level", { length: 50 }).default("Explorer (A1)").notNull(),
+    streakDays: integer("streakDays").default(0).notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    userGamificationUnique: uniqueIndex("user_gamification_user_idx").on(
+      table.userId
+    ),
+  })
+);
 export type UserGamificationPoint = typeof userGamificationPoints.$inferSelect;
 
 // A tabela `notifications` acima é a fonte única de verdade para alertas da plataforma.
@@ -614,14 +797,17 @@ export type UserGamificationPoint = typeof userGamificationPoints.$inferSelect;
  */
 export const speakingAssistantHistory = pgTable("speaking_assistant_history", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   promptText: text("promptText").notNull(),
   audioUrl: text("audioUrl"),
   aiFeedback: text("aiFeedback").notNull(),
   score: integer("score").default(85).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
-export type SpeakingAssistantHistory = typeof speakingAssistantHistory.$inferSelect;
+export type SpeakingAssistantHistory =
+  typeof speakingAssistantHistory.$inferSelect;
 
 /**
  * Medal/Achievement Catalog table
@@ -632,7 +818,9 @@ export const medalsCatalog = pgTable("medals_catalog", {
   title: varchar("title", { length: 120 }).notNull(),
   description: text("description").notNull(),
   icon: varchar("icon", { length: 32 }).notNull(), // emoji or icon name
-  category: varchar("category", { length: 50 }).default("achievement").notNull(), // standard, manual, streak, academic
+  category: varchar("category", { length: 50 })
+    .default("achievement")
+    .notNull(), // standard, manual, streak, academic
   requirement: text("requirement").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -645,10 +833,14 @@ export type InsertMedalCatalog = typeof medalsCatalog.$inferInsert;
  */
 export const userMedals = pgTable("user_medals", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   medalCode: varchar("medalCode", { length: 64 }).notNull(),
   awardedBy: integer("awardedBy").references(() => users.id), // null if automatic, admin userId if manual
-  grantType: varchar("grantType", { length: 32 }).default("automatic").notNull(), // automatic, manual
+  grantType: varchar("grantType", { length: 32 })
+    .default("automatic")
+    .notNull(), // automatic, manual
   notes: text("notes"), // optional justification when awarded manually
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
@@ -665,7 +857,9 @@ export const externalClasses = pgTable("external_classes", {
   className: varchar("className", { length: 180 }).notNull(),
   courseName: varchar("courseName", { length: 180 }).notNull(),
   academicTerm: varchar("academicTerm", { length: 50 }).notNull(), // ex: "2026.1"
-  teacherId: integer("teacherId").notNull().references(() => users.id),
+  teacherId: integer("teacherId")
+    .notNull()
+    .references(() => users.id),
   description: text("description"),
   classDays: varchar("class_days", { length: 255 }),
   classTime: varchar("class_time", { length: 100 }),
@@ -689,7 +883,9 @@ export type InsertExternalClass = typeof externalClasses.$inferInsert;
 
 export const externalStudents = pgTable("external_students", {
   id: serial("id").primaryKey(),
-  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  externalClassId: integer("externalClassId")
+    .notNull()
+    .references(() => externalClasses.id, { onDelete: "cascade" }),
   name: varchar("name", { length: 180 }).notNull(),
   socialName: varchar("socialName", { length: 160 }),
   cpf: varchar("cpf", { length: 20 }),
@@ -731,7 +927,9 @@ export type InsertMediaAsset = typeof mediaAssets.$inferInsert;
  */
 export const externalClassAttendance = pgTable("external_class_attendance", {
   id: serial("id").primaryKey(),
-  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  externalClassId: integer("externalClassId")
+    .notNull()
+    .references(() => externalClasses.id, { onDelete: "cascade" }),
   date: varchar("date", { length: 32 }).notNull(), // ex: "2026-08-17"
   attendanceData: text("attendanceData").notNull(), // JSON string map of studentId -> status ("present", "absent", "late")
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -739,8 +937,12 @@ export const externalClassAttendance = pgTable("external_class_attendance", {
 
 export const externalClassGrades = pgTable("external_class_grades", {
   id: serial("id").primaryKey(),
-  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
-  studentId: integer("studentId").notNull().references(() => externalStudents.id, { onDelete: "cascade" }),
+  externalClassId: integer("externalClassId")
+    .notNull()
+    .references(() => externalClasses.id, { onDelete: "cascade" }),
+  studentId: integer("studentId")
+    .notNull()
+    .references(() => externalStudents.id, { onDelete: "cascade" }),
   assessmentTitle: varchar("assessmentTitle", { length: 180 }).notNull(), // ex: "Avaliação 1", "Quiz Oral"
   score: varchar("score", { length: 32 }).notNull(), // ex: "9.5"
   maxScore: varchar("maxScore", { length: 32 }).notNull().default("10.0"),
@@ -751,18 +953,23 @@ export const externalClassGrades = pgTable("external_class_grades", {
 
 export const externalClassMaterials = pgTable("external_class_materials", {
   id: serial("id").primaryKey(),
-  externalClassId: integer("externalClassId").notNull().references(() => externalClasses.id, { onDelete: "cascade" }),
+  externalClassId: integer("externalClassId")
+    .notNull()
+    .references(() => externalClasses.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 180 }).notNull(),
   fileUrl: text("fileUrl").notNull(),
   description: text("description"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
-
 export const materialComments = pgTable("material_comments", {
   id: serial("id").primaryKey(),
-  materialId: integer("material_id").notNull().references(() => materials.id, { onDelete: "cascade" }),
-  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  materialId: integer("material_id")
+    .notNull()
+    .references(() => materials.id, { onDelete: "cascade" }),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   parentId: integer("parent_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -771,11 +978,14 @@ export const materialComments = pgTable("material_comments", {
 export type MaterialComment = typeof materialComments.$inferSelect;
 export type InsertMaterialComment = typeof materialComments.$inferInsert;
 
-
 export const gradeReviewRequests = pgTable("grade_review_requests", {
   id: serial("id").primaryKey(),
-  gradeId: integer("gradeId").notNull().references(() => externalClassGrades.id, { onDelete: "cascade" }),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  gradeId: integer("gradeId")
+    .notNull()
+    .references(() => externalClassGrades.id, { onDelete: "cascade" }),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   reason: text("reason").notNull(),
   status: varchar("status", { length: 32 }).notNull().default("pending"), // pending, reviewed, accepted, rejected
   professorResponse: text("professorResponse"),
@@ -790,11 +1000,18 @@ export type InsertGradeReviewRequest = typeof gradeReviewRequests.$inferInsert;
  * Fórum acadêmico: tópicos, respostas e curtidas persistidos no banco.
  * Nenhum conteúdo de demonstração deve ser inserido automaticamente.
  */
-export const forumPostStatusEnum = pgEnum("forum_post_status", ["pending", "approved", "rejected", "resolved"]);
+export const forumPostStatusEnum = pgEnum("forum_post_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "resolved",
+]);
 
 export const forumPosts = pgTable("forum_posts", {
   id: serial("id").primaryKey(),
-  authorId: integer("authorId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  authorId: integer("authorId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 200 }).notNull(),
   category: varchar("category", { length: 80 }).notNull(),
   content: text("content").notNull(),
@@ -811,8 +1028,12 @@ export type InsertForumPost = typeof forumPosts.$inferInsert;
 
 export const forumReplies = pgTable("forum_replies", {
   id: serial("id").primaryKey(),
-  postId: integer("postId").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
-  authorId: integer("authorId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  postId: integer("postId")
+    .notNull()
+    .references(() => forumPosts.id, { onDelete: "cascade" }),
+  authorId: integer("authorId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
   audioUrl: varchar("audioUrl", { length: 1000 }),
   isResolved: boolean("isResolved").notNull().default(false),
@@ -822,14 +1043,25 @@ export const forumReplies = pgTable("forum_replies", {
 export type ForumReply = typeof forumReplies.$inferSelect;
 export type InsertForumReply = typeof forumReplies.$inferInsert;
 
-export const forumPostLikes = pgTable("forum_post_likes", {
-  id: serial("id").primaryKey(),
-  postId: integer("postId").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => ({
-  postUserIdentity: uniqueIndex("forum_post_likes_post_user_idx").on(table.postId, table.userId),
-}));
+export const forumPostLikes = pgTable(
+  "forum_post_likes",
+  {
+    id: serial("id").primaryKey(),
+    postId: integer("postId")
+      .notNull()
+      .references(() => forumPosts.id, { onDelete: "cascade" }),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    postUserIdentity: uniqueIndex("forum_post_likes_post_user_idx").on(
+      table.postId,
+      table.userId
+    ),
+  })
+);
 export type ForumPostLike = typeof forumPostLikes.$inferSelect;
 export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
 
@@ -838,7 +1070,9 @@ export type InsertForumPostLike = typeof forumPostLikes.$inferInsert;
  */
 export const teacherZipExports = pgTable("teacher_zip_exports", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: integer("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   filename: varchar("filename", { length: 255 }).notNull(),
   materialCount: integer("materialCount").notNull(),
   totalBytes: integer("totalBytes").notNull(),
@@ -846,8 +1080,6 @@ export const teacherZipExports = pgTable("teacher_zip_exports", {
 });
 export type TeacherZipExport = typeof teacherZipExports.$inferSelect;
 export type InsertTeacherZipExport = typeof teacherZipExports.$inferInsert;
-
-
 
 /**
  * Cupons de desconto administrados pelo painel e sincronizados com Stripe.
@@ -863,7 +1095,9 @@ export const coupons = pgTable("coupons", {
   maxRedemptions: integer("maxRedemptions"),
   redeemBy: timestamp("redeemBy"),
   active: boolean("active").notNull().default(true),
-  createdBy: integer("createdBy").notNull().references(() => users.id),
+  createdBy: integer("createdBy")
+    .notNull()
+    .references(() => users.id),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -875,22 +1109,39 @@ export type InsertCoupon = typeof coupons.$inferInsert;
  * Concessões manuais de acesso a conteúdos pagos (cursos/materiais) pelo Super Administrador.
  * Garante que o administrador (palafozanderson@gmail.com) possa liberar acesso pago a qualquer conta.
  */
-export const manualAccessGrants = pgTable("manual_access_grants", {
-  id: serial("id").primaryKey(),
-  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  courseId: integer("courseId").references(() => courses.id, { onDelete: "cascade" }),
-  materialId: integer("materialId").references(() => materials.id, { onDelete: "cascade" }),
-  grantedBy: integer("grantedBy").notNull().references(() => users.id),
-  reason: text("reason").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-}, (table) => ({
-  userCourseUnique: uniqueIndex("manual_access_user_course_idx").on(table.userId, table.courseId),
-  userMaterialUnique: uniqueIndex("manual_access_user_material_idx").on(table.userId, table.materialId),
-}));
+export const manualAccessGrants = pgTable(
+  "manual_access_grants",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    courseId: integer("courseId").references(() => courses.id, {
+      onDelete: "cascade",
+    }),
+    materialId: integer("materialId").references(() => materials.id, {
+      onDelete: "cascade",
+    }),
+    grantedBy: integer("grantedBy")
+      .notNull()
+      .references(() => users.id),
+    reason: text("reason").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    userCourseUnique: uniqueIndex("manual_access_user_course_idx").on(
+      table.userId,
+      table.courseId
+    ),
+    userMaterialUnique: uniqueIndex("manual_access_user_material_idx").on(
+      table.userId,
+      table.materialId
+    ),
+  })
+);
 
 export type ManualAccessGrant = typeof manualAccessGrants.$inferSelect;
 export type InsertManualAccessGrant = typeof manualAccessGrants.$inferInsert;
-
 
 /**
  * Admin Activity Logs - Rastreamento de ações administrativas (exclusões, restaurações, lote)
@@ -909,3 +1160,24 @@ export const adminActivityLogs = pgTable("admin_activity_logs", {
 
 export type AdminActivityLog = typeof adminActivityLogs.$inferSelect;
 export type InsertAdminActivityLog = typeof adminActivityLogs.$inferInsert;
+
+/**
+ * Certificate Templates table - Modelos de certificados próprios e de terceiros (IsF, PROFICI, SIMAL, etc.)
+ */
+export const certificateTemplates = pgTable("certificate_templates", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 180 }).notNull(), // ex: "Modelo Oficial Plataforma", "Modelo IsF 2026", "Modelo PROFICI", "Modelo SIMAL"
+  category: varchar("category", { length: 50 }).notNull().default("internal"), // "internal" ou "external"
+  institution: varchar("institution", { length: 120 }), // ex: "UFBA / IsF", "PROFICI", "SIMAL", "Geral"
+  isDefault: boolean("isDefault").notNull().default(false),
+  templateUrl: text("templateUrl"), // URL do PDF base ou imagem de fundo do template enviado
+  includeSiteBranding: boolean("includeSiteBranding").notNull().default(true), // escolha administrativa: incluir ou não a logo do site
+  fieldMappings: text("fieldMappings"), // JSON configurando coordenadas/campos preenchíveis (nome, cpf, curso, carga horária, data, etc.)
+  createdBy: integer("createdBy").references(() => users.id),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+
+export type CertificateTemplate = typeof certificateTemplates.$inferSelect;
+export type InsertCertificateTemplate =
+  typeof certificateTemplates.$inferInsert;

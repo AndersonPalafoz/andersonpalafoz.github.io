@@ -1,21 +1,41 @@
 import { and, eq } from "drizzle-orm";
 import { lessonProgress, users } from "@/drizzle/schema";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
-import { createCertificate, db, getCertificateByUserCourse, getCourseById, getLessonsByModule, getModulesByCourse } from "@/lib/db";
-import { uploadCertificatePdf } from "@/lib/learning-storage";
+import {
+  createCertificate,
+  db,
+  getCertificateByUserCourse,
+  getCertificateTemplateById,
+  getCourseById,
+  getLessonsByModule,
+  getModulesByCourse,
+} from "@/lib/db";
+import {
+  downloadCertificateTemplate,
+  uploadCertificatePdf,
+} from "@/lib/learning-storage";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import crypto from "node:crypto";
 
 export async function getCourseCompletion(userId: number, courseId: number) {
   const modules = await getModulesByCourse(courseId);
   const lessonIds: number[] = [];
   for (const module of modules) {
     const lessons = await getLessonsByModule(module.id);
-    lessonIds.push(...lessons.map((lesson) => lesson.id));
+    lessonIds.push(...lessons.map(lesson => lesson.id));
   }
-  if (lessonIds.length === 0) return { percentage: 0, completedCount: 0, totalLessons: 0 };
+  if (lessonIds.length === 0)
+    return { percentage: 0, completedCount: 0, totalLessons: 0 };
   const progressRows = await db.query.lessonProgress.findMany({
-    where: and(eq(lessonProgress.userId, userId), eq(lessonProgress.completed, 1)),
+    where: and(
+      eq(lessonProgress.userId, userId),
+      eq(lessonProgress.completed, 1)
+    ),
   });
-  const completedCount = progressRows.filter((row) => lessonIds.includes(row.lessonId)).length;
+  const completedCount = progressRows.filter(row =>
+    lessonIds.includes(row.lessonId)
+  ).length;
   return {
     percentage: Math.round((completedCount / lessonIds.length) * 100),
     completedCount,
@@ -23,17 +43,78 @@ export async function getCourseCompletion(userId: number, courseId: number) {
   };
 }
 
-export async function issueCertificateIfEligible(userId: number, courseId: number) {
+export async function issueCertificateIfEligible(
+  userId: number,
+  courseId: number,
+  options?: { includeSiteBranding?: boolean; templateId?: number | null }
+) {
   const course = await getCourseById(courseId);
   if (!course) throw new Error("Curso não encontrado.");
   const completion = await getCourseCompletion(userId, courseId);
-  const student = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const student = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+  });
   const existing = await getCertificateByUserCourse(userId, courseId);
+  const isExternalCourse = course.courseType === 4;
+
+  // A emissão externa exige decisão do administrador; o endpoint administrativo é o lugar adequado para registrá-la.
+  if (
+    isExternalCourse &&
+    options?.includeSiteBranding === undefined &&
+    !existing
+  ) {
+    return {
+      eligible: completion.percentage >= 100,
+      requiresBrandingDecision: true,
+      percentage: completion.percentage,
+      certificate: null,
+      course,
+      student,
+    };
+  }
   if (completion.percentage < 100) {
-    return { eligible: false, percentage: completion.percentage, certificate: existing || null, course, student };
+    return {
+      eligible: false,
+      percentage: completion.percentage,
+      certificate: existing || null,
+      course,
+      student,
+    };
   }
   if (existing) {
-    return { eligible: true, percentage: completion.percentage, certificate: existing, course, student };
+    return {
+      eligible: true,
+      percentage: completion.percentage,
+      certificate: existing,
+      course,
+      student,
+    };
+  }
+
+  const template = options?.templateId
+    ? await getCertificateTemplateById(options.templateId)
+    : null;
+  if (options?.templateId && !template)
+    throw new Error("Modelo de certificado não encontrado.");
+  const includeSiteBranding =
+    options?.includeSiteBranding ?? template?.includeSiteBranding ?? true;
+  const [templateBackgroundBytes, logoBytes] = await Promise.all([
+    template?.templateUrl
+      ? downloadCertificateTemplate(template.templateUrl)
+      : Promise.resolve(undefined),
+    includeSiteBranding
+      ? readFile(
+          path.join(process.cwd(), "public", "logo-principal.png")
+        ).catch(() => undefined)
+      : Promise.resolve(undefined),
+  ]);
+  let fieldMappings: Parameters<typeof buildCertificatePdf>[0]["fieldMappings"];
+  if (template?.fieldMappings) {
+    try {
+      fieldMappings = JSON.parse(template.fieldMappings);
+    } catch {
+      throw new Error("O mapeamento de campos do modelo é inválido.");
+    }
   }
 
   const certificateCode = `AP-CERT-${courseId}-${userId}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
@@ -44,6 +125,11 @@ export async function issueCertificateIfEligible(userId: number, courseId: numbe
     issuedAt: new Date(),
     certificateCode,
     workloadHours: course.workloadHours || 40,
+    includeSiteBranding,
+    logoBytes,
+    institutionName: template?.institution || undefined,
+    templateBackgroundBytes,
+    fieldMappings,
   });
   const uploaded = await uploadCertificatePdf(userId, courseId, bytes);
   const certificate = await createCertificate({
@@ -52,6 +138,15 @@ export async function issueCertificateIfEligible(userId: number, courseId: numbe
     level: course.level,
     certificateCode,
     certificateUrl: uploaded.url,
+    certificateTemplateId: template?.id ?? null,
+    includeSiteBranding,
   });
-  return { eligible: true, percentage: completion.percentage, certificate, course, student };
+  return {
+    eligible: true,
+    requiresBrandingDecision: false,
+    percentage: completion.percentage,
+    certificate,
+    course,
+    student,
+  };
 }
