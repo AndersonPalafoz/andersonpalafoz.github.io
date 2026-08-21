@@ -1579,9 +1579,9 @@
 - [x] Executar testes automatizados da suíte Vitest e validar build de produção
 
 ## Configuração de Variáveis do Stripe no Vercel (Agosto 2026)
-- [ ] Auditar e configurar as variáveis `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` e `VITE_STRIPE_PUBLISHABLE_KEY` no painel do Vercel para produção
-- [ ] Validar o funcionamento das chaves com o script de teste de checkout e webhook
-- [ ] Salvar checkpoint e atualizar documentação de produção
+- [x] Auditar e configurar as variáveis `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` e `VITE_STRIPE_PUBLISHABLE_KEY` no painel do Vercel para produção
+- [x] Validar o funcionamento das chaves com o script de teste de checkout e webhook
+- [x] Salvar checkpoint e atualizar documentação de produção
 
 ## Painel Administrativo de Vendas e Matrículas (Agosto 2026)
 - [x] Auditar o schema e os dados reais de compras, matrículas, cursos e usuários disponíveis para o painel
