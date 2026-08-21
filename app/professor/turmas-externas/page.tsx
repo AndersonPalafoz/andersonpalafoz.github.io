@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -117,12 +117,14 @@ export default function TurmasExternasPage() {
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
   const [selectedModalityFilter, setSelectedModalityFilter] = useState("all");
   const [selectedLevelFilter, setSelectedLevelFilter] = useState("all");
+  const [classSortOrder, setClassSortOrder] = useState("name_asc");
 
   // Edit class mode
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
 
   // Edit student mode
   const [editingStudentId, setEditingStudentId] = useState<number | null>(null);
+  const [activeQuickActionsId, setActiveQuickActionsId] = useState<number | null>(null);
 
   // Form states for creating/editing class
   const [institution, setInstitution] = useState("SIMAL");
@@ -378,8 +380,21 @@ export default function TurmasExternasPage() {
       const matchesClassSearch = !term || cls.className.toLowerCase().includes(term) || cls.courseName.toLowerCase().includes(term) || cls.institution.toLowerCase().includes(term);
       const hasMatchingStudents = cls.filteredStudents.length > 0;
       return matchesInstitution && matchesYear && matchesSemester && matchesModality && matchesLevel && (matchesClassSearch || hasMatchingStudents);
+    }).sort((a, b) => {
+      if (classSortOrder === "name_asc") {
+        return a.className.localeCompare(b.className);
+      } else if (classSortOrder === "name_desc") {
+        return b.className.localeCompare(a.className);
+      } else if (classSortOrder === "students_desc") {
+        return (b.students?.length || 0) - (a.students?.length || 0);
+      } else if (classSortOrder === "level") {
+        const levelA = (a as any).level || "";
+        const levelB = (b as any).level || "";
+        return levelA.localeCompare(levelB);
+      }
+      return 0;
     });
-  }, [classes, selectedInstitutionFilter, studentStatusFilter, selectedYearFilter, selectedSemesterFilter, selectedModalityFilter, selectedLevelFilter, searchTerm]);
+  }, [classes, selectedInstitutionFilter, studentStatusFilter, selectedYearFilter, selectedSemesterFilter, selectedModalityFilter, selectedLevelFilter, searchTerm, classSortOrder]);
 
   const handleSaveClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -948,6 +963,20 @@ export default function TurmasExternasPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ordenar:</span>
+              <select
+                value={classSortOrder}
+                onChange={(e) => setClassSortOrder(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="name_asc">Nome (A - Z)</option>
+                <option value="name_desc">Nome (Z - A)</option>
+                <option value="students_desc">Qtd. Alunos (Maior)</option>
+                <option value="level">Nível Acadêmico</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status Aluno:</span>
               <select
                 value={studentStatusFilter}
@@ -1370,8 +1399,31 @@ export default function TurmasExternasPage() {
           {/* Listagem de Turmas, Abas e Gerenciamento */}
           <div className="lg:col-span-2 space-y-6">
             {loading ? (
-              <div className="py-24 text-center text-gray-400 text-xs font-semibold flex flex-col items-center justify-center gap-3">
-                <Loader2 size={24} className="animate-spin text-red-600" /> Carregando turmas e dados acadêmicos...
+              <div className="space-y-6 animate-pulse" aria-label="Carregando turmas...">
+                {[1, 2].map((i) => (
+                  <div key={i} className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-4">
+                    <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
+                      <div className="space-y-2 w-3/4">
+                        <div className="flex gap-2">
+                          <div className="h-5 w-24 bg-gray-200 dark:bg-slate-800 rounded-full" />
+                          <div className="h-5 w-20 bg-gray-200 dark:bg-slate-800 rounded-full" />
+                          <div className="h-5 w-28 bg-gray-200 dark:bg-slate-800 rounded-full" />
+                        </div>
+                        <div className="h-6 w-1/2 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                        <div className="h-4 w-1/3 bg-gray-200 dark:bg-slate-800 rounded-lg" />
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-9 w-20 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                        <div className="h-9 w-20 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-800/40 p-3 rounded-2xl">
+                      {[1, 2, 3, 4].map((box) => (
+                        <div key={box} className="h-10 bg-gray-200 dark:bg-slate-800 rounded-xl" />
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : loadError ? (
               <div className="rounded-3xl border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/20 p-8 text-center space-y-2">
@@ -1454,169 +1506,167 @@ export default function TurmasExternasPage() {
                         </div>
                         {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-                          <FileSpreadsheet size={14} className="text-green-600" /> CSV
-                          <input
-                            type="file"
-                            accept=".csv"
-                            className="hidden"
-                            onChange={(e) => void handleCsvImport(cls.id, e)}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Exportar Excel (.xls / .csv estruturado compatível com Excel)
-                            const rows = [
-                              ["RELATÓRIO DA TURMA EXTERNA"],
-                              ["Instituição", cls.institution],
-                              ["Turma", cls.className],
-                              ["Curso", cls.courseName],
-                              ["Período", cls.academicTerm],
-                              ["Nível", (cls as any).level || "Básico"],
-                              ["Modalidade", (cls as any).modality || "Remota"],
-                              [],
-                              ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
-                            ];
-                            cls.students.forEach(st => {
-                              const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id).map(g => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`).join("; ");
-                              rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status, studentGrades]);
-                            });
-                            const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
-                            const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.download = `turma_${cls.id}_excel.xls`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                            notifySuccess("Planilha Excel exportada com sucesso!");
-                          }}
-                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                          title="Exportar para Excel"
-                        >
-                          <FileSpreadsheet size={14} className="text-emerald-600" /> Excel (.xls)
-                        </button>
+                      <div className="relative flex items-center gap-2">
+                        <div className="hidden sm:flex items-center gap-2 flex-wrap">
+                          <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
+                            <FileSpreadsheet size={14} className="text-green-600" /> CSV
+                            <input
+                              type="file"
+                              accept=".csv"
+                              className="hidden"
+                              onChange={(e) => void handleCsvImport(cls.id, e)}
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const rows = [
+                                ["RELATÓRIO DA TURMA EXTERNA"],
+                                ["Instituição", cls.institution],
+                                ["Turma", cls.className],
+                                ["Curso", cls.courseName],
+                                ["Período", cls.academicTerm],
+                                ["Nível", (cls as any).level || "Básico"],
+                                ["Modalidade", (cls as any).modality || "Remota"],
+                                [],
+                                ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
+                              ];
+                              cls.students.forEach(st => {
+                                const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id).map(g => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`).join("; ");
+                                rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status, studentGrades]);
+                              });
+                              const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
+                              const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+                              const url = URL.createObjectURL(blob);
+                              const link = document.createElement("a");
+                              link.href = url;
+                              link.download = `turma_${cls.id}_excel.xls`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              URL.revokeObjectURL(url);
+                              notifySuccess("Planilha Excel exportada com sucesso!");
+                            }}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                            title="Exportar para Excel"
+                          >
+                            <FileSpreadsheet size={14} className="text-emerald-600" /> Excel (.xls)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => startEditClass(cls)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                          >
+                            <Edit3 size={14} /> Editar
+                          </button>
+                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Exportar Word (.doc)
-                            const studentsListHtml = cls.students.map(st => `<li><strong>${st.name}</strong> (${st.email || "Sem e-mail"}) - Matrícula: ${st.studentIdNumber || "N/A"} - Status: ${st.status}</li>`).join("");
-                            const gradesListHtml = (cls.grades || []).map(g => {
-                              const st = cls.students.find(s => s.id === g.studentId);
-                              return `<li>${st ? st.name : "Aluno"} - ${g.assessmentTitle}: Nota ${g.score}/${g.maxScore} (${g.feedback || "Sem feedback"})</li>`;
-                            }).join("");
+                        {/* Menu de Ações Rápidas */}
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setActiveQuickActionsId(activeQuickActionsId === cls.id ? null : cls.id)}
+                            className="p-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center gap-1 font-bold text-xs"
+                            title="Ações Rápidas da Turma"
+                            aria-label="Ações Rápidas"
+                          >
+                            <MoreVertical size={16} /> <span className="hidden sm:inline">Ações</span>
+                          </button>
 
-                            const htmlDoc = `
-                              <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
-                              <head><meta charset='utf-8'><title>Relatório - ${cls.className}</title></head>
-                              <body style="font-family: Arial; color: #333; line-height: 1.6;">
-                                <h1 style="color: #dc2626;">Plataforma Anderson Palafoz</h1>
-                                <h2>Relatório da Turma: ${cls.className}</h2>
-                                <p><strong>Instituição:</strong> ${cls.institution}<br/>
-                                <strong>Curso:</strong> ${cls.courseName}<br/>
-                                <strong>Período Letivo:</strong> ${cls.academicTerm}<br/>
-                                <strong>Nível:</strong> ${(cls as any).level || "Básico"} | <strong>Modalidade:</strong> ${(cls as any).modality || "Remota"}</p>
-                                <h3>Alunos Matriculados (${cls.students.length})</h3>
-                                <ul>${studentsListHtml || "<li>Nenhum aluno cadastrado.</li>"}</ul>
-                                <h3>Avaliações e Notas</h3>
-                                <ul>${gradesListHtml || "<li>Nenhuma nota lançada.</li>"}</ul>
-                              </body>
-                              </html>
-                            `;
-                            const blob = new Blob(['\ufeff' + htmlDoc], { type: "application/msword" });
-                            const url = URL.createObjectURL(blob);
-                            const link = document.createElement("a");
-                            link.href = url;
-                            link.download = `turma_${cls.id}_documento.doc`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(url);
-                            notifySuccess("Documento do Word exportado com sucesso!");
-                          }}
-                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                          title="Exportar para Word (.doc)"
-                        >
-                          <FileText size={14} className="text-blue-600" /> Word (.doc)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            // Exportar Relatório em PDF via janela de impressão formatada
-                            const printWindow = window.open("", "_blank");
-                            if (!printWindow) {
-                              notifyError("Permita popups no navegador para gerar o PDF.");
-                              return;
-                            }
-                            const gradesHtml = (cls.grades || []).map(g => {
-                              const st = cls.students.find(s => s.id === g.studentId);
-                              return `<tr><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st ? st.name : "Aluno"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.assessmentTitle}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.score} / ${g.maxScore}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${g.feedback || "-"}</td></tr>`;
-                            }).join("");
+                          {activeQuickActionsId === cls.id && (
+                            <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50 space-y-1">
+                              <label className="w-full cursor-pointer px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                                <FileSpreadsheet size={14} className="text-green-600" /> Importar CSV
+                                <input
+                                  type="file"
+                                  accept=".csv"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    setActiveQuickActionsId(null);
+                                    void handleCsvImport(cls.id, e);
+                                  }}
+                                />
+                              </label>
 
-                            const studentsHtml = cls.students.map(st => `<tr><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.name}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.email || "-"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.studentIdNumber || "-"}</td><td style="padding: 8px; border-bottom: 1px solid #ddd;">${st.status}</td></tr>`).join("");
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  startEditClass(cls);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <Edit3 size={14} className="text-blue-600" /> Editar Turma
+                              </button>
 
-                            printWindow.document.write(`
-                              <html>
-                                <head>
-                                  <title>Relatório Acadêmico - ${cls.className}</title>
-                                  <style>
-                                    body { font-family: Arial, sans-serif; margin: 30px; color: #111; }
-                                    h1 { color: #dc2626; font-size: 20px; margin-bottom: 4px; }
-                                    h2 { font-size: 14px; margin-top: 20px; border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
-                                    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-                                    th { background: #f3f4f6; padding: 8px; text-align: left; border-bottom: 2px solid #ccc; }
-                                    .meta { background: #f9fafb; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; }
-                                  </style>
-                                </head>
-                                <body>
-                                  <h1>Plataforma Anderson Palafoz - Relatório Acadêmico</h1>
-                                  <div class="meta">
-                                    <strong>Instituição:</strong> ${cls.institution} | <strong>Turma:</strong> ${cls.className}<br/>
-                                    <strong>Curso:</strong> ${cls.courseName} | <strong>Período:</strong> ${cls.academicTerm}<br/>
-                                    <strong>Total de Alunos:</strong> ${cls.students.length} | <strong>Data de Emissão:</strong> ${new Date().toLocaleDateString("pt-BR")}
-                                  </div>
-                                  <h2>Alunos Matriculados</h2>
-                                  <table>
-                                    <thead><tr><th>Nome</th><th>E-mail</th><th>Matrícula</th><th>Status</th></tr></thead>
-                                    <tbody>${studentsHtml || '<tr><td colspan="4">Nenhum aluno cadastrado.</td></tr>'}</tbody>
-                                  </table>
-                                  <h2>Notas e Avaliações Lançadas</h2>
-                                  <table>
-                                    <thead><tr><th>Aluno</th><th>Avaliação</th><th>Nota</th><th>Feedback</th></tr></thead>
-                                    <tbody>${gradesHtml || '<tr><td colspan="4">Nenhuma nota lançada.</td></tr>'}</tbody>
-                                  </table>
-                                  <script>window.onload = function() { window.print(); }</script>
-                                </body>
-                              </html>
-                            `);
-                            printWindow.document.close();
-                            notifySuccess("Gerando PDF para impressão/download...");
-                          }}
-                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                          title="Exportar Relatório PDF"
-                        >
-                          <FileText size={14} className="text-red-600" /> Exportar PDF
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startEditClass(cls)}
-                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                        >
-                          <Edit3 size={14} /> Editar
-                        </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  setActiveTabByClass(c => ({ ...c, [cls.id]: "students" }));
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <Users size={14} className="text-amber-600" /> Gerenciar Alunos ({cls.students.length})
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  // Exportar Excel
+                                  const rows = [
+                                    ["RELATÓRIO DA TURMA EXTERNA"],
+                                    ["Instituição", cls.institution],
+                                    ["Turma", cls.className],
+                                    ["Curso", cls.courseName],
+                                    ["Período", cls.academicTerm],
+                                    [],
+                                    ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status"]
+                                  ];
+                                  cls.students.forEach(st => {
+                                    rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status]);
+                                  });
+                                  const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
+                                  const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+                                  const url = URL.createObjectURL(blob);
+                                  const link = document.createElement("a");
+                                  link.href = url;
+                                  link.download = `turma_${cls.id}_excel.xls`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  URL.revokeObjectURL(url);
+                                  notifySuccess("Excel exportado com sucesso!");
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <FileSpreadsheet size={14} className="text-emerald-600" /> Baixar Excel (.xls)
+                              </button>
+
+                              <div className="border-t border-gray-100 dark:border-slate-800 my-1" />
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  handleDeleteClass(cls.id);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-red-50 dark:hover:bg-red-950/40 flex items-center gap-2 text-red-600 text-left"
+                              >
+                                <Trash2 size={14} /> Excluir Turma
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
                         <button
                           type="button"
                           onClick={() => handleDeleteClass(cls.id)}
-                          aria-haspopup="dialog"
-                          aria-label={`Abrir confirmação para excluir a turma ${cls.className}`}
-                          className="px-3 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1.5"
+                          className="hidden"
+                          aria-hidden="true"
                         >
-                          <Trash2 size={14} /> Excluir
+                          onClick={() => handleDeleteClass(cls.id)}
                         </button>
                       </div>
                     </div>
