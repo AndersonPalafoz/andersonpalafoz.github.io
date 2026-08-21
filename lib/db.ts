@@ -709,3 +709,116 @@ export async function deleteUserPermanently(id: number) {
   await db.delete(schema.coursePurchases).where(eq(schema.coursePurchases.userId, id));
   return await db.delete(schema.users).where(eq(schema.users.id, id)).returning();
 }
+
+
+/**
+ * Métricas comerciais e acadêmicas para o painel administrativo.
+ * As compras representam pagamentos confirmados pelo webhook do Stripe;
+ * nenhum valor é inventado quando não existem registros.
+ */
+export async function getAdminCommerceStats() {
+  try {
+    const purchases = await db
+      .select({
+        id: schema.coursePurchases.id,
+        courseId: schema.coursePurchases.courseId,
+        courseTitle: schema.courses.title,
+        coursePrice: schema.courses.price,
+        studentId: schema.coursePurchases.userId,
+        studentName: schema.users.name,
+        studentEmail: schema.users.email,
+        purchasedAt: schema.coursePurchases.fulfilledAt,
+        createdAt: schema.coursePurchases.createdAt,
+      })
+      .from(schema.coursePurchases)
+      .innerJoin(schema.courses, eq(schema.coursePurchases.courseId, schema.courses.id))
+      .innerJoin(schema.users, eq(schema.coursePurchases.userId, schema.users.id))
+      .orderBy(desc(schema.coursePurchases.createdAt));
+
+    const enrollments = await db
+      .select({
+        id: schema.enrollments.id,
+        courseId: schema.enrollments.courseId,
+        courseTitle: schema.courses.title,
+        studentId: schema.enrollments.userId,
+        studentName: schema.users.name,
+        studentEmail: schema.users.email,
+        progress: schema.enrollments.progress,
+        status: schema.enrollments.status,
+        enrolledAt: schema.enrollments.enrolledAt,
+      })
+      .from(schema.enrollments)
+      .innerJoin(schema.courses, eq(schema.enrollments.courseId, schema.courses.id))
+      .innerJoin(schema.users, eq(schema.enrollments.userId, schema.users.id))
+      .orderBy(desc(schema.enrollments.enrolledAt));
+
+    const totalRevenue = purchases.reduce((sum, purchase) => sum + Number(purchase.coursePrice || 0), 0);
+    const uniqueBuyers = new Set(purchases.map((purchase) => purchase.studentId)).size;
+    const courseAggregation = new Map<number, { courseId: number; title: string; purchases: number; revenue: number }>();
+
+    for (const purchase of purchases) {
+      const current = courseAggregation.get(purchase.courseId) || {
+        courseId: purchase.courseId,
+        title: purchase.courseTitle,
+        purchases: 0,
+        revenue: 0,
+      };
+      current.purchases += 1;
+      current.revenue += Number(purchase.coursePrice || 0);
+      courseAggregation.set(purchase.courseId, current);
+    }
+
+    return {
+      commerceAvailable: true,
+      salesSummary: {
+        totalPurchases: purchases.length,
+        totalRevenue: Number(totalRevenue.toFixed(2)),
+        currency: "BRL",
+        revenueBasis: "current_course_price" as const,
+        uniqueBuyers,
+        totalEnrollments: enrollments.length,
+      },
+      topSellingCourses: Array.from(courseAggregation.values())
+        .sort((a, b) => b.purchases - a.purchases || b.revenue - a.revenue)
+        .slice(0, 5),
+      recentPurchases: purchases.slice(0, 20).map((purchase) => ({
+        id: purchase.id,
+        courseId: purchase.courseId,
+        courseTitle: purchase.courseTitle,
+        studentId: purchase.studentId,
+        studentName: purchase.studentName || "Aluno sem nome informado",
+        studentEmail: purchase.studentEmail || "E-mail não informado",
+        amount: Number(Number(purchase.coursePrice || 0).toFixed(2)),
+        status: "paid" as const,
+        purchasedAt: purchase.purchasedAt || purchase.createdAt,
+      })),
+      recentEnrollments: enrollments.slice(0, 30).map((enrollment) => ({
+        id: enrollment.id,
+        courseId: enrollment.courseId,
+        courseTitle: enrollment.courseTitle,
+        studentId: enrollment.studentId,
+        studentName: enrollment.studentName || "Aluno sem nome informado",
+        studentEmail: enrollment.studentEmail || "E-mail não informado",
+        progress: enrollment.progress || 0,
+        status: enrollment.status,
+        enrolledAt: enrollment.enrolledAt,
+      })),
+    };
+  } catch (error) {
+    console.error("Error fetching admin commerce stats:", error);
+    return {
+      commerceAvailable: false,
+      salesSummary: {
+        totalPurchases: 0,
+        totalRevenue: 0,
+        currency: "BRL",
+        revenueBasis: "unavailable" as const,
+        uniqueBuyers: 0,
+        totalEnrollments: 0,
+      },
+      topSellingCourses: [],
+      recentPurchases: [],
+      recentEnrollments: [],
+    };
+  }
+}

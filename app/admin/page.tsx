@@ -7,6 +7,7 @@ import { BarChart3, BookOpen, FileText, Users, Loader, Award, ShieldCheck, Gradu
 import { useAuth } from "@/lib/hooks/useAuth";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
+import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
 
 interface Stats {
   totalCourses: number;
@@ -25,6 +26,7 @@ interface Stats {
     activeUsers: number;
     coursesCreated?: number;
   }>;
+  commerce: AdminCommerceData;
 }
 
 function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
@@ -211,6 +213,14 @@ export default function AdminDashboardPage() {
           enrollmentsCount={stats?.totalEnrollments || 0}
           isLoading={loading && !stats}
         />
+
+        <AdminCommerceMonitor data={stats?.commerce || {
+          commerceAvailable: false,
+          salesSummary: { totalPurchases: 0, totalRevenue: 0, currency: "BRL", revenueBasis: "unavailable", uniqueBuyers: 0, totalEnrollments: 0 },
+          topSellingCourses: [],
+          recentPurchases: [],
+          recentEnrollments: [],
+        }} />
 
         {/* Admin Unified Search Widget */}
         <div className="surface-card p-6 sm:p-8 space-y-4">

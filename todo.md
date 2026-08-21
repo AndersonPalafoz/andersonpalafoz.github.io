@@ -1577,3 +1577,24 @@
 - [x] Auditar a API de checkout para assegurar que a criação de produtos e preços no Stripe esteja correta e idempotente
 - [x] Verificar a simulação de webhook de confirmação e gravação da matrícula no banco Neon
 - [x] Executar testes automatizados da suíte Vitest e validar build de produção
+
+## Configuração de Variáveis do Stripe no Vercel (Agosto 2026)
+- [ ] Auditar e configurar as variáveis `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` e `VITE_STRIPE_PUBLISHABLE_KEY` no painel do Vercel para produção
+- [ ] Validar o funcionamento das chaves com o script de teste de checkout e webhook
+- [ ] Salvar checkpoint e atualizar documentação de produção
+
+## Painel Administrativo de Vendas e Matrículas (Agosto 2026)
+- [x] Auditar o schema e os dados reais de compras, matrículas, cursos e usuários disponíveis para o painel
+- [x] Criar API protegida por RBAC para resumo de vendas, detalhamento de transações e lista de alunos matriculados
+- [x] Implementar painel administrativo com receita de referência, vendas, matrículas e cursos mais vendidos; taxa de conversão permanece fora quando não há denominador confiável
+- [x] Adicionar filtros por período, curso e status da compra; a matrícula é exibida com status na tabela operacional
+- [x] Adicionar tabela de alunos matriculados com curso, data, status e progresso
+- [x] Criar estados de carregamento, vazio, erro e proteção contra exposição de dados sensíveis
+- [x] Criar testes automatizados, validar build e responsividade
+
+## Integração no Painel Administrativo Existente (Agosto 2026)
+- [x] Mapear a rota e os componentes reais do painel administrativo atual antes de criar qualquer tela
+- [x] Integrar vendas e matrículas ao dashboard ou seção de gestão já existente, sem duplicar painel
+- [x] Reutilizar RBAC, navegação, cartões, tabelas, filtros e estados de carregamento já padronizados
+- [x] Criar testes de integração e validar build, responsividade e permissões
+- [x] Salvar checkpoint da integração
