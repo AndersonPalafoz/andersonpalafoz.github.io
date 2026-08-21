@@ -24,6 +24,7 @@ const certificatesRouteSource = readFileSync(new URL("../app/api/user/certificat
     expect(certificatesRouteSource).toContain("getServerSession");
     expect(certificatesRouteSource).toContain("getCertificates(user.id)");
     expect(certificatesRouteSource).toContain("hasSignedPdf: Boolean(certificate.signedPdfUrl)");
-    expect(certificatesRouteSource).not.toContain("signedPdfUrl: certificate.signedPdfUrl");
+    expect(certificatesRouteSource).toMatch(/signedPdfUrl:\s*certificate\.signedPdfUrl\s*\?\s*`\/api\/certificates\/\$\{certificate\.id\}\/download`\s*:\s*null/);
+    expect(certificatesRouteSource).not.toContain("signedPdfUrl: certificate.signedPdfUrl,");
   });
 });
