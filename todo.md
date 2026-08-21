@@ -1560,8 +1560,14 @@
 - [x] Executar suíte Vitest, validar build e salvar checkpoint
 
 ## Funcionalidade de Aviso de Disponibilidade e Ativação do Stripe (Agosto 2026)
-- [ ] Adicionar botão "Avise-me quando disponível" nos módulos e cursos com status de "Conteúdo em preparação"
-- [ ] Criar tabela ou rota para registrar inscrições em avisos de disponibilidade por curso e usuário/e-mail
-- [ ] Auditar e configurar variáveis do Stripe para funcionamento em produção e sandbox
-- [ ] Criar testes automatizados para o aviso de disponibilidade e fluxo de checkout
-- [ ] Executar suíte Vitest, validar build e salvar checkpoint
+- [x] Adicionar botão "Avise-me quando disponível" nos módulos e cursos com status de "Conteúdo em preparação"
+- [x] Criar tabela ou rota para registrar inscrições em avisos de disponibilidade por curso e usuário/e-mail
+- [x] Auditar e configurar variáveis do Stripe para funcionamento em produção e sandbox
+- [x] Criar testes automatizados para o aviso de disponibilidade e fluxo de checkout
+- [x] Executar suíte Vitest, validar build e salvar checkpoint
+
+## Configuração e Validação de Pagamentos via Stripe (Agosto 2026)
+- [x] Auditar rotas de checkout, webhook e criação de produtos/preços no Stripe
+- [x] Validar rotas de webhook do Stripe (`/api/stripe/webhook`) e garantir criação idempotente de matrículas ao confirmar o pagamento
+- [x] Criar testes automatizados para simular o fluxo de compra de cursos pagos e o tratamento de erros do Stripe
+- [x] Executar suíte Vitest, validar build e salvar checkpoint
