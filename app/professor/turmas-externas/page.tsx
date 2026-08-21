@@ -139,7 +139,9 @@ export default function TurmasExternasPage() {
   const [modality, setModality] = useState("Remota");
   const [meetingLink, setMeetingLink] = useState("");
   const [classroomLocation, setClassroomLocation] = useState("");
+  const [level, setLevel] = useState("Básico (A1-A2)");
   const [isDaysModalOpen, setIsDaysModalOpen] = useState(false);
+  const [tempSelectedDays, setTempSelectedDays] = useState<string[]>(["Segunda", "Quarta"]);
   const [touchedClassFields, setTouchedClassFields] = useState<Partial<Record<ClassFormField, boolean>>>({});
 
   const finalInstitutionValue = isCustomInstitution ? customInstitutionInput.trim() : institution.trim();
@@ -384,8 +386,8 @@ export default function TurmasExternasPage() {
       setSubmitting(true);
       const action = editingClassId ? "updateClass" : "createClass";
       const body = editingClassId
-        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation }
-        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation };
+        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation, level }
+        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation, level };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -429,6 +431,7 @@ export default function TurmasExternasPage() {
     setModality((cls as any).modality || "Remota");
     setMeetingLink((cls as any).meetingLink || "");
     setClassroomLocation((cls as any).classroomLocation || "");
+    setLevel((cls as any).level || "Básico (A1-A2)");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -450,6 +453,7 @@ export default function TurmasExternasPage() {
     setModality("Remota");
     setMeetingLink("");
     setClassroomLocation("");
+    setLevel("Básico (A1-A2)");
     resetClassValidation();
   };
 
@@ -1058,6 +1062,20 @@ export default function TurmasExternasPage() {
                   {renderClassFieldMessage("courseName")}
                 </div>
                 <div>
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nível da Turma</label>
+                  <select
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                  >
+                    <option value="Básico (A1-A2)">Básico (A1-A2)</option>
+                    <option value="Intermediário (B1-B2)">Intermediário (B1-B2)</option>
+                    <option value="Avançado (C1-C2)">Avançado (C1-C2)</option>
+                    <option value="Fluência e Conversação">Fluência e Conversação</option>
+                    <option value="Específico / Instrumental">Específico / Instrumental</option>
+                  </select>
+                </div>
+                <div>
                   <label htmlFor="external-academic-term" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Período Letivo</label>
                   <input
                     id="external-academic-term"
@@ -1078,6 +1096,19 @@ export default function TurmasExternasPage() {
                 </div>
                 {/* Calendário, Modalidade e Frequência */}
                 <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-slate-800">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Modalidade da Turma</label>
+                    <select
+                      value={modality}
+                      onChange={(e) => setModality(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    >
+                      <option value="Remota">Remota (Online)</option>
+                      <option value="Presencial">Presencial</option>
+                      <option value="Híbrida">Híbrida</option>
+                    </select>
+                  </div>
+
                   <div className="flex items-center justify-between bg-gray-50 dark:bg-slate-800/60 p-3 rounded-2xl border border-gray-200 dark:border-slate-800">
                     <div>
                       <p className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
@@ -1095,18 +1126,7 @@ export default function TurmasExternasPage() {
                     </button>
                   </div>
 
-                  {modality === "Remota" ? (
-                    <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Link da Sala Online (Zoom, Meet, Teams)</label>
-                      <input
-                        type="url"
-                        value={meetingLink}
-                        onChange={(e) => setMeetingLink(e.target.value)}
-                        placeholder="https://meet.google.com/abc-defg-hij"
-                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                      />
-                    </div>
-                  ) : (
+                  {modality === "Presencial" ? (
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Local / Sala Presencial</label>
                       <input
@@ -1114,6 +1134,17 @@ export default function TurmasExternasPage() {
                         value={classroomLocation}
                         onChange={(e) => setClassroomLocation(e.target.value)}
                         placeholder="Ex: Sala 302, Pavilhão de Aulas UFBA"
+                        className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                      />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Link da Sala Online (Zoom, Meet, Teams)</label>
+                      <input
+                        type="url"
+                        value={meetingLink}
+                        onChange={(e) => setMeetingLink(e.target.value)}
+                        placeholder="https://meet.google.com/abc-defg-hij"
                         className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
                       />
                     </div>
@@ -1364,10 +1395,21 @@ export default function TurmasExternasPage() {
                           <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
                             {cls.institution}
                           </span>
+                          <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300">
+                            {(cls as any).level || "Básico (A1-A2)"}
+                          </span>
+                          <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300">
+                            {(cls as any).modality || "Remota"}
+                          </span>
                           <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
                         </div>
                         <h3 className="text-lg font-black text-gray-950 dark:text-white">{cls.className}</h3>
                         <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
+                        <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-1">
+                          {(cls as any).classDays && <span>🗓 Dias: <strong className="text-gray-700 dark:text-gray-300">{(cls as any).classDays}</strong></span>}
+                          {(cls as any).classTime && <span>⏰ Horário: <strong className="text-gray-700 dark:text-gray-300">{(cls as any).classTime}</strong></span>}
+                          {(cls as any).workloadHours && <span>⏱ Carga Horária: <strong className="text-gray-700 dark:text-gray-300">{(cls as any).workloadHours}h</strong></span>}
+                        </div>
                         {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
                       </div>
                       <div className="flex items-center gap-2 flex-wrap">
@@ -1383,34 +1425,82 @@ export default function TurmasExternasPage() {
                         <button
                           type="button"
                           onClick={() => {
-                            // Exportar CSV da Turma (Alunos, Notas e Frequência)
+                            // Exportar Excel (.xls / .csv estruturado compatível com Excel)
                             const rows = [
-                              ["Relatorio da Turma Externa"],
+                              ["RELATÓRIO DA TURMA EXTERNA"],
                               ["Instituição", cls.institution],
                               ["Turma", cls.className],
                               ["Curso", cls.courseName],
                               ["Período", cls.academicTerm],
+                              ["Nível", (cls as any).level || "Básico"],
+                              ["Modalidade", (cls as any).modality || "Remota"],
                               [],
-                              ["ID Aluno", "Nome", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
+                              ["ID Aluno", "Nome do Aluno", "E-mail", "Matrícula", "Status", "Notas Cadastradas"]
                             ];
                             cls.students.forEach(st => {
                               const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id).map(g => `${g.assessmentTitle}: ${g.score}/${g.maxScore}`).join("; ");
                               rows.push([String(st.id), st.name, st.email || "", st.studentIdNumber || "", st.status, studentGrades]);
                             });
-                            const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-                            const encodedUri = encodeURI(csvContent);
+                            const csvContent = "\uFEFF" + rows.map(e => e.map(cell => `"${String(cell || "").replace(/"/g, '""')}"`).join("\t")).join("\n");
+                            const blob = new Blob([csvContent], { type: "application/vnd.ms-excel;charset=utf-8;" });
+                            const url = URL.createObjectURL(blob);
                             const link = document.createElement("a");
-                            link.setAttribute("href", encodedUri);
-                            link.setAttribute("download", `relatorio_turma_${cls.id}_${cls.className.replace(/\s+/g, "_")}.csv`);
+                            link.href = url;
+                            link.download = `turma_${cls.id}_excel.xls`;
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
-                            notifySuccess("Relatório CSV exportado com sucesso!");
+                            URL.revokeObjectURL(url);
+                            notifySuccess("Planilha Excel exportada com sucesso!");
                           }}
                           className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                          title="Exportar CSV da Turma"
+                          title="Exportar para Excel"
                         >
-                          <FileSpreadsheet size={14} className="text-green-600" /> Exportar CSV
+                          <FileSpreadsheet size={14} className="text-emerald-600" /> Excel (.xls)
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            // Exportar Word (.doc)
+                            const studentsListHtml = cls.students.map(st => `<li><strong>${st.name}</strong> (${st.email || "Sem e-mail"}) - Matrícula: ${st.studentIdNumber || "N/A"} - Status: ${st.status}</li>`).join("");
+                            const gradesListHtml = (cls.grades || []).map(g => {
+                              const st = cls.students.find(s => s.id === g.studentId);
+                              return `<li>${st ? st.name : "Aluno"} - ${g.assessmentTitle}: Nota ${g.score}/${g.maxScore} (${g.feedback || "Sem feedback"})</li>`;
+                            }).join("");
+
+                            const htmlDoc = `
+                              <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                              <head><meta charset='utf-8'><title>Relatório - ${cls.className}</title></head>
+                              <body style="font-family: Arial; color: #333; line-height: 1.6;">
+                                <h1 style="color: #dc2626;">Plataforma Anderson Palafoz</h1>
+                                <h2>Relatório da Turma: ${cls.className}</h2>
+                                <p><strong>Instituição:</strong> ${cls.institution}<br/>
+                                <strong>Curso:</strong> ${cls.courseName}<br/>
+                                <strong>Período Letivo:</strong> ${cls.academicTerm}<br/>
+                                <strong>Nível:</strong> ${(cls as any).level || "Básico"} | <strong>Modalidade:</strong> ${(cls as any).modality || "Remota"}</p>
+                                <h3>Alunos Matriculados (${cls.students.length})</h3>
+                                <ul>${studentsListHtml || "<li>Nenhum aluno cadastrado.</li>"}</ul>
+                                <h3>Avaliações e Notas</h3>
+                                <ul>${gradesListHtml || "<li>Nenhuma nota lançada.</li>"}</ul>
+                              </body>
+                              </html>
+                            `;
+                            const blob = new Blob(['\ufeff' + htmlDoc], { type: "application/msword" });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.download = `turma_${cls.id}_documento.doc`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                            notifySuccess("Documento do Word exportado com sucesso!");
+                          }}
+                          className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                          title="Exportar para Word (.doc)"
+                        >
+                          <FileText size={14} className="text-blue-600" /> Word (.doc)
                         </button>
                         <button
                           type="button"
@@ -1937,6 +2027,82 @@ export default function TurmasExternasPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal para configurar dias da semana e horário */}
+      {isDaysModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm" role="presentation">
+          <div className="w-full max-w-md rounded-3xl border border-gray-200 bg-white p-6 text-gray-950 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-white space-y-5">
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
+              <div className="flex items-center gap-2">
+                <Calendar className="text-red-600" size={20} />
+                <h3 className="text-base font-black">Configurar Dias de Aula</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDaysModalOpen(false)}
+                className="rounded-xl p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-xs text-gray-500">Selecione os dias da semana em que ocorrem os encontros desta turma:</p>
+              <div className="grid grid-cols-2 gap-2">
+                {["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"].map((day) => {
+                  const isChecked = tempSelectedDays.includes(day);
+                  return (
+                    <label
+                      key={day}
+                      className={`flex items-center gap-3 p-3 rounded-2xl border cursor-pointer transition ${isChecked ? "border-red-600 bg-red-50/50 dark:bg-red-950/20 text-red-700 dark:text-red-300 font-bold" : "border-gray-200 dark:border-slate-800 text-gray-700 dark:text-gray-300"}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setTempSelectedDays((prev) => [...prev, day]);
+                          } else {
+                            setTempSelectedDays((prev) => prev.filter((d) => d !== day));
+                          }
+                        }}
+                        className="rounded border-gray-300 text-red-600 focus:ring-red-600 w-4 h-4"
+                      />
+                      <span className="text-xs">{day}</span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Resumo Textual dos Dias</label>
+                <input
+                  type="text"
+                  value={classDays}
+                  onChange={(e) => setClassDays(e.target.value)}
+                  placeholder="Ex: Segundas e Quartas, 19h"
+                  className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  if (tempSelectedDays.length > 0) {
+                    setClassDays(tempSelectedDays.join(" e "));
+                  }
+                  setIsDaysModalOpen(false);
+                }}
+                className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition"
+              >
+                Aplicar e Salvar Dias
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {classPendingDeletion && (
         <div
