@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import * as XLSX from "xlsx";
 import Link from "next/link";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,10 @@ interface ExternalStudentItem {
   name: string;
   email: string | null;
   studentIdNumber: string | null;
+  cpf: string | null;
+  category: string | null;
+  university: string | null;
+  component: string | null;
   status: string;
   notes: string | null;
 }
@@ -52,6 +57,8 @@ interface ExternalClassItem {
   courseName: string;
   academicTerm: string;
   description: string | null;
+  instructorName: string | null;
+  monitors: string | null;
   students: ExternalStudentItem[];
   attendance?: ExternalClassAttendanceItem[];
   grades?: ExternalClassGradeItem[];
@@ -61,6 +68,48 @@ interface ExternalClassItem {
 
 type ClassFormField = "institution" | "className" | "courseName" | "academicTerm" | "description";
 type ClassFormErrors = Partial<Record<ClassFormField, string>>;
+
+type ImportedAttendanceRecord = { date: string; status: "present" | "absent" | "late" | "excused" };
+
+const normalizeImportedHeader = (value: unknown) => String(value ?? "")
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .toLowerCase()
+  .replace(/[_.\/-]+/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
+const cleanImportedValue = (value: unknown) => String(value ?? "").trim().replace(/^['\"]|['\"]$/g, "").trim();
+
+const toIsoAttendanceDate = (value: unknown, academicTerm: string) => {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  const raw = cleanImportedValue(value);
+  const match = raw.match(/^(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?$/);
+  if (!match) return null;
+  const yearFromTerm = academicTerm.match(/(19|20)\d{2}/)?.[0];
+  const year = match[3] ? (match[3].length === 2 ? `20${match[3]}` : match[3]) : yearFromTerm;
+  if (!year) return null;
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+};
+
+const normalizeImportedAttendance = (value: unknown): ImportedAttendanceRecord["status"] | null => {
+  const normalized = normalizeImportedHeader(value);
+  if (["p", "presente", "present", "presenca", "1", "sim", "ok"].includes(normalized)) return "present";
+  if (["f", "falta", "faltou", "absent", "ausente", "a", "0", "nao"].includes(normalized)) return "absent";
+  if (["atraso", "atrasado", "late"].includes(normalized)) return "late";
+  if (["justificada", "justificado", "excused", "j"].includes(normalized)) return "excused";
+  return null;
+};
+
+const normalizeWorkloadHours = (value: unknown) => {
+  const numeric = Number(cleanImportedValue(value).replace(",", ".").replace(/[^\d.]/g, ""));
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+};
 
 export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
@@ -188,6 +237,10 @@ export default function TurmasExternasPage() {
   const [studentName, setStudentName] = useState("");
   const [studentEmail, setStudentEmail] = useState("");
   const [studentIdNumber, setStudentIdNumber] = useState("");
+  const [studentCpf, setStudentCpf] = useState("");
+  const [studentCategory, setStudentCategory] = useState("");
+  const [studentUniversity, setStudentUniversity] = useState("");
+  const [studentComponent, setStudentComponent] = useState("");
   const [studentStatus, setStudentStatus] = useState("active");
   const [studentNotes, setStudentNotes] = useState("");
 
@@ -325,7 +378,7 @@ export default function TurmasExternasPage() {
       const filteredStudents = cls.students.filter((s) => {
         const matchesStatus = studentStatusFilter === "all" || s.status === studentStatusFilter;
         const term = searchTerm.toLowerCase();
-        const matchesTerm = !term || s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)) || (s.studentIdNumber && s.studentIdNumber.toLowerCase().includes(term));
+        const matchesTerm = !term || s.name.toLowerCase().includes(term) || (s.email && s.email.toLowerCase().includes(term)) || (s.studentIdNumber && s.studentIdNumber.toLowerCase().includes(term)) || (s.cpf && s.cpf.toLowerCase().includes(term)) || (s.category && s.category.toLowerCase().includes(term)) || (s.university && s.university.toLowerCase().includes(term)) || (s.component && s.component.toLowerCase().includes(term));
         
         // Calcular frequência e faltas reais
         let totalSessions = 0;
@@ -526,8 +579,8 @@ export default function TurmasExternasPage() {
       setSubmitting(true);
       const action = editingStudentId ? "updateStudent" : "addStudent";
       const body = editingStudentId
-        ? { action, studentId: editingStudentId, studentName, studentEmail, studentIdNumber, studentStatus, studentNotes }
-        : { action, classId: selectedClassId, studentName, studentEmail, studentIdNumber, studentStatus, studentNotes };
+        ? { action, studentId: editingStudentId, studentName, studentEmail, studentIdNumber, studentCpf, studentCategory, studentUniversity, studentComponent, studentStatus, studentNotes }
+        : { action, classId: selectedClassId, studentName, studentEmail, studentIdNumber, studentCpf, studentCategory, studentUniversity, studentComponent, studentStatus, studentNotes };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -552,6 +605,10 @@ export default function TurmasExternasPage() {
     setStudentName(student.name);
     setStudentEmail(student.email || "");
     setStudentIdNumber(student.studentIdNumber || "");
+    setStudentCpf(student.cpf || "");
+    setStudentCategory(student.category || "");
+    setStudentUniversity(student.university || "");
+    setStudentComponent(student.component || "");
     setStudentStatus(student.status);
     setStudentNotes(student.notes || "");
     window.scrollTo({ top: 400, behavior: "smooth" });
@@ -563,6 +620,10 @@ export default function TurmasExternasPage() {
     setStudentName("");
     setStudentEmail("");
     setStudentIdNumber("");
+    setStudentCpf("");
+    setStudentCategory("");
+    setStudentUniversity("");
+    setStudentComponent("");
     setStudentStatus("active");
     setStudentNotes("");
   };
@@ -723,66 +784,104 @@ export default function TurmasExternasPage() {
     }
   };
 
-  // Importação Excel (.xls/.xlsx tab-separated) ou CSV em lote
+  // Importação real de CSV/TSV/XLS/XLSX para os layouts IsF e PROFICI.
   const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const text = event.target?.result as string;
-        if (!text) return;
+    try {
+      setSubmitting(true);
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+      const firstSheetName = workbook.SheetNames[0];
+      if (!firstSheetName) throw new Error("A planilha não contém uma aba para importação.");
+      const sheet = workbook.Sheets[firstSheetName];
+      const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "", raw: true });
+      if (matrix.length < 2) throw new Error("O arquivo precisa de um cabeçalho e ao menos uma linha de dados.");
 
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-        if (lines.length < 2) {
-          notifyError("O arquivo precisa de um cabeçalho e ao menos uma linha de dados.");
-          return;
+      const rawHeaders = (matrix[0] || []).map((header) => cleanImportedValue(header));
+      const headers = rawHeaders.map(normalizeImportedHeader);
+      const selectedClass = classes.find((item) => item.id === classId);
+      const academicTerm = selectedClass?.academicTerm || "";
+      const csvData: Array<Record<string, unknown> & { attendanceRecords: ImportedAttendanceRecord[] }> = [];
+      const classMetadata: Record<string, string | number> = {};
+      let attendanceColumnsDetected = 0;
+      let skippedRows = 0;
+
+      const firstValue = (row: Record<string, unknown>, ...keys: string[]) => {
+        for (const key of keys) {
+          const value = cleanImportedValue(row[key]);
+          if (value) return value;
         }
+        return "";
+      };
 
-        const separator = lines[0].includes("\t") ? "\t" : ",";
-        const headers = lines[0].split(separator).map(h => h.trim().toLowerCase().replace(/['"]+/g, ""));
-        const csvData = [];
-
-        for (let i = 1; i < lines.length; i++) {
-          const values = lines[i].split(separator).map(v => v.trim().replace(/['"]+/g, ""));
-          const row: Record<string, string> = {};
-          headers.forEach((header, index) => {
-            row[header] = values[index] || "";
-          });
-          const nameVal = row.name || row.nome || row["nome do aluno"] || row["student name"];
-          if (nameVal) {
-            csvData.push({
-              name: nameVal,
-              email: row.email || row["e-mail"] || row["correio eletrônico"] || "",
-              studentIdNumber: row.studentIdNumber || row.matricula || row.id || row["número de matrícula"] || "",
-            });
+      for (let i = 1; i < matrix.length; i++) {
+        const values = matrix[i] || [];
+        const row: Record<string, unknown> = {};
+        const attendanceRecords: ImportedAttendanceRecord[] = [];
+        headers.forEach((header, index) => {
+          if (!header) return;
+          const value = values[index] ?? "";
+          row[header] = value;
+          const attendanceDate = toIsoAttendanceDate(rawHeaders[index], academicTerm);
+          if (attendanceDate) {
+            attendanceColumnsDetected += 1;
+            const status = normalizeImportedAttendance(value);
+            if (status) attendanceRecords.push({ date: attendanceDate, status });
           }
-        }
-
-        if (csvData.length === 0) {
-          notifyError("Nenhum aluno válido encontrado no arquivo (verifique as colunas de Nome e E-mail).");
-          return;
-        }
-
-        setSubmitting(true);
-        const res = await fetch("/api/professor/external-classes", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "importCsvStudents", classId, csvData }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Erro ao importar alunos.");
-        notifySuccess(`${data.importedCount} alunos importados com sucesso para a turma!`);
-        void loadClasses();
-      } catch (err) {
-        notifyError(err instanceof Error ? err.message : "Erro ao processar arquivo de alunos.");
-      } finally {
-        setSubmitting(false);
-        e.target.value = "";
+
+        const name = firstValue(row, "nome", "nome completo", "nome do aluno", "student name");
+        if (!name) {
+          skippedRows += 1;
+          continue;
+        }
+
+        const email = firstValue(row, "email", "e mail", "correio eletronico");
+        const cpf = firstValue(row, "cpf");
+        const studentIdNumber = firstValue(row, "studentidnumber", "matricula", "numero de matricula", "id");
+        const category = firstValue(row, "category", "categoria");
+        const university = firstValue(row, "university", "universidade", "instituicao");
+        const component = firstValue(row, "component", "componente", "nivel");
+        const days = firstValue(row, "dias", "turma");
+        const time = firstValue(row, "horario", "hora");
+        const workload = normalizeWorkloadHours(firstValue(row, "ch", "carga horaria", "carga horaria total"));
+        const instructor = firstValue(row, "professor", "teacher");
+        const monitors = firstValue(row, "monitores", "monitor");
+
+        if (days && !classMetadata.classDays) classMetadata.classDays = days;
+        if (time && !classMetadata.classTime) classMetadata.classTime = time;
+        if (component && !classMetadata.level) classMetadata.level = component;
+        if (workload && !classMetadata.workloadHours) classMetadata.workloadHours = workload;
+        if (instructor && !classMetadata.instructorName) classMetadata.instructorName = instructor;
+        if (monitors && !classMetadata.monitors) classMetadata.monitors = monitors;
+
+        csvData.push({ name, email, cpf, studentIdNumber, category, university, component, attendanceRecords });
       }
-    };
-    reader.readAsText(file);
+
+      if (csvData.length === 0) {
+        throw new Error("Nenhum aluno válido encontrado. A coluna Nome completo é obrigatória.");
+      }
+
+      const res = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "importCsvStudents", classId, csvData, classMetadata }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Erro ao importar alunos.");
+
+      const format = /\.xlsx?$/i.test(file.name) ? "Excel" : "CSV/TSV";
+      const attendanceMessage = attendanceColumnsDetected > 0 ? ` ${attendanceColumnsDetected} coluna(s) de presença identificada(s).` : "";
+      const skippedMessage = skippedRows > 0 ? ` ${skippedRows} linha(s) sem nome foram ignoradas.` : "";
+      notifySuccess(`${format}: ${data.importedCount} aluno(s) importado(s) e ${data.updatedCount || 0} atualizado(s).${attendanceMessage}${skippedMessage}`);
+      void loadClasses();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Erro ao processar arquivo de alunos.");
+    } finally {
+      setSubmitting(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -1372,6 +1471,49 @@ export default function TurmasExternasPage() {
                     className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
                   />
                 </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">CPF</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="000.000.000-00"
+                      value={studentCpf}
+                      onChange={(e) => setStudentCpf(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Categoria</label>
+                    <input
+                      type="text"
+                      placeholder="Ex.: Estudante de pós-graduação"
+                      value={studentCategory}
+                      onChange={(e) => setStudentCategory(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Universidade</label>
+                    <input
+                      type="text"
+                      placeholder="Ex.: UFBA"
+                      value={studentUniversity}
+                      onChange={(e) => setStudentUniversity(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Componente / Nível</label>
+                    <input
+                      type="text"
+                      placeholder="Ex.: Básico ou Intermediário"
+                      value={studentComponent}
+                      onChange={(e) => setStudentComponent(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-3 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Status</label>
                   <select
@@ -1509,10 +1651,10 @@ export default function TurmasExternasPage() {
                       <div className="relative flex items-center gap-2">
                         <div className="hidden sm:flex items-center gap-2 flex-wrap">
                           <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-                            <FileSpreadsheet size={14} className="text-green-600" /> CSV
+                            <FileSpreadsheet size={14} className="text-green-600" /> Importar planilha
                             <input
                               type="file"
-                              accept=".csv"
+                              accept=".csv,.tsv,.xls,.xlsx"
                               className="hidden"
                               onChange={(e) => void handleCsvImport(cls.id, e)}
                             />
@@ -1576,10 +1718,10 @@ export default function TurmasExternasPage() {
                           {activeQuickActionsId === cls.id && (
                             <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-2 shadow-xl z-50 space-y-1">
                               <label className="w-full cursor-pointer px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200">
-                                <FileSpreadsheet size={14} className="text-green-600" /> Importar CSV
+                                <FileSpreadsheet size={14} className="text-green-600" /> Importar Excel/CSV
                                 <input
                                   type="file"
-                                  accept=".csv"
+                                  accept=".csv,.tsv,.xls,.xlsx"
                                   className="hidden"
                                   onChange={(e) => {
                                     setActiveQuickActionsId(null);
@@ -1811,8 +1953,15 @@ export default function TurmasExternasPage() {
                                     )}
                                   </div>
                                   <p className="text-xs text-gray-500 mt-0.5">
-                                    {st.email || "Sem e-mail"} {st.studentIdNumber ? `• Matrícula: ${st.studentIdNumber}` : ""}
+                                    {st.email || "Sem e-mail"} {st.studentIdNumber ? `• Matrícula: ${st.studentIdNumber}` : ""} {st.cpf ? `• CPF: ${st.cpf}` : ""}
                                   </p>
+                                  {(st.category || st.university || st.component) && (
+                                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                      {st.category && <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 font-semibold">{st.category}</span>}
+                                      {st.university && <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 font-semibold">{st.university}</span>}
+                                      {st.component && <span className="text-[10px] px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-semibold">Comp: {st.component}</span>}
+                                    </div>
+                                  )}
                                   {st.notes && <p className="text-xs text-gray-400 italic mt-1">Obs: {st.notes}</p>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
