@@ -1455,7 +1455,7 @@
 - [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
 - [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode. (Concluído)
 - [x] **Configuração do Heartbeat em Produção:** Criado o job `nightly-trash-cleanup` com task UID `eADcpQiwaxLfPmQHvpoNbz`, execução diária às 03:00 UTC e callback `/api/scheduled/cleanup-trash`.
-- [ ] **Monitoramento de Heartbeat em Produção:** Acompanhar a primeira execução da rota `/api/scheduled/cleanup-trash` para confirmar a retenção de 30 dias; o histórico inicial ainda não possui execuções.
+- [ ] **Monitoramento de Heartbeat em Produção:** Job ativo (`nightly-trash-cleanup`, task UID `eADcpQiwaxLfPmQHvpoNbz`) e verificado em 21/08/2026; o histórico retornou `0` execuções, portanto ainda é necessário aguardar a primeira execução para confirmar operacionalmente a retenção de 30 dias.
 
 ## Ajuste de Contraste WCAG AAA em Modo Escuro (Agosto 2026)
 - [x] Auditar e ajustar classes de texto secundário em `/app/cursos/[id]/page.tsx` para garantir alto contraste (WCAG AAA) no modo escuro
