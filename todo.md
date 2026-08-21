@@ -1630,3 +1630,5 @@
 - [x] Conectado o formulário de contato (`/contato`) à central administrativa em `/admin/mensagens`, permitindo leitura, busca, filtros e resposta direta por e-mail.
 - [x] Adicionadas meta tags Open Graph dinâmicas na página pública de verificação de certificados (`/verificar/[code]`) para otimizar o compartilhamento no LinkedIn e WhatsApp.
 - [x] Implementada a visualização em formato de calendário e agenda interativa para as turmas externas no painel correspondente.
+- [x] Adicionado indicador visual de mensagens não lidas no menu do painel administrativo.
+- [x] Implementada a exportação de turmas externas para arquivo iCal (`.ics`) e integração com Google Calendar.
