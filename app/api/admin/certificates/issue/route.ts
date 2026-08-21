@@ -34,21 +34,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Aluno ou curso não encontrado." }, { status: 404 });
     }
 
-    // Verificar se já existe certificado emitido (idempotência)
     let existing = await db.query.certificates.findFirst({
       where: and(eq(certificates.userId, userId), eq(certificates.courseId, courseId)),
     });
 
     const certificateCode = existing?.certificateCode || crypto.randomBytes(16).toString("hex");
 
-    // Gerar PDF padrão do certificado
     const pdfBytes = await buildCertificatePdf({
       studentName: student.name || student.email || "Aluno",
       courseTitle: course.title,
       level: course.level || "Geral",
       issuedAt: new Date(),
       certificateCode,
-      workloadHours: course.modules ? course.modules * 10 : 40,
+      workloadHours: 40,
     });
 
     const storageKey = `certificates/${userId}-${courseId}-${Date.now()}.pdf`;
