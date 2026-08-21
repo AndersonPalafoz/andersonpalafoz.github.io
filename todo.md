@@ -1702,3 +1702,10 @@
 - [x] Incluir estatísticas detalhadas de aprovação, reprovação por nota, reprovação por falta e dados insuficientes no resumo do PDF
 - [x] Criar testes automatizados para verificar o cálculo das proporções no resumo do PDF, inclusive recorte vazio
 - [x] Executar suíte Vitest completa com 397 testes aprovados, build de produção aprovado após liberação de memória e reinício do preview
+
+## Personalização de Cores no Gráfico de Resumo PDF — 21/08/2026
+- [x] Atualizar o HTML/CSS do gráfico de resumo no PDF para utilizar verde institucional (`#16A34A`) nos aprovados
+- [x] Utilizar vermelho institucional (`#DC2626`) nos reprovados e cinza neutro (`#9CA3AF`) em dados insuficientes
+- [x] Atualizar as etiquetas e os indicadores do cabeçalho do PDF para refletirem a mesma paleta semântica
+- [x] Atualizar testes unitários e de contrato para validar as classes de cor corretas no HTML gerado
+- [x] Executar suíte Vitest completa com 397 testes aprovados e build de produção Next.js aprovado após liberação controlada de memória
