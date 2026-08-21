@@ -1632,3 +1632,6 @@
 - [x] Implementada a visualização em formato de calendário e agenda interativa para as turmas externas no painel correspondente.
 - [x] Adicionado indicador visual de mensagens não lidas no menu do painel administrativo.
 - [x] Implementada a exportação de turmas externas para arquivo iCal (`.ics`) e integração com Google Calendar.
+- [x] Implementados filtros avançados de busca por data e status (lida/não lida) na central de mensagens administrativas.
+- [x] Adicionadas cores e legendas visuais no calendário de turmas externas para diferenciar modalidades e níveis de ensino.
+- [x] Corrigido o erro de importação de armazenamento na rota de emissão de certificados, garantindo sucesso no build de produção do Vercel.
