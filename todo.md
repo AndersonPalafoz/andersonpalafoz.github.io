@@ -1394,8 +1394,8 @@
 - [x] Auditar por que a sessão do Google Calendar está ausente ou expirada em `/dashboard/calendario` (comprovado que a ausência de sessão ativa do usuário redireciona para login)
 - [x] Verificar escopos OAuth, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, URL de callback e armazenamento do token
 - [x] Confirmar se a Google Calendar API está habilitada no projeto Google Cloud correspondente
-- [ ] Iniciar o fluxo de autorização novamente sem solicitar escopos desnecessários (bloqueado por impossibilidade de login interativo sem credenciais)
-- [ ] Validar leitura de eventos após a autorização e exibir mensagens distintas para sessão expirada, API desabilitada e ausência de permissões (bloqueado por login)
+- [x] Configurar o fluxo de autorização explícita sem solicitar escopos desnecessários: a ação do calendário solicita somente `openid email profile https://www.googleapis.com/auth/calendar.readonly`; o teste de contrato foi aprovado
+- [ ] Executar o consentimento real e validar a leitura de eventos após a autorização; as mensagens distintas para sessão expirada, API desabilitada e ausência de permissões já estão implementadas e cobertas por testes, mas o fluxo real permanece bloqueado por login
 
 ## Pendente por Bloqueio de Autenticação
 - [ ] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível pelo próprio usuário
