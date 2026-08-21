@@ -1638,3 +1638,5 @@
 - [x] Implementado tooltip interativo no calendário de turmas externas para exibição detalhada de horários e períodos ao passar o mouse.
 - [x] Configurada notificação por e-mail automática ao aluno imediatamente após a emissão do certificado.
 - [x] Auditadas e validadas todas as 8 páginas públicas (Home, Sobre, Cursos, Materiais, Blog, Contato, FAQ, Política de Privacidade).
+- [x] Adicionadas barras de pesquisa dinâmica e filtros de categoria nas páginas de blog e materiais.
+- [x] Implementado o botão de download em lote (ZIP) no painel do aluno para baixar todos os certificados emitidos de uma só vez.
