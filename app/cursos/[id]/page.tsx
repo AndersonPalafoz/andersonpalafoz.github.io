@@ -71,7 +71,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
             <p className="font-bold text-base mb-1">Conteúdo em preparação</p>
             <p>Este curso já possui módulos cadastrados, mas nenhuma aula foi publicada ainda. O progresso e o certificado permanecerão bloqueados até que as aulas sejam disponibilizadas.</p>
           </div>
-          <CourseWaitlistButton courseId={course.id} />
+          <CourseWaitlistButton courseId={courseId} />
         </div>
       )}
       {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
@@ -236,7 +236,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Breadcrumbs
           items={[
-            { label: "Aulas", href: "/aulas" },
+            { label: "Cursos", href: "/cursos" },
             { label: course.title, href: `/cursos/${course.id}` },
           ]}
         />
