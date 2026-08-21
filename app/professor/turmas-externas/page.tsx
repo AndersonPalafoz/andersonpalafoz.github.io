@@ -920,6 +920,34 @@ export default function TurmasExternasPage() {
             </div>
 
             <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Modalidade:</span>
+              <select
+                value={selectedModalityFilter}
+                onChange={(e) => setSelectedModalityFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="all">Todas</option>
+                <option value="Remota">Remota</option>
+                <option value="Presencial">Presencial</option>
+                <option value="Híbrida">Híbrida</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Nível:</span>
+              <select
+                value={selectedLevelFilter}
+                onChange={(e) => setSelectedLevelFilter(e.target.value)}
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none"
+              >
+                <option value="all">Todos</option>
+                <option value="Básico">Básico</option>
+                <option value="Intermediário">Intermediário</option>
+                <option value="Avançado">Avançado</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status Aluno:</span>
               <select
                 value={studentStatusFilter}
