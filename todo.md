@@ -1688,3 +1688,9 @@
 - [x] Implementar exportação de notas e presenças em CSV, incluindo CPF, categoria, universidade, componente, status, presença, frequência, notas e média
 - [x] Implementar pré-visualização imprimível em formato A4 paisagem para salvar o relatório em PDF, com cabeçalho institucional e metadados da turma
 - [x] Adicionar testes automatizados de contrato para dados, formatos, ações desktop/mobile e permissões herdadas da página protegida; suíte completa aprovada com 393 testes
+
+## Filtro de Reprovação em Relatórios Acadêmicos — 21/08/2026
+- [x] Adicionar opções de filtro de exportação ("Todos os Alunos", "Apenas Reprovados por Nota (< 6.0)", "Apenas Reprovados por Falta (< 75% frequência)", "Qualquer Reprovação")
+- [x] Atualizar as funções `exportAcademicCsv` e `exportAcademicPdf` para aceitar o critério de filtro selecionado
+- [x] Criar testes automatizados unitários e de contrato para verificar a exatidão do recorte de reprovação por nota e falta
+- [x] Executar suíte Vitest completa com 396 testes aprovados, build de produção aprovado após liberação de memória e validação móvel da rota

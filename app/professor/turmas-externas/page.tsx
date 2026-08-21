@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance } from "@/lib/external-academic-report";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical } from "lucide-react";
 import { toast } from "sonner";
 
@@ -162,6 +163,7 @@ export default function TurmasExternasPage() {
   const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
   const [studentStatusFilter, setStudentStatusFilter] = useState("all");
   const [studentAttendanceFilter, setStudentAttendanceFilter] = useState("all");
+  const [reportFilter, setReportFilter] = useState<AcademicReportFilter>("all");
   const [selectedYearFilter, setSelectedYearFilter] = useState("all");
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState("all");
   const [selectedModalityFilter, setSelectedModalityFilter] = useState("all");
@@ -821,18 +823,22 @@ export default function TurmasExternasPage() {
         ? studentGrades.reduce((sum, grade) => sum + (Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : 0), 0) / studentGrades.length
         : null;
       const attendancePercent = attendance.total > 0 ? (attendance.present / attendance.total) * 100 : null;
+      const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent });
+      const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent });
       return {
         student,
         attendance,
         attendancePercent,
         grades: studentGrades,
         averageGrade,
+        failedByGrade,
+        failedByAttendance,
       };
     });
   };
 
-  const exportAcademicCsv = (cls: ExternalClassItem) => {
-    const rows = getAcademicReportRows(cls);
+  const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
+    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter);
     const csvRows = [
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
       ["Instituição", cls.institution],
@@ -842,6 +848,8 @@ export default function TurmasExternasPage() {
       ["Nível", (cls as any).level || "Não informado"],
       ["Modalidade", (cls as any).modality || "Não informada"],
       ["Gerado em", new Date().toLocaleString("pt-BR")],
+      ["Filtro aplicado", academicReportFilterLabel(filter)],
+      ["Alunos incluídos", rows.length],
       [],
       ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Média (0–10)"],
       ...rows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => [
@@ -867,16 +875,16 @@ export default function TurmasExternasPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `relatorio_academico_${cls.id}.csv`;
+    link.download = `relatorio_academico_${cls.id}_${filter}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    notifySuccess("Relatório acadêmico CSV exportado com sucesso.");
+    notifySuccess(`Relatório CSV exportado com o filtro: ${academicReportFilterLabel(filter)}.`);
   };
 
-  const exportAcademicPdf = (cls: ExternalClassItem) => {
-    const reportRows = getAcademicReportRows(cls);
+  const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
+    const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter);
     const generatedAt = new Date().toLocaleString("pt-BR");
     const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => `
       <tr>
@@ -900,14 +908,14 @@ export default function TurmasExternasPage() {
     printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
       @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 8px; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 5px; vertical-align: top; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
-      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div></div>
+      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter))}</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
       <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Média</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="10">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
-      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação.</footer>
+      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${REPORT_MIN_GRADE.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
       </body></html>`);
     printWindow.document.close();
     printWindow.focus();
     window.setTimeout(() => printWindow.print(), 250);
-    notifySuccess("Pré-visualização do relatório PDF aberta. Escolha ‘Salvar como PDF’ na caixa de impressão.");
+    notifySuccess(`Pré-visualização PDF aberta com o filtro: ${academicReportFilterLabel(filter)}.`);
   };
 
   // Importação real de CSV/TSV/XLS/XLSX para os layouts IsF e PROFICI.
@@ -1234,6 +1242,21 @@ export default function TurmasExternasPage() {
                 <option value="above_limit">Acima do Limite de Faltas 🚨</option>
                 <option value="near_limit">Próximos do Limite (80%-100%) ⚠️</option>
                 <option value="regular">Frequência Regular ✅</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Relatório:</span>
+              <select
+                value={reportFilter}
+                onChange={(e) => setReportFilter(e.target.value as AcademicReportFilter)}
+                aria-label="Filtrar exportação por reprovação"
+                className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              >
+                <option value="all">Todos os alunos</option>
+                <option value="grade">Reprovados por nota (&lt; 6,0)</option>
+                <option value="attendance">Reprovados por falta (&lt; 75%)</option>
+                <option value="any">Qualquer reprovação</option>
               </select>
             </div>
 
