@@ -1558,3 +1558,10 @@
 - [x] Auditar a configuração de pagamento do Stripe e criar fallback resiliente para cursos pagos quando credenciais estiverem pendentes de ativação em produção
 - [x] Criar testes automatizados de contrato cobrindo a integridade sistêmica e o tratamento de checkout
 - [x] Executar suíte Vitest, validar build e salvar checkpoint
+
+## Funcionalidade de Aviso de Disponibilidade e Ativação do Stripe (Agosto 2026)
+- [ ] Adicionar botão "Avise-me quando disponível" nos módulos e cursos com status de "Conteúdo em preparação"
+- [ ] Criar tabela ou rota para registrar inscrições em avisos de disponibilidade por curso e usuário/e-mail
+- [ ] Auditar e configurar variáveis do Stripe para funcionamento em produção e sandbox
+- [ ] Criar testes automatizados para o aviso de disponibilidade e fluxo de checkout
+- [ ] Executar suíte Vitest, validar build e salvar checkpoint

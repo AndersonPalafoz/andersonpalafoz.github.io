@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/breadcrumbs";
 import { getCourseById, getModulesByCourse, getLessonsByModule, getResumeLesson, db } from "@/lib/db";
 import { formatLevel } from "@/lib/levels";
 import { EnrollButton } from "@/components/enroll-button";
+import { CourseWaitlistButton } from "@/components/course-waitlist-button";
 import { CertificateModal } from "@/components/certificate-modal";
 import { CourseEngagement } from "@/components/course-engagement";
 import { BookOpen, Layers, PlayCircle, Clock, CheckCircle, ExternalLink, HardDrive } from "lucide-react";
@@ -65,9 +66,12 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
   return (
     <div className="space-y-6">
       {totalLessons === 0 && (
-        <div role="status" className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
-          <p className="font-bold">Conteúdo em preparação</p>
-          <p>Este curso já possui módulos cadastrados, mas nenhuma aula foi publicada ainda. O progresso e o certificado permanecerão bloqueados até que as aulas sejam disponibilizadas.</p>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm dark:border-amber-800 dark:bg-amber-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div role="status" className="text-sm leading-6 text-amber-950 dark:text-amber-100">
+            <p className="font-bold text-base mb-1">Conteúdo em preparação</p>
+            <p>Este curso já possui módulos cadastrados, mas nenhuma aula foi publicada ainda. O progresso e o certificado permanecerão bloqueados até que as aulas sejam disponibilizadas.</p>
+          </div>
+          <CourseWaitlistButton courseId={course.id} />
         </div>
       )}
       {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
