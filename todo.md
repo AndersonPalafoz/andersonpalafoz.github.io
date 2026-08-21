@@ -1605,3 +1605,6 @@
 - [x] Auditadas e validadas as páginas administrativas de certificados (`/admin/certificados` e `/professor/certificados`), cupons (`/admin/cupons`) e o CMS (`/admin/cms`).
 - [x] Executado teste simulado de fulfillment do webhook `checkout.session.completed`, confirmando a criação correta de registros de compra e liberação de matrículas.
 - [x] Verificado o mecanismo de tokens do Google Calendar, constatando que a persistência reside no token JWT do NextAuth (sem tabela dedicada no Neon DB para limpeza de tokens), com tratamento robusto de expiração e escopos insuficientes.
+- [x] Tratada a falha de sincronização do Classroom em ambiente sem CLI gws local (`/api/admin/classroom-sync`), garantindo resiliência em produção.
+- [x] Blindada a rota de download de materiais (`/api/materials/[id]/download`) para exigir autenticação e autorização server-side em conteúdos pagos/privados.
+- [x] Restaurado e validado o endpoint de comentários e avaliações do blog (`/api/articles/[id]/comments`), permitindo o envio correto de opiniões em artigos públicos.
