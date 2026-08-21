@@ -1749,3 +1749,9 @@
 - [ ] Adicionar filtros por data de emissão e tipo de modelo/branding na galeria de certificados da área do aluno (`/dashboard/certificados`).
 - [ ] Criar funcionalidade para exportar a lista de pendências históricas e tarefas pendentes em formato CSV no painel administrativo.
 - [ ] Permitir a emissão de certificados para destinatários ainda não cadastrados na plataforma, inserindo diretamente nome, CPF, e-mail, curso, template, logo e preferências de branding.
+
+## Integração dos Modelos de Certificado DOCX do Usuário — 21/08/2026
+- [ ] Inspecionar e extrair o conteúdo e a estrutura dos arquivos `CertificadoparaCursodeInglêsparaFinsdeInternacionalização.docx` e `CERTIFICAD0.docx`.
+- [ ] Ajustar o serviço de armazenamento e tratamento de templates para aceitar documentos Word (.docx), convertendo-os ou extraindo seus campos de texto e variáveis para preenchimento dinâmico.
+- [ ] Cadastrar automaticamente os dois modelos na base de dados (um voltado a Internacionalização/IsF e outro como certificado padrão customizado).
+- [ ] Validar a pré-visualização, a opção de incluir ou não a logo do site e a emissão integrada para alunos cadastrados e não cadastrados.

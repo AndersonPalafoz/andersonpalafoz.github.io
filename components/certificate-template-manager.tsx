@@ -211,13 +211,13 @@ export function CertificateTemplateManager() {
               id="certificate-template-file"
               name="file"
               type="file"
-              accept="application/pdf,image/png"
+              accept="application/pdf,image/png,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.docx"
               required
               className="min-w-0 flex-1 text-sm text-foreground file:mr-3 file:rounded-lg file:border-0 file:bg-red-600 file:px-3 file:py-2 file:text-xs file:font-bold file:text-white hover:file:bg-red-700"
             />
           </div>
           <p className="text-xs text-muted-foreground">
-            Somente PDF ou PNG, até 10 MB.
+            PDF, PNG ou DOCX (.docx), até 10 MB.
           </p>
         </div>
 
@@ -235,7 +235,7 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewName}
-                onChange={(e) => setPreviewName(e.target.value)}
+                onChange={e => setPreviewName(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -244,7 +244,7 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewCourse}
-                onChange={(e) => setPreviewCourse(e.target.value)}
+                onChange={e => setPreviewCourse(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -253,7 +253,7 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewCode}
-                onChange={(e) => setPreviewCode(e.target.value)}
+                onChange={e => setPreviewCode(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -262,7 +262,7 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewDate}
-                onChange={(e) => setPreviewDate(e.target.value)}
+                onChange={e => setPreviewDate(e.target.value)}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
