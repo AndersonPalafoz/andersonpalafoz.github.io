@@ -188,6 +188,33 @@ export async function getCertificateByUserCourse(userId: number, courseId: numbe
   });
 }
 
+export async function getAllCertificatesForAdmin() {
+  return await db.query.certificates.findMany({
+    with: { user: true, course: true },
+    orderBy: desc(schema.certificates.issuedAt),
+  });
+}
+
+export async function updateCertificateSignature(data: {
+  certificateId: number;
+  signatureType: schema.CertificateSignatureType;
+  signedPdfUrl: string;
+  signedAt: Date;
+  signedBy: number;
+}) {
+  const [updated] = await db
+    .update(schema.certificates)
+    .set({
+      signatureType: data.signatureType,
+      signedPdfUrl: data.signedPdfUrl,
+      signedAt: data.signedAt,
+      signedBy: data.signedBy,
+    })
+    .where(eq(schema.certificates.id, data.certificateId))
+    .returning();
+  return updated;
+}
+
 export async function createCertificate(data: {
   userId: number;
   courseId: number;

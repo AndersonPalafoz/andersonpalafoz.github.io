@@ -183,6 +183,12 @@ export default function AdminDashboardPage() {
               Auditoria
             </Link>
             <Link
+              href="/admin/certificados"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+            >
+              Assinar Certificados
+            </Link>
+            <Link
               href="/admin/cupons"
               className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
