@@ -1640,3 +1640,5 @@
 - [x] Auditadas e validadas todas as 8 páginas públicas (Home, Sobre, Cursos, Materiais, Blog, Contato, FAQ, Política de Privacidade).
 - [x] Adicionadas barras de pesquisa dinâmica e filtros de categoria nas páginas de blog e materiais.
 - [x] Implementado o botão de download em lote (ZIP) no painel do aluno para baixar todos os certificados emitidos de uma só vez.
+- [x] Implementada paginação dinâmica nas listagens públicas de blog e materiais.
+- [x] Adicionados botões de compartilhamento social (LinkedIn, WhatsApp, X/Twitter e cópia de link) nas páginas individuais de artigos e materiais.
