@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
       );
     if (!(file instanceof File))
       return NextResponse.json(
-        { error: "Envie o arquivo do modelo em PDF ou PNG." },
+        { error: "Envie o arquivo do modelo em PDF, PNG ou DOCX." },
         { status: 400 }
       );
 

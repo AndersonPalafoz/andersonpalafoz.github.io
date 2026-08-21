@@ -9,6 +9,7 @@ export const CERTIFICATE_TEMPLATE_MAX_BYTES = 10 * 1024 * 1024;
 export const CERTIFICATE_TEMPLATE_MIME_TYPES = [
   "application/pdf",
   "image/png",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ] as const;
 export const LEARNING_AUDIO_MAX_BYTES = 15 * 1024 * 1024;
 export const LEARNING_AUDIO_MIME_TYPES = [
