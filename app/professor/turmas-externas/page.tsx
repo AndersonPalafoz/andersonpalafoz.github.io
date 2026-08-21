@@ -1713,10 +1713,34 @@ export default function TurmasExternasPage() {
                           <p className="text-xs text-gray-400 py-4 text-center">Nenhum aluno cadastrado nesta turma ou correspondente ao filtro.</p>
                         ) : (
                           <div className="divide-y divide-gray-100 dark:divide-slate-800">
-                            {cls.filteredStudents.map((st) => (
-                              <div key={st.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            {cls.filteredStudents.map((st) => {
+                              // Calcular estatísticas individuais para tags de atenção
+                              const maxAbs = cls.maxAbsencePercent ?? 25;
+                              let totalSessions = 0;
+                              let absentCount = 0;
+                              if (cls.attendance) {
+                                cls.attendance.forEach((att) => {
+                                  try {
+                                    const parsed = JSON.parse(att.attendanceData) as Record<string, string>;
+                                    const status = parsed[String(st.id)];
+                                    if (status) {
+                                      totalSessions++;
+                                      if (status === "absent") absentCount++;
+                                    }
+                                  } catch {}
+                                });
+                              }
+                              const absencePercent = totalSessions > 0 ? (absentCount / totalSessions) * 100 : 0;
+                              const isHighAbsence = totalSessions > 0 && absencePercent > maxAbs;
+
+                              const studentGrades = (cls.grades || []).filter(g => g.studentId === st.id);
+                              const avgGrade = studentGrades.length > 0 ? studentGrades.reduce((a, b) => a + (Number(b.score) || 0), 0) / studentGrades.length : null;
+                              const isLowGrade = avgGrade !== null && avgGrade < 6.0;
+
+                              return (
+                                <div key={st.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div>
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-bold text-sm text-gray-900 dark:text-white">{st.name}</span>
                                     <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
                                       st.status === "active" ? "bg-green-100 text-green-700 dark:bg-green-950/60 dark:text-green-300" :
@@ -1725,6 +1749,16 @@ export default function TurmasExternasPage() {
                                     }`}>
                                       {st.status === "active" ? "Ativo" : st.status === "completed" ? "Concluído" : "Inativo"}
                                     </span>
+                                    {isHighAbsence && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-red-100 text-red-700 dark:bg-red-950/80 dark:text-red-300 flex items-center gap-1" title="Faltas acima do limite permitido!">
+                                        🚨 Faltas ({absencePercent.toFixed(0)}%)
+                                      </span>
+                                    )}
+                                    {isLowGrade && (
+                                      <span className="text-[10px] px-2 py-0.5 rounded-md font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 flex items-center gap-1" title="Média de notas abaixo de 6.0">
+                                        ⚠️ Nota Baixa ({avgGrade.toFixed(1)})
+                                      </span>
+                                    )}
                                   </div>
                                   <p className="text-xs text-gray-500 mt-0.5">
                                     {st.email || "Sem e-mail"} {st.studentIdNumber ? `• Matrícula: ${st.studentIdNumber}` : ""}
@@ -1744,13 +1778,60 @@ export default function TurmasExternasPage() {
                                       Boas-vindas
                                     </button>
                                   )}
-                                  <Link
-                                    href={`/professor/boletim/${st.id}`}
-                                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition text-gray-700 dark:text-gray-300"
-                                    title="Ver Boletim Consolidado"
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const printWin = window.open("", "_blank");
+                                      if (!printWin) {
+                                        notifyError("Permita popups no navegador para gerar o boletim PDF.");
+                                        return;
+                                      }
+                                      const gradesList = (cls.grades || []).filter(g => g.studentId === st.id);
+                                      const gradesHtml = gradesList.length > 0 ? gradesList.map(g => `<tr><td>${g.assessmentTitle}</td><td>${g.score} / ${g.maxScore}</td><td>${g.feedback || "-"}</td></tr>`).join("") : '<tr><td colspan="3">Nenhuma nota lançada.</td></tr>';
+
+                                      printWin.document.write(`
+                                        <html>
+                                          <head>
+                                            <title>Boletim Individual - ${st.name}</title>
+                                            <style>
+                                              body { font-family: Arial, sans-serif; margin: 40px; color: #111; }
+                                              h1 { color: #dc2626; font-size: 20px; margin-bottom: 4px; }
+                                              h2 { font-size: 14px; margin-top: 25px; border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
+                                              table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+                                              th { background: #f3f4f6; padding: 8px; text-align: left; border-bottom: 2px solid #ccc; }
+                                              td { padding: 8px; border-bottom: 1px solid #ddd; }
+                                              .meta { background: #f9fafb; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; line-height: 1.5; }
+                                            </style>
+                                          </head>
+                                          <body>
+                                            <h1>Boletim Acadêmico Individual</h1>
+                                            <p>Plataforma Anderson Palafoz — Ensino de Inglês e Capacitação</p>
+                                            <div class="meta">
+                                              <strong>Aluno(a):</strong> ${st.name} <br/>
+                                              <strong>E-mail:</strong> ${st.email || "Não informado"} | <strong>Matrícula:</strong> ${st.studentIdNumber || "N/A"}<br/>
+                                              <strong>Turma:</strong> ${cls.className} (${cls.institution})<br/>
+                                              <strong>Disciplina/Curso:</strong> ${cls.courseName} | <strong>Período:</strong> ${cls.academicTerm}<br/>
+                                              <strong>Frequência Registrada:</strong> Faltas: ${absentCount} de ${totalSessions} aulas (${absencePercent.toFixed(1)}%)<br/>
+                                              <strong>Média Geral de Notas:</strong> ${avgGrade !== null ? avgGrade.toFixed(1) + " / 10.0" : "Sem notas lançadas"}
+                                            </div>
+                                            <h2>Notas e Avaliações Detalhadas</h2>
+                                            <table>
+                                              <thead><tr><th>Avaliação</th><th>Nota</th><th>Feedback do Professor</th></tr></thead>
+                                              <tbody>${gradesHtml}</tbody>
+                                            </table>
+                                            <script>window.onload = function() { window.print(); }</script>
+                                          </body>
+                                        </html>
+                                      `);
+                                      printWin.document.close();
+                                      printWin.focus();
+                                      notifySuccess(`Gerando boletim PDF para ${st.name}...`);
+                                    }}
+                                    className="px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1"
+                                    title="Gerar e exportar boletim individual em PDF"
                                   >
-                                    Boletim
-                                  </Link>
+                                    <FileText size={12} /> Boletim PDF
+                                  </button>
                                   <button
                                     type="button"
                                     onClick={() => startEditStudent(st, cls.id)}
@@ -1769,7 +1850,7 @@ export default function TurmasExternasPage() {
                                   </button>
                                 </div>
                               </div>
-                            ))}
+                            )})}
                           </div>
                         )}
                       </div>
@@ -1946,8 +2027,81 @@ export default function TurmasExternasPage() {
                           </button>
                         </div>
 
+                        {/* Edição em Lote de Notas */}
+                        <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-200 dark:border-slate-800">
+                          <h5 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Edição Rápida / Lançamento em Lote para Todos os Alunos</h5>
+                          <p className="text-[11px] text-gray-500">Insira uma atividade padrão (ex: Participação / Trabalho Final) e atribua a nota para todos os alunos de uma só vez.</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Título da Atividade em Lote</label>
+                              <input
+                                type="text"
+                                placeholder="Ex: Projeto de Leitura 1"
+                                id={`batch_title_${cls.id}`}
+                                className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Nota Padrão para Todos (ex: 10.0)</label>
+                              <input
+                                type="text"
+                                placeholder="10.0"
+                                id={`batch_score_${cls.id}`}
+                                className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
+                              />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const titleInput = document.getElementById(`batch_title_${cls.id}`) as HTMLInputElement;
+                              const scoreInput = document.getElementById(`batch_score_${cls.id}`) as HTMLInputElement;
+                              const title = titleInput?.value?.trim();
+                              const score = scoreInput?.value?.trim();
+                              if (!title || !score) {
+                                notifyError("Informe o título e a nota para o lançamento em lote.");
+                                return;
+                              }
+                              if (cls.students.length === 0) {
+                                notifyError("Não há alunos nesta turma.");
+                                return;
+                              }
+                              try {
+                                setSubmitting(true);
+                                for (const st of cls.students) {
+                                  await fetch("/api/professor/external-classes", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                      action: "saveGrade",
+                                      classId: cls.id,
+                                      studentId: st.id,
+                                      assessmentTitle: title,
+                                      score,
+                                      maxScore: "10.0",
+                                      feedback: "Lançamento em lote automatizado",
+                                    }),
+                                  });
+                                }
+                                notifySuccess(`Nota lançada em lote para ${cls.students.length} aluno(s) com sucesso!`);
+                                titleInput.value = "";
+                                scoreInput.value = "";
+                                void loadClasses();
+                              } catch (err) {
+                                notifyError("Erro ao processar lançamento em lote.");
+                              } finally {
+                                setSubmitting(false);
+                              }
+                            }}
+                            disabled={submitting || cls.students.length === 0}
+                            className="px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                          >
+                            Aplicar Nota em Lote para Todos os Alunos
+                          </button>
+                        </div>
+
                         {/* Listagem de Notas Lançadas */}
-                        <div className="space-y-3">
+                        <div className="space-y-3 pt-2">
                           <h5 className="text-xs font-black uppercase tracking-wider text-gray-500">Notas Registradas na Turma</h5>
                           {(!cls.grades || cls.grades.length === 0) ? (
                             <p className="text-xs text-gray-400 py-3 text-center">Nenhuma nota lançada para esta turma ainda.</p>
