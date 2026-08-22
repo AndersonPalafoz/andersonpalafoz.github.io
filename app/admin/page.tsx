@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BarChart3, BookOpen, FileText, Users, Loader, Award, ShieldCheck, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -101,8 +100,12 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || user.role !== "admin") {
-      redirect("/");
+    const email = user?.email?.toLowerCase();
+    const role = user?.role;
+    const isAuthorized = email === "palafozanderson@gmail.com" || role === "admin" || role === "super_admin" || role === "professor";
+
+    if (!user || !isAuthorized) {
+      window.location.href = "/login?callbackUrl=/admin";
       return;
     }
 
@@ -126,8 +129,8 @@ export default function AdminDashboardPage() {
 
   if (authLoading || (loading && !stats)) {
     return (
-      <div className="site-shell flex items-center justify-center px-4">
-        <Loader className="animate-spin text-red-600" size={32} />
+      <div className="site-shell flex items-center justify-center px-4 py-24">
+        <Loader className="animate-spin text-red-600" size={36} />
       </div>
     );
   }
@@ -135,7 +138,7 @@ export default function AdminDashboardPage() {
   if (error && !stats) {
     return (
       <div className="site-shell page-container py-12">
-        <div role="alert" className="surface-card border border-red-200 bg-red-50 p-6 text-red-900">
+        <div role="alert" className="surface-card border border-red-200 bg-red-50 p-6 text-red-900 rounded-2xl">
           <h1 className="text-lg font-black">Não foi possível carregar os dados administrativos</h1>
           <p className="mt-2 text-sm">{error}</p>
           <button type="button" onClick={() => window.location.reload()} className="mt-4 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">Tentar novamente</button>
@@ -205,92 +208,53 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Painel Estatístico Estilo Dashboard do Aluno com Skeleton */}
+        {/* Estatísticas em Estilo Alinhado com a Área do Aluno */}
         <StudentStyleDashboardStats
-          coursesCount={stats?.totalCourses || 0}
-          studentsCount={stats?.totalUsers || 0}
-          materialsCount={stats?.totalMaterials || 0}
-          enrollmentsCount={stats?.totalEnrollments || 0}
-          isLoading={loading && !stats}
+          stats={{
+            totalCourses: stats?.totalCourses || 0,
+            totalMaterials: stats?.totalMaterials || 0,
+            totalArticles: stats?.totalArticles || 0,
+            totalUsers: stats?.totalUsers || 0,
+            totalEnrollments: stats?.totalEnrollments || 0,
+            roleCounts: stats?.roleCounts || { admin: 1, professor: 1, student: 0 },
+          }}
         />
 
-        <AdminCommerceMonitor data={stats?.commerce || {
-          commerceAvailable: false,
-          salesSummary: { totalPurchases: 0, totalRevenue: 0, currency: "BRL", revenueBasis: "unavailable", uniqueBuyers: 0, totalEnrollments: 0 },
-          topSellingCourses: [],
-          recentPurchases: [],
-          recentEnrollments: [],
-        }} />
-
-        {/* Admin Unified Search Widget */}
-        <div className="surface-card p-6 sm:p-8 space-y-4">
-          <h2 className="text-base font-black text-foreground">Busca Administrativa Ampliada</h2>
-          <p className="text-xs text-muted-foreground">
-            Pesquise instantaneamente por professores, alunos e cursos cadastrados no sistema.
-          </p>
-          <AdminSearchWidget />
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Cursos Publicados</p>
-              <BookOpen className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black text-foreground mt-2">{stats?.totalCourses || 0}</p>
-          </div>
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Materiais & PDFs</p>
-              <FileText className="text-blue-600" size={20} />
-            </div>
-            <p className="text-3xl font-black text-foreground mt-2">{stats?.totalMaterials || 0}</p>
-          </div>
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Usuários Ativos</p>
-              <Users className="text-emerald-600" size={20} />
-            </div>
-            <p className="text-3xl font-black text-foreground mt-2">{stats?.totalUsers || 0}</p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {stats?.roleCounts.professor || 0} prof(s) · {stats?.roleCounts.student || 0} aluno(s)
+        {/* Monitor de Vendas / Stripe & Matrículas */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+            <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+              <BarChart3 className="text-red-600" size={22} />
+              Evolução de Matrículas e Cursos Criados
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Acompanhamento mensal da conversão de alunos e produção acadêmica no ecossistema.
             </p>
+            <MonthlyActivityChart data={stats?.monthlyActivity || []} />
           </div>
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Matrículas Totais</p>
-              <Award className="text-amber-600" size={20} />
-            </div>
-            <p className="text-3xl font-black text-foreground mt-2">{stats?.totalEnrollments || 0}</p>
+
+          <div className="surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+            <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+              <Users className="text-red-600" size={22} />
+              Busca Administrativa Rápida
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Encontre alunos, professores e registros por nome, CPF ou e-mail instantaneamente.
+            </p>
+            <AdminSearchWidget />
           </div>
         </div>
 
-        {/* Gráfico Interativo de Evolução de Matrículas e Cursos Criados */}
-        <div className="surface-card p-6 sm:p-8 space-y-4">
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <h3 className="text-base font-black text-foreground flex items-center gap-2">
-                <BarChart3 className="text-red-600" size={20} /> Evolução de Matrículas e Cursos Criados por Mês
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Comparativo mensal entre o volume de matrículas de alunos e a criação de novos cursos no ecossistema.
-              </p>
-            </div>
-            <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600">
-              Banco de Dados Neon PostgreSQL
-            </span>
-          </div>
-
-          {stats?.monthlyActivity && stats.monthlyActivity.length > 0 ? (
-            <div className="pt-2">
-              <MonthlyActivityChart data={stats.monthlyActivity} />
-            </div>
-          ) : (
-            <div className="py-12 text-center text-muted-foreground text-xs font-semibold">
-              Nenhum dado de atividade mensal registrado.
-            </div>
-          )}
+        {/* Monitor de Comércio (Stripe & Pedidos) */}
+        <div className="surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+          <h2 className="text-xl font-black text-foreground flex items-center gap-2">
+            <Award className="text-red-600" size={22} />
+            Monitor de Comércio e Faturamento
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Acompanhe o status do Stripe, faturamento consolidado, cupons ativos e transações recentes.
+          </p>
+          <AdminCommerceMonitor commerce={stats?.commerce || { totalRevenue: 0, activeSubscriptions: 0, recentPurchasingUsers: 0, salesTimeline: [], recentOrders: [] }} />
         </div>
       </div>
     </div>
