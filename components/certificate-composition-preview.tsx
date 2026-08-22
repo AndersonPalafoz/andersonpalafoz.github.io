@@ -48,7 +48,8 @@ function fieldStyle(
     lineHeight: 1.12,
     color: mapping.color || (isPrimary ? variant.ink : variant.muted),
     fontWeight: mapping.weight === "bold" || isPrimary ? 800 : 500,
-    letterSpacing: isPrimary ? "-0.02em" : undefined,
+    fontFamily: mapping.fontFamily === "serif" ? "Georgia, serif" : mapping.fontFamily === "mono" ? "ui-monospace, SFMono-Regular, monospace" : undefined,
+    letterSpacing: mapping.letterSpacing ? `${mapping.letterSpacing}px` : isPrimary ? "-0.02em" : undefined,
     textAlign: align,
     transform: align === "center" ? "translateX(-50%)" : align === "right" ? "translateX(-100%)" : undefined,
   };
@@ -59,6 +60,7 @@ function elementStyle(
   composition: CertificateComposition,
   variant: ReturnType<typeof getCertificateVisualVariant>
 ): CSSProperties {
+  const baseTransform = element.align === "center" ? "translate(-50%, -50%)" : element.align === "right" ? "translate(-100%, -50%)" : "translateY(-50%)";
   return {
     left: `${(element.x / composition.canvas.width) * 100}%`,
     top: `${((composition.canvas.height - element.y) / composition.canvas.height) * 100}%`,
@@ -71,8 +73,10 @@ function elementStyle(
     fontSize: `${Math.max(1.2, Math.min(16, ((element.size || 14) / composition.canvas.height) * 100))}cqh`,
     lineHeight: 1.12,
     fontWeight: element.weight === "bold" || element.type === "badge" ? 800 : 500,
+    fontFamily: element.fontFamily === "serif" ? "Georgia, serif" : element.fontFamily === "mono" ? "ui-monospace, SFMono-Regular, monospace" : undefined,
+    letterSpacing: element.letterSpacing ? `${element.letterSpacing}px` : undefined,
     textAlign: element.align || "left",
-    transform: element.align === "center" ? "translate(-50%, -50%)" : element.align === "right" ? "translate(-100%, -50%)" : "translateY(-50%)",
+    transform: `${baseTransform}${element.rotation ? ` rotate(${element.rotation}deg)` : ""}`,
   };
 }
 
@@ -228,6 +232,11 @@ export function CertificateCompositionPreview({
       {composition.elements.map(element => {
         if (element.visible === false || (!includeSiteBranding && element.isSiteBranding)) return null;
         const style = elementStyle(element, composition, variant);
+        if (element.type === "shape") {
+          const shape = element.shape || "rectangle";
+          const shapeTransform = `${style.transform || "translate(-50%, -50%)"}${shape === "diamond" ? " rotate(45deg)" : ""}`;
+          return <div key={element.id} className="absolute z-[3]" style={{ ...style, transform: shapeTransform, minWidth: undefined, backgroundColor: element.fill || element.color || variant.accentSoft, border: `${element.strokeWidth || 0}px solid ${element.stroke || element.color || variant.accent}`, borderRadius: shape === "circle" || shape === "pill" ? "9999px" : `${element.radius || 0}px` }} aria-hidden="true" />;
+        }
         if (element.type === "image") {
           return (
             // eslint-disable-next-line @next/next/no-img-element

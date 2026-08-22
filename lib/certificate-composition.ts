@@ -31,13 +31,15 @@ export type CertificateFieldMapping = {
   size?: number;
   maxWidth?: number;
   color?: string;
+  letterSpacing?: number;
+  fontFamily?: "sans" | "serif" | "mono";
   weight?: "normal" | "bold";
   align?: "left" | "center" | "right";
 };
 
 export type CertificateCompositionElement = {
   id: string;
-  type: "text" | "image" | "line" | "badge";
+  type: "text" | "image" | "line" | "badge" | "shape";
   /** Texto estático ou variáveis como {{studentName}}. Para imagens, uma URL/path persistente. */
   content: string;
   /** Coordenadas no sistema PDF: origem no canto inferior esquerdo. */
@@ -47,6 +49,14 @@ export type CertificateCompositionElement = {
   width?: number;
   height?: number;
   color?: string;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  radius?: number;
+  rotation?: number;
+  letterSpacing?: number;
+  fontFamily?: "sans" | "serif" | "mono";
+  shape?: "rectangle" | "circle" | "pill" | "diamond";
   weight?: "normal" | "bold";
   align?: "left" | "center" | "right";
   opacity?: number;
@@ -128,6 +138,8 @@ function sanitizeMapping(value: unknown, fallback: CertificateFieldMapping) {
       : fallback.color
         ? { color: fallback.color }
         : {}),
+    letterSpacing: clamp(finiteNumber(input.letterSpacing, fallback.letterSpacing ?? 0), -5, 20),
+    fontFamily: input.fontFamily === "serif" || input.fontFamily === "mono" ? input.fontFamily : fallback.fontFamily ?? "sans",
     weight: input.weight === "bold" ? "bold" : fallback.weight ?? "normal",
     align:
       input.align === "center" || input.align === "right"
@@ -139,7 +151,7 @@ function sanitizeMapping(value: unknown, fallback: CertificateFieldMapping) {
 function sanitizeElement(value: unknown, index: number): CertificateCompositionElement | null {
   if (!value || typeof value !== "object") return null;
   const input = value as Record<string, unknown>;
-  const type = input.type === "image" || input.type === "line" || input.type === "badge" || input.type === "text" ? input.type : null;
+  const type = input.type === "image" || input.type === "line" || input.type === "badge" || input.type === "shape" || input.type === "text" ? input.type : null;
   if (!type || typeof input.content !== "string" || !input.content.trim()) return null;
   const width = finiteNumber(input.width, type === "image" ? 120 : 240);
   const height = finiteNumber(input.height, type === "image" ? 80 : 40);
@@ -155,6 +167,18 @@ function sanitizeElement(value: unknown, index: number): CertificateCompositionE
     ...(typeof input.color === "string" && /^#[0-9a-f]{3,8}$/i.test(input.color)
       ? { color: input.color }
       : {}),
+    ...(typeof input.fill === "string" && /^#[0-9a-f]{3,8}$/i.test(input.fill)
+      ? { fill: input.fill }
+      : {}),
+    ...(typeof input.stroke === "string" && /^#[0-9a-f]{3,8}$/i.test(input.stroke)
+      ? { stroke: input.stroke }
+      : {}),
+    strokeWidth: clamp(finiteNumber(input.strokeWidth, 0), 0, 24),
+    radius: clamp(finiteNumber(input.radius, 0), 0, 100),
+    rotation: clamp(finiteNumber(input.rotation, 0), -180, 180),
+    letterSpacing: clamp(finiteNumber(input.letterSpacing, 0), -5, 20),
+    fontFamily: input.fontFamily === "serif" || input.fontFamily === "mono" ? input.fontFamily : "sans",
+    ...(input.shape === "circle" || input.shape === "pill" || input.shape === "diamond" ? { shape: input.shape } : input.type === "shape" ? { shape: "rectangle" as const } : {}),
     weight: input.weight === "bold" ? "bold" : "normal",
     align:
       input.align === "center" || input.align === "right" ? input.align : "left",

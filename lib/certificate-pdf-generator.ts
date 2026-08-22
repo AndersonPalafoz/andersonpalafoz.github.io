@@ -2,12 +2,20 @@ import { jsPDF } from "jspdf";
 
 export interface CertificatePdfElement {
   id: string;
-  type: "text" | "badge" | "line" | "image";
+  type: "text" | "badge" | "line" | "image" | "shape";
   content: string;
   x: number;
   y: number;
   size: number;
   color: string;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  shape?: "rectangle" | "circle" | "pill" | "diamond";
+  rotation?: number;
+  letterSpacing?: number;
+  fontFamily?: "sans" | "serif" | "mono";
+  weight?: "normal" | "bold";
   align?: "left" | "center" | "right";
   src?: string;
   width?: number;
@@ -100,6 +108,23 @@ export async function generateCertificatePdf(options: CertificatePdfOptions) {
     const x = Math.max(40, Math.min(pageWidth - 40, (element.x / 100) * pageWidth));
     const y = Math.max(40, Math.min(pageHeight - 40, (element.y / 100) * pageHeight));
 
+    if (element.type === "shape") {
+      const width = Math.max(24, Math.min(720, element.width || 140));
+      const height = Math.max(18, Math.min(420, element.height || 80));
+      doc.setFillColor(element.fill || element.color || "#fee2e2");
+      doc.setDrawColor(element.stroke || element.color || "#dc2626");
+      doc.setLineWidth(Math.max(0, Math.min(12, element.strokeWidth || 0)));
+      if (element.shape === "circle" || element.shape === "pill") {
+        doc.ellipse(x, y, width / 2, height / 2, "FD");
+      } else if (element.shape === "diamond") {
+        doc.triangle(x, y - height / 2, x + width / 2, y, x, y + height / 2, "FD");
+        doc.triangle(x, y - height / 2, x - width / 2, y, x, y + height / 2, "FD");
+      } else {
+        doc.roundedRect(x - width / 2, y - height / 2, width, height, 6, 6, "FD");
+      }
+      continue;
+    }
+
     if (element.type === "image" && element.src) {
       try {
         const imageResponse = await fetch(element.src);
@@ -126,10 +151,11 @@ export async function generateCertificatePdf(options: CertificatePdfOptions) {
       continue;
     }
 
-    doc.setFont("helvetica", element.type === "badge" ? "bold" : "normal");
+    const fontFamily = element.fontFamily === "serif" ? "times" : element.fontFamily === "mono" ? "courier" : "helvetica";
+    doc.setFont(fontFamily, element.type === "badge" || element.weight === "bold" ? "bold" : "normal");
     doc.setFontSize(Math.max(7, Math.min(30, element.size || 12)));
     doc.setTextColor(element.color || "#333333");
-    doc.text(element.content || "Elemento", x, y, { align: element.align || "center" });
+    doc.text(element.content || "Elemento", x, y, { align: element.align || "center", angle: element.rotation || 0 });
   }
 
   // Salvar arquivo
