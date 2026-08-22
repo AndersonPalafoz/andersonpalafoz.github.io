@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileUp, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
+import { FileUp, Loader2, ShieldCheck, Sparkles, UploadCloud } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 import {
   parseCertificateComposition,
@@ -339,10 +339,12 @@ export function CertificateTemplateManager() {
   }
 
   return (
-    <section className="space-y-5">
-      <div className="surface-card space-y-2 border border-border/70 p-6">
+    <section className="space-y-6">
+      <div className="surface-card overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.10),transparent_34%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--muted)/0.42))] p-6 sm:p-7">
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 shrink-0 text-red-600" size={22} />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">
+            <ShieldCheck size={20} />
+          </div>
           <div>
             <h2 className="text-xl font-black text-foreground">
               Modelos e identidade do certificado
@@ -369,8 +371,21 @@ export function CertificateTemplateManager() {
 
       <form
         onSubmit={handleSubmit}
-        className="surface-card grid gap-5 border border-border/70 p-6 lg:grid-cols-2"
+        className="surface-card overflow-hidden border border-border/70 bg-card p-4 shadow-[0_18px_55px_rgba(15,23,42,0.07)] sm:p-6 lg:p-7"
       >
+        <div className="mb-6 grid gap-2 rounded-2xl border border-red-100 bg-red-50/70 p-3 sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-red-200/70 dark:border-red-900/50 dark:bg-red-950/20 dark:sm:divide-red-900/50">
+          {[
+            ["01", "Identidade", "Nome e contexto"],
+            ["02", "Arquivo", "PDF, PNG ou DOCX"],
+            ["03", "Composição", "Prévia e campos"],
+            ["04", "Publicação", "Branding e cadastro"],
+          ].map(([number, title, description]) => (
+            <div key={number} className="flex items-center gap-2 px-2 py-2 sm:flex-col sm:items-start sm:px-3 sm:first:pl-1">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[10px] font-black text-red-700 shadow-sm ring-1 ring-red-100 dark:bg-red-950/60 dark:text-red-200 dark:ring-red-900/60">{number}</span>
+              <span className="min-w-0"><strong className="block text-[11px] font-black text-red-900 dark:text-red-100">{title}</strong><span className="block text-[10px] leading-relaxed text-red-700/75 dark:text-red-200/70">{description}</span></span>
+            </div>
+          ))}
+        </div>
         <div className="space-y-2">
           <label
             htmlFor="certificate-template-name"
@@ -452,13 +467,17 @@ export function CertificateTemplateManager() {
         </div>
 
         <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">
-          <h3 className="text-sm font-black text-foreground">
-            Mapeamento dinâmico e pré-visualização em tempo real
-          </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Informe abaixo os valores de teste para visualizar em tempo real
-            como as variáveis preencherão o certificado.
-          </p>
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-300"><Sparkles size={17} /></div>
+            <div>
+              <h3 className="text-sm font-black text-foreground">
+                Mapeamento dinâmico e pré-visualização em tempo real
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Use estes dados de teste para visualizar a hierarquia antes de cadastrar o modelo.
+              </p>
+            </div>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block text-xs font-bold text-foreground">
               Nome de teste
@@ -509,7 +528,7 @@ export function CertificateTemplateManager() {
               />
             </label>
           </div>
-          <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
+          <div className="rounded-2xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -552,7 +571,7 @@ export function CertificateTemplateManager() {
               </div>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-              <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+              <div                 className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-3 shadow-sm">
                 <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                   Variáveis disponíveis
                 </p>
@@ -575,10 +594,10 @@ export function CertificateTemplateManager() {
               </div>
               <div
                 ref={canvasShellRef}
-                className="min-w-0 overflow-hidden rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900"
+                className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-[radial-gradient(circle_at_center,rgba(214,40,40,0.08),transparent_58%),linear-gradient(135deg,hsl(var(--muted)/0.65),hsl(var(--background)))] p-3 shadow-inner dark:bg-slate-950"
               >
                 <div
-                  className="relative mx-auto overflow-hidden rounded-lg border-2 shadow-inner"
+                  className="relative mx-auto overflow-hidden rounded-2xl border-2 shadow-[0_20px_50px_rgba(15,23,42,0.16)] ring-1 ring-black/5"
                   style={{
                     width: `${CANVAS_WIDTH * canvasScale}px`,
                     height: `${CANVAS_HEIGHT * canvasScale}px`,
@@ -853,7 +872,7 @@ export function CertificateTemplateManager() {
           </div>
         </div>
 
-        <fieldset className="rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">
+        <fieldset className="rounded-2xl border border-border/70 bg-muted/25 p-4 shadow-sm lg:col-span-2">
           <legend className="px-1 text-sm font-black text-foreground">
             Pergunta de branding para este modelo
           </legend>
