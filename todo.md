@@ -1908,3 +1908,5 @@
 
 - [x] Corrigir o erro `db.insert(...).values(...).$returningId is not a function` na rota de emissão de certificados
 - [x] Corrigir a exportação de PDF em todos os modelos e editores do laboratório em /admin/certificados
+
+- [x] Corrigir falha de inserção em `certificate_templates` na rota `/api/admin/certificate-templates` com desestruturação segura do Drizzle.
