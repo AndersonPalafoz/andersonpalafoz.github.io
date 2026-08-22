@@ -1802,3 +1802,10 @@
 - [x] Analisar a adequação de cada logo exibida quanto à orientação (horizontal vs. vertical), contraste em modo claro/escuro e conformidade com o manual da marca.
 - [x] Aplicar correções pontuais nas exibições onde uma variação inadequada possa estar sendo utilizada.
 - [x] Executar testes automatizados e validar build de produção.
+
+## Editor Visual Estilo Canva/Word para Certificados — 21/08/2026
+- [x] Criar a barra de ferramentas superior com comandos de formatação, zoom, grade, guias, desfazer e refazer.
+- [x] Desenvolver o painel lateral de propriedades contextuais para tipografia, alinhamento, cor, tamanho e blocos acadêmicos.
+- [x] Implementar área central estilo prancheta (Artboard/Canvas A4) com zoom interativo, régua e moldura profissional.
+- [x] Adicionar suporte a seleção visual, redimensionamento por alças (handles), arrastar e soltar suave (drag-and-drop) e teclas de atalho (Delete, Ctrl+Z, setas de precisão).
+- [x] Garantir salvamento automático do estado e perfeita compatibilidade com o motor de PDF.
