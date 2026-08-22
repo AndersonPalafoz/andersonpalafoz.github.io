@@ -26,7 +26,7 @@ describe("certificate template storage validation", () => {
       fileName: "modelo.jpg",
     });
     expect(result.valid).toBe(false);
-    if (!result.valid) expect(result.error).toMatch(/PDF ou PNG/);
+    if (!result.valid) expect(result.error).toMatch(/PDF, PNG ou DOCX/);
   });
 
   it("rejeita arquivos acima de 10 MB", () => {

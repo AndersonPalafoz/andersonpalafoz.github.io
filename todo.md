@@ -1714,10 +1714,10 @@
 ## Modelos de Certificados Flexíveis (IsF, PROFICI, SIMAL, Terceiros e Cursos Internos) — Agosto 2026
 - [x] Criar schema e migração Drizzle para tabelas de modelos de certificados (`certificate_templates`) com suporte a templates próprios e de terceiros, campos preenchíveis e associação opcional a cursos internos ou turmas externas.
 - [x] Implementar upload e gerenciamento de arquivos de modelo PDF ou imagem no painel administrativo.
-- [ ] Desenvolver mecanismo de mapeamento e substituição dinâmica de campos em branco (nome do aluno, CPF, curso, carga horária, data, notas, frequência, código de verificação, assinatura).
+- [x] Desenvolver mecanismo de mapeamento e substituição dinâmica de campos em branco (nome do aluno, CPF, curso, carga horária, data, notas, frequência, código de verificação, assinatura).
 - [x] Atualizar o painel de emissão (`/admin/certificados` e `/professor/certificados`) para permitir escolher o modelo desejado (site, IsF, PROFICI, SIMAL ou customizado) ao emitir para cursos internos ou turmas externas.
-- [ ] Atualizar a área do aluno (`/dashboard/certificados`) para exibir e permitir download do certificado gerado com o template específico escolhido.
-- [ ] Criar testes automatizados de contrato, emissão, mapeamento de campos e segurança RBAC.
+- [x] Atualizar a área do aluno (`/dashboard/certificados`) para exibir e permitir download do certificado gerado com o template específico escolhido.
+- [x] Criar testes automatizados de contrato, emissão, mapeamento de campos e segurança RBAC.
 - [x] Executar suíte Vitest (402 testes aprovados) e validar build de produção; checkpoint desta entrega será salvo ao final.
 
 ## Certificados com Branding Configurável — 21/08/2026
@@ -1732,7 +1732,7 @@
 
 ## Itens herdados — certificados e integrações pendentes
 - [x] Implementar a interface administrativa de upload e gestão de templates de certificados PDF/PNG.
-- [ ] Implementar mapeamento visual/dinâmico de campos em templates de terceiros.
+- [x] Implementar mapeamento visual/dinâmico de campos em templates de terceiros.
 - [x] Atualizar a emissão em /admin/certificados e /professor/certificados para seleção de template e confirmação de branding.
 - [ ] Retomar autorização interativa do Google Calendar e validar token, escopo calendar.readonly e leitura de eventos.
 - [ ] Validar checkout e webhook Stripe em ambiente live após autenticação do usuário.
@@ -1745,10 +1745,10 @@
 > Nota de governança: certificados externos podem usar ou não a logo do site conforme decisão explícita do administrador; quando houver template institucional, não inserir elementos automaticamente sem autorização.
 
 ## Novas Funcionalidades de Certificados e Relatórios — 21/08/2026
-- [ ] Implementar mapeamento dinâmico de campos com pré-visualização em tempo real na interface de templates de certificados.
-- [ ] Adicionar filtros por data de emissão e tipo de modelo/branding na galeria de certificados da área do aluno (`/dashboard/certificados`).
-- [ ] Criar funcionalidade para exportar a lista de pendências históricas e tarefas pendentes em formato CSV no painel administrativo.
-- [ ] Permitir a emissão de certificados para destinatários ainda não cadastrados na plataforma, inserindo diretamente nome, CPF, e-mail, curso, template, logo e preferências de branding.
+- [x] Implementar mapeamento dinâmico de campos com pré-visualização em tempo real na interface de templates de certificados.
+- [x] Adicionar filtros por data de emissão e tipo de modelo/branding na galeria de certificados da área do aluno (`/dashboard/certificados`).
+- [x] Criar funcionalidade para exportar a lista de pendências históricas e tarefas pendentes em formato CSV no painel administrativo.
+- [x] Permitir a emissão de certificados para destinatários ainda não cadastrados na plataforma, inserindo diretamente nome, CPF, e-mail, curso, template, logo e preferências de branding.
 
 ## Integração dos Modelos de Certificado DOCX do Usuário — 21/08/2026
 - [ ] Inspecionar e extrair o conteúdo e a estrutura dos arquivos `CertificadoparaCursodeInglêsparaFinsdeInternacionalização.docx` e `CERTIFICAD0.docx`.
@@ -1757,9 +1757,9 @@
 - [ ] Validar a pré-visualização, a opção de incluir ou não a logo do site e a emissão integrada para alunos cadastrados e não cadastrados.
 
 ## Compartilhamento LinkedIn e Editor Drag-and-Drop de Certificados — 21/08/2026
-- [ ] Adicionar botão de compartilhamento direto no LinkedIn na galeria de certificados do aluno (`/dashboard/certificados`).
-- [ ] Transformar a pré-visualização de templates em um editor visual interativo com drag-and-drop para reposicionar as variáveis no certificado.
-- [ ] Persistir as coordenadas e mapeamentos ajustados visualmente no banco de dados para utilização automática pelo gerador de PDF.
+- [x] Adicionar botão de compartilhamento direto no LinkedIn na galeria de certificados do aluno (`/dashboard/certificados`).
+- [x] Transformar a pré-visualização de templates em um editor visual interativo com drag-and-drop para reposicionar as variáveis no certificado.
+- [x] Persistir as coordenadas e mapeamentos ajustados visualmente no banco de dados para utilização automática pelo gerador de PDF.
 
 ## Resolução de Incidente: Erro 500/Acesso ao Listar Certificados no Admin — 21/08/2026
 - [x] Auditar e robustecer a rota `/api/admin/certificates` para evitar falhas de join ou permissão ao carregar a lista de assinaturas finais.
@@ -1773,3 +1773,5 @@
 
 ## Resolução de Incidente: Unexpected end of JSON input em certificate-templates — 21/08/2026
 - [x] Blindar o carregamento de modelos no gerenciador frontend com parser resiliente para evitar erro de JSON vazio ou corrompido.
+
+- [x] Corrigir o fluxo de templates para rejeitar respostas vazias como erro, tornar o JSON gerado pelo editor visual visível e garantir que o cadastro dos modelos não seja confundido com uma listagem vazia.
