@@ -1903,3 +1903,5 @@
 - [x] Criar arquivo de configuração compartilhada para presets institucionais (Padrão, IsF e PROFICI) compatível com os motores Fabric.js, Konva.js e GrapesJS em /admin/certificados
 
 - [x] Expandir Fabric.js, Konva.js e GrapesJS para permitir edição completa de textos, margens, fontes, assinaturas, molduras e réplica exata dos modelos DOCX fornecidos
+
+- [x] Assegurar que o campo de assinatura seja 100% preenchível e customizável em todos os modelos de certificado (Padrão, IsF e PROFICI) e em todas as APIs (Fabric, Konva, GrapesJS e Gerador Oficial)
