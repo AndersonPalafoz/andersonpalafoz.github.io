@@ -1923,4 +1923,5 @@
 - [x] Corrigir o alinhamento e a quebra de linha do corpo do texto no gerador de PDF (`lib/certificate-pdf-generator.ts`) para impedir cortes laterais e garantir centralização perfeita dentro da moldura A4.
 - [x] Reorganizar o layout da página de certificados no painel administrativo (/admin/certificados) e implementar exclusão segura de certificados emitidos (assinados ou não) com confirmação e atualização em tempo real.
 - [x] Reestruturar o fluxo de emissão para permitir escolher ou fazer upload de um modelo de certificado ANTES da emissão, carregar dados reais dos certificados emitidos do banco de dados, e suportar exclusão em massa e exportação conjunta.
-- [ ] Implementar pré-visualização visual imediata do modelo de certificado selecionado antes do preenchimento e modal de confirmação de segurança para exclusão em massa.
+- [x] Implementar pré-visualização visual imediata do modelo de certificado selecionado antes do preenchimento e modal de confirmação de segurança para exclusão em massa.
+- [ ] Corrigir a persistência na exclusão de certificados para garantir remoção definitiva no banco de dados e atualização real na listagem administrativa.

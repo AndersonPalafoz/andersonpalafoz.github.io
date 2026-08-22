@@ -63,6 +63,7 @@ export function CertificateStandardManager() {
       setIssuedCertificates(prev => prev.filter(c => c.id !== id));
       setSelectedIds(prev => prev.filter(i => i !== id));
       toast.success("Certificado excluído do banco com sucesso.");
+      fetchCertificates();
     } catch (e: any) {
       toast.error(e.message || "Erro ao excluir certificado.");
     }
@@ -78,6 +79,7 @@ export function CertificateStandardManager() {
       setSelectedIds([]);
       setShowBulkDeleteModal(false);
       toast.success("Certificados selecionados excluídos com sucesso.");
+      fetchCertificates();
     } catch (e: any) {
       toast.error(e.message || "Erro ao excluir em massa.");
     }
