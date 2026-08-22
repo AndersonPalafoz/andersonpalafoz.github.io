@@ -1931,3 +1931,5 @@
 - [x] Validar exclusão persistente de certificados manuais e mistos, exportação conjunta e responsividade da área administrativa.
 
 - [x] Corrigir a ausência de `external_class_attendance` no banco TiDB do projeto, alinhando DDL, nomes de colunas, índice e chave estrangeira ao schema Drizzle; a validação DDL foi confirmada após a migração.
+
+- [x] Corrigir os três testes regressivos encontrados na suíte Vitest: ambiente DOM do protótipo Fabric e asserções antigas dos guards administrativo e de estatísticas; suíte completa aprovada com 414 testes.
