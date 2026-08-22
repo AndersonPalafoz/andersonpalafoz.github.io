@@ -38,16 +38,31 @@ function parseFieldMappings(value: FormDataEntryValue | null) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await requireTeacherOrAdmin();
-  if (!isElevated(session))
-    return NextResponse.json(
-      { error: "Acesso restrito ao administrador." },
-      { status: 403 }
-    );
+  try {
+    const session = await requireTeacherOrAdmin();
+    if (!isElevated(session))
+      return NextResponse.json(
+        { error: "Acesso restrito ao administrador." },
+        { status: 403 }
+      );
 
-  const category = request.nextUrl.searchParams.get("category") || undefined;
-  const templates = await getCertificateTemplates(category);
-  return NextResponse.json({ success: true, templates });
+    const category = request.nextUrl.searchParams.get("category") || undefined;
+    const templates = await getCertificateTemplates(category).catch(err => {
+      console.error("Failed to query certificate templates:", err);
+      return [];
+    });
+    return NextResponse.json({ success: true, templates });
+  } catch (error) {
+    console.error("Error in GET /api/admin/certificate-templates:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        templates: [],
+        error: error instanceof Error ? error.message : "Erro interno ao carregar modelos.",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
