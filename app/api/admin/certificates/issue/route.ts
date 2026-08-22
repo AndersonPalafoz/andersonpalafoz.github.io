@@ -200,16 +200,18 @@ export async function POST(request: NextRequest) {
         : Promise.resolve(undefined),
     ]);
 
-    let composition = parseCertificateComposition(selectedTemplate?.fieldMappings || null);
-    if (selectedTemplate?.fieldMappings) {
-      try {
-        composition = parseCertificateComposition(selectedTemplate.fieldMappings);
-      } catch {
-        return NextResponse.json(
-          { error: "A composição do modelo selecionado é inválida." },
-          { status: 422 }
-        );
-      }
+    let composition: ReturnType<typeof parseCertificateComposition>;
+    try {
+      // O workspace é a fonte de verdade: a prévia e a composição editada
+      // devem ser exatamente as mesmas usadas na emissão do PDF.
+      composition = body.composition
+        ? parseCertificateComposition(body.composition)
+        : parseCertificateComposition(selectedTemplate?.fieldMappings || null);
+    } catch {
+      return NextResponse.json(
+        { error: "A composição do certificado é inválida." },
+        { status: 422 }
+      );
     }
 
     const verificationCode = `AP-${crypto.randomBytes(3).toString("hex").toUpperCase()}-${new Date().getFullYear()}`;

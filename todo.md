@@ -1982,3 +1982,11 @@
 - [x] Auditar a rota e o layout raiz do painel administrativo (`app/admin/layout.tsx` ou equivalente) para identificar o motivo da mensagem "Não foi possível carregar esta área" sob sessão autenticada; identificada incompatibilidade na prop `commerce` repassada para `<AdminCommerceMonitor />` em `app/admin/page.tsx`.
 - [x] Verificar permissões e checagens de role (`admin`, `super_admin`) que possam rejeitar o usuário logado e disparar o error boundary do admin; a verificação de papéis estava correta, sendo o crash causado exclusivamente pelo erro de renderização do monitor de comércio.
 - [x] Aplicar correção, validar o build de produção e salvar checkpoint atualizado; o build de produção passou com 100% de sucesso.
+
+## Melhoria Visual e Variações em `/admin/certificados` — 22/08/2026
+
+- [x] Definir as 4 variações visuais oficiais (Padrão Executivo, IsF Institucional, PROFICI Acadêmico, Moderno Minimalista) alinhadas ao design system de Anderson Palafoz.
+- [x] Estender `CertificateWorkspaceProvider` para suportar o estado de variante e tema visual selecionado.
+- [x] Atualizar `CertificateCompositionPreview` para renderizar molduras, fundos, tipografias e selos específicos de cada variação.
+- [x] Conectar os seletores visuais na página administrativa e garantir suporte na emissão e no PDF.
+- [x] Executar suíte de testes e validar o build de produção; 137 arquivos e 420 testes aprovados, build Next.js concluído e diff sem erros de whitespace.
