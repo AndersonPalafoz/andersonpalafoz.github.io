@@ -14,9 +14,8 @@ import {
   downloadCertificateTemplate,
   uploadCertificatePdf,
 } from "@/lib/learning-storage";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import crypto from "node:crypto";
+import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
 
 export async function getCourseCompletion(userId: number, courseId: number) {
   const modules = await getModulesByCourse(courseId);
@@ -121,9 +120,7 @@ export async function issueCertificateIfEligible(
 
   const [logoBytes] = await Promise.all([
     includeSiteBranding
-      ? readFile(
-          path.join(process.cwd(), "public", "logo-principal.png")
-        ).catch(() => undefined)
+      ? loadOfficialPrincipalLogoBytes().catch(() => undefined)
       : Promise.resolve(undefined),
   ]);
   let fieldMappings: Parameters<typeof buildCertificatePdf>[0]["fieldMappings"];

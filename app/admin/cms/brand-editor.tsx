@@ -5,18 +5,13 @@ import { Image as ImageIcon, Check, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { BRAND_LOGO_OPTIONS, BRAND_ASSETS } from "@/lib/brand-assets";
 
-const AVAILABLE_LOGOS = [
-  { name: "Logo Horizontal Padrão", url: "/logo-horizontal.png" },
-  { name: "Versão Vertical", url: "/Vertical.png" },
-  { name: "Favicon V1", url: "/Favicon-v1.png" },
-  { name: "Favicon V2", url: "/Favicon-v2.png" },
-  { name: "Horizontal V1", url: "/Horizontal-v1.png" },
-  { name: "Versão Monocromática", url: "/monocromatica.png" },
-];
+const AVAILABLE_LOGOS = BRAND_LOGO_OPTIONS;
+
 
 export function BrandEditor() {
-  const [selectedLogo, setSelectedLogo] = useState("/logo-horizontal.png");
+  const [selectedLogo, setSelectedLogo] = useState(BRAND_ASSETS.horizontal);
   const [customUrl, setCustomUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -51,9 +46,9 @@ export function BrandEditor() {
         <h2 className="text-lg font-black text-gray-900 flex items-center gap-2">
           <ImageIcon className="text-red-600" size={20} /> Seletor Visual de Logotipo
         </h2>
-        <p className="text-xs text-gray-600 mt-1">
-          Clique em qualquer uma das opções oficiais abaixo ou cole o link de uma imagem externa para alterar a identidade visual do site instantaneamente.
-        </p>
+          <p className="text-xs text-gray-600 mt-1">
+          Selecione uma das variações oficiais abaixo para definir a logo principal do site. A plataforma preserva proporções, cores e arquivos originais.
+          </p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -73,7 +68,7 @@ export function BrandEditor() {
               )}
               <div className="h-16 w-full flex items-center justify-center bg-white rounded-lg p-2 border border-gray-100 mb-3 shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logo.url} alt={logo.name} className="max-h-12 max-w-full object-contain" />
+                <img src={logo.previewUrl} alt={logo.name} className="max-h-12 max-w-full object-contain" />
               </div>
               <span className="text-xs font-bold text-gray-800 text-center">{logo.name}</span>
             </button>

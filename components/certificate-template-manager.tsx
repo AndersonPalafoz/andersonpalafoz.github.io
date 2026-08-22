@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FileUp, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
+import { BRAND_ASSETS } from "@/lib/brand-assets";
 
 type CertificateFieldKey =
   | "studentName"
@@ -501,8 +502,14 @@ export function CertificateTemplateManager() {
                   aria-label="Canvas de posicionamento do certificado"
                 >
                   {includeSiteBranding && (
-                    <div className="absolute left-1/2 top-8 -translate-x-1/2 rounded-full bg-red-600 px-4 py-1 text-[10px] font-black text-white">
-                      Anderson Palafoz — Plataforma Acadêmica
+                    <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-2 shadow-sm ring-1 ring-red-600/10">
+                      {/* A marca é exibida como ativo oficial, sem reconstrução textual. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={BRAND_ASSETS.monochrome}
+                        alt="Logo monocromática Anderson Palafoz"
+                        className="h-12 w-28 object-contain"
+                      />
                     </div>
                   )}
                   <p className="absolute left-1/2 top-24 -translate-x-1/2 text-xs text-muted-foreground">
