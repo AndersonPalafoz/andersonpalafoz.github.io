@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db, getCertificateTemplateById } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
 import {
   downloadCertificateTemplate,
@@ -19,6 +19,47 @@ function parseOptionalBoolean(value: unknown) {
   if (value === "true" || value === "1") return true;
   if (value === "false" || value === "0") return false;
   return undefined;
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (
+      !session?.user ||
+      !["admin", "super_admin", "professor"].includes(session.user.role || "")
+    ) {
+      return NextResponse.json(
+        { error: "Acesso restrito a administradores e professores." },
+        { status: 403 }
+      );
+    }
+
+    const allCertificates = await db.query.certificates.findMany({
+      with: {
+        user: true,
+        course: true,
+      },
+      orderBy: (certificates, { desc }) => [desc(certificates.issueDate)],
+    });
+
+    const formatted = allCertificates.map(c => ({
+      id: c.id,
+      studentName: c.user?.name || "Estudante",
+      courseTitle: c.course?.title || "Curso Oficial",
+      verificationCode: c.verificationCode || `AP-${c.id}`,
+      issueDate: c.issueDate ? new Date(c.issueDate).toLocaleDateString("pt-BR") : "Hoje",
+      certificateUrl: c.certificateUrl,
+      signed: Boolean(c.certificateUrl),
+    }));
+
+    return NextResponse.json({ success: true, certificates: formatted });
+  } catch (error: any) {
+    console.error("API Error listing certificates:", error);
+    return NextResponse.json(
+      { error: error?.message || "Erro ao listar certificados." },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -253,36 +294,32 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
+    const idsParam = searchParams.get("ids");
 
-    if (!id || isNaN(Number(id))) {
+    let idsToDelete: number[] = [];
+    if (idsParam) {
+      idsToDelete = idsParam.split(",").map(Number).filter(n => !isNaN(n));
+    } else if (id && !isNaN(Number(id))) {
+      idsToDelete = [Number(id)];
+    }
+
+    if (idsToDelete.length === 0) {
       return NextResponse.json(
-        { error: "ID do certificado inválido para exclusão." },
+        { error: "IDs de certificados inválidos para exclusão." },
         { status: 400 }
       );
     }
 
-    const certId = Number(id);
-    const cert = await db.query.certificates.findFirst({
-      where: eq(certificates.id, certId),
-    });
-
-    if (!cert) {
-      return NextResponse.json(
-        { error: "Certificado não encontrado." },
-        { status: 404 }
-      );
-    }
-
-    await db.delete(certificates).where(eq(certificates.id, certId));
+    await db.delete(certificates).where(inArray(certificates.id, idsToDelete));
 
     return NextResponse.json({
       success: true,
-      message: "Certificado excluído com sucesso.",
+      message: `${idsToDelete.length} certificado(s) excluído(s) com sucesso.`,
     });
   } catch (error: any) {
-    console.error("API Error deleting certificate:", error);
+    console.error("API Error deleting certificate(s):", error);
     return NextResponse.json(
-      { error: error?.message || "Erro interno ao excluir certificado." },
+      { error: error?.message || "Erro interno ao excluir certificado(s)." },
       { status: 500 }
     );
   }

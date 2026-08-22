@@ -1,13 +1,12 @@
-"use client";
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award } from "lucide-react";
+import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square } from "lucide-react";
 
 export function CertificateStandardManager() {
   const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
@@ -15,24 +14,98 @@ export function CertificateStandardManager() {
   const [level, setLevel] = useState("Intermediário [B1-B2]");
   const [workloadHours, setWorkloadHours] = useState("40");
   const [includeBranding, setIncludeBranding] = useState(true);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("default");
+  const [templates, setTemplates] = useState<Array<any>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedResult, setIssuedResult] = useState<{ code: string; url: string } | null>(null);
-  const [issuedCertificates, setIssuedCertificates] = useState<Array<any>>([
-    { id: 1, studentName: "Adna Caroline", courseTitle: "Alfabetização e Letramento", verificationCode: "AP-892F-2026", issueDate: "22/08/2026", signed: true },
-    { id: 2, studentName: "Abel D'Vargas", courseTitle: "English Mastery B2", verificationCode: "AP-31AC-2026", issueDate: "20/08/2026", signed: false },
-  ]);
+  const [issuedCertificates, setIssuedCertificates] = useState<Array<any>>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [isLoadingList, setIsLoadingList] = useState(true);
+
+  // Carregar certificados emitidos e modelos cadastrados
+  const fetchCertificates = async () => {
+    try {
+      const res = await fetch("/api/admin/certificates/issue");
+      const data = await res.json();
+      if (res.ok && data.certificates) {
+        setIssuedCertificates(data.certificates);
+      }
+    } catch (e) {
+      console.error("Erro ao carregar certificados", e);
+    } finally {
+      setIsLoadingList(false);
+    }
+  };
+
+  const fetchTemplates = async () => {
+    try {
+      const res = await fetch("/api/admin/certificate-templates");
+      const data = await res.json();
+      if (res.ok && data.templates) {
+        setTemplates(data.templates);
+      }
+    } catch (e) {
+      console.error("Erro ao carregar templates", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchCertificates();
+    fetchTemplates();
+  }, []);
 
   const handleDeleteCertificate = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir este certificado? Esta ação não pode ser desfeita.")) return;
+    if (!confirm("Tem certeza que deseja excluir este certificado permanentemente do banco de dados?")) return;
     try {
       const res = await fetch(`/api/admin/certificates/issue?id=${id}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Erro ao excluir certificado.");
       setIssuedCertificates(prev => prev.filter(c => c.id !== id));
-      toast.success("Certificado excluído com sucesso.");
+      setSelectedIds(prev => prev.filter(i => i !== id));
+      toast.success("Certificado excluído do banco com sucesso.");
     } catch (e: any) {
       toast.error(e.message || "Erro ao excluir certificado.");
     }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return;
+    if (!confirm(`Tem certeza que deseja excluir permanentemente ${selectedIds.length} certificado(s) selecionado(s)?`)) return;
+    try {
+      const res = await fetch(`/api/admin/certificates/issue?ids=${selectedIds.join(",")}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Erro ao excluir em massa.");
+      setIssuedCertificates(prev => prev.filter(c => !selectedIds.includes(c.id)));
+      setSelectedIds([]);
+      toast.success("Certificados selecionados excluídos com sucesso.");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao excluir em massa.");
+    }
+  };
+
+  const handleBulkExport = () => {
+    if (selectedIds.length === 0) return;
+    const selectedCerts = issuedCertificates.filter(c => selectedIds.includes(c.id));
+    selectedCerts.forEach((c, idx) => {
+      if (c.certificateUrl && c.certificateUrl !== "#") {
+        setTimeout(() => {
+          window.open(c.certificateUrl, "_blank");
+        }, idx * 400);
+      }
+    });
+    toast.success(`Iniciando download de ${selectedCerts.length} certificado(s)...`);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === issuedCertificates.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(issuedCertificates.map(c => c.id));
+    }
+  };
+
+  const toggleSelectOne = (id: number) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
   const handleGenerateOfficial = async (e: React.FormEvent) => {
@@ -55,6 +128,7 @@ export function CertificateStandardManager() {
           customCourseLevel: level.trim(),
           customWorkloadHours: Number(workloadHours) || 40,
           includeSiteBranding: includeBranding,
+          templateId: selectedTemplateId === "default" ? null : Number(selectedTemplateId),
         }),
       });
 
@@ -65,10 +139,11 @@ export function CertificateStandardManager() {
 
       setIssuedResult({
         code: payload.certificate?.certificateCode || "OFICIAL-2026",
-        url: payload.certificate?.certificateUrl || payload.certificate?.signedPdfUrl || "#",
+        url: payload.certificate?.certificateUrl || "#",
       });
 
       toast.success("Certificado oficial gerado e persistido com sucesso!");
+      fetchCertificates();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao gerar certificado.");
     } finally {
@@ -87,7 +162,7 @@ export function CertificateStandardManager() {
                 Gerador Oficial Padrão (100% Funcional e Integrado)
               </CardTitle>
               <CardDescription>
-                Caminho oficial da plataforma para emissão de certificados com persistência em banco de dados, QR Code, marca institucional e PDF vetorizado.
+                Selecione o modelo institucional ou envie um template personalizado antes de emitir e persistir o certificado no banco de dados.
               </CardDescription>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
@@ -98,6 +173,24 @@ export function CertificateStandardManager() {
         <CardContent className="pt-6">
           <form onSubmit={handleGenerateOfficial} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="space-y-4 lg:col-span-2">
+              <div className="space-y-2">
+                <Label htmlFor="std-template-select">Escolher Modelo de Certificado (Template Ativo)</Label>
+                <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                  <SelectTrigger id="std-template-select">
+                    <SelectValue placeholder="Selecione um modelo cadastrado..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Modelo Padrão da Plataforma (Anderson Palafoz)</SelectItem>
+                    {templates.map((t: any) => (
+                      <SelectItem key={t.id} value={String(t.id)}>
+                        {t.name} ({t.institution || t.category || "Institucional"})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[11px] text-muted-foreground">O modelo selecionado será aplicado na renderização exata do PDF e QR Code.</p>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="std-student-name">Nome Completo do Aluno *</Label>
@@ -135,7 +228,6 @@ export function CertificateStandardManager() {
                 <div className="space-y-2">
                   <Label htmlFor="std-workload">Carga Horária (Horas)</Label>
                   <Input
-                    id="std-workload"
                     type="number"
                     value={workloadHours}
                     onChange={(e) => setWorkloadHours(e.target.value)}
@@ -201,7 +293,7 @@ export function CertificateStandardManager() {
 
               <div className="text-[11px] text-muted-foreground border-t pt-3">
                 <p>• 100% garantido e testado em produção.</p>
-                <p>• Suporta upload de assinaturas e batch download.</p>
+                <p>• Persistência real em banco de dados.</p>
               </div>
             </div>
           </form>
@@ -209,19 +301,40 @@ export function CertificateStandardManager() {
       </Card>
 
       <Card className="border-red-200 shadow-md mt-6">
-        <CardHeader className="bg-red-50/50 pb-3">
-          <CardTitle className="text-lg font-bold text-red-900 flex items-center gap-2">
-            <Award className="w-5 h-5 text-red-600" /> Certificados Emitidos Recentemente
-          </CardTitle>
-          <CardDescription>
-            Gerencie, visualize ou exclua certificados já gerados na plataforma (assinados ou não).
-          </CardDescription>
+        <CardHeader className="bg-red-50/50 pb-3 flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-bold text-red-900 flex items-center gap-2">
+              <Award className="w-5 h-5 text-red-600" /> Certificados Emitidos (Banco de Dados)
+            </CardTitle>
+            <CardDescription>
+              Selecione múltiplos certificados para exclusão em massa ou download conjunto em PDF.
+            </CardDescription>
+          </div>
+          {selectedIds.length > 0 && (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleBulkExport} className="h-8 text-xs bg-white">
+                <Download size={14} className="mr-1" /> Baixar Selecionados ({selectedIds.length})
+              </Button>
+              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 text-xs bg-red-600 hover:bg-red-700">
+                <Trash2 size={14} className="mr-1" /> Excluir Selecionados ({selectedIds.length})
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="pt-4">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/50 uppercase text-[10px] text-muted-foreground font-semibold border-b">
                 <tr>
+                  <th className="p-3 w-10 text-center">
+                    <button onClick={toggleSelectAll} className="flex items-center justify-center">
+                      {issuedCertificates.length > 0 && selectedIds.length === issuedCertificates.length ? (
+                        <CheckSquare size={16} className="text-red-600" />
+                      ) : (
+                        <Square size={16} className="text-muted-foreground" />
+                      )}
+                    </button>
+                  </th>
                   <th className="p-3">Aluno</th>
                   <th className="p-3">Curso</th>
                   <th className="p-3">Código</th>
@@ -231,30 +344,53 @@ export function CertificateStandardManager() {
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {issuedCertificates.length === 0 ? (
+                {isLoadingList ? (
                   <tr>
-                    <td colSpan={6} className="text-center py-6 text-muted-foreground">Nenhum certificado emitido encontrado.</td>
+                    <td colSpan={7} className="text-center py-8 text-muted-foreground">Carregando certificados...</td>
+                  </tr>
+                ) : issuedCertificates.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum certificado emitido encontrado no banco.</td>
                   </tr>
                 ) : (
-                  issuedCertificates.map((cert) => (
-                    <tr key={cert.id} className="hover:bg-muted/30 transition-colors">
-                      <td className="p-3 font-semibold text-foreground">{cert.studentName}</td>
-                      <td className="p-3 text-muted-foreground">{cert.courseTitle}</td>
-                      <td className="p-3 font-mono text-xs">{cert.verificationCode}</td>
-                      <td className="p-3">{cert.issueDate}</td>
-                      <td className="p-3">
-                        {cert.signed ? (
-                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">Assinado</span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Não Assinado</span>
-                        )}
-                      </td>
-                      <td className="p-3 text-right space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => toast.info("Baixando PDF...")} className="h-7 text-xs">Baixar</Button>
-                        <Button variant="destructive" size="sm" onClick={() => handleDeleteCertificate(cert.id)} className="h-7 text-xs bg-red-600 hover:bg-red-700">Excluir</Button>
-                      </td>
-                    </tr>
-                  ))
+                  issuedCertificates.map((cert) => {
+                    const isSelected = selectedIds.includes(cert.id);
+                    return (
+                      <tr key={cert.id} className={`hover:bg-muted/30 transition-colors ${isSelected ? 'bg-red-50/50' : ''}`}>
+                        <td className="p-3 text-center">
+                          <button onClick={() => toggleSelectOne(cert.id)} className="flex items-center justify-center mx-auto">
+                            {isSelected ? (
+                              <CheckSquare size={16} className="text-red-600" />
+                            ) : (
+                              <Square size={16} className="text-muted-foreground" />
+                            )}
+                          </button>
+                        </td>
+                        <td className="p-3 font-semibold text-foreground">{cert.studentName}</td>
+                        <td className="p-3 text-muted-foreground">{cert.courseTitle}</td>
+                        <td className="p-3 font-mono text-xs">{cert.verificationCode}</td>
+                        <td className="p-3">{cert.issueDate}</td>
+                        <td className="p-3">
+                          {cert.signed ? (
+                            <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">Emitido / S3</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Pendente</span>
+                          )}
+                        </td>
+                        <td className="p-3 text-right space-x-2">
+                          <a
+                            href={cert.certificateUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center px-2 py-1 bg-white border border-border text-foreground rounded text-[11px] hover:bg-muted font-medium"
+                          >
+                            Baixar
+                          </a>
+                          <Button variant="destructive" size="sm" onClick={() => handleDeleteCertificate(cert.id)} className="h-7 text-xs bg-red-600 hover:bg-red-700">Excluir</Button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
