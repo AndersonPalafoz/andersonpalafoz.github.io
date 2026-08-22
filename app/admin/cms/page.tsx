@@ -354,6 +354,7 @@ export default function AdminCmsPage() {
             <Link href="/admin" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1.5 mb-2">
               <ArrowLeft size={15} /> Voltar ao Painel Administrativo
             </Link>
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400"><span>Admin</span><span>/</span><span>CMS</span><span>/</span><span className="text-red-600">{activeTab === "content" ? "Conteúdo" : activeTab === "media" ? "Biblioteca de mídia" : "Engajamento"}</span></div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
               <Globe className="text-red-600" size={30} /> CMS Global & Biblioteca de Conteúdo
             </h1>
@@ -371,7 +372,7 @@ export default function AdminCmsPage() {
       {/* Abas Superiores do CMS */}
       <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-2 shadow-sm">
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Seções do CMS">
+          <div className="grid grid-cols-3 gap-2" role="tablist" aria-label="Seções do CMS">
             {[
               { id: "content" as const, label: "Conteúdo", description: "Editar e publicar blocos", icon: Edit3 },
               { id: "media" as const, label: "Biblioteca de mídia", description: "Imagens, áudio e documentos", icon: Folder },
@@ -386,14 +387,14 @@ export default function AdminCmsPage() {
                   role="tab"
                   aria-selected={active}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-left transition ${active ? "bg-red-600 text-white shadow-md shadow-red-600/20" : "text-slate-700 hover:bg-slate-50"}`}
+                  className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-center transition sm:flex-row sm:justify-start sm:px-4 sm:py-3 sm:text-left ${active ? "bg-red-600 text-white shadow-md shadow-red-600/20" : "text-slate-700 hover:bg-slate-50"}`}
                 >
-                  <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${active ? "bg-white/15" : "bg-red-50 text-red-600"}`}>
+                  <span className={`flex h-8 w-8 items-center justify-center rounded-xl sm:h-9 sm:w-9 ${active ? "bg-white/15" : "bg-red-50 text-red-600"}`}>
                     <Icon size={17} />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-xs font-black">{tab.label}</span>
-                    <span className={`mt-0.5 block truncate text-[10px] ${active ? "text-red-100" : "text-slate-500"}`}>{tab.description}</span>
+                    <span className="block truncate text-[10px] font-black sm:text-xs">{tab.label}</span>
+                    <span className={`mt-0.5 hidden truncate text-[10px] sm:block ${active ? "text-red-100" : "text-slate-500"}`}>{tab.description}</span>
                   </span>
                 </button>
               );
