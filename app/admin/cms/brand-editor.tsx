@@ -11,7 +11,7 @@ const AVAILABLE_LOGOS = BRAND_LOGO_OPTIONS;
 
 
 export function BrandEditor() {
-  const [selectedLogo, setSelectedLogo] = useState(BRAND_ASSETS.horizontal);
+  const [selectedLogo, setSelectedLogo] = useState<string>(BRAND_ASSETS.horizontal);
   const [customUrl, setCustomUrl] = useState("");
   const [saving, setSaving] = useState(false);
 

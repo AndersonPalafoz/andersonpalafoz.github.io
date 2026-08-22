@@ -805,43 +805,21 @@ export default function AdminCursos() {
                 )}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
-              <label className="relative block">
-                <span className="sr-only">Buscar cursos</span>
-                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} aria-hidden="true" />
-                <input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por título, categoria ou professor" className="h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-red-600 focus:ring-2 focus:ring-red-600/20" />
-              </label>
-              <label>
-                <span className="sr-only">Filtrar por nível</span>
-                <select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
-                  <option value="all">Todos os níveis</option>
-                  <option value="A1">Básico · A1</option>
-                  <option value="A2">Básico · A2</option>
-                  <option value="B1">Intermediário · B1</option>
-                  <option value="B2">Intermediário · B2</option>
-                  <option value="C1">Avançado · C1</option>
-                  <option value="C2">Avançado · C2</option>
-                </select>
-              </label>
-              <label>
-                <span className="sr-only">Filtrar por tipo de curso</span>
-                <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
-                  <option value="all">Todos os tipos</option>
-                  {COURSE_TYPE_OPTIONS.map((opt) => (
-                    <option key={opt.id} value={opt.id}>{opt.id}. {opt.label}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                <span className="sr-only">Filtrar por modalidade</span>
-                <select value={modalityFilter} onChange={(event) => setModalityFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20">
-                  <option value="all">Todas as modalidades</option>
-                  <option value="none">Sem encontros síncronos</option>
-                  <option value="online_individual">Online individual</option>
-                  <option value="online_group">Online em grupo</option>
-                  <option value="presencial">Presencial</option>
-                </select>
-              </label>
+            <div className="md:hidden">
+              <details className="rounded-2xl border border-border bg-muted/30 p-3">
+                <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-black text-foreground">Filtros avançados <span className="rounded-full bg-card px-2 py-1 text-[10px] font-bold text-muted-foreground">{[levelFilter !== "all", typeFilter !== "all", modalityFilter !== "all"].filter(Boolean).length} ativo(s)</span></summary>
+                <div className="mt-3 grid gap-2">
+                  <label><span className="sr-only">Filtrar por nível</span><select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todos os níveis</option><option value="A1">Básico · A1</option><option value="A2">Básico · A2</option><option value="B1">Intermediário · B1</option><option value="B2">Intermediário · B2</option><option value="C1">Avançado · C1</option><option value="C2">Avançado · C2</option></select></label>
+                  <label><span className="sr-only">Filtrar por tipo de curso</span><select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todos os tipos</option>{COURSE_TYPE_OPTIONS.map((opt) => <option key={opt.id} value={opt.id}>{opt.id}. {opt.label}</option>)}</select></label>
+                  <label><span className="sr-only">Filtrar por modalidade</span><select value={modalityFilter} onChange={(event) => setModalityFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todas as modalidades</option><option value="none">Sem encontros síncronos</option><option value="online_individual">Online individual</option><option value="online_group">Online em grupo</option><option value="presencial">Presencial</option></select></label>
+                </div>
+              </details>
+            </div>
+            <div className="hidden grid-cols-1 gap-3 sm:grid sm:grid-cols-[minmax(0,1fr)_160px_160px_160px]">
+              <label className="relative block"><span className="sr-only">Buscar cursos</span><Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} aria-hidden="true" /><input value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder="Buscar por título, categoria ou professor" className="h-11 w-full rounded-xl border border-border bg-background pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-red-600 focus:ring-2 focus:ring-red-600/20" /></label>
+              <label><span className="sr-only">Filtrar por nível</span><select value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todos os níveis</option><option value="A1">Básico · A1</option><option value="A2">Básico · A2</option><option value="B1">Intermediário · B1</option><option value="B2">Intermediário · B2</option><option value="C1">Avançado · C1</option><option value="C2">Avançado · C2</option></select></label>
+              <label><span className="sr-only">Filtrar por tipo de curso</span><select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todos os tipos</option>{COURSE_TYPE_OPTIONS.map((opt) => <option key={opt.id} value={opt.id}>{opt.id}. {opt.label}</option>)}</select></label>
+              <label><span className="sr-only">Filtrar por modalidade</span><select value={modalityFilter} onChange={(event) => setModalityFilter(event.target.value)} className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-red-600"><option value="all">Todas as modalidades</option><option value="none">Sem encontros síncronos</option><option value="online_individual">Online individual</option><option value="online_group">Online em grupo</option><option value="presencial">Presencial</option></select></label>
             </div>
             {(searchTerm || levelFilter !== "all" || typeFilter !== "all" || modalityFilter !== "all") && (
               <div className="flex items-center justify-between pt-2">

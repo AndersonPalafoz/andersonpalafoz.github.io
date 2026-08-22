@@ -8,6 +8,7 @@ import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
 import { AdminActionCenter } from "@/components/admin-action-center";
+import { AdminModerationHub } from "@/components/admin-moderation-hub";
 
 interface Stats {
   totalCourses: number;
@@ -210,8 +211,9 @@ export default function AdminDashboardPage() {
         </div>
 
         <AdminActionCenter />
+        <AdminModerationHub />
 
-        {/* Estatísticas em Estilo Alinhado com a Área do Aluno */}
+        {/* Cards de KPIs em estilo alinhado com a área do aluno */}
         <StudentStyleDashboardStats
           coursesCount={stats?.totalCourses || 0}
           studentsCount={stats?.totalUsers || 0}
