@@ -16,6 +16,7 @@ export type CertificateVisualVariantDefinition = {
   motif: "double" | "institutional" | "editorial" | "minimal";
   headerLabel: string;
   footerLabel: string;
+  watermarkLabel: string;
   defaultBranding: boolean;
 };
 
@@ -43,6 +44,7 @@ export const CERTIFICATE_VISUAL_VARIANTS: Record<
     motif: "double",
     headerLabel: "CERTIFICADO DE CONCLUSÃO",
     footerLabel: "Anderson Palafoz · Ensino de Inglês",
+    watermarkLabel: "AP",
     defaultBranding: true,
   },
   isf: {
@@ -61,6 +63,7 @@ export const CERTIFICATE_VISUAL_VARIANTS: Record<
     motif: "institutional",
     headerLabel: "CERTIFICADO INSTITUCIONAL",
     footerLabel: "Programa de Idiomas · IsF",
+    watermarkLabel: "IsF",
     defaultBranding: false,
   },
   profici: {
@@ -79,6 +82,7 @@ export const CERTIFICATE_VISUAL_VARIANTS: Record<
     motif: "editorial",
     headerLabel: "CERTIFICADO ACADÊMICO",
     footerLabel: "Programa de Proficiência · PROFICI",
+    watermarkLabel: "P",
     defaultBranding: false,
   },
   minimal: {
@@ -97,6 +101,7 @@ export const CERTIFICATE_VISUAL_VARIANTS: Record<
     motif: "minimal",
     headerLabel: "CERTIFICADO",
     footerLabel: "Documento acadêmico",
+    watermarkLabel: "A",
     defaultBranding: true,
   },
 };

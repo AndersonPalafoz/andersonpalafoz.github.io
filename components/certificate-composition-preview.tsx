@@ -92,7 +92,7 @@ export function CertificateCompositionPreview({
 
   return (
     <div
-      className={`relative aspect-[842/595] w-full overflow-hidden rounded-xl border-2 shadow-inner ${className || ""}`}
+      className={`relative isolate aspect-[842/595] w-full overflow-hidden rounded-2xl border-2 shadow-[0_20px_50px_rgba(15,23,42,0.14)] ring-1 ring-black/5 ${className || ""}`}
       style={baseStyle}
       data-certificate-preview="shared"
       data-certificate-variant={variant.id}
@@ -137,6 +137,14 @@ export function CertificateCompositionPreview({
         </>
       )}
 
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2 select-none text-[7rem] font-black leading-none tracking-[-0.12em] opacity-[0.035] sm:text-[10rem]"
+        style={{ color: variant.accent }}
+        aria-hidden="true"
+      >
+        {variant.watermarkLabel}
+      </div>
+
       <div className="pointer-events-none absolute left-[5%] top-[6%] z-[2] max-w-[60%] text-[6px] font-black uppercase tracking-[0.18em]" style={{ color: variant.accent }}>
         {variant.headerLabel}
       </div>
@@ -149,7 +157,7 @@ export function CertificateCompositionPreview({
         return (
           <div
             key={key}
-            className={`absolute z-[3] whitespace-pre-wrap break-words leading-tight ${interactive ? "cursor-move" : ""}`}
+            className={`absolute z-[3] whitespace-pre-wrap break-words leading-tight ${interactive ? "cursor-move rounded-lg px-1.5 py-0.5 transition hover:bg-white/70 hover:shadow-sm" : ""}`}
             style={fieldStyle(key, composition, variant)}
             title={interactive ? `Arraste ${LABELS[key]} no editor visual` : LABELS[key]}
           >

@@ -23,10 +23,10 @@ export default async function AdminCertificatesPage() {
   }
 
   return (
-    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+    <div className="site-shell min-h-screen px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
       <CertificateWorkspaceProvider>
-      <div className="container space-y-8 py-8">
-        <header className="surface-card flex flex-col gap-5 border border-border/70 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
+      <div className="container space-y-10 py-0">
+        <header className="surface-card flex flex-col gap-5 overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.12),transparent_34%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--muted)/0.42))] p-5 shadow-[0_18px_60px_rgba(15,23,42,0.07)] sm:p-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-red-700 dark:bg-red-950/40 dark:text-red-300">
               <ShieldCheck size={16} /> Governança de Certificados
@@ -40,7 +40,7 @@ export default async function AdminCertificatesPage() {
           </div>
           <Link
             href="/admin"
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-bold text-foreground transition hover:border-red-300 hover:bg-muted"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-muted sm:w-fit"
           >
             <ArrowLeft size={16} /> Voltar ao painel
           </Link>
@@ -48,9 +48,12 @@ export default async function AdminCertificatesPage() {
 
         {/* Seção de Laboratório das 4 Possibilidades */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <Sparkles className="text-red-600" size={20} />
-            <h2 className="text-xl font-black text-foreground">Laboratório Comparativo de Editores (4 Possibilidades)</h2>
+          <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="text-red-600" size={20} />
+              <h2 className="text-xl font-black text-foreground">Laboratório comparativo de editores</h2>
+            </div>
+            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">4 possibilidades</span>
           </div>
           <CertificateLaboratoryManager />
         </section>
