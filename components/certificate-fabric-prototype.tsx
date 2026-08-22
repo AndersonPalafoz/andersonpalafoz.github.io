@@ -34,7 +34,29 @@ export function CertificateFabricPrototype() {
   const [logoLayer, setLogoLayer] = useState<number>(10); // z-index
   const [titlePosY, setTitlePosY] = useState<number>(90);
   const [bodyPosY, setBodyPosY] = useState<number>(160);
+  const [extraElements, setExtraElements] = useState<Array<{ id: string; type: 'text' | 'badge' | 'line'; content: string; x: number; y: number; size: number; color: string }>>([
+    { id: '1', type: 'badge', content: 'DOCUMENTO OFICIAL VERIFICADO', x: 50, y: 78, size: 10, color: '#0F766E' }
+  ]);
+  const [newElemText, setNewElemText] = useState("Novo Elemento de Texto ou Ícone");
   const [isExporting, setIsExporting] = useState(false);
+
+  const handleAddElement = (type: 'text' | 'badge' | 'line') => {
+    setExtraElements(prev => [...prev, {
+      id: Date.now().toString(),
+      type,
+      content: newElemText || 'Elemento',
+      x: 50,
+      y: 50,
+      size: 12,
+      color: '#333333'
+    }]);
+    toast.success("Elemento adicionado à prancheta!");
+  };
+
+  const handleRemoveElement = (id: string) => {
+    setExtraElements(prev => prev.filter(el => el.id !== id));
+    toast.success("Elemento removido.");
+  };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -167,7 +189,7 @@ export function CertificateFabricPrototype() {
               </div>
 
               <div className="space-y-4 border p-3 rounded-xl bg-muted/30">
-                <Label className="font-bold text-red-900">Gerenciador de Camadas & Posição (Estilo Canva)</Label>
+                <Label className="font-bold text-red-900">Editor de Composição Livre (Estilo Canva)</Label>
                 
                 <div className="space-y-2">
                   <Label className="text-xs">Logo / Imagem Institucional</Label>
@@ -180,7 +202,7 @@ export function CertificateFabricPrototype() {
                     <input type="range" min="60" max="240" value={logoWidth} onChange={(e) => setLogoWidth(Number(e.target.value))} className="w-full" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px]">Ordem Camada (Z-Index)</Label>
+                    <Label className="text-[11px]">Camada (Z-Index)</Label>
                     <Select value={String(logoLayer)} onValueChange={(v) => setLogoLayer(Number(v))}>
                       <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
@@ -196,12 +218,28 @@ export function CertificateFabricPrototype() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label className="text-[11px]">Posição Horizontal (X: {logoPosX}%)</Label>
+                    <Label className="text-[11px]">Posição X ({logoPosX}%)</Label>
                     <input type="range" min="5" max="85" value={logoPosX} onChange={(e) => setLogoPosX(Number(e.target.value))} className="w-full" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px]">Posição Vertical (Y: {logoPosY}%)</Label>
+                    <Label className="text-[11px]">Posição Y ({logoPosY}%)</Label>
                     <input type="range" min="5" max="40" value={logoPosY} onChange={(e) => setLogoPosY(Number(e.target.value))} className="w-full" />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t space-y-2">
+                  <Label className="text-xs font-semibold">Adicionar Elementos Livres (Textos/Badges)</Label>
+                  <div className="flex gap-2">
+                    <Input value={newElemText} onChange={(e) => setNewElemText(e.target.value)} className="h-8 text-xs" />
+                    <Button onClick={() => handleAddElement('badge')} size="sm" className="bg-red-700 text-xs h-8">Adicionar</Button>
+                  </div>
+                  <div className="space-y-1 pt-1 max-h-28 overflow-y-auto">
+                    {extraElements.map(el => (
+                      <div key={el.id} className="flex items-center justify-between text-[11px] bg-white p-1.5 rounded border">
+                        <span className="truncate max-w-[140px]">{el.content}</span>
+                        <button onClick={() => handleRemoveElement(el.id)} className="text-red-600 hover:text-red-800 font-bold px-1">✕</button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -234,7 +272,14 @@ export function CertificateFabricPrototype() {
 
                 <div className="flex justify-between items-center relative z-20">
                   <h4 className="font-black text-red-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
-                  <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">Modo Canvas Ativo</span>
+                  <div className="flex items-center gap-1">
+                    {extraElements.map(el => (
+                      <span key={el.id} className="absolute text-[9px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded font-mono shadow-sm cursor-move" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30 }}>
+                        {el.content}
+                      </span>
+                    ))}
+                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">Modo Canva Ativo</span>
+                  </div>
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
