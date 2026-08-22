@@ -1941,3 +1941,11 @@
 - [x] Garantir que o PDF gerado (tanto individual quanto em lote) utilize exatamente o JSON de mapeamento e as posições editadas na prancheta.
 - [x] Refatorar os adaptadores de subáreas (Fabric.js, Konva.js e GrapesJS) para operarem sobre o mesmo modelo de dados unificado, eliminando comportamentos isolados.
 - [x] Validar a exportação vetorizada em PDF, a correção da página administrativa `/admin/certificados` (que exibia tela de erro por falta de ícones) e o fluxo de emissão unificado.
+
+
+## Refinamento Visual, Layout e Responsividade em /admin/certificados — 22/08/2026
+
+- [x] Reorganizar a estrutura de abas e seções em `/admin/certificados` para eliminar a poluição visual, separando claramente o Laboratório Criativo, o Gerenciador de Templates e a Gestão/Assinatura.
+- [x] Aplicar design polido (estilo Canva/shadcn) nas caixas de controles, cards de prévia e seletores, garantindo conformidade total com o tema escuro/claro e WCAG.
+- [x] Ajustar todas as tabelas, modais e containers para garantir 100% de responsividade sem rolagem lateral em telas móveis e tablets.
+- [x] Otimizar os fluxos de exclusão em massa e pré-visualização de certificados no painel administrativo.
