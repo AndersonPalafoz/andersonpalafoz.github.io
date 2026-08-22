@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { userId, courseId, templateId, includeSiteBranding, studentName, studentCourseTitle, studentLevel, studentCpf } = body;
+    const { userId, courseId, templateId, includeSiteBranding, studentName, studentCourseTitle, studentLevel, studentCpf, customStudentNameSize, customStudentNameColor } = body;
 
     let studentNameVal = studentName;
     let courseTitleVal = studentCourseTitle;
@@ -56,12 +56,30 @@ export async function POST(req: Request) {
       includeBranding ? loadOfficialPrincipalLogoBytes().catch(() => undefined) : Promise.resolve(undefined),
     ]);
 
-    let fieldMappings;
+    let fieldMappings: any[] = [];
     if (selectedTemplate?.fieldMappings) {
       try {
         fieldMappings = JSON.parse(selectedTemplate.fieldMappings);
       } catch {
-        fieldMappings = undefined;
+        fieldMappings = [];
+      }
+    }
+
+    if (customStudentNameSize || customStudentNameColor) {
+      const studentField = fieldMappings.find((f: any) => f.key === "studentName");
+      if (studentField) {
+        studentField.size = customStudentNameSize ? Number(customStudentNameSize) : studentField.size;
+        studentField.color = customStudentNameColor || studentField.color;
+      } else {
+        fieldMappings.push({
+          key: "studentName",
+          x: 100,
+          y: 280,
+          size: customStudentNameSize ? Number(customStudentNameSize) : 32,
+          color: customStudentNameColor || "#1e293b",
+          weight: "bold",
+          align: "center",
+        });
       }
     }
 

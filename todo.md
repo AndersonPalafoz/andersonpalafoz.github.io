@@ -1859,3 +1859,8 @@
 - [ ] Garantir que `overflow-x: hidden` e `max-w-full` estejam aplicados globalmente no container raiz (`html`, `body`, `.site-shell`).
 - [ ] Revisar modais, tabelas e cards em `/admin/certificados` e nas demais páginas para que se adaptem a larguras reduzidas sem forçar scroll lateral.
 - [ ] Validar a responsividade mobile e o build de produção.
+
+## Customização de Cor e Tamanho do Nome na Pré-visualização — 21/08/2026
+- [x] Adicionar seletores de cor e tamanho da fonte para o nome do aluno no modal `PreviewModal`.
+- [x] Atualizar a rota de prévia (`/api/admin/certificates/preview`) para aceitar estilo customizado de texto e aplicá-lo ao PDF.
+- [x] Validar a geração em tempo real e o build de produção.
