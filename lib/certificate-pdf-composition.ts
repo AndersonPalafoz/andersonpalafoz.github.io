@@ -102,6 +102,28 @@ function drawVariantShell(
     page.drawRectangle({ x: 52, y: 535, width: 160, height: 3, color: accent });
     page.drawRectangle({ x: 52, y: 42, width: 62, height: 54, borderColor: accent, borderWidth: 1 });
     page.drawRectangle({ x: 728, y: 42, width: 62, height: 54, borderColor: border, borderWidth: 1 });
+  } else if (variant.motif === "laureate") {
+    page.drawRectangle({ x: 30, y: 30, width: 782, height: 535, borderColor: border, borderWidth: 1.1 });
+    page.drawRectangle({ x: 42, y: 42, width: 758, height: 511, borderColor: accent, borderWidth: 0.8 });
+    page.drawLine({ start: { x: 66, y: 530 }, end: { x: 190, y: 530 }, thickness: 1.8, color: accent });
+    page.drawLine({ start: { x: 652, y: 530 }, end: { x: 776, y: 530 }, thickness: 1.8, color: accent });
+    page.drawCircle({ x: 421, y: 482, size: 24, borderColor: accent, borderWidth: 1.1, color: parseHexColor(variant.accentSoft, panel) });
+  } else if (variant.motif === "botanical") {
+    page.drawRectangle({ x: 30, y: 30, width: 782, height: 535, borderColor: border, borderWidth: 1 });
+    page.drawLine({ start: { x: 62, y: 510 }, end: { x: 150, y: 550 }, thickness: 1.4, color: accent, opacity: 0.55 });
+    page.drawLine({ start: { x: 62, y: 85 }, end: { x: 150, y: 45 }, thickness: 1.4, color: accent, opacity: 0.55 });
+    page.drawLine({ start: { x: 780, y: 510 }, end: { x: 692, y: 550 }, thickness: 1.4, color: accent, opacity: 0.55 });
+    page.drawLine({ start: { x: 780, y: 85 }, end: { x: 692, y: 45 }, thickness: 1.4, color: accent, opacity: 0.55 });
+  } else if (variant.motif === "geometric") {
+    page.drawRectangle({ x: 30, y: 30, width: 782, height: 535, borderColor: border, borderWidth: 1 });
+    page.drawRectangle({ x: 718, y: 410, width: 94, height: 155, color: parseHexColor(variant.accentSoft, panel), opacity: 0.9 });
+    page.drawRectangle({ x: 30, y: 30, width: 82, height: 112, color: accent, opacity: 0.12 });
+    page.drawLine({ start: { x: 716, y: 455 }, end: { x: 780, y: 519 }, thickness: 1.3, color: accent });
+  } else if (variant.motif === "midnight") {
+    page.drawRectangle({ x: 30, y: 30, width: 782, height: 535, borderColor: border, borderWidth: 1.1 });
+    page.drawRectangle({ x: 42, y: 42, width: 758, height: 511, borderColor: accent, borderWidth: 0.65, opacity: 0.7 });
+    page.drawRectangle({ x: 0, y: 555, width: 842, height: 40, color: accent, opacity: 0.12 });
+    page.drawCircle({ x: 752, y: 520, size: 22, borderColor: accent, borderWidth: 1 });
   } else {
     page.drawRectangle({ x: 28, y: 28, width: 786, height: 539, borderColor: border, borderWidth: 1 });
     page.drawRectangle({ x: 52, y: 540, width: 150, height: 4, color: accent });

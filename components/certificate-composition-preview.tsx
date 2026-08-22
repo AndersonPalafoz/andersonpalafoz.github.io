@@ -140,6 +140,45 @@ export function CertificateCompositionPreview({
         </>
       )}
 
+      {variant.motif === "laureate" && (
+        <>
+          <div className="pointer-events-none absolute inset-[4%] z-[1] rounded-lg border-2" style={{ borderColor: variant.border }} />
+          <div className="pointer-events-none absolute left-[7%] top-[8%] z-[1] h-[5%] w-[5%] border-l-2 border-t-2" style={{ borderColor: variant.accent }} />
+          <div className="pointer-events-none absolute right-[7%] top-[8%] z-[1] h-[5%] w-[5%] border-r-2 border-t-2" style={{ borderColor: variant.accent }} />
+          <div className="pointer-events-none absolute bottom-[8%] left-[7%] z-[1] h-[5%] w-[5%] border-b-2 border-l-2" style={{ borderColor: variant.accent }} />
+          <div className="pointer-events-none absolute bottom-[8%] right-[7%] z-[1] h-[5%] w-[5%] border-b-2 border-r-2" style={{ borderColor: variant.accent }} />
+          <div className="pointer-events-none absolute left-1/2 top-[28%] z-[1] h-[10%] w-[7%] -translate-x-1/2 rounded-full border" style={{ borderColor: variant.accent, backgroundColor: variant.accentSoft }} />
+        </>
+      )}
+
+      {variant.motif === "botanical" && (
+        <>
+          <div className="pointer-events-none absolute -left-[2%] top-[5%] z-[1] h-[35%] w-[18%] -rotate-12 rounded-[55%] border-2" style={{ borderColor: variant.accent, opacity: 0.45 }} />
+          <div className="pointer-events-none absolute -right-[2%] bottom-[5%] z-[1] h-[35%] w-[18%] rotate-12 rounded-[55%] border-2" style={{ borderColor: variant.accent, opacity: 0.45 }} />
+          <div className="pointer-events-none absolute left-[6%] top-[15%] z-[1] h-[12%] w-[8%] rotate-45 rounded-full" style={{ backgroundColor: variant.accentSoft, opacity: 0.9 }} />
+          <div className="pointer-events-none absolute right-[6%] bottom-[15%] z-[1] h-[12%] w-[8%] -rotate-45 rounded-full" style={{ backgroundColor: variant.accentSoft, opacity: 0.9 }} />
+        </>
+      )}
+
+      {variant.motif === "geometric" && (
+        <>
+          <div className="pointer-events-none absolute right-0 top-0 z-[1] h-[31%] w-[24%] [clip-path:polygon(100%_0,100%_100%,0_0)]" style={{ backgroundColor: variant.accentSoft, opacity: 0.9 }} />
+          <div className="pointer-events-none absolute bottom-0 left-0 z-[1] h-[24%] w-[20%] [clip-path:polygon(0_100%,0_0,100%_100%)]" style={{ backgroundColor: variant.accent, opacity: 0.12 }} />
+          <div className="pointer-events-none absolute right-[8%] top-[14%] z-[1] h-[7%] w-[7%] rotate-45 border-2" style={{ borderColor: variant.accent }} />
+          <div className="pointer-events-none absolute bottom-[13%] left-[8%] z-[1] h-[5%] w-[13%] rounded-full" style={{ backgroundColor: variant.accent }} />
+        </>
+      )}
+
+      {variant.motif === "midnight" && (
+        <>
+          <div className="pointer-events-none absolute inset-[4%] z-[1] rounded-xl border" style={{ borderColor: variant.border }} />
+          <div className="pointer-events-none absolute left-0 right-0 top-0 z-[1] h-[7%]" style={{ backgroundColor: variant.accent, opacity: 0.16 }} />
+          <div className="pointer-events-none absolute bottom-[9%] left-[8%] z-[1] h-px w-[28%]" style={{ backgroundColor: variant.accent }} />
+          <div className="pointer-events-none absolute bottom-[9%] right-[8%] z-[1] h-px w-[12%]" style={{ backgroundColor: variant.accent }} />
+          <div className="pointer-events-none absolute right-[8%] top-[13%] z-[1] h-[7%] w-[7%] rounded-full border" style={{ borderColor: variant.accent }} />
+        </>
+      )}
+
       <div
         className="pointer-events-none absolute bottom-[14%] left-[8%] right-[8%] top-[15%] z-[0] rounded-[1.25rem] border shadow-inner"
         style={{ borderColor: variant.border, backgroundColor: variant.panel, opacity: 0.58 }}

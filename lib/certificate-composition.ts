@@ -3,7 +3,15 @@ export const CERTIFICATE_CANVAS = {
   height: 595,
 } as const;
 
-export type CertificateVisualVariant = "standard" | "isf" | "profici" | "minimal";
+export type CertificateVisualVariant =
+  | "standard"
+  | "isf"
+  | "profici"
+  | "minimal"
+  | "laureate"
+  | "botanical"
+  | "geometric"
+  | "midnight";
 
 export type CertificateFieldKey =
   | "studentName"
@@ -200,6 +208,10 @@ export function parseCertificateComposition(raw: unknown): CertificateCompositio
     object.visualVariant === "isf" ||
     object.visualVariant === "profici" ||
     object.visualVariant === "minimal" ||
+    object.visualVariant === "laureate" ||
+    object.visualVariant === "botanical" ||
+    object.visualVariant === "geometric" ||
+    object.visualVariant === "midnight" ||
     object.visualVariant === "standard"
       ? object.visualVariant
       : "standard";
