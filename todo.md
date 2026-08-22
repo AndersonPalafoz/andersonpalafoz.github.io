@@ -1839,3 +1839,8 @@
 - [x] Aprimorar a busca por alunos para suportar filtragem instantânea e robusta por nome, e-mail, CPF e código do certificado.
 - [x] Otimizar o layout da tabela e dos cards em dispositivos móveis (telas pequenas), garantindo que botões de emissão, visualização e exportação não fiquem truncados ou desalinhados.
 - [x] Validar a experiência de uso com testes automatizados e build de produção.
+
+## Paginação na Lista de Certificados Administrativos — 21/08/2026
+- [x] Implementar paginação por páginas (com 12 itens por página, controles de Anterior/Próxima e números de página) no componente `CertificateSignatureManager`.
+- [x] Garantir que o contador total de resultados e o intervalo exibido sejam atualizados dinamicamente conforme os filtros e a busca.
+- [x] Validar o funcionamento combinado da paginação com a seleção em lote e o build de produção.
