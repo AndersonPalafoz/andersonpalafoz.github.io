@@ -1193,6 +1193,10 @@ function PreviewModal({
   const [includeBranding, setIncludeBranding] = useState<boolean>(
     cert.includeSiteBranding
   );
+  const [customName, setCustomName] = useState<string>(cert.studentName);
+  const [customCourse, setCustomCourse] = useState<string>(cert.courseTitle);
+  const [customFontSize, setCustomFontSize] = useState<string>("32");
+  const [customFontColor, setCustomFontColor] = useState<string>("#1e293b");
   const [templates, setTemplates] = useState<CertificateTemplateOption[]>([]);
 
   useEffect(() => {
@@ -1206,7 +1210,14 @@ function PreviewModal({
       .catch(() => {});
   }, []);
 
-  const generatePreview = async (templateIdVal: string, brandingVal: boolean) => {
+  const generatePreview = async (
+    templateIdVal: string,
+    brandingVal: boolean,
+    nameVal: string,
+    courseVal: string,
+    sizeVal: string,
+    colorVal: string
+  ) => {
     setLoading(true);
     setError(null);
     try {
@@ -1218,9 +1229,11 @@ function PreviewModal({
           courseId: cert.courseId,
           templateId: templateIdVal ? Number(templateIdVal) : null,
           includeSiteBranding: brandingVal,
-          studentName: cert.studentName,
-          studentCourseTitle: cert.courseTitle,
+          studentName: nameVal,
+          studentCourseTitle: courseVal,
           studentLevel: cert.level,
+          customStudentNameSize: sizeVal ? Number(sizeVal) : undefined,
+          customStudentNameColor: colorVal || undefined,
         }),
       });
       const data = await response.json();
@@ -1234,8 +1247,22 @@ function PreviewModal({
   };
 
   useEffect(() => {
-    void generatePreview(selectedTemplateId, includeBranding);
-  }, [selectedTemplateId, includeBranding]);
+    void generatePreview(
+      selectedTemplateId,
+      includeBranding,
+      customName,
+      customCourse,
+      customFontSize,
+      customFontColor
+    );
+  }, [
+    selectedTemplateId,
+    includeBranding,
+    customName,
+    customCourse,
+    customFontSize,
+    customFontColor,
+  ]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
@@ -1263,17 +1290,17 @@ function PreviewModal({
           </button>
         </div>
 
-        <div className="grid gap-4 p-5 border-b border-border bg-muted/10 md:grid-cols-2">
+        <div className="grid gap-4 p-5 border-b border-border bg-muted/10 md:grid-cols-3">
           <div>
             <label className="block text-xs font-bold text-foreground mb-1">
-              Selecionar Modelo de Certificado
+              Modelo de Certificado
             </label>
             <select
               value={selectedTemplateId}
               onChange={e => setSelectedTemplateId(e.target.value)}
               className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
             >
-              <option value="">Modelo padrão da plataforma</option>
+              <option value="">Modelo padrão</option>
               {templates.map(t => (
                 <option key={t.id} value={t.id}>
                   {t.name} {t.institution ? `· ${t.institution}` : ""}
@@ -1281,7 +1308,59 @@ function PreviewModal({
               ))}
             </select>
           </div>
-          <div className="flex items-center justify-between pt-5">
+          <div>
+            <label className="block text-xs font-bold text-foreground mb-1">
+              Nome do Aluno (Edição Rápida)
+            </label>
+            <input
+              type="text"
+              value={customName}
+              onChange={e => setCustomName(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-foreground mb-1">
+              Título do Curso
+            </label>
+            <input
+              type="text"
+              value={customCourse}
+              onChange={e => setCustomCourse(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
+            />
+          </div>
+          <div className="flex items-center gap-3 md:col-span-2">
+            <div className="flex-1">
+              <label className="block text-xs font-bold text-foreground mb-1">
+                Tamanho da Fonte do Nome ({customFontSize}pt)
+              </label>
+              <input
+                type="range"
+                min="16"
+                max="56"
+                step="2"
+                value={customFontSize}
+                onChange={e => setCustomFontSize(e.target.value)}
+                className="w-full accent-red-600 cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-foreground mb-1">
+                Cor do Nome
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={customFontColor}
+                  onChange={e => setCustomFontColor(e.target.value)}
+                  className="h-10 w-12 cursor-pointer rounded-lg border border-border bg-background p-1"
+                />
+                <span className="text-xs font-mono text-muted-foreground">{customFontColor}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-between pt-2 md:col-span-3 border-t border-border/60">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-foreground">
               <input
                 type="checkbox"
@@ -1293,10 +1372,10 @@ function PreviewModal({
             </label>
             <button
               type="button"
-              onClick={() => void generatePreview(selectedTemplateId, includeBranding)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground hover:bg-muted"
+              onClick={() => void generatePreview(selectedTemplateId, includeBranding, customName, customCourse, customFontSize, customFontColor)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
             >
-              Atualizar prévia
+              Regenerar Prévia
             </button>
           </div>
         </div>
