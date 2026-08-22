@@ -148,7 +148,12 @@ export async function POST(request: NextRequest) {
           })
           .returning({ id: users.id });
         const insertedUser = insertedUsers[0];
-        student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
+        student = {
+          id: insertedUser.id,
+          name: directStudentName,
+          email: placeholderEmail,
+          cpf: null,
+        };
       }
     }
 
@@ -181,10 +186,15 @@ export async function POST(request: NextRequest) {
             category: customInstitution || "Curso Externo / Avulso",
             isFree: false,
           })
-          .returning({ id: courses.id });
+          .returning({
+            id: courses.id,
+            title: courses.title,
+            level: courses.level,
+            workloadHours: courses.workloadHours,
+          });
         const newCourse = newCourses[0];
         courseId = newCourse.id;
-        course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
+        course = newCourse;
       }
     }
 

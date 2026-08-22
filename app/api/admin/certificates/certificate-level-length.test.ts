@@ -31,4 +31,10 @@ describe("emissão de certificados com níveis descritivos", () => {
     expect(routeSource).toContain("certificateCode: verificationCode");
     expect(routeSource).toContain("issuedAt,");
   });
+
+  it("usa o registro retornado pelo insert no fluxo manual", () => {
+    expect(routeSource).toContain("student = {");
+    expect(routeSource).toContain("const newCourse = newCourses[0]");
+    expect(routeSource).toContain("course = newCourse");
+  });
 });
