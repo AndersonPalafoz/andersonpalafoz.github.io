@@ -24,7 +24,18 @@ export function CertificateGrapesPrototype() {
   const [customSigner, setCustomSigner] = useState(preset.signerName);
   const [customRole, setCustomRole] = useState(preset.signerRole);
   const [customDate, setCustomDate] = useState(preset.locationAndDate);
+  const [logoUrl, setLogoUrl] = useState<string>("/manus-storage/Horizontal-v1.png");
+  const [logoWidth, setLogoWidth] = useState<number>(140);
   const [isExporting, setIsExporting] = useState(false);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setLogoUrl(url);
+      toast.success("Logo carregada com sucesso!");
+    }
+  };
 
   const handlePresetChange = (v: string) => {
     setTemplateId(v);
@@ -169,6 +180,15 @@ export function CertificateGrapesPrototype() {
                 <Input value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
               </div>
 
+              <div className="space-y-2">
+                <Label>Logo / Imagem Institucional</Label>
+                <Input type="file" accept="image/*" onChange={handleLogoUpload} />
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground">Tamanho da Logo:</span>
+                  <input type="range" min="80" max="220" value={logoWidth} onChange={(e) => setLogoWidth(Number(e.target.value))} className="w-full" />
+                </div>
+              </div>
+
               <div className="pt-4">
                 <Button onClick={handleExportPDF} disabled={isExporting} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">
                   {isExporting ? <RefreshCw className="animate-spin mr-2" size={16} /> : <Download className="mr-2" size={16} />}
@@ -179,8 +199,11 @@ export function CertificateGrapesPrototype() {
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
               <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-purple-200 p-8 relative flex flex-col justify-between text-center">
-                <div>
+                <div className="flex justify-between items-center">
                   <h4 className="font-black text-purple-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
+                  {logoUrl && (
+                    <img src={logoUrl} alt="Logo" style={{ width: `${logoWidth}px` }} className="object-contain max-h-12" />
+                  )}
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
