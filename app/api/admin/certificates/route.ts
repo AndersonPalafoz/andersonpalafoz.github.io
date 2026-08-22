@@ -63,6 +63,7 @@ export async function GET() {
         studentName:
           certificate.user?.name || certificate.user?.fullName || "Aluno(a)",
         studentEmail: certificate.user?.email || null,
+        studentCpf: certificate.studentCpf || certificate.user?.cpf || "",
         courseId: certificate.courseId,
         courseTitle: certificate.course?.title || "Curso",
         courseType: certificate.course?.courseType ?? null,

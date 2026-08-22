@@ -1833,3 +1833,9 @@
 - [ ] Inspecionar por que a tag `Image` do Next.js pode falhar com URLs relativas em alguns ambientes de hospedagem ou preview.
 - [ ] Substituir o uso de `Image` do Next.js por tag `img` nativa otimizada para a logo do cabeçalho e rodapé, garantindo exibição universal.
 - [ ] Validar a renderização visual das logos em ambiente de desenvolvimento e produção.
+
+## Melhoria de Responsividade e Busca em /admin/certificados — 21/08/2026
+- [x] Inspecionar o componente de administração de certificados (`app/admin/certificados/page.tsx` ou equivalente).
+- [x] Aprimorar a busca por alunos para suportar filtragem instantânea e robusta por nome, e-mail, CPF e código do certificado.
+- [x] Otimizar o layout da tabela e dos cards em dispositivos móveis (telas pequenas), garantindo que botões de emissão, visualização e exportação não fiquem truncados ou desalinhados.
+- [x] Validar a experiência de uso com testes automatizados e build de produção.
