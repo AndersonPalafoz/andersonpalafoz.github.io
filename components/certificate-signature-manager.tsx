@@ -1169,94 +1169,183 @@ export function CertificateSignatureManager() {
         </div>
       )}
 
-      {/* Preview Modal */}
+      {/* Preview Modal com Geração Efetiva do PDF */}
       {previewCert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="surface-card w-full max-w-2xl space-y-6 border border-border bg-background p-6 shadow-2xl rounded-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-red-500/10 p-2.5 text-red-600">
-                  <Sparkles size={22} />
-                </div>
-                <div>
-                  <h3 className="text-lg font-black text-foreground">
-                    Pré-visualização do Certificado
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
-                    ID #{previewCert.id} · {previewCert.courseTitle}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPreviewCert(null)}
-                className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                <X size={20} />
-              </button>
-            </div>
+        <PreviewModal cert={previewCert} onClose={() => setPreviewCert(null)} />
+      )}
+    </div>
+  );
+}
 
-            <div className="space-y-4 rounded-xl border border-border bg-muted/30 p-6 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-red-600/10 flex items-center justify-center text-red-600 mb-2">
-                <FileSignature size={32} />
-              </div>
-              <h4 className="text-xl font-black text-foreground">
-                Anderson Palafoz — English Platform
-              </h4>
-              <p className="text-xs font-semibold uppercase tracking-widest text-red-600">
-                Certificado de Conclusão de Curso
-              </p>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto pt-2">
-                Certificamos que{" "}
-                <strong className="text-foreground">
-                  {previewCert.studentName}
-                </strong>{" "}
-                concluiu com êxito o curso{" "}
-                <strong className="text-foreground">
-                  {previewCert.courseTitle}
-                </strong>
-                , nível{" "}
-                <strong className="text-foreground">{previewCert.level}</strong>
-                , com carga horária oficial de 40 horas.
-              </p>
-              <div className="pt-4 border-t border-border/60 flex flex-wrap justify-center gap-6 text-xs text-muted-foreground">
-                <span>
-                  Código de Verificação:{" "}
-                  <strong className="text-foreground font-mono">
-                    {previewCert.certificateCode || "N/A"}
-                  </strong>
-                </span>
-                <span>
-                  Data de Emissão:{" "}
-                  <strong className="text-foreground">
-                    {new Date(previewCert.issuedAt).toLocaleDateString("pt-BR")}
-                  </strong>
-                </span>
-              </div>
-            </div>
+function PreviewModal({
+  cert,
+  onClose,
+}: {
+  cert: CertificateItem;
+  onClose: () => void;
+}) {
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
+    cert.certificateTemplateId ? String(cert.certificateTemplateId) : ""
+  );
+  const [includeBranding, setIncludeBranding] = useState<boolean>(
+    cert.includeSiteBranding
+  );
+  const [templates, setTemplates] = useState<CertificateTemplateOption[]>([]);
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setPreviewCert(null)}
-                className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold text-foreground hover:bg-muted"
-              >
-                Fechar
-              </button>
-              {previewCert.certificateUrl && (
-                <a
-                  href={previewCert.certificateUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-red-700"
-                >
-                  <Download size={16} /> Baixar PDF Original
-                </a>
-              )}
+  useEffect(() => {
+    fetch("/api/admin/certificate-templates")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.templates)) {
+          setTemplates(data.templates);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const generatePreview = async (templateIdVal: string, brandingVal: boolean) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/admin/certificates/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: cert.userId,
+          courseId: cert.courseId,
+          templateId: templateIdVal ? Number(templateIdVal) : null,
+          includeSiteBranding: brandingVal,
+          studentName: cert.studentName,
+          studentCourseTitle: cert.courseTitle,
+          studentLevel: cert.level,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Erro ao gerar prévia do PDF.");
+      setPdfUrl(data.pdfDataUri);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao carregar prévia.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void generatePreview(selectedTemplateId, includeBranding);
+  }, [selectedTemplateId, includeBranding]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+      <div className="surface-card flex flex-col w-full max-w-4xl max-h-[90vh] rounded-2xl border border-border bg-background shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border p-5 bg-muted/20">
+          <div className="flex items-center gap-3">
+            <div className="rounded-xl bg-red-500/10 p-2.5 text-red-600">
+              <Sparkles size={22} />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-foreground">
+                Pré-visualização Efetiva do Certificado
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Aluno: <strong className="text-foreground">{cert.studentName}</strong> · Curso: <strong className="text-foreground">{cert.courseTitle}</strong>
+              </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <X size={20} />
+          </button>
         </div>
-      )}
+
+        <div className="grid gap-4 p-5 border-b border-border bg-muted/10 md:grid-cols-2">
+          <div>
+            <label className="block text-xs font-bold text-foreground mb-1">
+              Selecionar Modelo de Certificado
+            </label>
+            <select
+              value={selectedTemplateId}
+              onChange={e => setSelectedTemplateId(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
+            >
+              <option value="">Modelo padrão da plataforma</option>
+              {templates.map(t => (
+                <option key={t.id} value={t.id}>
+                  {t.name} {t.institution ? `· ${t.institution}` : ""}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center justify-between pt-5">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-foreground">
+              <input
+                type="checkbox"
+                checked={includeBranding}
+                onChange={e => setIncludeBranding(e.target.checked)}
+                className="accent-red-600 h-4 w-4 rounded"
+              />
+              Incluir Identidade / Logo da Plataforma
+            </label>
+            <button
+              type="button"
+              onClick={() => void generatePreview(selectedTemplateId, includeBranding)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground hover:bg-muted"
+            >
+              Atualizar prévia
+            </button>
+          </div>
+        </div>
+
+        <div className="relative flex-1 min-h-[450px] bg-slate-900/10 dark:bg-slate-950/60 flex items-center justify-center p-4 overflow-hidden">
+          {loading && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-xs">
+              <Loader2 className="animate-spin text-red-600" size={32} />
+              <p className="text-xs font-bold text-foreground">Renderizando PDF efetivo do certificado...</p>
+            </div>
+          )}
+          {error && (
+            <div className="p-6 rounded-xl border border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-200 text-xs font-bold text-center max-w-md">
+              <p>{error}</p>
+            </div>
+          )}
+          {pdfUrl && !loading && !error && (
+            <iframe
+              src={`${pdfUrl}#toolbar=0&view=FitH`}
+              title="Pré-visualização do PDF"
+              className="w-full h-[500px] rounded-xl border border-border shadow-lg bg-white"
+            />
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-border p-4 bg-muted/20">
+          <p className="text-xs text-muted-foreground">
+            Esta é a prévia exata do arquivo que será emitido para o aluno.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
+            >
+              Fechar
+            </button>
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                download={`certificado_${cert.studentName.replace(/\s+/g, "_")}.pdf`}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700 shadow-sm"
+              >
+                <Download size={15} /> Baixar PDF da Prévia
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

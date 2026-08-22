@@ -1844,3 +1844,8 @@
 - [x] Implementar paginação por páginas (com 12 itens por página, controles de Anterior/Próxima e números de página) no componente `CertificateSignatureManager`.
 - [x] Garantir que o contador total de resultados e o intervalo exibido sejam atualizados dinamicamente conforme os filtros e a busca.
 - [x] Validar o funcionamento combinado da paginação com a seleção em lote e o build de produção.
+
+## Pré-visualização Efetiva do Certificado Antes da Emissão Final — 21/08/2026
+- [x] Atualizar o modal de pré-visualização em `CertificateSignatureManager` para renderizar o layout real do certificado com os dados do aluno selecionado.
+- [x] Permitir a conferência interativa das variáveis mapeadas (nome, curso, CPF, data, carga horária e branding) antes de confirmar a emissão.
+- [x] Validar a pré-visualização e o build de produção.
