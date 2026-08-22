@@ -38,7 +38,66 @@ export function CertificateFabricPrototype() {
     { id: '1', type: 'badge', content: 'DOCUMENTO OFICIAL VERIFICADO', x: 50, y: 78, size: 10, color: '#0F766E' }
   ]);
   const [newElemText, setNewElemText] = useState("Novo Elemento de Texto ou Ícone");
+  
+  // Histórico Undo/Redo e Grade Magnética
+  const [history, setHistory] = useState<Array<any>>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const [showGrid, setShowGrid] = useState<boolean>(true);
+  const [savedTemplates, setSavedTemplates] = useState<Array<{ id: string; name: string; state: any }>>([
+    { id: 't1', name: 'Modelo Padrão Executivo', state: { title: 'Certificado de Excelência' } }
+  ]);
+  const [modelNameInput, setModelNameInput] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+
+  const saveStateToHistory = () => {
+    const currentState = { customTitle, customSigner, customRole, logoPosX, logoPosY, logoWidth, extraElements };
+    const newHist = history.slice(0, historyIndex + 1);
+    setHistory([...newHist, currentState]);
+    setHistoryIndex(newHist.length);
+  };
+
+  const handleUndo = () => {
+    if (historyIndex > 0) {
+      const prev = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      setCustomTitle(prev.customTitle);
+      setCustomSigner(prev.customSigner);
+      setCustomRole(prev.customRole);
+      setLogoPosX(prev.logoPosX);
+      setLogoPosY(prev.logoPosY);
+      setLogoWidth(prev.logoWidth);
+      setExtraElements(prev.extraElements);
+      toast.info("Ação desfeita (Undo)");
+    } else {
+      toast.message("Início do histórico alcançado.");
+    }
+  };
+
+  const handleSaveAsTemplate = () => {
+    if (!modelNameInput.trim()) {
+      toast.error("Informe um nome para o modelo.");
+      return;
+    }
+    const newTemplate = {
+      id: Date.now().toString(),
+      name: modelNameInput,
+      state: { customTitle, customSigner, customRole, logoUrl, logoWidth, logoPosX, logoPosY, extraElements }
+    };
+    setSavedTemplates(prev => [...prev, newTemplate]);
+    setModelNameInput('');
+    toast.success(`Modelo "${newTemplate.name}" salvo com sucesso!`);
+  };
+
+  const handleLoadTemplate = (tmpl: any) => {
+    setCustomTitle(tmpl.state.customTitle || customTitle);
+    setCustomSigner(tmpl.state.customSigner || customSigner);
+    setCustomRole(tmpl.state.customRole || customRole);
+    setLogoWidth(tmpl.state.logoWidth || logoWidth);
+    setLogoPosX(tmpl.state.logoPosX || logoPosX);
+    setLogoPosY(tmpl.state.logoPosY || logoPosY);
+    if (tmpl.state.extraElements) setExtraElements(tmpl.state.extraElements);
+    toast.success(`Modelo "${tmpl.name}" carregado!`);
+  };
 
   const handleAddElement = (type: 'text' | 'badge' | 'line') => {
     setExtraElements(prev => [...prev, {
@@ -188,8 +247,29 @@ export function CertificateFabricPrototype() {
                 <Input value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
               </div>
 
-              <div className="space-y-4 border p-3 rounded-xl bg-muted/30">
-                <Label className="font-bold text-red-900">Editor de Composição Livre (Estilo Canva)</Label>
+              <div className="space-y-4 border p-3 rounded-xl bg-muted/30 shadow-sm">
+                <div className="flex items-center justify-between pb-2 border-b">
+                  <Label className="font-bold text-red-900 text-sm">Editor Avançado (Undo/Redo & Snap)</Label>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" onClick={handleUndo} className="h-7 text-xs px-2">↶ Desfazer</Button>
+                    <Button variant="outline" size="sm" onClick={() => setShowGrid(!showGrid)} className={`h-7 text-xs px-2 ${showGrid ? 'bg-red-50 text-red-700' : ''}`}>Grid</Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <Label className="text-xs font-semibold">Salvar & Reutilizar Modelos</Label>
+                  <div className="flex gap-2">
+                    <Input placeholder="Nome do modelo..." value={modelNameInput} onChange={(e) => setModelNameInput(e.target.value)} className="h-8 text-xs" />
+                    <Button onClick={handleSaveAsTemplate} size="sm" className="bg-red-700 text-xs h-8">Salvar</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {savedTemplates.map(t => (
+                      <button key={t.id} onClick={() => handleLoadTemplate(t)} className="text-[10px] bg-white border border-red-200 text-red-800 px-2 py-1 rounded hover:bg-red-50 transition-colors">
+                        📁 {t.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 
                 <div className="space-y-2">
                   <Label className="text-xs">Logo / Imagem Institucional</Label>
@@ -254,7 +334,10 @@ export function CertificateFabricPrototype() {
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
               <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-8 relative flex flex-col justify-between text-center overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none">
+                {showGrid && (
+                  <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:20px_20px] opacity-60 z-10" />
+                )}
+                <div className="absolute inset-0 pointer-events-none z-20">
                   {logoUrl && (
                     <div 
                       className="absolute pointer-events-auto cursor-grab active:cursor-grabbing transition-all"
