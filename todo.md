@@ -1897,3 +1897,5 @@
 - [x] Evoluir os protótipos Konva.js e GrapesJS para incluir campos acadêmicos completos, controle de branding, pré-visualização em PDF e salvamento local equiparados ao Gerador Oficial
 
 - [x] Analisar os modelos DOCX fornecidos e equiparar Fabric.js, Konva.js e GrapesJS exatamente às estruturas, textos e variáveis acadêmicas exigidas
+
+- [x] Isolar e corrigir o erro de renderização do protótipo Fabric.js em /admin/certificados para impedir que a área administrativa seja derrubada
