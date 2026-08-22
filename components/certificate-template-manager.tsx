@@ -9,7 +9,11 @@ type CertificateFieldKey =
   | "level"
   | "issuedAt"
   | "certificateCode"
-  | "workloadHours";
+  | "workloadHours"
+  | "studentCpf"
+  | "period"
+  | "coordinatorName"
+  | "institutionName";
 
 type CertificateFieldMapping = {
   x: number;
@@ -46,6 +50,8 @@ export function CertificateTemplateManager() {
   const [previewDate, setPreviewDate] = useState(
     new Date().toLocaleDateString("pt-BR")
   );
+  const [activePreset, setActivePreset] = useState<"default" | "profici" | "isf">("default");
+
   const [fieldMappings, setFieldMappings] = useState<
     Partial<Record<CertificateFieldKey, CertificateFieldMapping>>
   >({
@@ -55,6 +61,10 @@ export function CertificateTemplateManager() {
     issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
     certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
     workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
+    studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
+    period: { x: 300, y: 360, size: 12, maxWidth: 240 },
+    coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
+    institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
   });
   const [fieldMappingsText, setFieldMappingsText] = useState(() =>
     JSON.stringify(
@@ -65,6 +75,10 @@ export function CertificateTemplateManager() {
         issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
         certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
         workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
+        studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
+        period: { x: 300, y: 360, size: 12, maxWidth: 240 },
+        coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
+        institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
       },
       null,
       2
@@ -78,12 +92,62 @@ export function CertificateTemplateManager() {
     value: string;
   }> = [
     { key: "studentName", label: "Nome do aluno", value: previewName },
-    { key: "courseTitle", label: "Curso", value: previewCourse },
+    { key: "courseTitle", label: "Curso / Componente", value: previewCourse },
     { key: "level", label: "Nível", value: "Intermediário (B1)" },
     { key: "issuedAt", label: "Data de emissão", value: previewDate },
-    { key: "certificateCode", label: "Código", value: previewCode },
-    { key: "workloadHours", label: "Carga horária", value: "32 horas" },
+    { key: "certificateCode", label: "Código de verificação", value: previewCode },
+    { key: "workloadHours", label: "Carga horária (CH)", value: "32 horas" },
+    { key: "studentCpf", label: "CPF do aluno", value: "123.456.789-00" },
+    { key: "period", label: "Período / Dias", value: "Julho a Agosto de 2026" },
+    { key: "coordinatorName", label: "Coordenador / Professor", value: "Anderson Palafoz" },
+    { key: "institutionName", label: "Instituição parceira", value: "UFBA / IsF" },
   ];
+
+  function applyPreset(preset: "default" | "profici" | "isf") {
+    setActivePreset(preset);
+    let next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>> = {};
+    if (preset === "profici") {
+      next = {
+        institutionName: { x: 70, y: 70, size: 11, maxWidth: 350 },
+        studentName: { x: 120, y: 210, size: 20, maxWidth: 540 },
+        studentCpf: { x: 120, y: 240, size: 12, maxWidth: 220 },
+        courseTitle: { x: 120, y: 280, size: 15, maxWidth: 520 },
+        level: { x: 500, y: 280, size: 14, maxWidth: 180 },
+        workloadHours: { x: 120, y: 320, size: 12, maxWidth: 180 },
+        period: { x: 300, y: 320, size: 12, maxWidth: 260 },
+        issuedAt: { x: 120, y: 420, size: 11, maxWidth: 180 },
+        coordinatorName: { x: 480, y: 420, size: 11, maxWidth: 220 },
+        certificateCode: { x: 560, y: 460, size: 10, maxWidth: 180 },
+      };
+    } else if (preset === "isf") {
+      next = {
+        institutionName: { x: 60, y: 60, size: 11, maxWidth: 380 },
+        studentName: { x: 100, y: 200, size: 21, maxWidth: 560 },
+        studentCpf: { x: 100, y: 235, size: 12, maxWidth: 220 },
+        courseTitle: { x: 100, y: 275, size: 16, maxWidth: 520 },
+        level: { x: 480, y: 275, size: 14, maxWidth: 200 },
+        workloadHours: { x: 100, y: 315, size: 12, maxWidth: 180 },
+        period: { x: 290, y: 315, size: 12, maxWidth: 260 },
+        coordinatorName: { x: 460, y: 410, size: 11, maxWidth: 220 },
+        issuedAt: { x: 100, y: 410, size: 11, maxWidth: 180 },
+        certificateCode: { x: 540, y: 455, size: 10, maxWidth: 180 },
+      };
+    } else {
+      next = {
+        studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
+        courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
+        level: { x: 300, y: 300, size: 13, maxWidth: 300 },
+        issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
+        certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
+        workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
+        studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
+        period: { x: 300, y: 360, size: 12, maxWidth: 240 },
+        coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
+        institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
+      };
+    }
+    setFieldMappings(next);
+  }
 
   function handleFieldDragStart(
     event: React.DragEvent<HTMLDivElement>,
@@ -375,16 +439,35 @@ export function CertificateTemplateManager() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
-                  Editor visual do modelo
+                  Editor visual do modelo & Presets Institucionais
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Arraste uma variável da paleta para o certificado. Use as
-                  setas do teclado para ajustes finos.
+                  Escolha um preset oficial (Padrão, PROFICI ou IsF) ou arraste as variáveis livremente.
                 </p>
               </div>
-              <span className="rounded-full bg-muted px-3 py-1 text-[10px] font-bold text-muted-foreground">
-                {Object.keys(fieldMappings).length} variáveis posicionadas
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => applyPreset("default")}
+                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "default" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                >
+                  Padrão
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset("profici")}
+                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "profici" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                >
+                  Preset PROFICI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset("isf")}
+                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "isf" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+                >
+                  Preset IsF
+                </button>
+              </div>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
               <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
