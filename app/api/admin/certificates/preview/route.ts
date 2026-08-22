@@ -17,18 +17,22 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { userId, courseId, templateId, includeSiteBranding, studentName, studentCourseTitle, studentLevel } = body;
+    const { userId, courseId, templateId, includeSiteBranding, studentName, studentCourseTitle, studentLevel, studentCpf } = body;
 
     let studentNameVal = studentName;
     let courseTitleVal = studentCourseTitle;
     let levelVal = studentLevel || "Geral";
+    let studentCpfVal = studentCpf || "";
 
-    if (userId) {
+    if (userId && !studentNameVal) {
       const student = await db.query.users.findFirst({ where: eq(users.id, Number(userId)) });
-      if (student) studentNameVal = student.name || student.email || "Aluno";
+      if (student) {
+        studentNameVal = student.name || student.email || "Aluno";
+        studentCpfVal = student.cpf || "";
+      }
     }
 
-    if (courseId) {
+    if (courseId && !courseTitleVal) {
       const course = await db.query.courses.findFirst({ where: eq(courses.id, Number(courseId)) });
       if (course) {
         courseTitleVal = course.title;
@@ -63,6 +67,7 @@ export async function POST(req: Request) {
 
     const pdfBytes = await buildCertificatePdf({
       studentName: studentNameVal || "Aluno(a) Exemplo",
+      studentCpf: studentCpfVal || undefined,
       courseTitle: courseTitleVal || "Curso de Inglês Avançado",
       level: levelVal,
       issuedAt: new Date(),
