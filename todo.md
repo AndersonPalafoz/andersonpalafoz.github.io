@@ -1918,4 +1918,5 @@
 - [x] Elevar Fabric.js, Konva.js e GrapesJS ao poder máximo de prancheta interativa estilo Canva com seleção direta, alças de transformação (Transformer), gerenciamento de camadas, guias e exportação em PDF em /admin/certificados.
 - [x] Corrigir o erro `setStrokeColor is not a function` na exportação de PDF dos protótipos Fabric, Konva e GrapesJS por meio de helper unificado e compatível com jsPDF.
 - [x] Implementar sistema de adição, clique, edição, arraste, redimensionamento, remoção e gerenciamento de camadas para quaisquer elementos (textos, ícones, formas e imagens) no laboratório de certificados em /admin/certificados.
-- [ ] Implementar histórico de desfazer e refazer (undo/redo), salvamento de modelos reutilizáveis de certificados e grade magnética com snap-to-grid no laboratório em /admin/certificados.
+- [x] Implementar histórico de desfazer e refazer (undo/redo), salvamento de modelos reutilizáveis de certificados e grade magnética com snap-to-grid no laboratório em /admin/certificados.
+- [ ] Substituir o mapeamento estático e form de variáveis por uma prancheta interativa real baseada em canvas (clicar, arrastar, redimensionar, gerenciar camadas e exportar para PDF) no laboratório em /admin/certificados.
