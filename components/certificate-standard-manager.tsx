@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square } from "lucide-react";
+import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square, Eye, AlertTriangle } from "lucide-react";
 
 export function CertificateStandardManager() {
   const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
@@ -21,8 +21,8 @@ export function CertificateStandardManager() {
   const [issuedCertificates, setIssuedCertificates] = useState<Array<any>>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
 
-  // Carregar certificados emitidos e modelos cadastrados
   const fetchCertificates = async () => {
     try {
       const res = await fetch("/api/admin/certificates/issue");
@@ -68,15 +68,15 @@ export function CertificateStandardManager() {
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDeleteConfirmed = async () => {
     if (selectedIds.length === 0) return;
-    if (!confirm(`Tem certeza que deseja excluir permanentemente ${selectedIds.length} certificado(s) selecionado(s)?`)) return;
     try {
       const res = await fetch(`/api/admin/certificates/issue?ids=${selectedIds.join(",")}`, { method: "DELETE" });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Erro ao excluir em massa.");
       setIssuedCertificates(prev => prev.filter(c => !selectedIds.includes(c.id)));
       setSelectedIds([]);
+      setShowBulkDeleteModal(false);
       toast.success("Certificados selecionados excluídos com sucesso.");
     } catch (e: any) {
       toast.error(e.message || "Erro ao excluir em massa.");
@@ -107,6 +107,8 @@ export function CertificateStandardManager() {
   const toggleSelectOne = (id: number) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
+
+  const activeTemplate = templates.find((t: any) => String(t.id) === selectedTemplateId);
 
   const handleGenerateOfficial = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -173,10 +175,12 @@ export function CertificateStandardManager() {
         <CardContent className="pt-6">
           <form onSubmit={handleGenerateOfficial} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="space-y-4 lg:col-span-2">
-              <div className="space-y-2">
-                <Label htmlFor="std-template-select">Escolher Modelo de Certificado (Template Ativo)</Label>
+              <div className="space-y-3 bg-red-50/40 p-4 rounded-xl border border-red-100">
+                <Label htmlFor="std-template-select" className="font-bold text-red-900 flex items-center gap-2">
+                  <Award size={16} /> 1. Escolher Modelo de Certificado (Início do Fluxo)
+                </Label>
                 <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
-                  <SelectTrigger id="std-template-select">
+                  <SelectTrigger id="std-template-select" className="bg-white">
                     <SelectValue placeholder="Selecione um modelo cadastrado..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -188,28 +192,59 @@ export function CertificateStandardManager() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-[11px] text-muted-foreground">O modelo selecionado será aplicado na renderização exata do PDF e QR Code.</p>
+
+                {/* Pré-visualização visual imediata do modelo selecionado */}
+                <div className="mt-3 bg-white p-3 rounded-lg border shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                      <Eye size={14} className="text-red-600" /> Pré-visualização do Modelo Selecionado
+                    </span>
+                    <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">
+                      {selectedTemplateId === "default" ? "Padrão Oficial" : (activeTemplate?.institution || "Personalizado")}
+                    </span>
+                  </div>
+                  <div className="relative aspect-[1.414/1] w-full bg-slate-900 rounded border overflow-hidden flex flex-col items-center justify-center p-4 text-center text-white">
+                    <div className="absolute inset-0 bg-gradient-to-br from-red-950/80 via-slate-900/90 to-slate-950 flex flex-col items-center justify-center p-6 border-4 border-amber-500/30 m-2">
+                      <p className="text-[10px] tracking-widest text-amber-400 uppercase font-bold mb-1">
+                        {selectedTemplateId === "default" ? "Anderson Palafoz Platform" : (activeTemplate?.category || "Modelo Institucional")}
+                      </p>
+                      <h4 className="text-sm font-serif font-bold text-white mb-2">
+                        {selectedTemplateId === "default" ? "Certificado de Conclusão" : (activeTemplate?.name || "Certificado Customizado")}
+                      </h4>
+                      <p className="text-[11px] text-slate-300 italic mb-3">
+                        {selectedTemplateId === "default" ? "Modelo padrão com QR Code e selo oficial" : `Instituição: ${activeTemplate?.institution || "Parceira"}`}
+                      </p>
+                      <div className="w-24 h-0.5 bg-amber-500/50 mb-3" />
+                      <p className="text-[9px] text-slate-400">
+                        Os dados do aluno preencherão este layout automaticamente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="std-student-name">Nome Completo do Aluno *</Label>
-                  <Input
-                    id="std-student-name"
-                    required
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    placeholder="Ex: Adna Caroline"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="std-level">Nível / Proficiência</Label>
-                  <Input
-                    id="std-level"
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                    placeholder="Ex: B1 - Intermediário"
-                  />
+              <div className="space-y-2">
+                <Label className="font-bold text-foreground">2. Preencher Dados do Aluno e Curso</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="std-student-name">Nome Completo do Aluno *</Label>
+                    <Input
+                      id="std-student-name"
+                      required
+                      value={studentName}
+                      onChange={(e) => setStudentName(e.target.value)}
+                      placeholder="Ex: Adna Caroline"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="std-level">Nível / Proficiência</Label>
+                    <Input
+                      id="std-level"
+                      value={level}
+                      onChange={(e) => setLevel(e.target.value)}
+                      placeholder="Ex: B1 - Intermediário"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -315,7 +350,7 @@ export function CertificateStandardManager() {
               <Button variant="outline" size="sm" onClick={handleBulkExport} className="h-8 text-xs bg-white">
                 <Download size={14} className="mr-1" /> Baixar Selecionados ({selectedIds.length})
               </Button>
-              <Button variant="destructive" size="sm" onClick={handleBulkDelete} className="h-8 text-xs bg-red-600 hover:bg-red-700">
+              <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteModal(true)} className="h-8 text-xs bg-red-600 hover:bg-red-700">
                 <Trash2 size={14} className="mr-1" /> Excluir Selecionados ({selectedIds.length})
               </Button>
             </div>
@@ -397,6 +432,36 @@ export function CertificateStandardManager() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Confirmação de Segurança para Exclusão em Massa */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-card text-card-foreground p-6 rounded-2xl max-w-md w-full shadow-2xl border border-red-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-3 bg-red-100 rounded-full">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">Confirmação de Exclusão em Massa</h3>
+                <p className="text-xs text-muted-foreground">Esta ação é irreversível e removerá registros do banco.</p>
+              </div>
+            </div>
+
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Você está prestes a excluir permanentemente <strong className="text-foreground">{selectedIds.length} certificado(s)</strong> selecionado(s). Deseja realmente prosseguir?
+            </p>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)} className="text-xs">
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleBulkDeleteConfirmed} className="text-xs bg-red-600 hover:bg-red-700 font-bold">
+                Sim, Excluir {selectedIds.length} Certificado(s)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
