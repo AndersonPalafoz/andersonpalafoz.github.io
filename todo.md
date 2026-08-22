@@ -1895,3 +1895,5 @@
 - [x] Diagnosticar e corrigir o erro de carregamento no painel administrativo (/admin e subpáginas) e assegurar estabilidade na renderização
 
 - [x] Evoluir os protótipos Konva.js e GrapesJS para incluir campos acadêmicos completos, controle de branding, pré-visualização em PDF e salvamento local equiparados ao Gerador Oficial
+
+- [x] Analisar os modelos DOCX fornecidos e equiparar Fabric.js, Konva.js e GrapesJS exatamente às estruturas, textos e variáveis acadêmicas exigidas

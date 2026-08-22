@@ -5,17 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Code, Download, Sparkles, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Code, Download, RefreshCw } from "lucide-react";
 import { jsPDF } from "jspdf";
 
 export function CertificateGrapesPrototype() {
-  const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
-  const [courseTitle, setCourseTitle] = useState("Alfabetização e Letramento Étnico-Racial em Inglês");
-  const [level, setLevel] = useState("Intermediário [B1-B2]");
-  const [workloadHours, setWorkloadHours] = useState("40");
-  const [includeBranding, setIncludeBranding] = useState(true);
+  const [templateType, setTemplateType] = useState<"standard" | "isf" | "profici">("profici");
+  const [studentName, setStudentName] = useState("Maria José Ferreira Lopes");
+  const [studentCpf, setStudentCpf] = useState("065.192.044-20");
+  const [courseTitle, setCourseTitle] = useState("Curso de Inglês para Fins de Internacionalização");
+  const [workloadHours, setWorkloadHours] = useState("16 horas");
+  const [period, setPeriod] = useState("14 de julho a 14 de agosto de 2026");
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportPDF = async () => {
@@ -28,69 +30,47 @@ export function CertificateGrapesPrototype() {
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageWidth, pageHeight, "F");
 
+      const strokeColor = templateType === "isf" ? [15, 118, 110] : templateType === "profici" ? [147, 51, 234] : [126, 34, 206];
       doc.setLineWidth(3);
-      doc.setStrokeColor(147, 51, 234); // Roxo GrapesJS
+      doc.setStrokeColor(strokeColor[0], strokeColor[1], strokeColor[2]);
       doc.rect(30, 30, pageWidth - 60, pageHeight - 60);
 
-      doc.setLineWidth(1);
-      doc.setStrokeColor(200, 200, 200);
-      doc.rect(38, 38, pageWidth - 76, pageHeight - 76);
-
-      if (includeBranding) {
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(147, 51, 234);
-        doc.text("ANDERSON PALAFOZ", pageWidth / 2, 75, { align: "center" });
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text("ESTRUTURA DE COMPONENTES HTML/CSS", pageWidth / 2, 92, { align: "center" });
-      }
-
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(26);
+      doc.setFontSize(24);
       doc.setTextColor(30, 41, 59);
-      doc.text("CERTIFICADO DE CONCLUSÃO (GrapesJS Engine)", pageWidth / 2, 145, { align: "center" });
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(13);
-      doc.text("Certificamos para os devidos fins que", pageWidth / 2, 185, { align: "center" });
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(147, 51, 234);
-      doc.text(studentName, pageWidth / 2, 225, { align: "center" });
+      doc.text("CERTIFICADO DE CONCLUSÃO", pageWidth / 2, 100, { align: "center" });
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(13);
       doc.setTextColor(60, 60, 60);
-      doc.text(`concluiu com êxito o programa acadêmico`, pageWidth / 2, 265, { align: "center" });
+
+      let textDesc = "";
+      if (templateType === "isf") {
+        textDesc = `Certificamos que ${studentName} (CPF nº ${studentCpf}) concluiu o curso ${courseTitle}, ofertado pela Rede Andifes IsF em parceria com a UFBA, no período de ${period}, com carga horária de ${workloadHours}.`;
+      } else if (templateType === "profici") {
+        textDesc = `Certifico que ${studentName} concluiu o ${courseTitle} do PROFICI (Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA), realizado no período de ${period} com carga horária de ${workloadHours}.`;
+      } else {
+        textDesc = `Certificamos que ${studentName} concluiu com êxito o programa ${courseTitle} (${workloadHours}).`;
+      }
+
+      const splitText = doc.splitTextToSize(textDesc, pageWidth - 140);
+      doc.text(splitText, 70, 180, { align: "center" });
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(30, 30, 30);
-      doc.text(courseTitle, pageWidth / 2, 305, { align: "center" });
-
-      doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
-      doc.setTextColor(80, 80, 80);
-      doc.text(`Nível: ${level} · Carga Horária: ${workloadHours} horas`, pageWidth / 2, 340, { align: "center" });
+      doc.text("Salvador, 22 de agosto de 2026.", pageWidth / 2, 340, { align: "center" });
 
       doc.setLineWidth(1);
       doc.setStrokeColor(150, 150, 150);
       doc.line(pageWidth / 2 - 150, 430, pageWidth / 2 + 150, 430);
 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.setTextColor(40, 40, 40);
-      doc.text("Anderson Bacelar Palafoz", pageWidth / 2, 450, { align: "center" });
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text("Diretor Acadêmico & Professor Responsável", pageWidth / 2, 465, { align: "center" });
+      const signLabel = templateType === "isf" ? "Coordenador(a) Administrativo(a) da Rede IsF na UFBA" : templateType === "profici" ? "Fernanda Mota Pereira — Coordenadora Geral do PROFICI" : "Anderson Bacelar Palafoz";
+      doc.text(signLabel, pageWidth / 2, 450, { align: "center" });
 
-      doc.save(`certificado-grapes-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
-      toast.success("Certificado GrapesJS / HTML exportado com sucesso em PDF!");
+      doc.save(`certificado-grapes-${templateType}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+      toast.success("Certificado GrapesJS gerado com sucesso em PDF!");
     } catch (err) {
-      toast.error("Erro ao gerar PDF do GrapesJS.");
+      toast.error("Erro ao gerar PDF.");
     } finally {
       setIsExporting(false);
     }
@@ -104,14 +84,14 @@ export function CertificateGrapesPrototype() {
             <div>
               <CardTitle className="text-xl font-bold text-purple-900 flex items-center gap-2">
                 <Code className="w-5 h-5 text-purple-600" />
-                Protótipo GrapesJS / HTML (Blocos CSS)
+                Protótipo GrapesJS / HTML — Compatível com Modelos DOCX (IsF & PROFICI)
               </CardTitle>
               <CardDescription>
-                Editor visual baseado em templates HTML/CSS estruturados com flexbox, tipografia rica e exportação direta em PDF A4.
+                Editor visual baseado em blocos CSS estruturados com suporte total aos textos e assinaturas dos arquivos DOCX.
               </CardDescription>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-700 dark:text-purple-300">
-              <Code size={14} /> Blocos HTML/CSS
+            <span className="inline-flex items-center gap-1 rounded-full bg-purple-500/10 px-3 py-1 text-xs font-bold text-purple-700">
+              <Code size={14} /> HTML Engine
             </span>
           </div>
         </CardHeader>
@@ -119,54 +99,47 @@ export function CertificateGrapesPrototype() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="space-y-4 lg:col-span-1 border-r pr-0 lg:pr-6 border-border">
               <div className="space-y-2">
-                <Label htmlFor="grapes-student">Nome do Aluno</Label>
-                <Input
-                  id="grapes-student"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                />
+                <Label>Modelo de Certificado</Label>
+                <Select value={templateType} onValueChange={(v: any) => setTemplateType(v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Padrão Anderson Palafoz</SelectItem>
+                    <SelectItem value="isf">Modelo IsF / Andifes (DOCX)</SelectItem>
+                    <SelectItem value="profici">Modelo PROFICI / UFBA (DOCX)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+
               <div className="space-y-2">
-                <Label htmlFor="grapes-course">Título do Curso</Label>
-                <Input
-                  id="grapes-course"
-                  value={courseTitle}
-                  onChange={(e) => setCourseTitle(e.target.value)}
-                />
+                <Label>Nome do Aluno</Label>
+                <Input value={studentName} onChange={(e) => setStudentName(e.target.value)} />
               </div>
+
+              <div className="space-y-2">
+                <Label>CPF do Aluno</Label>
+                <Input value={studentCpf} onChange={(e) => setStudentCpf(e.target.value)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Título do Curso / Componente</Label>
+                <Input value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} />
+              </div>
+
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
-                  <Label htmlFor="grapes-level">Nível</Label>
-                  <Input
-                    id="grapes-level"
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                  />
+                  <Label>Carga Horária</Label>
+                  <Input value={workloadHours} onChange={(e) => setWorkloadHours(e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="grapes-hours">Carga Horária</Label>
-                  <Input
-                    id="grapes-hours"
-                    value={workloadHours}
-                    onChange={(e) => setWorkloadHours(e.target.value)}
-                  />
+                  <Label>Período</Label>
+                  <Input value={period} onChange={(e) => setPeriod(e.target.value)} />
                 </div>
-              </div>
-              <div className="flex items-center justify-between pt-2">
-                <Label htmlFor="grapes-branding" className="cursor-pointer text-xs">Incluir Logo Institucional</Label>
-                <Switch
-                  id="grapes-branding"
-                  checked={includeBranding}
-                  onCheckedChange={setIncludeBranding}
-                />
               </div>
 
               <div className="pt-4">
-                <Button
-                  onClick={handleExportPDF}
-                  disabled={isExporting}
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl shadow-sm"
-                >
+                <Button onClick={handleExportPDF} disabled={isExporting} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl">
                   {isExporting ? <RefreshCw className="animate-spin mr-2" size={16} /> : <Download className="mr-2" size={16} />}
                   Exportar PDF (Grapes Engine)
                 </Button>
@@ -175,26 +148,28 @@ export function CertificateGrapesPrototype() {
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
               <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-purple-200 p-6 relative flex flex-col justify-between text-center">
-                {includeBranding && (
-                  <div className="space-y-1">
-                    <h4 className="font-black text-purple-600 tracking-wider text-sm">ANDERSON PALAFOZ</h4>
-                    <p className="text-[10px] text-muted-foreground tracking-widest uppercase">Estrutura de Componentes HTML/CSS</p>
-                  </div>
-                )}
-                <div className="space-y-3">
-                  <h3 className="font-black text-xl text-foreground">CERTIFICADO DE CONCLUSÃO</h3>
-                  <p className="text-xs text-muted-foreground">Certificamos para os devidos fins que</p>
-                  <p className="font-bold text-lg text-purple-600">{studentName}</p>
-                  <p className="text-xs text-muted-foreground">concluiu com êxito o programa acadêmico</p>
-                  <p className="font-bold text-sm text-foreground">{courseTitle}</p>
-                  <p className="text-[11px] text-muted-foreground">Nível: {level} · Carga Horária: {workloadHours}h</p>
+                <div className="space-y-1">
+                  <h4 className="font-black text-purple-600 tracking-wider text-xs uppercase">
+                    {templateType === "isf" ? "Rede Andifes Idiomas sem Fronteiras — UFBA" : templateType === "profici" ? "PROFICI — UFBA (Programa de Proficiência)" : "Anderson Palafoz Platform"}
+                  </h4>
                 </div>
-                <div className="border-t pt-2 w-48 mx-auto">
-                  <p className="text-xs font-bold text-foreground">Anderson Bacelar Palafoz</p>
-                  <p className="text-[10px] text-muted-foreground">Diretor Acadêmico</p>
+                <div className="space-y-3">
+                  <h3 className="font-black text-lg text-foreground">CERTIFICADO DE CONCLUSÃO</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed px-4">
+                    {templateType === "isf"
+                      ? `Certificamos que ${studentName} (CPF nº ${studentCpf}) concluiu o curso ${courseTitle}, ofertado pela Rede Andifes IsF em parceria com a UFBA, no período de ${period}, com carga horária de ${workloadHours}.`
+                      : templateType === "profici"
+                      ? `Certifico que ${studentName} concluiu o ${courseTitle} do PROFICI (UFBA), no período de ${period} com carga horária de ${workloadHours}.`
+                      : `Certificamos que ${studentName} concluiu com êxito o programa ${courseTitle} (${workloadHours}).`}
+                  </p>
+                </div>
+                <div className="border-t pt-2 w-64 mx-auto">
+                  <p className="text-xs font-bold text-foreground">
+                    {templateType === "isf" ? "Coordenador(a) Administrativo(a) da Rede IsF na UFBA" : templateType === "profici" ? "Fernanda Mota Pereira — Coordenadora Geral do PROFICI" : "Anderson Bacelar Palafoz"}
+                  </p>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização em tempo real baseada em blocos estruturados (GrapesJS).</p>
+              <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização baseada em blocos HTML/CSS compatíveis com os arquivos DOCX.</p>
             </div>
           </div>
         </CardContent>
