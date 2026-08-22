@@ -1775,3 +1775,6 @@
 - [x] Blindar o carregamento de modelos no gerenciador frontend com parser resiliente para evitar erro de JSON vazio ou corrompido.
 
 - [x] Corrigir o fluxo de templates para rejeitar respostas vazias como erro, tornar o JSON gerado pelo editor visual visível e garantir que o cadastro dos modelos não seja confundido com uma listagem vazia.
+
+## Resolução de Incidente: Falha ao carregar modelos em certificate-templates — 21/08/2026
+- [x] Auditar e corrigir a rota GET `/api/admin/certificate-templates` e o helper `getCertificateTemplates` para garantir que o carregamento de modelos não falhe com erro HTTP ou JSON inválido.
