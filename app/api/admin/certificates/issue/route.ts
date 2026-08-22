@@ -84,12 +84,16 @@ export async function POST(request: NextRequest) {
         student = existingPlaceholder;
         userId = student.id;
       } else {
+        const placeholderOpenId = `manual-ext-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
         const insertedUsers = await db
           .insert(users)
           .values({
+            openId: placeholderOpenId,
             name: directStudentName,
             email: placeholderEmail,
             role: "user",
+            loginMethod: "manual_external",
+            approvalStatus: "approved",
           })
           .returning({ id: users.id });
         const insertedUser = insertedUsers[0];

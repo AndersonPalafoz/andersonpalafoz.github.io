@@ -96,7 +96,8 @@ export function CertificateFabricPrototype() {
       doc.save(`certificado-fabric-pro-${templateId}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
       toast.success("Certificado exportado com sucesso via Fabric Engine!");
     } catch (err) {
-      toast.error("Erro ao gerar PDF.");
+      console.error("PDF export error:", err);
+      toast.error(`Erro ao gerar PDF: ${err instanceof Error ? err.message : "Erro desconhecido"}`);
     } finally {
       setIsExporting(false);
     }

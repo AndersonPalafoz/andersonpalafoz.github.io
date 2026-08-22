@@ -92,7 +92,8 @@ export function CertificateGrapesPrototype() {
       doc.save(`certificado-grapes-pro-${templateId}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
       toast.success("Certificado exportado via Grapes Engine!");
     } catch (err) {
-      toast.error("Erro ao gerar PDF.");
+      console.error("PDF export error:", err);
+      toast.error(`Erro ao gerar PDF: ${err instanceof Error ? err.message : "Erro desconhecido"}`);
     } finally {
       setIsExporting(false);
     }
