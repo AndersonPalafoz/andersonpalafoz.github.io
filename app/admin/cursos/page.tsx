@@ -469,7 +469,14 @@ export default function AdminCursos() {
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-2 rounded-2xl border border-border bg-muted/30 p-3 sm:grid-cols-3">
+                <div className="rounded-xl bg-card px-3 py-2 text-xs font-black text-foreground shadow-sm"><span className="mr-2 text-red-600">01</span>Identidade e acesso</div>
+                <div className="rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground"><span className="mr-2">02</span>Calendário e frequência</div>
+                <div className="rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground"><span className="mr-2">03</span>Conteúdo e publicação</div>
+              </div>
+              <details open className="group rounded-2xl border border-border/70 bg-background/45">
+                <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black text-foreground marker:hidden">01. Identidade, acesso e oferta <span className="ml-1 text-xs font-normal text-muted-foreground">Toque para recolher</span></summary>
+                <div className="grid grid-cols-1 gap-6 border-t border-border/70 p-4 sm:p-5 md:grid-cols-2">
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2">Título do Curso *</label>
                   <input
@@ -640,10 +647,13 @@ export default function AdminCursos() {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Cole um link direto ou envie JPG, PNG, WebP ou GIF. A imagem enviada fica armazenada de forma persistente.</p>
                 </div>
-              </div>
+                </div>
+              </details>
 
               {/* Calendário e Frequência */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border">
+              <details open className="group rounded-2xl border border-border/70 bg-background/45">
+                <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black text-foreground marker:hidden">02. Calendário e frequência <span className="ml-1 text-xs font-normal text-muted-foreground">Dias, horários e regras</span></summary>
+                <div className="grid grid-cols-1 gap-6 border-t border-border/70 p-4 pt-5 sm:p-5 md:grid-cols-3">
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2">Dias de Aula</label>
                   <input
@@ -710,8 +720,12 @@ export default function AdminCursos() {
                   />
                   <p className="text-xs text-muted-foreground mt-1">Acima deste percentual, o aluno reprova por frequência.</p>
                 </div>
-              </div>
+                </div>
+              </details>
 
+              <details open className="group rounded-2xl border border-border/70 bg-background/45">
+                <summary className="cursor-pointer list-none px-4 py-3 text-sm font-black text-foreground marker:hidden">03. Conteúdo, mídia e publicação <span className="ml-1 text-xs font-normal text-muted-foreground">Links, descrição e capa</span></summary>
+                <div className="space-y-6 border-t border-border/70 p-4 sm:p-5">
               <div>
                 <label htmlFor="course-google-drive-links" className="block text-sm font-semibold text-foreground mb-2">Materiais complementares do Google Drive</label>
                 <textarea
@@ -738,7 +752,9 @@ export default function AdminCursos() {
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition"
                   />
                 </div>
-              </div>
+                </div>
+                </div>
+              </details>
 
               <div className="flex items-center justify-end gap-4 pt-4 border-t border-border">
                 <button

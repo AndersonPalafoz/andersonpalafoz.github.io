@@ -3,9 +3,7 @@ import { ArrowLeft, FileSignature, ShieldCheck, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { CertificateSignatureManager } from "@/components/certificate-signature-manager";
-import { CertificateTemplateManager } from "@/components/certificate-template-manager";
-import { CertificateLaboratoryManager } from "@/components/certificate-laboratory-manager";
+import { AdminCertificateWorkflow } from "@/components/admin-certificate-workflow";
 import { CertificateWorkspaceProvider } from "@/components/certificate-workspace-context";
 
 export const metadata = {
@@ -46,20 +44,16 @@ export default async function AdminCertificatesPage() {
           </Link>
         </header>
 
-        {/* Seção de Laboratório das 4 Possibilidades */}
         <section className="space-y-4">
           <div className="flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="text-red-600" size={20} />
-              <h2 className="text-xl font-black text-foreground">Laboratório comparativo de editores</h2>
+              <h2 className="text-xl font-black text-foreground">Fluxo de produção do certificado</h2>
             </div>
-            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">4 possibilidades</span>
+            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">3 etapas</span>
           </div>
-          <CertificateLaboratoryManager />
+          <AdminCertificateWorkflow />
         </section>
-
-        <CertificateTemplateManager />
-        <CertificateSignatureManager />
       </div>
       </CertificateWorkspaceProvider>
     </div>

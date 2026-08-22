@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
+import { AdminActionCenter } from "@/components/admin-action-center";
 
 interface Stats {
   totalCourses: number;
@@ -208,16 +209,15 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
+        <AdminActionCenter />
+
         {/* Estatísticas em Estilo Alinhado com a Área do Aluno */}
         <StudentStyleDashboardStats
-          stats={{
-            totalCourses: stats?.totalCourses || 0,
-            totalMaterials: stats?.totalMaterials || 0,
-            totalArticles: stats?.totalArticles || 0,
-            totalUsers: stats?.totalUsers || 0,
-            totalEnrollments: stats?.totalEnrollments || 0,
-            roleCounts: stats?.roleCounts || { admin: 1, professor: 1, student: 0 },
-          }}
+          coursesCount={stats?.totalCourses || 0}
+          studentsCount={stats?.totalUsers || 0}
+          materialsCount={stats?.totalMaterials || 0}
+          enrollmentsCount={stats?.totalEnrollments || 0}
+          isLoading={loading}
         />
 
         {/* Monitor de Vendas / Stripe & Matrículas */}
