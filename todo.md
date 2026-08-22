@@ -1879,3 +1879,5 @@
 - [ ] Autorização OAuth da API do Google Calendar em produção (Requer conexão da conta Google no fluxo de consentimento)
 
 - [x] Desenvolver protótipo isolado com Fabric.js e pdf-lib para edição visual avançada e exportação de certificados em PDF
+
+- [x] Adicionar abas na emissão avulsa de certificados para permitir escolher um curso da lista existente ou digitar manualmente informações de cursos externos/avulsos
