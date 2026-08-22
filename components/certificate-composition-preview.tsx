@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import React, { type CSSProperties } from "react";
 import {
   DEFAULT_FIELD_MAPPINGS,
   type CertificateComposition,
