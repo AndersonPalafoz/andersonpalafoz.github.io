@@ -6,7 +6,10 @@ const read = (relativePath: string) => fs.readFileSync(path.join(process.cwd(), 
 
 describe("secure area layout audit", () => {
   it("keeps server-side admin and dashboard boundaries", () => {
-    expect(read("app/admin/layout.tsx")).toContain('session.user.role !== "admin"');
+    expect(read("app/admin/layout.tsx")).toContain("getServerSession");
+    expect(read("app/admin/layout.tsx")).toContain("isAuthorized");
+    expect(read("app/admin/layout.tsx")).toContain('role === "super_admin"');
+    expect(read("app/admin/layout.tsx")).toContain('/login?callbackUrl=/admin');
     expect(read("app/dashboard/layout.tsx")).toContain("getServerSession");
     expect(read("app/dashboard/layout.tsx")).toContain("/login?callbackUrl=/dashboard");
     expect(read("app/dashboard/layout.tsx")).toContain("approvalStatus");

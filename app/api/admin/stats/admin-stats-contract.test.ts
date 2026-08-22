@@ -5,7 +5,8 @@ const routeSource = readFileSync(new URL("./route.ts", import.meta.url), "utf8")
 
 describe("Admin stats commerce contract", () => {
   it("mantém a consulta comercial dentro da API administrativa", () => {
-    expect(routeSource).toContain('session.user.role !== "admin"');
+    expect(routeSource).toContain("isAuthorized");
+    expect(routeSource).toContain('role === "super_admin"');
     expect(routeSource).toContain("getAdminCommerceStats");
     expect(routeSource).toContain("commerce");
   });
