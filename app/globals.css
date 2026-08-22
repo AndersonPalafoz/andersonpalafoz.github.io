@@ -292,7 +292,7 @@
 
 @layer components {
   .site-shell {
-    @apply min-h-screen bg-slate-50;
+    @apply min-h-screen max-w-full overflow-x-hidden bg-slate-50;
   }
 
   .page-container {
@@ -366,7 +366,7 @@
 }
 
 @layer components {
-  .site-shell, main.min-h-screen { background: hsl(var(--background)); color: hsl(var(--foreground)); }
+  .site-shell, main.min-h-screen { max-width: 100%; overflow-x: hidden; background: hsl(var(--background)); color: hsl(var(--foreground)); }
   .surface-card { border-color: hsl(var(--border) / 0.78); background: hsl(var(--card)); color: hsl(var(--card-foreground)); }
   .interactive-card { will-change: transform, box-shadow; }
   .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; }

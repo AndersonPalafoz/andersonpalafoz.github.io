@@ -1433,6 +1433,8 @@ function PreviewModal({
   );
   const [customName, setCustomName] = useState<string>(cert.studentName);
   const [customCourse, setCustomCourse] = useState<string>(cert.courseTitle);
+  const [customLevel, setCustomLevel] = useState<string>(cert.level || "Geral");
+  const [customCpf, setCustomCpf] = useState<string>(cert.studentCpf || "");
   const [customFontSize, setCustomFontSize] = useState<string>("32");
   const [customFontColor, setCustomFontColor] = useState<string>("#1e293b");
   const [templates, setTemplates] = useState<CertificateTemplateOption[]>([]);
@@ -1453,6 +1455,8 @@ function PreviewModal({
     brandingVal: boolean,
     nameVal: string,
     courseVal: string,
+    levelVal: string,
+    cpfVal: string,
     sizeVal: string,
     colorVal: string
   ) => {
@@ -1469,7 +1473,8 @@ function PreviewModal({
           includeSiteBranding: brandingVal,
           studentName: nameVal,
           studentCourseTitle: courseVal,
-          studentLevel: cert.level,
+          studentLevel: levelVal,
+          studentCpf: cpfVal,
           customStudentNameSize: sizeVal ? Number(sizeVal) : undefined,
           customStudentNameColor: colorVal || undefined,
         }),
@@ -1490,6 +1495,8 @@ function PreviewModal({
       includeBranding,
       customName,
       customCourse,
+      customLevel,
+      customCpf,
       customFontSize,
       customFontColor
     );
@@ -1498,6 +1505,8 @@ function PreviewModal({
     includeBranding,
     customName,
     customCourse,
+    customLevel,
+    customCpf,
     customFontSize,
     customFontColor,
   ]);
@@ -1568,6 +1577,29 @@ function PreviewModal({
               className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
             />
           </div>
+          <div>
+            <label className="block text-xs font-bold text-foreground mb-1">
+              Nível
+            </label>
+            <input
+              type="text"
+              value={customLevel}
+              onChange={e => setCustomLevel(e.target.value)}
+              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-foreground mb-1">
+              CPF
+            </label>
+            <input
+              type="text"
+              value={customCpf}
+              onChange={e => setCustomCpf(e.target.value)}
+              placeholder="Não informado"
+              className="w-full h-10 rounded-xl border border-border bg-background px-3 text-xs font-semibold text-foreground outline-none focus:border-red-600"
+            />
+          </div>
           <div className="flex items-center gap-3 md:col-span-2">
             <div className="flex-1">
               <label className="block text-xs font-bold text-foreground mb-1">
@@ -1610,7 +1642,7 @@ function PreviewModal({
             </label>
             <button
               type="button"
-              onClick={() => void generatePreview(selectedTemplateId, includeBranding, customName, customCourse, customFontSize, customFontColor)}
+              onClick={() => void generatePreview(selectedTemplateId, includeBranding, customName, customCourse, customLevel, customCpf, customFontSize, customFontColor)}
               className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-bold text-foreground hover:bg-muted"
             >
               Regenerar Prévia

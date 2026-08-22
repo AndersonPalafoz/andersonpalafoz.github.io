@@ -42,6 +42,14 @@ describe("gerenciador administrativo de certificados", () => {
     expect(source).toContain("setDeleteTarget(null)");
   });
 
+  it("permite editar nome, curso, nível e CPF somente na prévia", () => {
+    expect(source).toContain("customLevel");
+    expect(source).toContain("customCpf");
+    expect(source).toContain("studentLevel: levelVal");
+    expect(source).toContain("studentCpf: cpfVal");
+    expect(source).toContain("Regenerar Prévia");
+  });
+
   it("trata pessoas sem cadastro sem renderizar e-mail placeholder", () => {
     expect(source).toContain("Sem cadastro no site");
     expect(source).toContain("isManualEntry");

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useEffect, useState, useRef } from "react";
@@ -159,7 +158,7 @@ export function Navbar() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
             <Link href="/" className="shrink-0 rounded-xl bg-white/95 dark:bg-white/95 px-2.5 py-1.5 shadow-xs transition-opacity hover:opacity-90 focus-visible:outline-red-600 flex items-center" aria-label="Anderson Palafoz — página inicial">
-              <Image src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto sm:h-10 object-contain" priority />
+              <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain sm:h-10" fetchPriority="high" />
             </Link>
 
             <div className="hidden items-center gap-1.5 lg:flex">
