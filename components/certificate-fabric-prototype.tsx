@@ -10,8 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
+import { generateCertificatePdf } from "@/lib/certificate-pdf-generator";
 import { Download, RefreshCw, ShieldCheck } from "lucide-react";
-import { jsPDF } from "jspdf";
 
 export function CertificateFabricPrototype() {
   const [templateId, setTemplateId] = useState<string>("isf");
@@ -60,45 +60,21 @@ export function CertificateFabricPrototype() {
   const handleExportPDF = async () => {
     setIsExporting(true);
     try {
-      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-
-      doc.setFillColor(255, 255, 255);
-      doc.rect(0, 0, pageWidth, pageHeight, "F");
-
-      doc.setLineWidth(3);
-      doc.setStrokeColor(15, 118, 110);
-      doc.rect(30, 30, pageWidth - 60, pageHeight - 60);
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(22);
-      doc.setTextColor(30, 41, 59);
-      doc.text(customTitle, pageWidth / 2, 90, { align: "center" });
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(fontSize);
-      doc.setTextColor(60, 60, 60);
-
-      const bodyText = preset.bodyTemplate(studentName, studentCpf, courseTitle, workload, period);
-      const splitText = doc.splitTextToSize(bodyText, pageWidth - 140);
-      doc.text(splitText, 70, 160, { align: "center" });
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text(customDate, pageWidth / 2, 320, { align: "center" });
-
-      doc.setLineWidth(1);
-      doc.setStrokeColor(150, 150, 150);
-      doc.line(pageWidth / 2 - 160, 420, pageWidth / 2 + 160, 420);
-
-      doc.text(customSigner, pageWidth / 2, 440, { align: "center" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(customRole, pageWidth / 2, 458, { align: "center" });
-
-      doc.save(`certificado-fabric-pro-${templateId}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+      await generateCertificatePdf({
+        title: customTitle,
+        studentName,
+        studentCpf,
+        courseTitle,
+        workload,
+        period,
+        dateStr: customDate,
+        signerName: customSigner,
+        signerRole: customRole,
+        organization: preset.organization,
+        templateName: `fabric-pro-${templateId}`,
+        logoUrl,
+        fontSize,
+      });
       toast.success("Certificado exportado com sucesso via Fabric Engine!");
     } catch (err) {
       console.error("PDF export error:", err);

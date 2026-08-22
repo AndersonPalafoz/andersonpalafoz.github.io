@@ -1915,4 +1915,5 @@
 - [x] Elevar ao máximo as capacidades de Fabric.js, Konva.js e GrapesJS em /admin/certificados com manipulação avançada de objetos, reatividade em camadas, blocos estruturais e exportação em PDF.
 - [x] Corrigir a inserção de usuários não cadastrados na rota de emissão de certificados fornecendo `openId`, `loginMethod` e `approvalStatus` obrigatórios, e refinar o tratamento de exceção na exportação de PDF dos protótipos.
 - [x] Implementar experiência de edição estilo Canva com arrastar e soltar (drag-and-drop), posicionamento livre de imagens/logos, painel de gerenciamento de camadas (trazer para frente, enviar para trás) e exportação vetorizada em PDF em Fabric.js, Konva.js e GrapesJS.
-- [ ] Elevar Fabric.js, Konva.js e GrapesJS ao poder máximo de prancheta interativa estilo Canva com seleção direta, alças de transformação (Transformer), gerenciamento de camadas, guias e exportação em PDF em /admin/certificados.
+- [x] Elevar Fabric.js, Konva.js e GrapesJS ao poder máximo de prancheta interativa estilo Canva com seleção direta, alças de transformação (Transformer), gerenciamento de camadas, guias e exportação em PDF em /admin/certificados.
+- [ ] Corrigir o erro `setStrokeColor is not a function` na exportação de PDF dos protótipos Fabric, Konva e GrapesJS por meio de helper unificado e compatível com jsPDF.
