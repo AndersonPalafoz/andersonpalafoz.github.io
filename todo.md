@@ -1910,3 +1910,5 @@
 - [x] Corrigir a exportação de PDF em todos os modelos e editores do laboratório em /admin/certificados
 
 - [x] Corrigir falha de inserção em `certificate_templates` na rota `/api/admin/certificate-templates` com desestruturação segura do Drizzle.
+- [x] Explorar as documentações e casos de uso de Fabric.js, Konva.js/react-konva e GrapesJS, implementando melhorias e otimizações de uso de cada API no laboratório de certificados.
+- [ ] Incluir e manipular imagens e logos nos editores visuais de certificados (Fabric.js, Konva.js e GrapesJS) com upload, redimensionamento, posicionamento e exportação em PDF.
