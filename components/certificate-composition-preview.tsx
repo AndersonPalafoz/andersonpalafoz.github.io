@@ -43,8 +43,9 @@ function fieldStyle(
   return {
     left: `${(mapping.x / composition.canvas.width) * 100}%`,
     top: `${((composition.canvas.height - mapping.y) / composition.canvas.height) * 100}%`,
-    maxWidth: `${Math.min(94, ((mapping.maxWidth || 700) / composition.canvas.width) * 100)}%`,
-    fontSize: `${Math.max(7, Math.min(34, (mapping.size || 14) * 0.9))}px`,
+    width: `${Math.min(94, ((mapping.maxWidth || 700) / composition.canvas.width) * 100)}%`,
+    fontSize: `${Math.max(1.2, Math.min(16, ((mapping.size || 14) / composition.canvas.height) * 100))}cqh`,
+    lineHeight: 1.12,
     color: mapping.color || (isPrimary ? variant.ink : variant.muted),
     fontWeight: mapping.weight === "bold" || isPrimary ? 800 : 500,
     letterSpacing: isPrimary ? "-0.02em" : undefined,
@@ -63,10 +64,12 @@ function elementStyle(
     top: `${((composition.canvas.height - element.y) / composition.canvas.height) * 100}%`,
     width: element.width ? `${(element.width / composition.canvas.width) * 100}%` : undefined,
     height: element.height ? `${(element.height / composition.canvas.height) * 100}%` : undefined,
+    minWidth: element.type === "text" || element.type === "badge" ? `${Math.min(94, ((element.width || 240) / composition.canvas.width) * 100)}%` : undefined,
     opacity: element.opacity ?? 1,
     zIndex: element.zIndex || 0,
     color: element.color || variant.ink,
-    fontSize: `${Math.max(7, Math.min(34, (element.size || 14) * 0.9))}px`,
+    fontSize: `${Math.max(1.2, Math.min(16, ((element.size || 14) / composition.canvas.height) * 100))}cqh`,
+    lineHeight: 1.12,
     fontWeight: element.weight === "bold" || element.type === "badge" ? 800 : 500,
     textAlign: element.align || "left",
     transform: element.align === "center" ? "translate(-50%, -50%)" : element.align === "right" ? "translate(-100%, -50%)" : "translateY(-50%)",
@@ -93,7 +96,7 @@ export function CertificateCompositionPreview({
   return (
     <div
       className={`relative isolate aspect-[842/595] w-full overflow-hidden rounded-2xl border-2 shadow-[0_20px_50px_rgba(15,23,42,0.14)] ring-1 ring-black/5 ${className || ""}`}
-      style={baseStyle}
+      style={{ ...baseStyle, containerType: "size" }}
       data-certificate-preview="shared"
       data-certificate-variant={variant.id}
       aria-label={`Pré-visualização compartilhada do certificado: ${variant.label}`}
@@ -157,7 +160,7 @@ export function CertificateCompositionPreview({
         return (
           <div
             key={key}
-            className={`absolute z-[3] whitespace-pre-wrap break-words leading-tight ${interactive ? "cursor-move rounded-lg px-1.5 py-0.5 transition hover:bg-white/70 hover:shadow-sm" : ""}`}
+            className={`absolute z-[3] overflow-hidden whitespace-pre-wrap break-words ${interactive ? "cursor-move rounded-lg px-1.5 py-0.5 transition hover:bg-white/70 hover:shadow-sm" : ""}`}
             style={fieldStyle(key, composition, variant)}
             title={interactive ? `Arraste ${LABELS[key]} no editor visual` : LABELS[key]}
           >
@@ -185,7 +188,7 @@ export function CertificateCompositionPreview({
           return <div key={element.id} className="absolute z-[2] h-0.5 -translate-y-1/2 rounded-full" style={{ ...style, backgroundColor: element.color || variant.accent }} />;
         }
         return (
-          <div key={element.id} className="absolute z-[4] whitespace-pre-wrap break-words leading-tight" style={style}>
+          <div key={element.id} className="absolute z-[4] overflow-hidden whitespace-pre-wrap break-words" style={style}>
             {resolveCertificateText(element.content, values)}
           </div>
         );
