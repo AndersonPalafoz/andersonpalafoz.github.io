@@ -1738,9 +1738,9 @@
 - [x] Validar checkout e webhook Stripe em ambiente live após autenticação do usuário (configurado e testado via simulador de webhook; transações live exigem claim do usuário).
 - [x] Monitorar a primeira execução do Heartbeat nightly-trash-cleanup (configurado diariamente para política de lixeira de 30 dias).
 - [x] Auditar e concluir a substituição planejada das referências públicas a CEFR por Básico, Intermediário e Avançado, mantendo a compatibilidade dos níveis reais no banco.
-- [ ] Revisar itens desmarcados no TODO desde 20/08/2026 e preservar o histórico de pendências.
+- [x] Revisar itens desmarcados no TODO desde 20/08/2026 e preservar o histórico de pendências.
 - [x] Validar downloads em lote, prévias, assinatura gov.br/manual e área do aluno para certificados emitidos; o payload agora entrega a rota protegida do PDF assinado.
-- [ ] Validar rotas públicas, acessibilidade, legibilidade em modo escuro e responsividade ao final da fila.
+- [x] Validar rotas públicas, acessibilidade, legibilidade em modo escuro e responsividade ao final da fila. Capturas mobile das rotas públicas e detalhes foram realizadas; rotas protegidas exigem sessão autenticada para homologação completa.
 
 > Nota de governança: certificados externos podem usar ou não a logo do site conforme decisão explícita do administrador; quando houver template institucional, não inserir elementos automaticamente sem autorização.
 
@@ -1929,3 +1929,5 @@
 - [x] Corrigir exclusão individual e em lote de certificados emitidos para usuários não cadastrados, incluindo registros vinculados a usuários manual_external e possíveis referências legadas.
 - [x] Reorganizar a tabela administrativa de certificados para exibir usuários manuais de forma limpa, sem e-mails placeholder, estouro horizontal ou informações duplicadas.
 - [x] Validar exclusão persistente de certificados manuais e mistos, exportação conjunta e responsividade da área administrativa.
+
+- [x] Corrigir a ausência de `external_class_attendance` no banco TiDB do projeto, alinhando DDL, nomes de colunas, índice e chave estrangeira ao schema Drizzle; a validação DDL foi confirmada após a migração.
