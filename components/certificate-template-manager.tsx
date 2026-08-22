@@ -557,8 +557,15 @@ export function CertificateTemplateManager() {
                       className={`group rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 ${isActive ? "border-red-600 bg-red-50 shadow-sm dark:border-red-500 dark:bg-red-950/30" : "border-border bg-muted/20 hover:border-red-300 hover:bg-muted/40"}`}
                       aria-pressed={isActive}
                     >
+                      <span className="mb-3 flex h-14 items-center justify-center overflow-hidden rounded-xl border bg-white/80 p-2 dark:bg-background">
+                        <span className="relative block h-full w-full overflow-hidden rounded-lg border" style={{ borderColor: variant.border, backgroundColor: variant.paper }}>
+                          <span className="absolute left-1.5 top-1.5 h-1 w-8 rounded-full" style={{ backgroundColor: variant.accent }} />
+                          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-black opacity-[0.12]" style={{ color: variant.accent }}>{variant.watermarkLabel}</span>
+                          <span className="absolute bottom-1.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full" style={{ backgroundColor: variant.accentSoft }} />
+                        </span>
+                      </span>
                       <span className="mb-2 flex items-center justify-between gap-2">
-                        <span className="h-3 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
+                        <span className="h-1.5 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
                         <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${isActive ? "bg-red-600 text-white" : "bg-background text-muted-foreground"}`}>
                           {isActive ? "Ativa" : variant.shortLabel}
                         </span>
@@ -922,7 +929,12 @@ export function CertificateTemplateManager() {
           </div>
         </fieldset>
 
-        <div className="space-y-2 lg:col-span-2">
+        <details className="group lg:col-span-2">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-muted/25 px-4 py-3 text-sm font-black text-foreground shadow-sm transition hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+            <span>Mapeamento técnico dos campos <span className="font-normal text-muted-foreground">(JSON opcional)</span></span>
+            <span className="rounded-full border border-border/70 bg-card px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground transition group-open:rotate-180">⌄</span>
+          </summary>
+          <div className="space-y-2 pt-3">
           <label
             htmlFor="certificate-template-field-mappings"
             className="text-sm font-bold text-foreground"
@@ -964,7 +976,8 @@ export function CertificateTemplateManager() {
             também pode editar coordenadas manualmente; o cadastro só será
             aceito quando o conteúdo for um objeto JSON válido.
           </p>
-        </div>
+          </div>
+        </details>
 
         <label className="flex items-center gap-3 text-sm font-semibold text-foreground lg:col-span-2">
           <input
