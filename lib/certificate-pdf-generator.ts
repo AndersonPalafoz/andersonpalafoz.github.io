@@ -49,8 +49,11 @@ export async function generateCertificatePdf(options: CertificatePdfOptions) {
 
   const bodyText = `Certificamos que ${options.studentName || "Estudante"}, CPF nº ${options.studentCpf || "000.000.000-00"}, concluiu com sucesso o curso/componente intitulado "${options.courseTitle || "Curso"}", com carga horária total de ${options.workload || "40 horas"}, realizado no período de ${options.period || "2026"}.`;
   
-  const splitText = doc.splitTextToSize(bodyText, pageWidth - 140);
-  doc.text(splitText, 70, 170, { align: "center" });
+  // Largura máxima útil (página A4 paisagem = 841pt, menos margens de 90pt cada lado)
+  const maxLineWidth = pageWidth - 180;
+  const splitText = doc.splitTextToSize(bodyText, maxLineWidth);
+  // Imprimir centralizado usando pageWidth / 2 e maxWidth para o bloco
+  doc.text(splitText, pageWidth / 2, 170, { align: "center", maxWidth: maxLineWidth });
 
   // Data e Local
   doc.setFont("helvetica", "bold");
