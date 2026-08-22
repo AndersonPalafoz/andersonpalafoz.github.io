@@ -20,6 +20,8 @@ type CertificateFieldMapping = {
   y: number;
   size?: number;
   maxWidth?: number;
+  color?: string;
+  weight?: "normal" | "bold";
 };
 
 type CertificateTemplate = {
@@ -569,12 +571,16 @@ export function CertificateTemplateManager() {
                           });
                         }}
                         className="absolute max-w-[240px] cursor-grab rounded-md border border-red-600/50 bg-red-50/90 px-2 py-1 text-left shadow-sm outline-none transition hover:z-10 hover:scale-[1.02] focus:z-10 focus:ring-2 focus:ring-red-600 active:cursor-grabbing dark:bg-red-950/70"
-                        style={{ left: mapping.x, top }}
-                        aria-label={`Variável ${field.label}. Posição X ${mapping.x}, Y ${mapping.y}. Arraste para reposicionar.`}
+                        style={{
+                          left: mapping.x,
+                          top,
+                          fontSize: mapping.size ? `${Math.min(mapping.size, 18)}px` : undefined,
+                        }}
+                        aria-label={`Variável ${field.label}. Posição X ${mapping.x}, Y ${mapping.y}. Tamanho ${mapping.size || 12}px.`}
                         title="Arraste para reposicionar; use as setas para ajustes finos"
                       >
                         <span className="block font-mono text-[9px] font-black text-red-600">
-                          {`{{${field.key}}}`}
+                          {`{{${field.key}}} (${mapping.size || 12}px)`}
                         </span>
                         <span className="block truncate text-xs font-bold text-foreground">
                           {field.value}
@@ -584,8 +590,42 @@ export function CertificateTemplateManager() {
                   })}
                   <div className="absolute bottom-5 left-8 right-8 flex justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
                     <span>Arraste os campos para definir o posicionamento</span>
-                    <span>PDF: origem inferior esquerda</span>
+                    <span>Tamanho de fonte customizável abaixo</span>
                   </div>
+                </div>
+              </div>
+              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4 lg:col-span-2">
+                <p className="text-xs font-black uppercase tracking-wider text-foreground">
+                  Ajuste fino de tipografia por variável
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {previewFields.map(field => {
+                    const mapping = fieldMappings[field.key] ?? { x: 100, y: 250, size: 12 };
+                    return (
+                      <div key={field.key} className="rounded-lg border border-border bg-background p-3 space-y-2">
+                        <span className="block text-[11px] font-bold text-foreground truncate" title={field.label}>
+                          {field.label}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <label className="text-[10px] text-muted-foreground">Fonte (px):</label>
+                          <input
+                            type="number"
+                            min={8}
+                    max={48}
+                            value={mapping.size || 12}
+                            onChange={e => {
+                              const size = Number(e.target.value);
+                              setFieldMappings(curr => ({
+                                ...curr,
+                                [field.key]: { ...mapping, size: isNaN(size) ? 12 : size },
+                              }));
+                            }}
+                            className="h-7 w-20 rounded border border-border bg-background px-2 text-xs font-mono text-foreground"
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
