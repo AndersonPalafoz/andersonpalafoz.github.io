@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
-import { generateCertificatePdf } from "@/lib/certificate-pdf-generator";
+import { generateCertificatePdf, type CertificatePdfElement } from "@/lib/certificate-pdf-generator";
 import { Download, RefreshCw, ShieldCheck } from "lucide-react";
 
 export function CertificateFabricPrototype() {
@@ -34,9 +34,10 @@ export function CertificateFabricPrototype() {
   const [logoLayer, setLogoLayer] = useState<number>(10); // z-index
   const [titlePosY, setTitlePosY] = useState<number>(90);
   const [bodyPosY, setBodyPosY] = useState<number>(160);
-  const [extraElements, setExtraElements] = useState<Array<{ id: string; type: 'text' | 'badge' | 'line'; content: string; x: number; y: number; size: number; color: string }>>([
+  const [extraElements, setExtraElements] = useState<CertificatePdfElement[]>([
     { id: '1', type: 'badge', content: 'DOCUMENTO OFICIAL VERIFICADO', x: 50, y: 78, size: 10, color: '#0F766E' }
   ]);
+  const artboardRef = useRef<HTMLDivElement>(null);
   const [newElemText, setNewElemText] = useState("Novo Elemento de Texto ou Ícone");
   
   // Histórico Undo/Redo e Grade Magnética
@@ -101,19 +102,85 @@ export function CertificateFabricPrototype() {
 
   const handleAddElement = (type: 'text' | 'badge' | 'line') => {
     setExtraElements(prev => [...prev, {
-      id: Date.now().toString(),
+      id: `${type}-${Date.now()}`,
       type,
-      content: newElemText || 'Elemento',
+      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
       x: 50,
       y: 50,
-      size: 12,
-      color: '#333333'
+      size: type === 'badge' ? 10 : 12,
+      color: type === 'badge' ? '#0F766E' : '#333333',
+      align: 'center'
     }]);
     toast.success("Elemento adicionado à prancheta!");
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      toast.error("Selecione um arquivo de imagem válido.");
+      return;
+    }
+    const src = URL.createObjectURL(file);
+    setExtraElements(prev => [...prev, {
+      id: `image-${Date.now()}`,
+      type: 'image',
+      content: file.name,
+      src,
+      x: 50,
+      y: 50,
+      size: 12,
+      color: '#333333',
+      width: 140,
+      height: 90
+    }]);
+    e.target.value = '';
+    toast.success("Imagem adicionada à prancheta. Arraste-a para posicionar.");
+  };
+
+  const handleUpdateElement = (id: string, patch: Partial<CertificatePdfElement>) => {
+    setExtraElements(prev => prev.map(element => element.id === id ? { ...element, ...patch } : element));
+  };
+
+  const handleElementDragEnd = (id: string, e: React.DragEvent<HTMLElement>) => {
+    const rect = artboardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = Math.max(4, Math.min(96, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(4, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100));
+    handleUpdateElement(id, { x: Math.round(x), y: Math.round(y) });
+  };
+
+  const handleNewElementDragStart = (e: React.DragEvent<HTMLButtonElement>, type: 'text' | 'badge' | 'line') => {
+    e.dataTransfer.effectAllowed = 'copy';
+    e.dataTransfer.setData('application/x-certificate-element', type);
+  };
+
+  const handleNewElementDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('application/x-certificate-element') as 'text' | 'badge' | 'line';
+    if (!['text', 'badge', 'line'].includes(type)) return;
+    const rect = artboardRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = Math.max(4, Math.min(96, ((e.clientX - rect.left) / rect.width) * 100));
+    const y = Math.max(4, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100));
+    setExtraElements(prev => [...prev, {
+      id: `${type}-${Date.now()}`,
+      type,
+      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
+      x: Math.round(x),
+      y: Math.round(y),
+      size: type === 'badge' ? 10 : 12,
+      color: type === 'badge' ? '#0F766E' : '#333333',
+      align: 'center'
+    }]);
+    toast.success('Elemento posicionado na prancheta.');
+  };
+
   const handleRemoveElement = (id: string) => {
-    setExtraElements(prev => prev.filter(el => el.id !== id));
+    setExtraElements(prev => {
+      const element = prev.find(item => item.id === id);
+      if (element?.src?.startsWith('blob:')) URL.revokeObjectURL(element.src);
+      return prev.filter(el => el.id !== id);
+    });
     toast.success("Elemento removido.");
   };
 
@@ -155,6 +222,7 @@ export function CertificateFabricPrototype() {
         templateName: `fabric-pro-${templateId}`,
         logoUrl,
         fontSize,
+        additionalElements: extraElements,
       });
       toast.success("Certificado exportado com sucesso via Fabric Engine!");
     } catch (err) {
@@ -308,16 +376,78 @@ export function CertificateFabricPrototype() {
                 </div>
 
                 <div className="pt-2 border-t space-y-2">
-                  <Label className="text-xs font-semibold">Adicionar Elementos Livres (Textos/Badges)</Label>
-                  <div className="flex gap-2">
-                    <Input value={newElemText} onChange={(e) => setNewElemText(e.target.value)} className="h-8 text-xs" />
-                    <Button onClick={() => handleAddElement('badge')} size="sm" className="bg-red-700 text-xs h-8">Adicionar</Button>
+                  <Label className="text-xs font-semibold">Adicionar elementos à prancheta</Label>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_auto]">
+                    <Input value={newElemText} onChange={(e) => setNewElemText(e.target.value)} className="h-8 text-xs" placeholder="Texto ou etiqueta..." />
+                    <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'text')} onClick={() => handleAddElement('text')} size="sm" variant="outline" className="h-8 text-xs">Texto</Button>
+                    <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'badge')} onClick={() => handleAddElement('badge')} size="sm" className="bg-red-700 text-xs h-8">Badge</Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'line')} onClick={() => handleAddElement('line')} size="sm" variant="outline" className="h-8 text-xs">Linha</Button>
+                    <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-border bg-background px-3 text-xs font-bold text-foreground hover:bg-muted">
+                      Imagem / logo
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
+                    </label>
                   </div>
                   <div className="space-y-1 pt-1 max-h-28 overflow-y-auto">
                     {extraElements.map(el => (
-                      <div key={el.id} className="flex items-center justify-between text-[11px] bg-white p-1.5 rounded border">
-                        <span className="truncate max-w-[140px]">{el.content}</span>
-                        <button onClick={() => handleRemoveElement(el.id)} className="text-red-600 hover:text-red-800 font-bold px-1">✕</button>
+                      <div key={el.id} className="grid grid-cols-1 gap-1.5 rounded border bg-white p-1.5 text-[11px] sm:grid-cols-[auto_minmax(0,1fr)_64px_36px_72px_auto] sm:items-center">
+                        <select
+                          value={el.type}
+                          onChange={(e) => handleUpdateElement(el.id, { type: e.target.value as CertificatePdfElement['type'] })}
+                          className="h-7 max-w-[76px] rounded border border-border bg-white px-1 text-[10px]"
+                          aria-label={`Tipo do elemento ${el.content}`}
+                        >
+                          <option value="text">Texto</option>
+                          <option value="badge">Badge</option>
+                          <option value="line">Linha</option>
+                          <option value="image">Imagem</option>
+                        </select>
+                        <input
+                          value={el.content}
+                          disabled={el.type === 'image'}
+                          onChange={(e) => handleUpdateElement(el.id, { content: e.target.value })}
+                          className="min-w-0 flex-1 rounded border border-border px-1.5 py-1 text-[11px] disabled:bg-muted"
+                          aria-label={`Conteúdo do elemento ${el.content}`}
+                        />
+                        <input
+                          type="number"
+                          min="7"
+                          max="72"
+                          value={el.size}
+                          onChange={(e) => handleUpdateElement(el.id, { size: Number(e.target.value) || 12 })}
+                          className="h-7 w-full rounded border border-border px-1 text-[10px]"
+                          aria-label={`Tamanho de ${el.content}`}
+                        />
+                        <input
+                          type="color"
+                          value={el.color || '#333333'}
+                          onChange={(e) => handleUpdateElement(el.id, { color: e.target.value })}
+                          className="h-7 w-9 cursor-pointer rounded border border-border bg-white p-0.5"
+                          aria-label={`Cor de ${el.content}`}
+                        />
+                        {el.type !== 'line' && (
+                          <select
+                            value={el.align || 'center'}
+                            onChange={(e) => handleUpdateElement(el.id, { align: e.target.value as CertificatePdfElement['align'] })}
+                            className="h-7 rounded border border-border bg-white px-1 text-[10px]"
+                            aria-label={`Alinhamento de ${el.content}`}
+                          >
+                            <option value="left">Esq.</option>
+                            <option value="center">Centro</option>
+                            <option value="right">Dir.</option>
+                          </select>
+                        )}
+                        <button onClick={() => handleRemoveElement(el.id)} className="shrink-0 px-1 font-bold text-red-600 hover:text-red-800" aria-label={`Remover ${el.content}`}>✕</button>
+                        {el.type === 'image' && (
+                          <input
+                            value={el.src || ''}
+                            onChange={(e) => handleUpdateElement(el.id, { src: e.target.value })}
+                            placeholder="URL da imagem"
+                            className="min-w-0 rounded border border-border px-1.5 py-1 text-[10px] sm:col-span-5"
+                            aria-label={`URL da imagem ${el.content}`}
+                          />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -337,7 +467,7 @@ export function CertificateFabricPrototype() {
                 <span>Prancheta A4 Interativa (Clique nos textos ou use arrastar)</span>
                 <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">Modo Canva Ativo</span>
               </div>
-              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-xl border-2 border-red-300 p-8 relative flex flex-col justify-between text-center overflow-hidden select-none">
+              <div ref={artboardRef} onDragOver={(e) => e.preventDefault()} onDrop={handleNewElementDrop} className="relative aspect-[1.414/1] w-full max-w-[620px] select-none overflow-hidden rounded-xl border-2 border-red-300 bg-white p-8 text-center shadow-xl">
                 {showGrid && (
                   <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:24px_24px] opacity-80 z-10" />
                 )}
@@ -355,7 +485,7 @@ export function CertificateFabricPrototype() {
                       }}
                       draggable
                       onDragEnd={(e) => {
-                        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                        const rect = artboardRef.current?.getBoundingClientRect();
                         if (rect) {
                           const x = Math.max(5, Math.min(85, ((e.clientX - rect.left) / rect.width) * 100));
                           const y = Math.max(5, Math.min(40, ((e.clientY - rect.top) / rect.height) * 100));
@@ -376,17 +506,36 @@ export function CertificateFabricPrototype() {
                   </h4>
                   <div className="flex items-center gap-1">
                     {extraElements.map(el => (
-                      <span key={el.id} className="absolute text-[10px] bg-amber-50 text-amber-900 border border-amber-300 px-2 py-1 rounded font-mono shadow cursor-move hover:bg-amber-100" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30 }} draggable onDragEnd={(e) => {
-                        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
-                        if (rect) {
-                          const x = Math.max(5, Math.min(85, ((e.clientX - rect.left) / rect.width) * 100));
-                          const y = Math.max(5, Math.min(85, ((e.clientY - rect.top) / rect.height) * 100));
-                          setExtraElements(prev => prev.map(item => item.id === el.id ? { ...item, x: Math.round(x), y: Math.round(y) } : item));
-                        }
-                      }}>
-                        📌 {el.content}
-                      </span>
-                    ))}
+                      el.type === 'image' && el.src ? (
+                        <img
+                          key={el.id}
+                          src={el.src}
+                          alt={el.content || 'Imagem inserida'}
+                          className="absolute cursor-move rounded object-contain shadow hover:ring-2 hover:ring-red-500"
+                          style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30, width: `${el.width || 140}px`, height: `${el.height || 90}px`, transform: 'translate(-50%, -50%)' }}
+                          draggable
+                          onDragEnd={(e) => handleElementDragEnd(el.id, e)}
+                        />
+                      ) : el.type === 'line' ? (
+                        <span
+                          key={el.id}
+                          className="absolute h-0.5 cursor-move bg-slate-500 hover:ring-2 hover:ring-red-500"
+                          style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30, width: '140px', transform: 'translate(-50%, -50%)', backgroundColor: el.color }}
+                          draggable
+                          onDragEnd={(e) => handleElementDragEnd(el.id, e)}
+                          aria-label={el.content}
+                        />
+                      ) : (
+                        <span
+                          key={el.id}
+                          className="absolute cursor-move rounded border border-amber-300 bg-amber-50 px-2 py-1 font-mono text-[10px] text-amber-900 shadow hover:bg-amber-100"
+                          style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30, color: el.color, fontSize: `${el.size}px`, transform: 'translate(-50%, -50%)' }}
+                          draggable
+                          onDragEnd={(e) => handleElementDragEnd(el.id, e)}
+                        >
+                          {el.content}
+                        </span>
+                      )))}
                   </div>
                 </div>
 
