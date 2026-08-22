@@ -9,8 +9,7 @@ import {
   downloadCertificateTemplate,
   uploadCertificatePdf,
 } from "@/lib/learning-storage";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
+import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -152,9 +151,7 @@ export async function POST(request: NextRequest) {
         ? downloadCertificateTemplate(selectedTemplate.templateUrl)
         : Promise.resolve(undefined),
       includeSiteBranding
-        ? readFile(
-            path.join(process.cwd(), "public", "logo-principal.png")
-          ).catch(() => undefined)
+        ? loadOfficialPrincipalLogoBytes().catch(() => undefined)
         : Promise.resolve(undefined),
     ]);
 

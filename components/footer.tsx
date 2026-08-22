@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowUpRight } from "lucide-react";
+import { BRAND_ASSETS } from "@/lib/brand-assets";
 
 const navigation = [
   ["Home", "/"],
@@ -26,7 +27,7 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-[1.35fr_0.8fr_0.9fr_1.2fr] lg:gap-14">
           <div className="max-w-sm space-y-5">
             <Link href="/" className="inline-flex rounded-xl bg-white px-3 py-2 transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
-              <Image src="/logo-horizontal.png" alt="Anderson Palafoz" width={160} height={50} className="h-9 w-auto" />
+              <Image src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto object-contain" />
             </Link>
             <p className="text-sm leading-7 text-slate-300">Ensino de inglês, materiais autorais e formação acadêmica para aprender com clareza, prática e propósito.</p>
             <div className="flex items-center gap-2 pt-1">

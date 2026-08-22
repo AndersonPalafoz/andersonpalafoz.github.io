@@ -6,8 +6,10 @@ import { Footer } from "@/components/footer";
 import { ToastProvider } from "@/components/toast-provider";
 import { InactivityMonitor } from "@/components/inactivity-monitor";
 import type { Metadata } from "next";
+import { BRAND_ASSETS } from "@/lib/brand-assets";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://andersonpalafoz.vercel.app"),
   title: "Anderson Palafoz | Ensino de Inglês",
   description:
     "Plataforma educacional completa para ensino de inglês com Anderson Palafoz. Cursos, materiais, blog e muito mais.",
@@ -25,6 +27,14 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: "https://andersonpalafoz.com",
     siteName: "Anderson Palafoz Platform",
+    images: [{ url: BRAND_ASSETS.horizontal, width: 1809, height: 555, alt: "Anderson Palafoz — Professor de Inglês" }],
+  },
+  icons: {
+    icon: [
+      { url: BRAND_ASSETS.faviconLight, type: "image/png", sizes: "1260x1254" },
+      { url: BRAND_ASSETS.faviconDark, type: "image/png", sizes: "1260x1254", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: [{ url: BRAND_ASSETS.faviconLight, type: "image/png" }],
   },
 };
 
@@ -38,7 +48,8 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href={BRAND_ASSETS.faviconLight} type="image/png" />
+        <link rel="alternate icon" href={BRAND_ASSETS.faviconDark} type="image/png" media="(prefers-color-scheme: dark)" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

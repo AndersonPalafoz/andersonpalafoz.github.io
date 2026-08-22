@@ -1790,3 +1790,9 @@
 - [x] Criar a rota backend para processamento em lote do CSV, gerando os PDFs, registrando no banco e compactando em ZIP para download imediato.
 - [x] Expandir o editor visual de certificados para permitir customização de tamanho da fonte (`size`), largura máxima (`maxWidth`), cor e estilo para cada variável acadêmica.
 - [x] Validar a compatibilidade dos novos recursos com a suíte Vitest e o build de produção.
+
+## Integração das Logos Oficiais da Marca — 21/08/2026
+- [x] Auditar e organizar os arquivos de logo oficiais enviados (`Favicon-v1.png`, `Horizontal-v1.png`, `Vertical.webp`, `monocromatica.png`, `principal.png`, etc.).
+- [x] Publicar e referenciar os ativos oficiais utilizando a ferramenta de upload do webdev para garantir persistência e estabilidade no build.
+- [x] Atualizar o cabeçalho (Header), rodapé (Footer), favicon e os certificados para utilizarem estritamente as variações oficiais correspondentes.
+- [x] Validar a integridade visual, responsividade e aprovação da suíte Vitest.
