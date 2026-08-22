@@ -29,6 +29,11 @@ export function CertificateFabricPrototype() {
   const [fontSize, setFontSize] = useState<number>(preset.fontSize);
   const [logoUrl, setLogoUrl] = useState<string>("/manus-storage/Horizontal-v1.png");
   const [logoWidth, setLogoWidth] = useState<number>(140);
+  const [logoPosX, setLogoPosX] = useState<number>(50); // percentual ou px
+  const [logoPosY, setLogoPosY] = useState<number>(10);
+  const [logoLayer, setLogoLayer] = useState<number>(10); // z-index
+  const [titlePosY, setTitlePosY] = useState<number>(90);
+  const [bodyPosY, setBodyPosY] = useState<number>(160);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,12 +190,43 @@ export function CertificateFabricPrototype() {
                 <Input value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
               </div>
 
-              <div className="space-y-2">
-                <Label>Logo / Imagem Institucional</Label>
-                <Input type="file" accept="image/*" onChange={handleLogoUpload} />
-                <div className="flex items-center gap-2 pt-1">
-                  <span className="text-xs text-muted-foreground">Tamanho da Logo:</span>
-                  <input type="range" min="80" max="220" value={logoWidth} onChange={(e) => setLogoWidth(Number(e.target.value))} className="w-full" />
+              <div className="space-y-4 border p-3 rounded-xl bg-muted/30">
+                <Label className="font-bold text-red-900">Gerenciador de Camadas & Posição (Estilo Canva)</Label>
+                
+                <div className="space-y-2">
+                  <Label className="text-xs">Logo / Imagem Institucional</Label>
+                  <Input type="file" accept="image/*" onChange={handleLogoUpload} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Largura da Logo</Label>
+                    <input type="range" min="60" max="240" value={logoWidth} onChange={(e) => setLogoWidth(Number(e.target.value))} className="w-full" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Ordem Camada (Z-Index)</Label>
+                    <Select value={String(logoLayer)} onValueChange={(v) => setLogoLayer(Number(v))}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Fundo (1)</SelectItem>
+                        <SelectItem value="10">Normal (10)</SelectItem>
+                        <SelectItem value="50">Frente (50)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Posição Horizontal (X: {logoPosX}%)</Label>
+                    <input type="range" min="5" max="85" value={logoPosX} onChange={(e) => setLogoPosX(Number(e.target.value))} className="w-full" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Posição Vertical (Y: {logoPosY}%)</Label>
+                    <input type="range" min="5" max="40" value={logoPosY} onChange={(e) => setLogoPosY(Number(e.target.value))} className="w-full" />
+                  </div>
                 </div>
               </div>
 
@@ -203,12 +239,26 @@ export function CertificateFabricPrototype() {
             </div>
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
-              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-8 relative flex flex-col justify-between text-center">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-black text-red-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
+              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-8 relative flex flex-col justify-between text-center overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
                   {logoUrl && (
-                    <img src={logoUrl} alt="Logo" style={{ width: `${logoWidth}px` }} className="object-contain max-h-12" />
+                    <div 
+                      className="absolute pointer-events-auto cursor-grab active:cursor-grabbing transition-all"
+                      style={{ 
+                        left: `${logoPosX}%`, 
+                        top: `${logoPosY}%`, 
+                        zIndex: logoLayer,
+                        width: `${logoWidth}px` 
+                      }}
+                    >
+                      <img src={logoUrl} alt="Logo Customizada" className="w-full object-contain drop-shadow-sm border border-dashed border-red-300 p-1 bg-white/80 rounded" />
+                    </div>
                   )}
+                </div>
+
+                <div className="flex justify-between items-center relative z-20">
+                  <h4 className="font-black text-red-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
+                  <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">Modo Canvas Ativo</span>
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
