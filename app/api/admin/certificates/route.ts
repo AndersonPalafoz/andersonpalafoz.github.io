@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
 import {
   adminAuditLogs,
@@ -16,6 +16,16 @@ import { uploadSignedCertificatePdf } from "@/lib/learning-storage";
 
 const uploadableSignatureTypes = ["manual", "govbr"] as const;
 type UploadableSignatureType = (typeof uploadableSignatureTypes)[number];
+
+function isManualExternalUser(user: { loginMethod?: string | null; email?: string | null } | null | undefined) {
+  const email = user?.email?.trim().toLowerCase() || "";
+  return user?.loginMethod === "manual_external" || email.endsWith("@external.placeholder");
+}
+
+function getDisplayEmail(user: { loginMethod?: string | null; email?: string | null } | null | undefined) {
+  const email = user?.email?.trim() || "";
+  return email && !email.toLowerCase().endsWith("@external.placeholder") ? email : null;
+}
 
 function isUploadableSignatureType(
   value: string
@@ -57,25 +67,29 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      certificates: (items || []).map(certificate => ({
-        id: certificate.id,
-        userId: certificate.userId,
-        studentName:
-          certificate.user?.name || certificate.user?.fullName || "Aluno(a)",
-        studentEmail: certificate.user?.email || null,
-        studentCpf: certificate.studentCpf || certificate.user?.cpf || "",
-        courseId: certificate.courseId,
-        courseTitle: certificate.course?.title || "Curso",
-        courseType: certificate.course?.courseType ?? null,
-        level: certificate.level || "Geral",
-        certificateCode: certificate.certificateCode || null,
-        issuedAt: certificate.issuedAt || new Date().toISOString(),
-        signatureType: certificate.signatureType || "none",
-        signedAt: certificate.signedAt || null,
-        hasSignedPdf: Boolean(certificate.signedPdfUrl),
-        certificateTemplateId: certificate.certificateTemplateId ?? null,
-        includeSiteBranding: certificate.includeSiteBranding ?? true,
-      })),
+      certificates: (items || []).map(certificate => {
+        const isManualEntry = isManualExternalUser(certificate.user);
+        return {
+          id: certificate.id,
+          userId: certificate.userId,
+          studentName:
+            certificate.user?.name?.trim() || certificate.user?.fullName?.trim() || "Pessoa sem cadastro",
+          studentEmail: getDisplayEmail(certificate.user),
+          studentCpf: certificate.studentCpf || certificate.user?.cpf || "",
+          isManualEntry,
+          courseId: certificate.courseId,
+          courseTitle: certificate.course?.title || "Curso",
+          courseType: certificate.course?.courseType ?? null,
+          level: certificate.level || "Geral",
+          certificateCode: certificate.certificateCode || null,
+          issuedAt: certificate.issuedAt || new Date().toISOString(),
+          signatureType: certificate.signatureType || "none",
+          signedAt: certificate.signedAt || null,
+          hasSignedPdf: Boolean(certificate.signedPdfUrl),
+          certificateTemplateId: certificate.certificateTemplateId ?? null,
+          includeSiteBranding: certificate.includeSiteBranding ?? true,
+        };
+      }),
     });
   } catch (error) {
     console.error("Erro fatal ao listar certificados para assinatura:", error);
@@ -85,6 +99,78 @@ export async function GET() {
           error instanceof Error
             ? error.message
             : "Não foi possível carregar os certificados.",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await requireTeacherOrAdmin();
+    if (!session) {
+      return NextResponse.json(
+        { error: "Acesso restrito a professores e administradores." },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const idsParam = searchParams.get("ids");
+    const singleId = searchParams.get("id");
+    const rawIds = idsParam ? idsParam.split(",") : singleId ? [singleId] : [];
+    const idsToDelete = Array.from(
+      new Set(
+        rawIds
+          .map(value => Number(value.trim()))
+          .filter(value => Number.isInteger(value) && value > 0)
+      )
+    );
+
+    if (idsToDelete.length === 0) {
+      return NextResponse.json(
+        { error: "IDs de certificados inválidos para exclusão." },
+        { status: 400 }
+      );
+    }
+
+    const records = await db
+      .select({ id: certificates.id, courseId: certificates.courseId })
+      .from(certificates)
+      .where(inArray(certificates.id, idsToDelete));
+
+    if (records.length === 0) {
+      return NextResponse.json(
+        { error: "Nenhum dos certificados selecionados foi encontrado." },
+        { status: 404 }
+      );
+    }
+
+    for (const record of records) {
+      if (!(await canManageCourse(session, record.courseId))) {
+        return NextResponse.json(
+          { error: "Você não tem permissão para excluir um ou mais certificados selecionados." },
+          { status: 403 }
+        );
+      }
+    }
+
+    const existingIds = records.map(record => record.id);
+    await db.delete(certificates).where(inArray(certificates.id, existingIds));
+
+    return NextResponse.json({
+      success: true,
+      deletedIds: existingIds,
+      message: `${existingIds.length} certificado(s) excluído(s) definitivamente.`,
+    });
+  } catch (error) {
+    console.error("Erro ao excluir certificado(s) no painel administrativo:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível excluir os certificados selecionados.",
       },
       { status: 500 }
     );
