@@ -1893,3 +1893,5 @@
 - [x] Aplicar identidade cromática distinta para cada uma das 4 possibilidades de editores em /admin/certificados (Esmeralda para Gerador Oficial, Vermelho para Fabric.js, Azul para Konva.js e Roxo/Teal para GrapesJS)
 
 - [x] Diagnosticar e corrigir o erro de carregamento no painel administrativo (/admin e subpáginas) e assegurar estabilidade na renderização
+
+- [x] Evoluir os protótipos Konva.js e GrapesJS para incluir campos acadêmicos completos, controle de branding, pré-visualização em PDF e salvamento local equiparados ao Gerador Oficial
