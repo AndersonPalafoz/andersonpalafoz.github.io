@@ -1906,5 +1906,5 @@
 
 - [x] Assegurar que o campo de assinatura seja 100% preenchível e customizável em todos os modelos de certificado (Padrão, IsF e PROFICI) e em todas as APIs (Fabric, Konva, GrapesJS e Gerador Oficial)
 
-- [ ] Corrigir o erro `db.insert(...).values(...).$returningId is not a function` na rota de emissão de certificados
-- [ ] Corrigir a exportação de PDF em todos os modelos e editores do laboratório em /admin/certificados
+- [x] Corrigir o erro `db.insert(...).values(...).$returningId is not a function` na rota de emissão de certificados
+- [x] Corrigir a exportação de PDF em todos os modelos e editores do laboratório em /admin/certificados

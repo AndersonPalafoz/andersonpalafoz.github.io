@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
         .where(eq(certificateTemplates.category, category));
     }
 
-    const [template] = await db
+    const insertedTemplates = await db
       .insert(certificateTemplates)
       .values({
         name,
@@ -137,6 +137,7 @@ export async function POST(request: NextRequest) {
         createdBy: creator.id,
       })
       .returning();
+    const template = insertedTemplates[0];
 
     return NextResponse.json(
       {
@@ -147,6 +148,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.error("Error creating certificate template:", error);
     return NextResponse.json(
       {
         error:
