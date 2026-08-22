@@ -31,3 +31,19 @@ A próxima inspeção deve extrair do payload RSC o digest/mensagem de erro ou c
 A reprodução autenticada exibiu a mensagem de `app/global-error.tsx`, enquanto o chunk da rota administrativa era carregado. A busca no repositório mostrou que o texto da captura vinha exclusivamente do error boundary global. A inspeção de `components/navbar.tsx` revelou que o componente renderizava `<Image src={session.user.image} ... />` para sessões autenticadas, mas não importava `Image` de `next/image`. Esse `ReferenceError` no layout global interrompia a renderização da árvore inteira e fazia `/admin/certificados` cair na tela genérica.
 
 A correção foi aplicada adicionando `import Image from "next/image";` ao Navbar. O teste regressivo passou, a suíte completa passou com 417 testes, o build de produção passou e o servidor local reiniciou sem erro de compilação. O deployment corrigido ainda precisa ser publicado pelo fluxo de checkpoint/Publish antes de ser confirmado no domínio público.
+
+## Escopo ampliado da regressão
+
+A mesma sessão autenticada também reproduziu a tela `app/global-error.tsx` em `/professor/turmas-externas`. O documento carregou somente o chunk de `global-error` entre os scripts relevantes, confirmando que o crash não está restrito ao conteúdo de certificados: ele ocorre no layout global compartilhado, especialmente quando o Navbar tenta renderizar dados da sessão. Isso reforça que a importação ausente de `next/image` é a correção transversal para as duas rotas protegidas.
+
+## Deployment após a correção do Navbar
+
+Após o checkpoint `9631f46e`, o projeto Vercel `prj_kF1vCYnAkUm6VciN0dHHH5eSRXJ1` passou a apontar para um novo deployment de produção `dpl_AqmnPLtiuHszomrY5zFqcevQmuQ7`, em estado `READY`, com URL de deployment `andersonpalafoz-5a6x596ri-palafozanderson-2076s-projects.vercel.app`. O alias de produção continua sendo `andersonpalafoz.vercel.app`.
+
+## Confirmação no deployment corrigido
+
+Após o checkpoint `9631f46e`, a navegação autenticada para `https://andersonpalafoz.vercel.app/admin/certificados` passou a renderizar o título, o laboratório com quatro abas, o gerador oficial, os campos de emissão e as ações de gestão, sem cair no error boundary. A medição do DOM em viewport de 1280 px retornou `documentScrollWidth = 1265`, portanto não há overflow horizontal na página publicada nesse viewport. A rota relacionada `/professor/turmas-externas` havia reproduzido o mesmo crash global antes do deployment e deve ser revalidada no mesmo commit.
+
+## Homologação adicional de turmas externas
+
+No mesmo deployment corrigido, `/professor/turmas-externas` deixou de cair no error boundary e renderizou seus filtros e formulários. A chamada autenticada a `/api/professor/external-classes` retornou HTTP 200 com `{ success: true, classes: [] }`. O banco ativo contém as tabelas auxiliares e as colunas de `external_classes` exigidas pelo código, incluindo `class_days`, `class_time`, `workload_hours`, `start_date`, `end_date`, `max_absence_percent`, `meeting_link`, `classroom_location`, `level`, `instructor_name`, `monitors` e `deleted_at`.
