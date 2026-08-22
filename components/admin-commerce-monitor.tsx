@@ -67,27 +67,30 @@ function withinPeriod(value: string | Date | null | undefined, period: string) {
   return date >= cutoff;
 }
 
-export function AdminCommerceMonitor({ data }: { data: AdminCommerceData }) {
+export function AdminCommerceMonitor({ data }: { data?: AdminCommerceData | null }) {
   const [period, setPeriod] = useState("all");
   const [courseFilter, setCourseFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  const recentPurchases = data?.recentPurchases || [];
+  const recentEnrollments = data?.recentEnrollments || [];
+
   const courseOptions = useMemo(() => {
     const courses = new Map<number, string>();
-    [...data.recentPurchases, ...data.recentEnrollments].forEach((item) => courses.set(item.courseId, item.courseTitle));
+    [...recentPurchases, ...recentEnrollments].forEach((item) => courses.set(item.courseId, item.courseTitle));
     return Array.from(courses.entries()).sort((a, b) => a[1].localeCompare(b[1], "pt-BR"));
-  }, [data.recentPurchases, data.recentEnrollments]);
+  }, [recentPurchases, recentEnrollments]);
 
-  const filteredPurchases = useMemo(() => data.recentPurchases.filter((purchase) => {
+  const filteredPurchases = useMemo(() => recentPurchases.filter((purchase) => {
     const matchesCourse = courseFilter === "all" || String(purchase.courseId) === courseFilter;
     const matchesStatus = statusFilter === "all" || purchase.status === statusFilter;
     return matchesCourse && matchesStatus && withinPeriod(purchase.purchasedAt, period);
-  }), [courseFilter, data.recentPurchases, period, statusFilter]);
+  }), [courseFilter, recentPurchases, period, statusFilter]);
 
-  const filteredEnrollments = useMemo(() => data.recentEnrollments.filter((enrollment) => {
+  const filteredEnrollments = useMemo(() => recentEnrollments.filter((enrollment) => {
     const matchesCourse = courseFilter === "all" || String(enrollment.courseId) === courseFilter;
     return matchesCourse && withinPeriod(enrollment.enrolledAt, period);
-  }), [courseFilter, data.recentEnrollments, period]);
+  }), [courseFilter, recentEnrollments, period]);
 
   const filteredRevenue = filteredPurchases.reduce((total, purchase) => total + purchase.amount, 0);
   const filteredBuyers = new Set(filteredPurchases.map((purchase) => purchase.studentId)).size;

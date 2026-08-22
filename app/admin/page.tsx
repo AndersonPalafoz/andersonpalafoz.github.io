@@ -254,7 +254,13 @@ export default function AdminDashboardPage() {
           <p className="text-xs sm:text-sm text-muted-foreground">
             Acompanhe o status do Stripe, faturamento consolidado, cupons ativos e transações recentes.
           </p>
-          <AdminCommerceMonitor commerce={stats?.commerce || { totalRevenue: 0, activeSubscriptions: 0, recentPurchasingUsers: 0, salesTimeline: [], recentOrders: [] }} />
+          <AdminCommerceMonitor data={stats?.commerce || {
+            commerceAvailable: false,
+            salesSummary: { totalPurchases: 0, totalRevenue: 0, currency: "BRL", revenueBasis: "unavailable", uniqueBuyers: 0, totalEnrollments: 0 },
+            topSellingCourses: [],
+            recentPurchases: [],
+            recentEnrollments: []
+          }} />
         </div>
       </div>
     </div>
