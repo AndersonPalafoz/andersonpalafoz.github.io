@@ -1891,3 +1891,5 @@
 - [x] Garantir que o Gerador Oficial Padrão seja 100% funcional com emissão real, validação e PDF persistido, aprimorando em paralelo a interatividade e exportação dos protótipos Fabric, Konva e GrapesJS
 
 - [x] Aplicar identidade cromática distinta para cada uma das 4 possibilidades de editores em /admin/certificados (Esmeralda para Gerador Oficial, Vermelho para Fabric.js, Azul para Konva.js e Roxo/Teal para GrapesJS)
+
+- [x] Diagnosticar e corrigir o erro de carregamento no painel administrativo (/admin e subpáginas) e assegurar estabilidade na renderização

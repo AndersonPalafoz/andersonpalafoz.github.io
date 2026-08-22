@@ -14,9 +14,12 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  const role = session?.user?.role;
+  const email = session?.user?.email?.toLowerCase();
+  const isAuthorized = email === "palafozanderson@gmail.com" || role === "admin" || role === "super_admin" || role === "professor";
 
-  if (!session?.user || session.user.role !== "admin") {
-    redirect("/");
+  if (!session?.user || !isAuthorized) {
+    redirect("/login?callbackUrl=/admin");
   }
 
   return (
