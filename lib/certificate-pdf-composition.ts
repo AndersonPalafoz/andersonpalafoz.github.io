@@ -106,6 +106,17 @@ function drawVariantShell(
     page.drawRectangle({ x: 52, y: 540, width: 150, height: 4, color: accent });
   }
 
+  const watermarkSize = variant.watermarkLabel.length > 2 ? 84 : 128;
+  const watermarkWidth = bold.widthOfTextAtSize(variant.watermarkLabel, watermarkSize);
+  page.drawText(variant.watermarkLabel, {
+    x: (842 - watermarkWidth) / 2,
+    y: 176,
+    size: watermarkSize,
+    font: bold,
+    color: accent,
+    opacity: 0.045,
+  });
+
   page.drawText(variant.headerLabel, {
     x: 52,
     y: variant.motif === "editorial" ? 520 : 520,
