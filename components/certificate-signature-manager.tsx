@@ -83,11 +83,16 @@ export function CertificateSignatureManager() {
   >([]);
   const [issuingId, setIssuingId] = useState<number | null>(null);
 
-  // Modal para emitir a pessoa sem cadastro
+  // Modal para emitir a pessoa sem cadastro (com opção de curso da lista ou customizado)
   const [showUnregisteredModal, setShowUnregisteredModal] = useState(false);
   const [unregisteredName, setUnregisteredName] = useState("");
   const [unregisteredEmail, setUnregisteredEmail] = useState("");
+  const [courseInputMode, setCourseInputMode] = useState<"select" | "custom">("select");
   const [unregisteredCourseId, setUnregisteredCourseId] = useState("");
+  const [customCourseTitle, setCustomCourseTitle] = useState("");
+  const [customCourseLevel, setCustomCourseLevel] = useState("Intermediário [B1-B2]");
+  const [customWorkloadHours, setCustomWorkloadHours] = useState("40");
+  const [customInstitution, setCustomInstitution] = useState("");
   const [unregisteredTemplateId, setUnregisteredTemplateId] = useState("");
   const [unregisteredBranding, setUnregisteredBranding] = useState(true);
   const [unregisteredIssuing, setUnregisteredIssuing] = useState(false);
@@ -152,28 +157,51 @@ export function CertificateSignatureManager() {
 
   async function handleIssueUnregistered(e: React.FormEvent) {
     e.preventDefault();
-    if (!unregisteredName || !unregisteredCourseId) {
+    if (!unregisteredName) {
       setMessage({
         type: "error",
-        text: "Informe o nome e selecione o curso para emitir o certificado.",
+        text: "Informe o nome do destinatário para emitir o certificado.",
       });
       return;
     }
+    if (courseInputMode === "select" && !unregisteredCourseId) {
+      setMessage({
+        type: "error",
+        text: "Selecione um curso da lista ou escolha a opção de digitar manualmente.",
+      });
+      return;
+    }
+    if (courseInputMode === "custom" && !customCourseTitle.trim()) {
+      setMessage({
+        type: "error",
+        text: "Informe o título do curso personalizado.",
+      });
+      return;
+    }
+
     setUnregisteredIssuing(true);
     setMessage(null);
     try {
+      const payloadData: any = {
+        studentName: unregisteredName,
+        studentEmail: unregisteredEmail,
+        templateId: unregisteredTemplateId ? Number(unregisteredTemplateId) : null,
+        includeSiteBranding: unregisteredBranding,
+      };
+
+      if (courseInputMode === "select") {
+        payloadData.courseId = Number(unregisteredCourseId);
+      } else {
+        payloadData.customCourseTitle = customCourseTitle.trim();
+        payloadData.customCourseLevel = customCourseLevel.trim();
+        payloadData.customWorkloadHours = Number(customWorkloadHours) || 40;
+        payloadData.customInstitution = customInstitution.trim();
+      }
+
       const response = await fetch("/api/admin/certificates/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentName: unregisteredName,
-          studentEmail: unregisteredEmail,
-          courseId: Number(unregisteredCourseId),
-          templateId: unregisteredTemplateId
-            ? Number(unregisteredTemplateId)
-            : null,
-          includeSiteBranding: unregisteredBranding,
-        }),
+        body: JSON.stringify(payloadData),
       });
       const payload = await response.json();
       if (!response.ok)
@@ -1065,28 +1093,101 @@ export function CertificateSignatureManager() {
                   className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-bold text-foreground">
-                  Curso ou Turma <span className="text-red-600">*</span>
-                </label>
-                <select
-                  required
-                  value={unregisteredCourseId}
-                  onChange={e => setUnregisteredCourseId(e.target.value)}
-                  aria-label="Selecionar curso ou programa para emissão avulsa"
-                  className="mt-1 h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
-                >
-                  <option value="">Selecione o curso ou programa</option>
-                  {Array.from(
-                    new Map(
-                      certificates.map(c => [c.courseId, c.courseTitle])
-                    ).entries()
-                  ).map(([id, title]) => (
-                    <option key={id} value={id}>
-                      {title}
-                    </option>
-                  ))}
-                </select>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-foreground">
+                    Curso ou Turma <span className="text-red-600">*</span>
+                  </label>
+                  <div className="flex items-center gap-2 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setCourseInputMode("select")}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition ${courseInputMode === "select" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Escolher da Lista
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCourseInputMode("custom")}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition ${courseInputMode === "custom" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Digitar Manualmente
+                    </button>
+                  </div>
+                </div>
+
+                {courseInputMode === "select" ? (
+                  <select
+                    value={unregisteredCourseId}
+                    onChange={e => setUnregisteredCourseId(e.target.value)}
+                    aria-label="Selecionar curso ou programa para emissão avulsa"
+                    className="h-11 w-full rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
+                  >
+                    <option value="">Selecione o curso ou programa</option>
+                    {Array.from(
+                      new Map(
+                        certificates.map(c => [c.courseId, c.courseTitle])
+                      ).entries()
+                    ).map(([id, title]) => (
+                      <option key={id} value={id}>
+                        {title}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="space-y-3 rounded-xl border border-border p-3.5 bg-muted/20">
+                    <div>
+                      <label className="block text-[11px] font-bold text-foreground mb-1">
+                        Título do Curso ou Programa *
+                      </label>
+                      <input
+                        type="text"
+                        value={customCourseTitle}
+                        onChange={e => setCustomCourseTitle(e.target.value)}
+                        placeholder="Ex: English Mastery & Conversation"
+                        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[11px] font-bold text-foreground mb-1">
+                          Nível / Proficiência
+                        </label>
+                        <input
+                          type="text"
+                          value={customCourseLevel}
+                          onChange={e => setCustomCourseLevel(e.target.value)}
+                          placeholder="Ex: B1 - Intermediário"
+                          className="h-10 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-foreground mb-1">
+                          Carga Horária (Horas)
+                        </label>
+                        <input
+                          type="number"
+                          value={customWorkloadHours}
+                          onChange={e => setCustomWorkloadHours(e.target.value)}
+                          placeholder="40"
+                          className="h-10 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-foreground mb-1">
+                        Instituição Parceira ou Organizadora (Opcional)
+                      </label>
+                      <input
+                        type="text"
+                        value={customInstitution}
+                        onChange={e => setCustomInstitution(e.target.value)}
+                        placeholder="Ex: UFBA / IsF / PROFICI"
+                        className="h-10 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-foreground">
