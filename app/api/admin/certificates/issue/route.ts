@@ -5,6 +5,7 @@ import { db, getCertificateTemplateById } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
+import { parseCertificateComposition } from "@/lib/certificate-composition";
 import {
   downloadCertificateTemplate,
   uploadCertificatePdf,
@@ -199,31 +200,35 @@ export async function POST(request: NextRequest) {
         : Promise.resolve(undefined),
     ]);
 
-    let fieldMappings: Parameters<
-      typeof buildCertificatePdf
-    >[0]["fieldMappings"];
+    let composition = parseCertificateComposition(selectedTemplate?.fieldMappings || null);
     if (selectedTemplate?.fieldMappings) {
       try {
-        fieldMappings = JSON.parse(selectedTemplate.fieldMappings);
+        composition = parseCertificateComposition(selectedTemplate.fieldMappings);
       } catch {
         return NextResponse.json(
-          { error: "O mapeamento de campos do modelo selecionado é inválido." },
+          { error: "A composição do modelo selecionado é inválida." },
           { status: 422 }
         );
       }
     }
 
     const verificationCode = `AP-${crypto.randomBytes(3).toString("hex").toUpperCase()}-${new Date().getFullYear()}`;
+    const issuedAt = new Date();
     const pdfBytes = await buildCertificatePdf({
       studentName: student.name || directStudentName,
-      studentCip: student.id ? String(student.id) : "000",
+      studentCpf: (student as { cpf?: string | null }).cpf || undefined,
       courseTitle: course?.title || customCourseTitle,
-      workload: `${course?.workloadHours || customWorkloadHours} horas`,
+      level: course?.level || "Não informado",
+      workloadHours: course?.workloadHours || customWorkloadHours,
       period: "2026",
-      verificationCode,
+      coordinatorName: process.env.OWNER_NAME || "Anderson Bacelar Palafoz",
+      institutionName: selectedTemplate?.institution || undefined,
+      certificateCode: verificationCode,
+      issuedAt,
       templateBackgroundBytes,
       logoBytes,
-      fieldMappings,
+      includeSiteBranding,
+      composition,
     });
 
     const fileKey = `certificates/${userId}-${courseId}-${Date.now()}.pdf`;

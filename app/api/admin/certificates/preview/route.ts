@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { courses, users, certificateTemplates } from "@/drizzle/schema";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
+import { parseCertificateComposition } from "@/lib/certificate-composition";
 import { downloadCertificateTemplate } from "@/lib/learning-storage";
 import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
 
@@ -19,7 +20,19 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { userId, courseId, templateId, includeSiteBranding, studentName, studentCourseTitle, studentLevel, studentCpf, customStudentNameSize, customStudentNameColor } = body;
+    const {
+      userId,
+      courseId,
+      templateId,
+      includeSiteBranding,
+      studentName,
+      studentCourseTitle,
+      studentLevel,
+      studentCpf,
+      customStudentNameSize,
+      customStudentNameColor,
+      composition: requestedComposition,
+    } = body;
 
     let studentNameVal = studentName;
     let courseTitleVal = studentCourseTitle;
@@ -58,31 +71,18 @@ export async function POST(req: Request) {
       includeBranding ? loadOfficialPrincipalLogoBytes().catch(() => undefined) : Promise.resolve(undefined),
     ]);
 
-    let fieldMappings: any[] = [];
-    if (selectedTemplate?.fieldMappings) {
-      try {
-        fieldMappings = JSON.parse(selectedTemplate.fieldMappings);
-      } catch {
-        fieldMappings = [];
-      }
-    }
-
+    const composition = parseCertificateComposition(
+      requestedComposition || selectedTemplate?.fieldMappings || null
+    );
     if (customStudentNameSize || customStudentNameColor) {
-      const studentField = fieldMappings.find((f: any) => f.key === "studentName");
-      if (studentField) {
-        studentField.size = customStudentNameSize ? Number(customStudentNameSize) : studentField.size;
-        studentField.color = customStudentNameColor || studentField.color;
-      } else {
-        fieldMappings.push({
-          key: "studentName",
-          x: 100,
-          y: 280,
-          size: customStudentNameSize ? Number(customStudentNameSize) : 32,
-          color: customStudentNameColor || "#1e293b",
-          weight: "bold",
-          align: "center",
-        });
-      }
+      composition.fieldMappings.studentName = {
+        ...composition.fieldMappings.studentName,
+        size: customStudentNameSize
+          ? Number(customStudentNameSize)
+          : composition.fieldMappings.studentName?.size,
+        color:
+          customStudentNameColor || composition.fieldMappings.studentName?.color,
+      };
     }
 
     const pdfBytes = await buildCertificatePdf({
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
       institutionName: selectedTemplate?.institution || undefined,
       templateBackgroundBytes,
       logoBytes,
-      fieldMappings,
+      composition,
     });
 
     const base64Pdf = Buffer.from(pdfBytes).toString("base64");

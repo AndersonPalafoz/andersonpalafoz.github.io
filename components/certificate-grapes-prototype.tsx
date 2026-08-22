@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,35 +10,65 @@ import { toast } from "sonner";
 import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
 import { generateCertificatePdf } from "@/lib/certificate-pdf-generator";
 import { Code, Download, RefreshCw } from "lucide-react";
+import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
+import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
 
 export function CertificateGrapesPrototype() {
+  const {
+    composition,
+    sampleData,
+    updateComposition,
+    setSampleData,
+    setSelectedTemplateId: setWorkspaceTemplate,
+  } = useCertificateWorkspace();
   const [templateId, setTemplateId] = useState<string>("profici");
   const preset = CERTIFICATE_PRESETS[templateId] || CERTIFICATE_PRESETS.standard;
 
-  const [studentName, setStudentName] = useState("Maria José Ferreira Lopes");
-  const [studentCpf, setStudentCpf] = useState("065.192.044-20");
-  const [courseTitle, setCourseTitle] = useState("Curso de Inglês para Fins de Internacionalização");
-  const [workload, setWorkload] = useState("16 horas");
-  const [period, setPeriod] = useState("14 de julho a 14 de agosto de 2026");
+  const [studentName, setStudentName] = useState(sampleData.studentName);
+  const [studentCpf, setStudentCpf] = useState(sampleData.studentCpf);
+  const [courseTitle, setCourseTitle] = useState(sampleData.courseTitle);
+  const [workload, setWorkload] = useState(sampleData.workloadHours);
+  const [period, setPeriod] = useState(sampleData.period);
   const [customTitle, setCustomTitle] = useState(preset.title);
   const [customSigner, setCustomSigner] = useState(preset.signerName);
   const [customRole, setCustomRole] = useState(preset.signerRole);
   const [customDate, setCustomDate] = useState(preset.locationAndDate);
-  const [logoUrl, setLogoUrl] = useState<string>("/manus-storage/Horizontal-v1.png");
+  const [logoUrl, setLogoUrl] = useState<string>(composition.elements.find(element => element.type === "image")?.content || "/logo-horizontal.png");
   const [logoWidth, setLogoWidth] = useState<number>(140);
   const [isExporting, setIsExporting] = useState(false);
 
+  useEffect(() => {
+    setStudentName(sampleData.studentName);
+    setStudentCpf(sampleData.studentCpf);
+    setCourseTitle(sampleData.courseTitle);
+    setWorkload(sampleData.workloadHours);
+    setPeriod(sampleData.period);
+  }, [sampleData]);
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result || "");
+      if (!url.startsWith("data:image/")) return;
       setLogoUrl(url);
-      toast.success("Logo carregada com sucesso!");
-    }
+      updateComposition(current => ({
+        ...current,
+        elements: [
+          ...current.elements.filter(element => element.id !== "grapes-logo"),
+          { id: "grapes-logo", type: "image", content: url, x: 70, y: 480, width: logoWidth, height: 64, zIndex: 20 },
+        ],
+      }));
+      toast.success("Imagem sincronizada com a composição compartilhada.");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
   };
 
   const handlePresetChange = (v: string) => {
     setTemplateId(v);
+    setWorkspaceTemplate(v);
     const p = CERTIFICATE_PRESETS[v];
     if (p) {
       setCustomTitle(p.title);
@@ -64,6 +94,12 @@ export function CertificateGrapesPrototype() {
         organization: preset.organization,
         templateName: `grapes-pro-${templateId}`,
         logoUrl,
+        additionalElements: composition.elements.map(element => ({
+          ...element,
+          size: element.size || 12,
+          color: element.color || "#24313a",
+          src: element.type === "image" ? element.content : undefined,
+        })),
       });
       toast.success("Certificado exportado via Grapes Engine!");
     } catch (err) {
@@ -117,27 +153,27 @@ export function CertificateGrapesPrototype() {
 
               <div className="space-y-2">
                 <Label>Nome do Aluno</Label>
-                <Input value={studentName} onChange={(e) => setStudentName(e.target.value)} />
+                <Input value={studentName} onChange={(e) => { setStudentName(e.target.value); setSampleData({ studentName: e.target.value }); }} />
               </div>
 
               <div className="space-y-2">
                 <Label>CPF do Aluno</Label>
-                <Input value={studentCpf} onChange={(e) => setStudentCpf(e.target.value)} />
+                <Input value={studentCpf} onChange={(e) => { setStudentCpf(e.target.value); setSampleData({ studentCpf: e.target.value }); }} />
               </div>
 
               <div className="space-y-2">
                 <Label>Curso / Componente</Label>
-                <Input value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} />
+                <Input value={courseTitle} onChange={(e) => { setCourseTitle(e.target.value); setSampleData({ courseTitle: e.target.value }); }} />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
                   <Label>Carga Horária</Label>
-                  <Input value={workload} onChange={(e) => setWorkload(e.target.value)} />
+                  <Input value={workload} onChange={(e) => { setWorkload(e.target.value); setSampleData({ workloadHours: e.target.value }); }} />
                 </div>
                 <div className="space-y-2">
                   <Label>Período</Label>
-                  <Input value={period} onChange={(e) => setPeriod(e.target.value)} />
+                  <Input value={period} onChange={(e) => { setPeriod(e.target.value); setSampleData({ period: e.target.value }); }} />
                 </div>
               </div>
 
@@ -174,25 +210,12 @@ export function CertificateGrapesPrototype() {
             </div>
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
-              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-purple-200 p-8 relative flex flex-col justify-between text-center">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-black text-purple-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
-                  {logoUrl && (
-                    <img src={logoUrl} alt="Logo" style={{ width: `${logoWidth}px` }} className="object-contain max-h-12" />
-                  )}
-                </div>
-                <div className="space-y-4">
-                  <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed px-6">
-                    {preset.bodyTemplate(studentName, studentCpf, courseTitle, workload, period)}
-                  </p>
-                  <p className="text-xs font-semibold text-foreground">{customDate}</p>
-                </div>
-                <div className="border-t pt-2 w-72 mx-auto">
-                  <p className="text-xs font-bold text-foreground">{customSigner}</p>
-                  <p className="text-[10px] text-muted-foreground">{customRole}</p>
-                </div>
-              </div>
+                    <CertificateCompositionPreview
+                      composition={composition}
+                      values={sampleData}
+                      includeSiteBranding
+                      interactive
+                    />
               <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização baseada em blocos HTML/CSS estruturados (Grapes Pro).</p>
             </div>
           </div>

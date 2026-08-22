@@ -3,27 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { FileUp, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
-
-type CertificateFieldKey =
-  | "studentName"
-  | "courseTitle"
-  | "level"
-  | "issuedAt"
-  | "certificateCode"
-  | "workloadHours"
-  | "studentCpf"
-  | "period"
-  | "coordinatorName"
-  | "institutionName";
-
-type CertificateFieldMapping = {
-  x: number;
-  y: number;
-  size?: number;
-  maxWidth?: number;
-  color?: string;
-  weight?: "normal" | "bold";
-};
+import {
+  parseCertificateComposition,
+  type CertificateCompositionElement,
+  type CertificateFieldKey,
+  type CertificateFieldMapping,
+} from "@/lib/certificate-composition";
+import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 
 type CertificateTemplate = {
   id: number;
@@ -38,6 +24,13 @@ type CertificateTemplate = {
 };
 
 export function CertificateTemplateManager() {
+  const {
+    composition,
+    sampleData,
+    updateComposition,
+    setSampleData,
+    setIncludeSiteBranding: setWorkspaceBranding,
+  } = useCertificateWorkspace();
   const [templates, setTemplates] = useState<CertificateTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -47,62 +40,31 @@ export function CertificateTemplateManager() {
   } | null>(null);
   const [category, setCategory] = useState<"internal" | "external">("internal");
   const [includeSiteBranding, setIncludeSiteBranding] = useState(true);
-  const [previewName, setPreviewName] = useState("Estudante Exemplo da Silva");
-  const [previewCourse, setPreviewCourse] = useState("English Mastery B2");
-  const [previewCode, setPreviewCode] = useState("AP-2026-9876");
-  const [previewDate, setPreviewDate] = useState(
-    new Date().toLocaleDateString("pt-BR")
-  );
+  const [previewName, setPreviewName] = useState(sampleData.studentName);
+  const [previewCourse, setPreviewCourse] = useState(sampleData.courseTitle);
+  const [previewCode, setPreviewCode] = useState(sampleData.certificateCode);
+  const [previewDate, setPreviewDate] = useState(sampleData.issuedAt);
   const [activePreset, setActivePreset] = useState<"default" | "profici" | "isf">("default");
 
-  const [customElements, setCustomElements] = useState<Array<{
-    id: string;
-    type: "text" | "image";
-    content: string;
-    x: number;
-    y: number;
-    size: number;
-    width?: number;
-    height?: number;
-  }>>([]);
+  const [customElements, setCustomElements] = useState<CertificateCompositionElement[]>(composition.elements);
 
   const [fieldMappings, setFieldMappings] = useState<
     Partial<Record<CertificateFieldKey, CertificateFieldMapping>>
-  >({
-    studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
-    courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
-    level: { x: 300, y: 300, size: 13, maxWidth: 300 },
-    issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
-    certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
-    workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
-    studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
-    period: { x: 300, y: 360, size: 12, maxWidth: 240 },
-    coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
-    institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
-  });
+  >(() => parseCertificateComposition(composition).fieldMappings);
   const [fieldMappingsText, setFieldMappingsText] = useState(() =>
-    JSON.stringify(
-      {
-        studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
-        courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
-        level: { x: 300, y: 300, size: 13, maxWidth: 300 },
-        issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
-        certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
-        workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
-        studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
-        period: { x: 300, y: 360, size: 12, maxWidth: 240 },
-        coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
-        institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
-      },
-      null,
-      2
-    )
+    JSON.stringify(parseCertificateComposition(composition).fieldMappings, null, 2)
   );
   const draggingField = useRef<CertificateFieldKey | null>(null);
   const canvasShellRef = useRef<HTMLDivElement | null>(null);
   const [canvasScale, setCanvasScale] = useState(1);
   const CANVAS_WIDTH = 760;
   const CANVAS_HEIGHT = 500;
+
+  useEffect(() => {
+    setCustomElements(composition.elements);
+    setFieldMappings(composition.fieldMappings);
+    setFieldMappingsText(JSON.stringify(composition.fieldMappings, null, 2));
+  }, [composition.elements, composition.fieldMappings]);
 
   useEffect(() => {
     const shell = canvasShellRef.current;
@@ -128,15 +90,28 @@ export function CertificateTemplateManager() {
   }> = [
     { key: "studentName", label: "Nome do aluno", value: previewName },
     { key: "courseTitle", label: "Curso / Componente", value: previewCourse },
-    { key: "level", label: "Nível", value: "Intermediário (B1)" },
+    { key: "level", label: "Nível", value: sampleData.level },
     { key: "issuedAt", label: "Data de emissão", value: previewDate },
     { key: "certificateCode", label: "Código de verificação", value: previewCode },
-    { key: "workloadHours", label: "Carga horária (CH)", value: "32 horas" },
-    { key: "studentCpf", label: "CPF do aluno", value: "123.456.789-00" },
-    { key: "period", label: "Período / Dias", value: "Julho a Agosto de 2026" },
-    { key: "coordinatorName", label: "Coordenador / Professor", value: "Anderson Palafoz" },
-    { key: "institutionName", label: "Instituição parceira", value: "UFBA / IsF" },
+    { key: "workloadHours", label: "Carga horária (CH)", value: sampleData.workloadHours },
+    { key: "studentCpf", label: "CPF do aluno", value: sampleData.studentCpf },
+    { key: "period", label: "Período / Dias", value: sampleData.period },
+    { key: "coordinatorName", label: "Coordenador / Professor", value: sampleData.coordinatorName },
+    { key: "institutionName", label: "Instituição parceira", value: sampleData.institutionName },
   ];
+
+  function commitFieldMappings(next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>>) {
+    setFieldMappings(next);
+    updateComposition(current => ({
+      ...current,
+      fieldMappings: { ...current.fieldMappings, ...next },
+    }));
+  }
+
+  function commitElements(next: CertificateCompositionElement[]) {
+    setCustomElements(next);
+    updateComposition(current => ({ ...current, elements: next }));
+  }
 
   function applyPreset(preset: "default" | "profici" | "isf") {
     setActivePreset(preset);
@@ -181,7 +156,7 @@ export function CertificateTemplateManager() {
         institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
       };
     }
-    setFieldMappings(next);
+    commitFieldMappings(next);
   }
 
   function handleFieldDragStart(
@@ -208,15 +183,16 @@ export function CertificateTemplateManager() {
       12,
       Math.min(470, (event.clientY - bounds.top) / scale)
     );
-    setFieldMappings(current => ({
-      ...current,
+    const nextMappings = {
+      ...fieldMappings,
       [key]: {
-        ...current[key],
+        ...fieldMappings[key],
         x: Math.round(x),
         // pdf-lib uses a bottom-left origin; convert from the visual top-left canvas.
         y: Math.round(500 - y),
       },
-    }));
+    };
+    commitFieldMappings(nextMappings);
     draggingField.current = null;
   }
 
@@ -261,11 +237,26 @@ export function CertificateTemplateManager() {
     setFieldMappingsText(JSON.stringify(fieldMappings, null, 2));
   }, [fieldMappings]);
 
+  useEffect(() => {
+    setPreviewName(sampleData.studentName);
+    setPreviewCourse(sampleData.courseTitle);
+    setPreviewCode(sampleData.certificateCode);
+    setPreviewDate(sampleData.issuedAt);
+  }, [sampleData]);
+
+  useEffect(() => {
+    setFieldMappings(parseCertificateComposition(composition).fieldMappings);
+    setCustomElements(parseCertificateComposition(composition).elements);
+    setFieldMappingsText(JSON.stringify(parseCertificateComposition(composition).fieldMappings, null, 2));
+  }, [composition]);
+
   function handleCategoryChange(value: "internal" | "external") {
     setCategory(value);
     // Internos começam com branding, mas externos não recebem uma regra forçada:
     // o administrador precisa confirmar a escolha no formulário e novamente na emissão.
-    setIncludeSiteBranding(value === "internal");
+    const nextBranding = value === "internal";
+    setIncludeSiteBranding(nextBranding);
+    setWorkspaceBranding(nextBranding);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -276,7 +267,10 @@ export function CertificateTemplateManager() {
     const formData = new FormData(form);
     formData.set("category", category);
     formData.set("includeSiteBranding", String(includeSiteBranding));
-    formData.set("fieldMappings", JSON.stringify(fieldMappings));
+    formData.set(
+      "fieldMappings",
+      JSON.stringify({ ...composition, fieldMappings, elements: customElements })
+    );
 
     try {
       const response = await fetch("/api/admin/certificate-templates", {
@@ -445,7 +439,10 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewName}
-                onChange={e => setPreviewName(e.target.value)}
+                onChange={e => {
+                  setPreviewName(e.target.value);
+                  setSampleData({ studentName: e.target.value });
+                }}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -454,7 +451,10 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewCourse}
-                onChange={e => setPreviewCourse(e.target.value)}
+                onChange={e => {
+                  setPreviewCourse(e.target.value);
+                  setSampleData({ courseTitle: e.target.value });
+                }}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -463,7 +463,10 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewCode}
-                onChange={e => setPreviewCode(e.target.value)}
+                onChange={e => {
+                  setPreviewCode(e.target.value);
+                  setSampleData({ certificateCode: e.target.value });
+                }}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -472,7 +475,10 @@ export function CertificateTemplateManager() {
               <input
                 type="text"
                 value={previewDate}
-                onChange={e => setPreviewDate(e.target.value)}
+                onChange={e => {
+                  setPreviewDate(e.target.value);
+                  setSampleData({ issuedAt: e.target.value });
+                }}
                 className="mt-1 h-9 w-full rounded-lg border border-border bg-background px-3 text-xs text-foreground outline-none focus:border-red-600"
               />
             </label>
@@ -583,48 +589,30 @@ export function CertificateTemplateManager() {
                         }
                         onKeyDown={event => {
                           const step = event.shiftKey ? 10 : 2;
-                          if (
-                            ![
-                              "ArrowUp",
-                              "ArrowDown",
-                              "ArrowLeft",
-                              "ArrowRight",
-                            ].includes(event.key)
-                          )
-                            return;
+                          if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
                           event.preventDefault();
-                          setFieldMappings(current => {
-                            const existing = current[field.key] ?? mapping;
-                            return {
-                              ...current,
-                              [field.key]: {
-                                ...existing,
-                                x: Math.max(
-                                  12,
-                                  Math.min(
-                                    730,
-                                    existing.x +
-                                      (event.key === "ArrowLeft"
-                                        ? -step
-                                        : event.key === "ArrowRight"
-                                          ? step
-                                          : 0)
-                                  )
-                                ),
-                                y: Math.max(
-                                  12,
-                                  Math.min(
-                                    488,
-                                    existing.y +
-                                      (event.key === "ArrowDown"
-                                        ? -step
-                                        : event.key === "ArrowUp"
-                                          ? step
-                                          : 0)
-                                  )
-                                ),
-                              },
-                            };
+                          const existing = fieldMappings[field.key] ?? mapping;
+                          commitFieldMappings({
+                            ...fieldMappings,
+                            [field.key]: {
+                              ...existing,
+                              x: Math.max(
+                                12,
+                                Math.min(
+                                  730,
+                                  existing.x +
+                                    (event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0)
+                                )
+                              ),
+                              y: Math.max(
+                                12,
+                                Math.min(
+                                  488,
+                                  existing.y +
+                                    (event.key === "ArrowDown" ? -step : event.key === "ArrowUp" ? step : 0)
+                                )
+                              ),
+                            },
                           });
                         }}
                         className="absolute max-w-[240px] cursor-grab rounded-md border border-red-600/50 bg-red-50/90 px-2 py-1 text-left shadow-sm outline-none transition hover:z-10 hover:scale-[1.02] focus:z-10 focus:ring-2 focus:ring-red-600 active:cursor-grabbing dark:bg-red-950/70"
@@ -645,6 +633,37 @@ export function CertificateTemplateManager() {
                       </div>
                     );
                   })}
+                  {customElements.map(element => {
+                    if (element.visible === false || (!includeSiteBranding && element.isSiteBranding)) return null;
+                    const left = (element.x / 842) * CANVAS_WIDTH;
+                    const top = ((595 - element.y) / 595) * CANVAS_HEIGHT;
+                    const width = element.width ? (element.width / 842) * CANVAS_WIDTH : undefined;
+                    const height = element.height ? (element.height / 595) * CANVAS_HEIGHT : undefined;
+                    if (element.type === "image") {
+                      return (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={element.id}
+                          src={element.content}
+                          alt="Elemento visual da composição"
+                          className="absolute -translate-y-1/2 object-contain"
+                          style={{ left, top, width, height, opacity: element.opacity ?? 1, zIndex: element.zIndex || 0 }}
+                        />
+                      );
+                    }
+                    if (element.type === "line") {
+                      return <div key={element.id} className="absolute h-0.5 -translate-y-1/2 rounded-full" style={{ left, top, width: width || 180, backgroundColor: element.color || "#dc2626", opacity: element.opacity ?? 1, zIndex: element.zIndex || 0 }} />;
+                    }
+                    return (
+                      <div
+                        key={element.id}
+                        className="absolute -translate-y-1/2 whitespace-pre-wrap break-words rounded-md border border-slate-400/60 bg-white/80 px-1.5 py-1 text-left shadow-sm"
+                        style={{ left, top, width, color: element.color || "#24313a", fontSize: Math.min(element.size || 14, 18), fontWeight: element.weight === "bold" || element.type === "badge" ? 800 : 500, zIndex: element.zIndex || 0 }}
+                      >
+                        {element.content}
+                      </div>
+                    );
+                  })}
                   <div className="absolute bottom-5 left-8 right-8 flex justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
                     <span>Arraste os campos para definir o posicionamento</span>
                     <span>Tamanho de fonte customizável abaixo</span>
@@ -661,15 +680,17 @@ export function CertificateTemplateManager() {
                     <button
                       type="button"
                       onClick={() => {
-                        setCustomElements(curr => [
-                          ...curr,
+                        commitElements([
+                          ...customElements,
                           {
                             id: `text_${Date.now()}`,
                             type: "text",
-                            content: "Novo Texto Personalizado",
-                            x: 200,
-                            y: 150,
+                            content: "Texto personalizado",
+                            x: 350,
+                            y: 250,
                             size: 14,
+                            color: "#1e293b",
+                            align: "center",
                           },
                         ]);
                       }}
@@ -680,8 +701,8 @@ export function CertificateTemplateManager() {
                     <button
                       type="button"
                       onClick={() => {
-                        setCustomElements(curr => [
-                          ...curr,
+                        commitElements([
+                          ...customElements,
                           {
                             id: `image_${Date.now()}`,
                             type: "image",
@@ -691,6 +712,7 @@ export function CertificateTemplateManager() {
                             size: 12,
                             width: 60,
                             height: 60,
+                            zIndex: customElements.length + 1,
                           },
                         ]);
                       }}
@@ -717,14 +739,14 @@ export function CertificateTemplateManager() {
                                 value={el.content}
                                 onChange={e => {
                                   const val = e.target.value;
-                                  setCustomElements(curr => curr.map(item => item.id === el.id ? { ...item, content: val } : item));
+                                  commitElements(customElements.map(item => item.id === el.id ? { ...item, content: val } : item));
                                 }}
                                 className="h-6 w-24 rounded border border-border px-1 text-[11px]"
                               />
                             )}
                             <button
                               type="button"
-                              onClick={() => setCustomElements(curr => curr.filter(item => item.id !== el.id))}
+                              onClick={() => commitElements(customElements.filter(item => item.id !== el.id))}
                               className="text-red-600 hover:text-red-700 font-bold px-1"
                               title="Remover elemento"
                             >
@@ -750,27 +772,27 @@ export function CertificateTemplateManager() {
                         </span>
                         <div className="flex items-center gap-2">
                           <label className="text-[10px] text-muted-foreground">Fonte:</label>
-                          <input
+                              <input
                             type="number"
                             min={8}
                             max={48}
                             value={mapping.size || 12}
                             onChange={e => {
                               const size = Number(e.target.value);
-                              setFieldMappings(curr => ({
-                                ...curr,
+                              commitFieldMappings({
+                                ...fieldMappings,
                                 [field.key]: { ...mapping, size: isNaN(size) ? 12 : size },
-                              }));
+                              });
                             }}
                             className="h-7 w-16 rounded border border-border bg-background px-1 text-xs font-mono text-foreground"
                           />
                           <button
                             type="button"
                             onClick={() => {
-                              setFieldMappings(curr => ({
-                                ...curr,
+                              commitFieldMappings({
+                                ...fieldMappings,
                                 [field.key]: { ...mapping, x: 250 }, // Centralizar horizontalmente
-                              }));
+                              });
                             }}
                             className="rounded bg-muted px-1.5 py-1 text-[10px] font-bold text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                             title="Alinhar ao centro da página"
@@ -803,7 +825,7 @@ export function CertificateTemplateManager() {
                 type="radio"
                 name="branding-choice"
                 checked={includeSiteBranding}
-                onChange={() => setIncludeSiteBranding(true)}
+                onChange={() => { setIncludeSiteBranding(true); setWorkspaceBranding(true); }}
                 className="mt-1 accent-red-600"
               />
               <span>
@@ -822,7 +844,7 @@ export function CertificateTemplateManager() {
                 type="radio"
                 name="branding-choice"
                 checked={!includeSiteBranding}
-                onChange={() => setIncludeSiteBranding(false)}
+                onChange={() => { setIncludeSiteBranding(false); setWorkspaceBranding(false); }}
                 className="mt-1 accent-red-600"
               />
               <span>
@@ -852,17 +874,17 @@ export function CertificateTemplateManager() {
             name="fieldMappings"
             rows={8}
             value={fieldMappingsText}
-            onChange={event => {
+                onChange={event => {
               const nextText = event.target.value;
               setFieldMappingsText(nextText);
               try {
                 const parsed = JSON.parse(nextText);
-                if (
-                  parsed &&
-                  typeof parsed === "object" &&
-                  !Array.isArray(parsed)
-                ) {
-                  setFieldMappings(parsed);
+                if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                  const normalized = parseCertificateComposition(parsed);
+                  commitFieldMappings(normalized.fieldMappings);
+                  if (Array.isArray((parsed as { elements?: unknown }).elements)) {
+                    commitElements(normalized.elements);
+                  }
                 }
               } catch {
                 // Permite edição manual temporária até que o JSON seja válido.

@@ -12,6 +12,9 @@ export interface CertificatePdfElement {
   src?: string;
   width?: number;
   height?: number;
+  zIndex?: number;
+  opacity?: number;
+  visible?: boolean;
 }
 
 export interface CertificatePdfOptions {
