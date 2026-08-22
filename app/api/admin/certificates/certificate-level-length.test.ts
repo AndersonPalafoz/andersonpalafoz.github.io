@@ -33,6 +33,8 @@ describe("emissão de certificados com níveis descritivos", () => {
   });
 
   it("usa o registro retornado pelo insert no fluxo manual", () => {
+    expect(routeSource).toContain("const insertedUser = insertedUsers[0]");
+    expect(routeSource).toContain("userId = insertedUser.id");
     expect(routeSource).toContain("student = {");
     expect(routeSource).toContain("const newCourse = newCourses[0]");
     expect(routeSource).toContain("course = newCourse");
