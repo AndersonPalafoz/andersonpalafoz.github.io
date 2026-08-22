@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,31 +12,47 @@ import { toast } from "sonner";
 import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
 import { generateCertificatePdf, type CertificatePdfElement } from "@/lib/certificate-pdf-generator";
 import { Download, RefreshCw, ShieldCheck } from "lucide-react";
+import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
+import { type CertificateCompositionElement } from "@/lib/certificate-composition";
 
 export function CertificateFabricPrototype() {
+  const {
+    composition,
+    sampleData,
+    updateComposition,
+    setSampleData,
+    setSelectedTemplateId: setWorkspaceTemplate,
+  } = useCertificateWorkspace();
   const [templateId, setTemplateId] = useState<string>("isf");
   const preset = CERTIFICATE_PRESETS[templateId] || CERTIFICATE_PRESETS.standard;
 
-  const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
-  const [studentCpf, setStudentCpf] = useState("123.671.106-89");
-  const [courseTitle, setCourseTitle] = useState("Alfabetização e Letramento Étnico-Racial em Inglês");
-  const [workload, setWorkload] = useState("40 horas");
-  const [period, setPeriod] = useState("02 de maio a 20 de junho de 2026");
+  const [studentName, setStudentName] = useState(sampleData.studentName);
+  const [studentCpf, setStudentCpf] = useState(sampleData.studentCpf);
+  const [courseTitle, setCourseTitle] = useState(sampleData.courseTitle);
+  const [workload, setWorkload] = useState(sampleData.workloadHours);
+  const [period, setPeriod] = useState(sampleData.period);
   const [customTitle, setCustomTitle] = useState(preset.title);
   const [customSigner, setCustomSigner] = useState(preset.signerName);
   const [customRole, setCustomRole] = useState(preset.signerRole);
   const [customDate, setCustomDate] = useState(preset.locationAndDate);
   const [fontSize, setFontSize] = useState<number>(preset.fontSize);
-  const [logoUrl, setLogoUrl] = useState<string>("/manus-storage/Horizontal-v1.png");
+  const [logoUrl, setLogoUrl] = useState<string>(
+    composition.elements.find(element => element.id === "primary-logo" && element.type === "image")?.content || "/logo-horizontal.png"
+  );
   const [logoWidth, setLogoWidth] = useState<number>(140);
   const [logoPosX, setLogoPosX] = useState<number>(50); // percentual ou px
   const [logoPosY, setLogoPosY] = useState<number>(10);
   const [logoLayer, setLogoLayer] = useState<number>(10); // z-index
   const [titlePosY, setTitlePosY] = useState<number>(90);
   const [bodyPosY, setBodyPosY] = useState<number>(160);
-  const [extraElements, setExtraElements] = useState<CertificatePdfElement[]>([
-    { id: '1', type: 'badge', content: 'DOCUMENTO OFICIAL VERIFICADO', x: 50, y: 78, size: 10, color: '#0F766E' }
-  ]);
+  const [extraElements, setExtraElements] = useState<CertificatePdfElement[]>(
+    composition.elements.map(element => ({
+      ...element,
+      size: element.size || 12,
+      color: element.color || "#333333",
+      src: element.type === "image" ? element.content : undefined,
+    }))
+  );
   const artboardRef = useRef<HTMLDivElement>(null);
   const [newElemText, setNewElemText] = useState("Novo Elemento de Texto ou Ícone");
   
@@ -49,6 +65,39 @@ export function CertificateFabricPrototype() {
   ]);
   const [modelNameInput, setModelNameInput] = useState('');
   const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    const nextElements = composition.elements.map(element => ({
+      ...element,
+      size: element.size || 12,
+      color: element.color || "#333333",
+      src: element.type === "image" ? element.content : undefined,
+    }));
+    setExtraElements(nextElements);
+    const primaryLogo = composition.elements.find(element => element.id === "primary-logo" && element.type === "image");
+    if (primaryLogo) setLogoUrl(primaryLogo.content);
+  }, [composition.elements]);
+
+  useEffect(() => {
+    setStudentName(sampleData.studentName);
+    setStudentCpf(sampleData.studentCpf);
+    setCourseTitle(sampleData.courseTitle);
+    setWorkload(sampleData.workloadHours);
+    setPeriod(sampleData.period);
+  }, [sampleData]);
+
+  const commitElements = (next: CertificatePdfElement[]) => {
+    setExtraElements(next);
+    updateComposition(current => ({
+      ...current,
+      elements: next.map(element => ({
+        ...element,
+        content: element.type === "image" ? element.src || element.content : element.content,
+        size: element.size || 12,
+        color: element.color || "#333333",
+      })) as CertificateCompositionElement[],
+    }));
+  };
 
   const saveStateToHistory = () => {
     const currentState = { customTitle, customSigner, customRole, logoPosX, logoPosY, logoWidth, extraElements };
@@ -101,7 +150,7 @@ export function CertificateFabricPrototype() {
   };
 
   const handleAddElement = (type: 'text' | 'badge' | 'line') => {
-    setExtraElements(prev => [...prev, {
+    commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
       content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
@@ -111,7 +160,7 @@ export function CertificateFabricPrototype() {
       color: type === 'badge' ? '#0F766E' : '#333333',
       align: 'center'
     }]);
-    toast.success("Elemento adicionado à prancheta!");
+    toast.success("Elemento adicionado à prancheta e conectado à emissão.");
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,25 +169,34 @@ export function CertificateFabricPrototype() {
       toast.error("Selecione um arquivo de imagem válido.");
       return;
     }
-    const src = URL.createObjectURL(file);
-    setExtraElements(prev => [...prev, {
-      id: `image-${Date.now()}`,
-      type: 'image',
-      content: file.name,
-      src,
-      x: 50,
-      y: 50,
-      size: 12,
-      color: '#333333',
-      width: 140,
-      height: 90
-    }]);
+    if (file.size > 2_000_000) {
+      toast.error("A imagem deve ter no máximo 2 MB para permanecer no modelo.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const src = String(reader.result || "");
+      if (!src.startsWith("data:image/")) return;
+      commitElements([...extraElements, {
+        id: `image-${Date.now()}`,
+        type: 'image',
+        content: src,
+        src,
+        x: 50,
+        y: 50,
+        size: 12,
+        color: '#333333',
+        width: 140,
+        height: 90
+      }]);
+      toast.success("Imagem adicionada à prancheta e será incluída na composição final.");
+    };
+    reader.readAsDataURL(file);
     e.target.value = '';
-    toast.success("Imagem adicionada à prancheta. Arraste-a para posicionar.");
   };
 
   const handleUpdateElement = (id: string, patch: Partial<CertificatePdfElement>) => {
-    setExtraElements(prev => prev.map(element => element.id === id ? { ...element, ...patch } : element));
+    commitElements(extraElements.map(element => element.id === id ? { ...element, ...patch } : element));
   };
 
   const handleElementDragEnd = (id: string, e: React.DragEvent<HTMLElement>) => {
@@ -162,7 +220,7 @@ export function CertificateFabricPrototype() {
     if (!rect) return;
     const x = Math.max(4, Math.min(96, ((e.clientX - rect.left) / rect.width) * 100));
     const y = Math.max(4, Math.min(96, ((e.clientY - rect.top) / rect.height) * 100));
-    setExtraElements(prev => [...prev, {
+    commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
       content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
@@ -176,25 +234,45 @@ export function CertificateFabricPrototype() {
   };
 
   const handleRemoveElement = (id: string) => {
-    setExtraElements(prev => {
-      const element = prev.find(item => item.id === id);
-      if (element?.src?.startsWith('blob:')) URL.revokeObjectURL(element.src);
-      return prev.filter(el => el.id !== id);
-    });
-    toast.success("Elemento removido.");
+    const element = extraElements.find(item => item.id === id);
+    if (element?.src?.startsWith('blob:')) URL.revokeObjectURL(element.src);
+    commitElements(extraElements.filter(el => el.id !== id));
+    toast.success("Elemento removido da composição e da futura emissão.");
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
+    if (!file || !file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = String(reader.result || "");
+      if (!url.startsWith("data:image/")) return;
       setLogoUrl(url);
-      toast.success("Logo carregada com sucesso!");
-    }
+      commitElements([
+        ...extraElements.filter(element => element.id !== "primary-logo"),
+        {
+          id: "primary-logo",
+          type: "image",
+          content: url,
+          src: url,
+          x: logoPosX,
+          y: logoPosY,
+          size: 12,
+          color: "#333333",
+          width: logoWidth,
+          height: Math.max(32, Math.round(logoWidth * 0.45)),
+          zIndex: logoLayer,
+        },
+      ]);
+      toast.success("Logo carregada e vinculada à composição final.");
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const handlePresetChange = (v: string) => {
     setTemplateId(v);
+    setWorkspaceTemplate(v);
     const p = CERTIFICATE_PRESETS[v];
     if (p) {
       setCustomTitle(p.title);

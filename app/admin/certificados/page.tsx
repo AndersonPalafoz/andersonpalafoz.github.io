@@ -1,15 +1,16 @@
-import { ArrowLeft, FileSignature, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { ArrowLeft, FileSignature, ShieldCheck, Sparkles } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { CertificateSignatureManager } from "@/components/certificate-signature-manager";
 import { CertificateTemplateManager } from "@/components/certificate-template-manager";
 import { CertificateLaboratoryManager } from "@/components/certificate-laboratory-manager";
+import { CertificateWorkspaceProvider } from "@/components/certificate-workspace-context";
 
 export const metadata = {
   title: "Assinatura e Laboratório de Certificados | Administração",
-  description: "Envie certificados finais assinados e teste as 4 possibilidades de editores visuais.",
+  description: "Configure uma composição única e use a mesma prévia na emissão, assinatura e exportação dos certificados.",
 };
 
 export default async function AdminCertificatesPage() {
@@ -23,7 +24,8 @@ export default async function AdminCertificatesPage() {
 
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
-      <div className="page-container space-y-10">
+      <CertificateWorkspaceProvider>
+      <div className="container space-y-8 py-8">
         <header className="surface-card flex flex-col gap-5 border border-border/70 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-red-700 dark:bg-red-950/40 dark:text-red-300">
@@ -56,6 +58,7 @@ export default async function AdminCertificatesPage() {
         <CertificateTemplateManager />
         <CertificateSignatureManager />
       </div>
+      </CertificateWorkspaceProvider>
     </div>
   );
 }

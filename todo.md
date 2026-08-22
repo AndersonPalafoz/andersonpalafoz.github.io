@@ -1933,3 +1933,11 @@
 - [x] Corrigir a ausência de `external_class_attendance` no banco TiDB do projeto, alinhando DDL, nomes de colunas, índice e chave estrangeira ao schema Drizzle; a validação DDL foi confirmada após a migração.
 
 - [x] Corrigir os três testes regressivos encontrados na suíte Vitest: ambiente DOM do protótipo Fabric e asserções antigas dos guards administrativo e de estatísticas; suíte completa aprovada com 414 testes.
+
+## Unificação do Editor Visual, Prévia e Gerador de Certificados — 22/08/2026
+
+- [x] Definir contrato unificado de estado e mapeamento (`fieldMappings` e elementos livres) compatível com Fabric, Konva, GrapesJS, pré-visualização e exportação PDF.
+- [x] Conectar o painel de propriedades do editor visual para atualizar o estado reativo da prancheta e refletir instantaneamente na prévia em tempo real.
+- [x] Garantir que o PDF gerado (tanto individual quanto em lote) utilize exatamente o JSON de mapeamento e as posições editadas na prancheta.
+- [x] Refatorar os adaptadores de subáreas (Fabric.js, Konva.js e GrapesJS) para operarem sobre o mesmo modelo de dados unificado, eliminando comportamentos isolados.
+- [x] Validar a exportação vetorizada em PDF, a correção da página administrativa `/admin/certificados` (que exibia tela de erro por falta de ícones) e o fluxo de emissão unificado.
