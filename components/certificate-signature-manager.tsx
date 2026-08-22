@@ -32,6 +32,7 @@ type CertificateItem = {
   courseType: number | null;
   studentName: string;
   studentEmail: string | null;
+  studentCpf?: string | null;
   courseTitle: string;
   level: string;
   certificateCode: string | null;
@@ -281,18 +282,15 @@ export function CertificateSignatureManager() {
   }
 
   const filteredCertificates = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return certificates.filter(cert => {
       const matchesSearch =
-        cert.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (cert.studentEmail &&
-          cert.studentEmail
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase())) ||
-        cert.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (cert.certificateCode &&
-          cert.certificateCode
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()));
+        !query ||
+        cert.studentName.toLowerCase().includes(query) ||
+        (cert.studentEmail && cert.studentEmail.toLowerCase().includes(query)) ||
+        (cert.studentCpf && cert.studentCpf.toLowerCase().includes(query)) ||
+        cert.courseTitle.toLowerCase().includes(query) ||
+        (cert.certificateCode && cert.certificateCode.toLowerCase().includes(query));
 
       let matchesStatus = true;
       if (statusFilter === "signed") matchesStatus = cert.hasSignedPdf;
@@ -524,11 +522,11 @@ export function CertificateSignatureManager() {
       <div className="surface-card grid gap-4 border border-border/70 p-5 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
-            Pesquisar Aluno/Curso
+            Pesquisar Aluno (Nome, CPF, E-mail)
           </label>
           <input
             type="text"
-            placeholder="Nome, e-mail ou código..."
+            placeholder="Nome, CPF, e-mail ou código..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
@@ -694,6 +692,11 @@ export function CertificateSignatureManager() {
                       <dt className="text-muted-foreground">Aluno</dt>
                       <dd className="mt-1 font-bold text-foreground">
                         {certificate.studentName}
+                        {certificate.studentCpf && (
+                          <span className="block text-[11px] font-mono text-muted-foreground">
+                            CPF: {certificate.studentCpf}
+                          </span>
+                        )}
                       </dd>
                     </div>
                     <div>
