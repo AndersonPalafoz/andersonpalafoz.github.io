@@ -286,8 +286,48 @@ export default function UsuariosPage() {
           ) : filteredUsers.length === 0 ? (
             <div className="px-6 py-16 text-center"><UserRound size={32} className="mx-auto text-gray-300" /><p className="mt-3 font-semibold text-gray-900">Nenhum usuário encontrado</p><p className="mt-1 text-sm text-gray-500">Ajuste os filtros ou aguarde novos cadastros.</p></div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[980px] text-left">
+            <>
+              <div className="divide-y divide-gray-100 md:hidden">
+                {paginatedUsers.map((user) => {
+                  const isPrincipal = user.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
+                  const isBusy = busyId === user.id;
+                  return (
+                    <article key={user.id} className={`space-y-4 p-4 ${user.deletedAt ? "bg-gray-50/80" : "bg-white"}`}>
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 font-bold text-red-700">{(user.name || user.email || "?").slice(0, 1).toUpperCase()}</div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2"><p className="truncate font-bold text-gray-900">{user.name || "Sem nome"}</p>{isPrincipal && <span className="rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-red-700">Principal</span>}</div>
+                          <p className="truncate text-xs text-gray-500">{user.email || "Email não informado"}</p>
+                          <p className="mt-1 text-[11px] text-gray-400">Cadastro: {formatDate(user.createdAt)} · Último acesso: {formatDate(user.lastSignedIn)}</p>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${statusClasses(user.approvalStatus, user.deletedAt)}`}>{user.deletedAt ? "Excluído" : statusLabels[user.approvalStatus]}</span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <label className="text-[10px] font-black uppercase tracking-wide text-gray-500">Papel<select value={user.role} disabled={isPrincipal || isBusy || Boolean(user.deletedAt)} onChange={(event) => void updateUser(user.id, { role: event.target.value }, "Papel atualizado com sucesso.")} className="mt-1 h-10 w-full rounded-xl border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-600 disabled:bg-gray-100"><option value="user">Aluno</option><option value="professor">Professor</option><option value="admin">Administrador</option></select></label>
+                        {user.role === "user" ? <label className="text-[10px] font-black uppercase tracking-wide text-gray-500">Professor responsável<select value={user.teacherId ?? ""} disabled={isBusy || Boolean(user.deletedAt)} onChange={(event) => void updateUser(user.id, { teacherId: event.target.value ? Number(event.target.value) : null }, "Professor responsável atualizado.")} className="mt-1 h-10 w-full rounded-xl border border-gray-300 bg-white px-2 text-xs font-semibold text-gray-700 outline-none focus:border-red-600 disabled:bg-gray-100"><option value="">Nenhum</option>{teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name || teacher.email}</option>)}</select></label> : <div className="rounded-xl bg-gray-50 px-3 py-2 text-[11px] text-gray-500">Sem professor responsável</div>}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {user.deletedAt ? (
+                          <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="min-h-10 flex-1 gap-1.5 border-green-200 text-green-700"><RefreshCw size={15} />Recuperar</Button>
+                        ) : (
+                          <>
+                            {user.approvalStatus === "pending" ? (
+                              <>
+                                <Button size="sm" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="min-h-10 flex-1 gap-1.5 bg-green-600 text-white hover:bg-green-700"><Check size={15} />Aprovar</Button>
+                                <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "rejected" }, "Solicitação recusada.")} className="min-h-10 flex-1 gap-1.5 border-red-200 text-red-700"><X size={15} />Recusar</Button>
+                              </>
+                            ) : null}
+                            {user.approvalStatus === "rejected" ? <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="min-h-10 flex-1 gap-1.5 border-green-200 text-green-700"><Check size={15} />Liberar</Button> : null}
+                            {!isPrincipal ? <Button size="sm" variant="ghost" disabled={isBusy} onClick={() => void handleDelete(user)} className="min-h-10 gap-1.5 text-red-600" aria-label={`Excluir ${user.name || user.email}`}><Trash2 size={16} />Excluir</Button> : null}
+                          </>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto md:block">
+                <table className="w-full min-w-[980px] text-left">
                 <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th className="px-5 py-4 font-semibold">Usuário</th><th className="px-5 py-4 font-semibold">Papel</th><th className="px-5 py-4 font-semibold">Professor Responsável</th><th className="px-5 py-4 font-semibold">Acesso</th><th className="px-5 py-4 text-right font-semibold">Ações</th></tr></thead>
                 <tbody className="divide-y divide-gray-100">
                   {paginatedUsers.map((user) => {
@@ -303,8 +343,9 @@ export default function UsuariosPage() {
                     </tr>;
                   })}
                 </tbody>
-              </table>
-            </div>
+                </table>
+              </div>
+            </>
           )}
         </section>
 
