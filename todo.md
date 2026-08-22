@@ -1849,3 +1849,13 @@
 - [x] Atualizar o modal de pré-visualização em `CertificateSignatureManager` para renderizar o layout real do certificado com os dados do aluno selecionado.
 - [x] Permitir a conferência interativa das variáveis mapeadas (nome, curso, CPF, data, carga horária e branding) antes de confirmar a emissão.
 - [x] Validar a pré-visualização e o build de produção.
+
+## Edição Rápida de Textos na Pré-visualização do Certificado — 21/08/2026
+- [ ] Adicionar campos de edição rápida (nome do aluno, título do curso, nível e CPF) diretamente no modal `PreviewModal` em `certificate-signature-manager.tsx`.
+- [ ] Ajustar a rota `/api/admin/certificates/preview` para aceitar valores customizados enviados no corpo da requisição sem alterar a base de dados.
+- [ ] Validar a regeneração instantânea do PDF e o build de produção.
+
+## Eliminação de Rolagem Lateral (Overflow Horizontal) em Mobile — 21/08/2026
+- [ ] Garantir que `overflow-x: hidden` e `max-w-full` estejam aplicados globalmente no container raiz (`html`, `body`, `.site-shell`).
+- [ ] Revisar modais, tabelas e cards em `/admin/certificados` e nas demais páginas para que se adaptem a larguras reduzidas sem forçar scroll lateral.
+- [ ] Validar a responsividade mobile e o build de produção.
