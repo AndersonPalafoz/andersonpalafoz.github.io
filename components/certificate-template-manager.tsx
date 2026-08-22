@@ -614,11 +614,11 @@ export function CertificateTemplateManager() {
                           {field.label}
                         </span>
                         <div className="flex items-center gap-2">
-                          <label className="text-[10px] text-muted-foreground">Fonte (px):</label>
+                          <label className="text-[10px] text-muted-foreground">Fonte:</label>
                           <input
                             type="number"
                             min={8}
-                    max={48}
+                            max={48}
                             value={mapping.size || 12}
                             onChange={e => {
                               const size = Number(e.target.value);
@@ -627,8 +627,21 @@ export function CertificateTemplateManager() {
                                 [field.key]: { ...mapping, size: isNaN(size) ? 12 : size },
                               }));
                             }}
-                            className="h-7 w-20 rounded border border-border bg-background px-2 text-xs font-mono text-foreground"
+                            className="h-7 w-16 rounded border border-border bg-background px-1 text-xs font-mono text-foreground"
                           />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setFieldMappings(curr => ({
+                                ...curr,
+                                [field.key]: { ...mapping, x: 250 }, // Centralizar horizontalmente
+                              }));
+                            }}
+                            className="rounded bg-muted px-1.5 py-1 text-[10px] font-bold text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                            title="Alinhar ao centro da página"
+                          >
+                            Centralizar
+                          </button>
                         </div>
                       </div>
                     );
