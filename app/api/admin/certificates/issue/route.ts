@@ -98,7 +98,6 @@ export async function POST(request: NextRequest) {
           .returning({ id: users.id });
         const insertedUser = insertedUsers[0];
         student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
-        userId = student.id;
       }
     }
 
@@ -173,6 +172,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const verificationCode = `AP-${crypto.randomBytes(3).toString("hex").toUpperCase()}-${new Date().getFullYear()}`;
+    const pdfBytes = await buildCertificatePdf({
+      studentName: student.name || directStudentName,
+      studentCip: student.id ? String(student.id) : "000",
+      courseTitle: course?.title || customCourseTitle,
+      workload: `${course?.workloadHours || customWorkloadHours} horas`,
+      period: "2026",
+      verificationCode,
+      templateBackgroundBytes,
+      logoBytes,
+      fieldMappings,
+    });
+
+    const fileKey = `certificates/${userId}-${courseId}-${Date.now()}.pdf`;
+    const certificateUrl = await uploadCertificatePdf(fileKey, pdfBytes);
+
     const existing = await db.query.certificates.findFirst({
       where: and(
         eq(certificates.userId, userId),
@@ -180,78 +195,94 @@ export async function POST(request: NextRequest) {
       ),
     });
 
-    const certificateCode =
-      existing?.certificateCode || crypto.randomBytes(16).toString("hex");
-
-    const pdfBytes = await buildCertificatePdf({
-      studentName: student.name || student.email || "Aluno",
-      courseTitle: course.title,
-      level: course.level || "Geral",
-      issuedAt: new Date(),
-      certificateCode,
-      workloadHours: course.workloadHours || 40,
-      includeSiteBranding,
-      institutionName: customInstitution || selectedTemplate?.institution || undefined,
-      templateBackgroundBytes,
-      logoBytes,
-      fieldMappings,
-    });
-
-    const uploaded = await uploadCertificatePdf(userId, courseId, pdfBytes);
-    const fileUrl = uploaded.url;
-
+    let certificateRecord: any = null;
     if (existing) {
-      const updatedRows = await db
+      const updated = await db
         .update(certificates)
         .set({
-          certificateUrl: fileUrl,
-          certificateCode,
-          certificateTemplateId: templateId,
-          includeSiteBranding,
-          signatureType: "manual",
-          signedPdfUrl: fileUrl,
-          signedAt: new Date(),
+          certificateUrl,
+          verificationCode,
+          issueDate: new Date(),
         })
         .where(eq(certificates.id, existing.id))
         .returning();
-      const updated = updatedRows[0];
-      return NextResponse.json({
-        success: true,
-        certificate: updated,
-        message: "Certificado emitido e atualizado com sucesso.",
-        includeSiteBranding,
-      });
+      certificateRecord = updated[0];
     } else {
-      const insertedRows = await db
+      const inserted = await db
         .insert(certificates)
         .values({
           userId,
           courseId,
-          level: course.level || "Geral",
-          certificateUrl: fileUrl,
-          certificateCode,
-          certificateTemplateId: templateId,
-          includeSiteBranding,
-          signatureType: "manual",
-          signedPdfUrl: fileUrl,
-          signedAt: new Date(),
+          certificateUrl,
+          verificationCode,
+          issueDate: new Date(),
         })
-        .returning({ id: certificates.id });
-      const inserted = insertedRows[0];
-      const created = await db.query.certificates.findFirst({
-        where: eq(certificates.id, inserted.id),
-      });
-      return NextResponse.json({
-        success: true,
-        certificate: created,
-        message: "Certificado emitido com sucesso para a pessoa sem cadastro.",
-        includeSiteBranding,
-      }, { status: 201 });
+        .returning();
+      certificateRecord = inserted[0];
     }
-  } catch (error) {
-    console.error("Error issuing certificate:", error);
+
+    return NextResponse.json({
+      success: true,
+      certificate: {
+        id: certificateRecord.id,
+        certificateCode: verificationCode,
+        certificateUrl,
+      },
+    });
+  } catch (error: any) {
+    console.error("API Error issuing certificate:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Erro ao emitir certificado." },
+      { error: error?.message || "Erro interno ao emitir certificado." },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (
+      !session?.user ||
+      !["admin", "super_admin", "professor"].includes(session.user.role || "")
+    ) {
+      return NextResponse.json(
+        { error: "Acesso restrito a administradores e professores." },
+        { status: 403 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id || isNaN(Number(id))) {
+      return NextResponse.json(
+        { error: "ID do certificado inválido para exclusão." },
+        { status: 400 }
+      );
+    }
+
+    const certId = Number(id);
+    const cert = await db.query.certificates.findFirst({
+      where: eq(certificates.id, certId),
+    });
+
+    if (!cert) {
+      return NextResponse.json(
+        { error: "Certificado não encontrado." },
+        { status: 404 }
+      );
+    }
+
+    await db.delete(certificates).where(eq(certificates.id, certId));
+
+    return NextResponse.json({
+      success: true,
+      message: "Certificado excluído com sucesso.",
+    });
+  } catch (error: any) {
+    console.error("API Error deleting certificate:", error);
+    return NextResponse.json(
+      { error: error?.message || "Erro interno ao excluir certificado." },
       { status: 500 }
     );
   }

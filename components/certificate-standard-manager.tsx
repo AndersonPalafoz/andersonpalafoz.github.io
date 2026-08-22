@@ -17,6 +17,23 @@ export function CertificateStandardManager() {
   const [includeBranding, setIncludeBranding] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedResult, setIssuedResult] = useState<{ code: string; url: string } | null>(null);
+  const [issuedCertificates, setIssuedCertificates] = useState<Array<any>>([
+    { id: 1, studentName: "Adna Caroline", courseTitle: "Alfabetização e Letramento", verificationCode: "AP-892F-2026", issueDate: "22/08/2026", signed: true },
+    { id: 2, studentName: "Abel D'Vargas", courseTitle: "English Mastery B2", verificationCode: "AP-31AC-2026", issueDate: "20/08/2026", signed: false },
+  ]);
+
+  const handleDeleteCertificate = async (id: number) => {
+    if (!confirm("Tem certeza que deseja excluir este certificado? Esta ação não pode ser desfeita.")) return;
+    try {
+      const res = await fetch(`/api/admin/certificates/issue?id=${id}`, { method: "DELETE" });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Erro ao excluir certificado.");
+      setIssuedCertificates(prev => prev.filter(c => c.id !== id));
+      toast.success("Certificado excluído com sucesso.");
+    } catch (e: any) {
+      toast.error(e.message || "Erro ao excluir certificado.");
+    }
+  };
 
   const handleGenerateOfficial = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,6 +205,60 @@ export function CertificateStandardManager() {
               </div>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-red-200 shadow-md mt-6">
+        <CardHeader className="bg-red-50/50 pb-3">
+          <CardTitle className="text-lg font-bold text-red-900 flex items-center gap-2">
+            <Award className="w-5 h-5 text-red-600" /> Certificados Emitidos Recentemente
+          </CardTitle>
+          <CardDescription>
+            Gerencie, visualize ou exclua certificados já gerados na plataforma (assinados ou não).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-muted/50 uppercase text-[10px] text-muted-foreground font-semibold border-b">
+                <tr>
+                  <th className="p-3">Aluno</th>
+                  <th className="p-3">Curso</th>
+                  <th className="p-3">Código</th>
+                  <th className="p-3">Data</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {issuedCertificates.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-muted-foreground">Nenhum certificado emitido encontrado.</td>
+                  </tr>
+                ) : (
+                  issuedCertificates.map((cert) => (
+                    <tr key={cert.id} className="hover:bg-muted/30 transition-colors">
+                      <td className="p-3 font-semibold text-foreground">{cert.studentName}</td>
+                      <td className="p-3 text-muted-foreground">{cert.courseTitle}</td>
+                      <td className="p-3 font-mono text-xs">{cert.verificationCode}</td>
+                      <td className="p-3">{cert.issueDate}</td>
+                      <td className="p-3">
+                        {cert.signed ? (
+                          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">Assinado</span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">Não Assinado</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-right space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => toast.info("Baixando PDF...")} className="h-7 text-xs">Baixar</Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteCertificate(cert.id)} className="h-7 text-xs bg-red-600 hover:bg-red-700">Excluir</Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>

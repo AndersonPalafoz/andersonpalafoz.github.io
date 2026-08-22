@@ -1920,3 +1920,5 @@
 - [x] Implementar sistema de adição, clique, edição, arraste, redimensionamento, remoção e gerenciamento de camadas para quaisquer elementos (textos, ícones, formas e imagens) no laboratório de certificados em /admin/certificados.
 - [x] Implementar histórico de desfazer e refazer (undo/redo), salvamento de modelos reutilizáveis de certificados e grade magnética com snap-to-grid no laboratório em /admin/certificados.
 - [x] Substituir o mapeamento estático e form de variáveis por uma prancheta interativa real baseada em canvas (clicar, arrastar, redimensionar, gerenciar camadas e exportar para PDF) no laboratório em /admin/certificados.
+- [x] Corrigir o alinhamento e a quebra de linha do corpo do texto no gerador de PDF (`lib/certificate-pdf-generator.ts`) para impedir cortes laterais e garantir centralização perfeita dentro da moldura A4.
+- [ ] Reorganizar o layout da página de certificados no painel administrativo (/admin/certificados) e implementar exclusão segura de certificados emitidos (assinados ou não) com confirmação e atualização em tempo real.
