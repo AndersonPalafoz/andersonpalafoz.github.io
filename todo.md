@@ -1887,3 +1887,5 @@
 - [x] Comparar Fabric.js, Konva.js e GrapesJS quanto à usabilidade, desempenho e facilidade de integração com pdf-lib
 
 - [x] Criar laboratório comparativo com 4 possibilidades em /admin/certificados (Editor Padrão, Fabric.js, Konva.js e GrapesJS/HTML)
+
+- [x] Garantir que o Gerador Oficial Padrão seja 100% funcional com emissão real, validação e PDF persistido, aprimorando em paralelo a interatividade e exportação dos protótipos Fabric, Konva e GrapesJS
