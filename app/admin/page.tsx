@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header Harmonizado com o Painel do Professor */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl shadow-sm border border-border/70 bg-card">
+        <div className="dashboard-hero flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <ShieldCheck size={16} />
@@ -162,7 +162,7 @@ export default function AdminDashboardPage() {
               Visão geral, controle total do ecossistema acadêmico, gerenciamento de cursos, lixeira e auditoria de acessos.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+          <div className="admin-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
             <Link
               href="/admin/relatorios-academicos"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
@@ -221,7 +221,7 @@ export default function AdminDashboardPage() {
         />
 
         {/* Monitor de Vendas / Stripe & Matrículas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 surface-card p-6 sm:p-8 rounded-3xl space-y-4">
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               <BarChart3 className="text-red-600" size={22} />

@@ -143,7 +143,7 @@ export default function DashboardLayout({
   const roleBadgeColor = userRole === "admin" ? "bg-red-600 text-white" : userRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
+    <div className="dashboard-frame flex h-screen bg-background text-foreground">
       {/* Tour Guiado Modal */}
       {showTour && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
@@ -174,7 +174,7 @@ export default function DashboardLayout({
       )}
 
       <aside
-        className={`${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-40 flex h-screen w-72 flex-col border-r border-border/70 bg-card/95 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
+        className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-40 flex h-screen w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
       >
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
@@ -278,15 +278,15 @@ export default function DashboardLayout({
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="flex items-center justify-between border-b border-border/70 bg-card/95 p-4 text-card-foreground shadow-sm backdrop-blur-xl md:hidden">
+        <header className="dashboard-topbar flex items-center justify-between border-b border-border/70 p-4 text-card-foreground shadow-sm md:hidden">
           <span className="font-bold text-foreground">Minha Área</span>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen}>
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto bg-background p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        <main className="dashboard-content flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-7xl min-w-0">{children}</div>
         </main>
       </div>
 
