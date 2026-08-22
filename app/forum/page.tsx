@@ -131,7 +131,7 @@ export default function ForumPage() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input type="search" placeholder="Buscar dúvidas, termos ou dicas..." value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} className="w-full bg-background border border-border rounded-2xl pl-10 pr-4 py-3 text-xs font-bold text-foreground focus:outline-red-600" />
         </label>
-        <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto min-w-0 pb-2 md:pb-0">
           {categories.map((category) => <button key={category} type="button" onClick={() => setSelectedCategory(category)} className={`px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap ${selectedCategory === category ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}>{category}</button>)}
         </div>
       </div>

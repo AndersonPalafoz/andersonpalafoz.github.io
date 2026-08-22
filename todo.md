@@ -1864,3 +1864,16 @@
 - [x] Adicionar seletores de cor e tamanho da fonte para o nome do aluno no modal `PreviewModal`.
 - [x] Atualizar a rota de prévia (`/api/admin/certificates/preview`) para aceitar estilo customizado de texto e aplicá-lo ao PDF.
 - [x] Validar a geração em tempo real e o build de produção.
+
+## Auditoria Completa de Responsividade e Estouro Lateral (Mobile Overflow) — 21/08/2026
+- [ ] Executar inspeção por capturas de tela em viewport mobile (375x812) nas páginas principais (Home, Sobre, Cursos, Materiais, Blog, Contato, Dashboard e Painel Admin).
+- [ ] Garantir que nenhum bloco utilize larguras rígidas (`w-[...]` estáticos sem `max-w-full`) ou tabelas sem contêiner de rolagem interna (`overflow-x-auto`).
+- [ ] Validar a ausência de overflow horizontal e aprovar o build de produção.
+
+- [x] Implementar editor Canva/Word de certificados com zoom, grades magnéticas e tipografia customizada
+- [x] Otimizar logos da marca abaixo de 1MB e corrigir exibição em cabeçalho, rodapé e favicon
+- [x] Eliminar rolagem lateral (side scrolling) em dispositivos móveis com regras CSS globais estritas
+- [x] Adicionar busca avançada (Nome, CPF, E-mail, Curso), paginação e pré-visualização em tempo real de certificados no painel administrativo
+- [x] Corrigir estabilidade de build de produção, resolvendo a tabela de respostas de comentários e validando 407 testes Vitest
+- [ ] Configuração do ambiente de produção da Stripe no painel Vercel (Requer ação do usuário na dashboard da Stripe para reclamar o sandbox/live e injetar variáveis)
+- [ ] Autorização OAuth da API do Google Calendar em produção (Requer conexão da conta Google no fluxo de consentimento)

@@ -99,6 +99,27 @@ export function CertificateTemplateManager() {
     )
   );
   const draggingField = useRef<CertificateFieldKey | null>(null);
+  const canvasShellRef = useRef<HTMLDivElement | null>(null);
+  const [canvasScale, setCanvasScale] = useState(1);
+  const CANVAS_WIDTH = 760;
+  const CANVAS_HEIGHT = 500;
+
+  useEffect(() => {
+    const shell = canvasShellRef.current;
+    if (!shell || typeof ResizeObserver === "undefined") return;
+
+    const updateScale = () => {
+      const availableWidth = Math.max(0, shell.clientWidth - 24);
+      setCanvasScale(
+        Math.max(0.35, Math.min(1, availableWidth / CANVAS_WIDTH))
+      );
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(shell);
+    return () => observer.disconnect();
+  }, []);
 
   const previewFields: Array<{
     key: CertificateFieldKey;
@@ -178,8 +199,15 @@ export function CertificateTemplateManager() {
       draggingField.current) as CertificateFieldKey | null;
     if (!key) return;
     const bounds = event.currentTarget.getBoundingClientRect();
-    const x = Math.max(12, Math.min(730, event.clientX - bounds.left));
-    const y = Math.max(12, Math.min(470, event.clientY - bounds.top));
+    const scale = canvasScale || 1;
+    const x = Math.max(
+      12,
+      Math.min(730, (event.clientX - bounds.left) / scale)
+    );
+    const y = Math.max(
+      12,
+      Math.min(470, (event.clientY - bounds.top) / scale)
+    );
     setFieldMappings(current => ({
       ...current,
       [key]: {
@@ -505,13 +533,24 @@ export function CertificateTemplateManager() {
                   </div>
                 ))}
               </div>
-              <div className="min-w-0 overflow-x-auto rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900">
+              <div
+                ref={canvasShellRef}
+                className="min-w-0 overflow-hidden rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900"
+              >
                 <div
-                  className="relative mx-auto h-[500px] w-[760px] overflow-hidden rounded-lg border-2 border-red-600/30 bg-background shadow-inner"
-                  onDragOver={event => event.preventDefault()}
-                  onDrop={handleFieldDrop}
-                  aria-label="Canvas de posicionamento do certificado"
+                  className="relative mx-auto overflow-hidden rounded-lg border-2 border-red-600/30 bg-background shadow-inner"
+                  style={{
+                    width: `${CANVAS_WIDTH * canvasScale}px`,
+                    height: `${CANVAS_HEIGHT * canvasScale}px`,
+                  }}
                 >
+                  <div
+                    className="relative h-[500px] w-[760px] origin-top-left overflow-hidden"
+                    style={{ transform: `scale(${canvasScale})` }}
+                    onDragOver={event => event.preventDefault()}
+                    onDrop={handleFieldDrop}
+                    aria-label="Canvas de posicionamento do certificado"
+                  >
                   {includeSiteBranding && (
                     <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-2 shadow-sm ring-1 ring-red-600/10">
                       {/* A marca é exibida como ativo oficial, sem reconstrução textual. */}
@@ -609,6 +648,7 @@ export function CertificateTemplateManager() {
                   <div className="absolute bottom-5 left-8 right-8 flex justify-between border-t border-border/50 pt-2 text-[10px] text-muted-foreground">
                     <span>Arraste os campos para definir o posicionamento</span>
                     <span>Tamanho de fonte customizável abaixo</span>
+                  </div>
                   </div>
                 </div>
               </div>
