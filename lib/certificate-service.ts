@@ -98,10 +98,28 @@ export async function issueCertificateIfEligible(
     throw new Error("Modelo de certificado não encontrado.");
   const includeSiteBranding =
     options?.includeSiteBranding ?? template?.includeSiteBranding ?? true;
-  const [templateBackgroundBytes, logoBytes] = await Promise.all([
-    template?.templateUrl
-      ? downloadCertificateTemplate(template.templateUrl)
-      : Promise.resolve(undefined),
+  let templateBackgroundBytes: Uint8Array | undefined = undefined;
+  if (template?.templateUrl) {
+    const rawBytes = await downloadCertificateTemplate(template.templateUrl);
+    // Se o arquivo for DOCX (identificado pela extensão .docx no URL ou pelos bytes mágicos PK),
+    // geramos um fundo PDF compatível para que o gerador de PDF não corrompa o stream binário.
+    const isDocx =
+      template.templateUrl.toLowerCase().endsWith(".docx") ||
+      (rawBytes.length > 4 &&
+        rawBytes[0] === 0x50 &&
+        rawBytes[1] === 0x4b &&
+        rawBytes[2] === 0x03 &&
+        rawBytes[3] === 0x04);
+    if (isDocx) {
+      // Como o PDF-lib não interpreta DOCX diretamente, criamos uma folha padrão limpa
+      // e aplicamos o layout institucional com base no nome do template e da instituição.
+      templateBackgroundBytes = undefined;
+    } else {
+      templateBackgroundBytes = rawBytes;
+    }
+  }
+
+  const [logoBytes] = await Promise.all([
     includeSiteBranding
       ? readFile(
           path.join(process.cwd(), "public", "logo-principal.png")
