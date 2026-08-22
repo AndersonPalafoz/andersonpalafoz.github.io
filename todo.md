@@ -1822,3 +1822,9 @@
 - [x] Incluir comandos de ordenação de camadas (trazer para frente, enviar para trás) e duplicação rápida de blocos de texto.
 - [x] Refinar a interface com réguas interativas e indicadores de coordenadas em tempo real.
 - [x] Validar exportação em lote (PDF único e ZIP) e testes automatizados.
+
+## Inserção de Novos Textos e Imagens por Drag-and-Drop — 21/08/2026
+- [ ] Criar painel de elementos na barra lateral do editor com opções para adicionar caixas de texto personalizadas e imagens/logos.
+- [ ] Implementar manipuladores de arrastar e soltar (HTML5 Drag and Drop API) para posicionar novos elementos diretamente na prancheta A4.
+- [ ] Permitir a edição do conteúdo textual, tamanho, alinhamento e URL da imagem diretamente no painel de propriedades.
+- [ ] Salvar os elementos customizados no JSON de mapeamento do template e renderizá-los corretamente no motor de PDF.

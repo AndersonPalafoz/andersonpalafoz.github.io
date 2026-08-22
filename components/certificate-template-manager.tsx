@@ -55,6 +55,17 @@ export function CertificateTemplateManager() {
   );
   const [activePreset, setActivePreset] = useState<"default" | "profici" | "isf">("default");
 
+  const [customElements, setCustomElements] = useState<Array<{
+    id: string;
+    type: "text" | "image";
+    content: string;
+    x: number;
+    y: number;
+    size: number;
+    width?: number;
+    height?: number;
+  }>>([]);
+
   const [fieldMappings, setFieldMappings] = useState<
     Partial<Record<CertificateFieldKey, CertificateFieldMapping>>
   >({
@@ -601,8 +612,92 @@ export function CertificateTemplateManager() {
                   </div>
                 </div>
               </div>
-              <div className="space-y-3 rounded-xl border border-border bg-muted/20 p-4 lg:col-span-2">
-                <p className="text-xs font-black uppercase tracking-wider text-foreground">
+              <div className="space-y-4 rounded-xl border border-border bg-muted/20 p-4 lg:col-span-2">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+                  <p className="text-xs font-black uppercase tracking-wider text-foreground">
+                    Biblioteca de Elementos (Arraste ou Clique para Inserir)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomElements(curr => [
+                          ...curr,
+                          {
+                            id: `text_${Date.now()}`,
+                            type: "text",
+                            content: "Novo Texto Personalizado",
+                            x: 200,
+                            y: 150,
+                            size: 14,
+                          },
+                        ]);
+                      }}
+                      className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
+                    >
+                      + Adicionar Texto Livre
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCustomElements(curr => [
+                          ...curr,
+                          {
+                            id: `image_${Date.now()}`,
+                            type: "image",
+                            content: BRAND_ASSETS.principal,
+                            x: 350,
+                            y: 80,
+                            size: 12,
+                            width: 60,
+                            height: 60,
+                          },
+                        ]);
+                      }}
+                      className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground hover:bg-muted transition"
+                    >
+                      + Adicionar Logo / Imagem
+                    </button>
+                  </div>
+                </div>
+
+                {customElements.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold text-muted-foreground">Elementos Customizados Adicionados:</p>
+                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {customElements.map((el, index) => (
+                        <div key={el.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-2 text-xs">
+                          <span className="font-bold truncate max-w-[120px]">
+                            {el.type === "text" ? `Texto: ${el.content}` : `Imagem ${index + 1}`}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {el.type === "text" && (
+                              <input
+                                type="text"
+                                value={el.content}
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setCustomElements(curr => curr.map(item => item.id === el.id ? { ...item, content: val } : item));
+                                }}
+                                className="h-6 w-24 rounded border border-border px-1 text-[11px]"
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setCustomElements(curr => curr.filter(item => item.id !== el.id))}
+                              className="text-red-600 hover:text-red-700 font-bold px-1"
+                              title="Remover elemento"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs font-black uppercase tracking-wider text-foreground pt-2">
                   Ajuste fino de tipografia por variável
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
