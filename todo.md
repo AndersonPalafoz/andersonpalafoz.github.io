@@ -1949,3 +1949,13 @@
 - [x] Aplicar design polido (estilo Canva/shadcn) nas caixas de controles, cards de prévia e seletores, garantindo conformidade total com o tema escuro/claro e WCAG.
 - [x] Ajustar todas as tabelas, modais e containers para garantir 100% de responsividade sem rolagem lateral em telas móveis e tablets.
 - [x] Otimizar os fluxos de exclusão em massa e pré-visualização de certificados no painel administrativo.
+
+- [x] Investigar e corrigir a tela genérica "Não foi possível carregar esta página" observada na rota publicada `/admin/certificados`, validando também o build sob memória limitada; o carregamento dinâmico dos editores foi adicionado e o build isolado passou.
+- [x] Executar auditoria final de erros de runtime, autenticação e responsividade da rota `/admin/certificados` após a correção; a rota protegida redireciona sem sessão, os testes e o build passaram, e a estrutura mobile-first foi revisada.
+
+## Correção da regressão publicada em `/admin/certificados` — 22/08/2026
+
+- [x] Identificar a causa exata da falha publicada e corrigir sem desintegrar o fluxo unificado de certificados; a causa reproduzida localmente foi o artefato `.next` incompleto após SIGTERM, com mitigação adicional para SSR dos editores pesados.
+- [x] Validar a rota em desktop e mobile e registrar os resultados de build e testes; a entrada protegida foi validada em desktop/mobile e o conteúdo autenticado ficou documentado como dependente de sessão administrativa.
+- [x] Salvar checkpoint estável após a validação.
+
