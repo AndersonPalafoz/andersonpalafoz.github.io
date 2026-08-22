@@ -1796,3 +1796,9 @@
 - [x] Publicar e referenciar os ativos oficiais utilizando a ferramenta de upload do webdev para garantir persistência e estabilidade no build.
 - [x] Atualizar o cabeçalho (Header), rodapé (Footer), favicon e os certificados para utilizarem estritamente as variações oficiais correspondentes.
 - [x] Validar a integridade visual, responsividade e aprovação da suíte Vitest.
+
+## Auditoria e Refinamento das Logos na Plataforma — 21/08/2026
+- [x] Mapear todas as ocorrências de logotipia e favicons no código-fonte da aplicação (`components/navbar.tsx`, `components/footer.tsx`, `app/layout.tsx`, `app/admin/cms/brand-editor.tsx`, `lib/certificate-service.ts`).
+- [x] Analisar a adequação de cada logo exibida quanto à orientação (horizontal vs. vertical), contraste em modo claro/escuro e conformidade com o manual da marca.
+- [x] Aplicar correções pontuais nas exibições onde uma variação inadequada possa estar sendo utilizada.
+- [x] Executar testes automatizados e validar build de produção.
