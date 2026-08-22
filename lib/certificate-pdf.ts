@@ -110,6 +110,10 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   const page = pdf.getPage(0);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+  const serif = await pdf.embedFont(StandardFonts.TimesRoman);
+  const serifBold = await pdf.embedFont(StandardFonts.TimesRomanBold);
+  const mono = await pdf.embedFont(StandardFonts.Courier);
+  const monoBold = await pdf.embedFont(StandardFonts.CourierBold);
   const red = rgb(0.86, 0.08, 0.12);
   const navy = rgb(0.1, 0.2, 0.4);
   const graphite = rgb(0.14, 0.16, 0.19);
@@ -308,7 +312,8 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
       bold,
       composition,
       { ...input, hasTemplateBackground: hasTemplate },
-      includeBranding
+      includeBranding,
+      { serif, serifBold, mono, monoBold }
     );
   }
 

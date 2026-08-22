@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { rgb, type PDFDocument, type PDFPage, type PDFFont } from "pdf-lib";
+import { degrees, rgb, type PDFDocument, type PDFPage, type PDFFont, type Rotation } from "pdf-lib";
 import {
   type CertificateComposition,
   parseCertificateComposition,
@@ -12,6 +12,15 @@ import { getCertificateVisualVariant } from "@/lib/certificate-visual-variants";
 export type PdfCompositionDocument = PDFDocument;
 export type PdfCompositionPage = PDFPage;
 export type PdfCompositionFont = PDFFont;
+
+export type PdfCompositionFonts = {
+  regular: PdfCompositionFont;
+  bold: PdfCompositionFont;
+  serif: PdfCompositionFont;
+  serifBold: PdfCompositionFont;
+  mono: PdfCompositionFont;
+  monoBold: PdfCompositionFont;
+};
 
 function parseHexColor(value: string | undefined, fallback: ReturnType<typeof rgb>): ReturnType<typeof rgb> {
   if (!value || !/^#[0-9a-f]{6}$/i.test(value)) return fallback;
@@ -64,6 +73,23 @@ function resolveRenderValues(input: PdfCompositionRenderInput): Record<Certifica
     coordinatorName: input.coordinatorName || "",
     institutionName: input.institutionName || "",
   };
+}
+
+function drawTrackedText(
+  page: PdfCompositionPage,
+  text: string,
+  options: { x: number; y: number; size: number; font: PdfCompositionFont; color: ReturnType<typeof rgb>; maxWidth?: number; opacity?: number; rotate?: Rotation; letterSpacing?: number },
+) {
+  const tracking = options.letterSpacing || 0;
+  if (!tracking) {
+    page.drawText(text, options);
+    return;
+  }
+  let cursor = options.x;
+  for (const character of Array.from(text)) {
+    page.drawText(character, { ...options, x: cursor, maxWidth: undefined });
+    cursor += options.font.widthOfTextAtSize(character, options.size) + tracking;
+  }
 }
 
 function drawVariantShell(
@@ -190,10 +216,19 @@ export async function drawCertificateComposition(
   bold: PdfCompositionFont,
   rawComposition: CertificateComposition,
   input: PdfCompositionRenderInput,
-  includeBranding: boolean
+  includeBranding: boolean,
+  fonts?: Partial<PdfCompositionFonts>
 ) {
   const composition = parseCertificateComposition(rawComposition);
   const values = resolveRenderValues(input);
+  const fontSet: PdfCompositionFonts = {
+    regular,
+    bold,
+    serif: fonts?.serif || regular,
+    serifBold: fonts?.serifBold || bold,
+    mono: fonts?.mono || regular,
+    monoBold: fonts?.monoBold || bold,
+  };
   drawVariantShell(
     page,
     regular,
@@ -212,17 +247,23 @@ export async function drawCertificateComposition(
     const text = resolveCertificateText(`{{${key}}}`, values);
     if (!text) continue;
     const size = mapping.size || 14;
-    const font = mapping.weight === "bold" ? bold : regular;
-    const measuredWidth = font.widthOfTextAtSize(text, size);
+    const font = mapping.fontFamily === "serif"
+      ? (mapping.weight === "bold" ? fontSet.serifBold : fontSet.serif)
+      : mapping.fontFamily === "mono"
+        ? (mapping.weight === "bold" ? fontSet.monoBold : fontSet.mono)
+        : (mapping.weight === "bold" ? bold : regular);
+    const tracking = mapping.letterSpacing || 0;
+    const measuredWidth = font.widthOfTextAtSize(text, size) + Math.max(0, Array.from(text).length - 1) * tracking;
     const baseX = mapping.x;
     const drawX = mapping.align === "center" ? baseX - measuredWidth / 2 : mapping.align === "right" ? baseX - measuredWidth : baseX;
-    page.drawText(text, {
+    drawTrackedText(page, text, {
       x: Math.max(0, Math.min(842 - Math.min(measuredWidth, 842), drawX)),
       y: Math.max(0, Math.min(595, mapping.y)),
       size,
       maxWidth: mapping.maxWidth,
       font,
       color: parseHexColor(mapping.color, graphite),
+      letterSpacing: tracking,
     });
   }
   const elements = [...composition.elements].sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
@@ -231,6 +272,39 @@ export async function drawCertificateComposition(
     const x = Math.max(0, Math.min(842, element.x));
     const y = Math.max(0, Math.min(595, element.y));
     const color = parseHexColor(element.color, graphite);
+    if (element.type === "shape") {
+      const width = element.width || 140;
+      const height = element.height || 80;
+      const fill = parseHexColor(element.fill || element.color, parseHexColor(variant.accentSoft, rgb(0.95, 0.95, 0.95)));
+      const stroke = parseHexColor(element.stroke || element.color, parseHexColor(variant.accent, rgb(0.84, 0.16, 0.16)));
+      const shapeOptions = {
+        x: x - width / 2,
+        y: y - height / 2,
+        width,
+        height,
+        color: fill,
+        opacity: element.opacity ?? 1,
+        borderColor: stroke,
+        borderWidth: element.strokeWidth || 0,
+        rotate: degrees((element.rotation || 0) + (element.shape === "diamond" ? 45 : 0)),
+      };
+      if (element.shape === "circle" || element.shape === "pill") {
+        page.drawEllipse({
+          x,
+          y,
+          xScale: width / 2,
+          yScale: height / 2,
+          color: fill,
+          opacity: element.opacity ?? 1,
+          borderColor: stroke,
+          borderWidth: element.strokeWidth || 0,
+          rotate: degrees(element.rotation || 0),
+        });
+      } else {
+        page.drawRectangle(shapeOptions);
+      }
+      continue;
+    }
     if (element.type === "image") {
       const imageData = await readCompositionImage(element.content);
       if (!imageData) continue;
@@ -261,10 +335,15 @@ export async function drawCertificateComposition(
     const text = resolveCertificateText(element.content, values);
     if (!text) continue;
     const size = element.size || 14;
-    const font = element.weight === "bold" || element.type === "badge" ? bold : regular;
-    const measuredWidth = font.widthOfTextAtSize(text, size);
+    const font = element.fontFamily === "serif"
+      ? (element.weight === "bold" || element.type === "badge" ? fontSet.serifBold : fontSet.serif)
+      : element.fontFamily === "mono"
+        ? (element.weight === "bold" || element.type === "badge" ? fontSet.monoBold : fontSet.mono)
+        : (element.weight === "bold" || element.type === "badge" ? bold : regular);
+    const tracking = element.letterSpacing || 0;
+    const measuredWidth = font.widthOfTextAtSize(text, size) + Math.max(0, Array.from(text).length - 1) * tracking;
     const drawX = element.align === "center" ? x - measuredWidth / 2 : element.align === "right" ? x - measuredWidth : x;
-    page.drawText(text, {
+    drawTrackedText(page, text, {
       x: Math.max(0, Math.min(842 - Math.min(measuredWidth, 842), drawX)),
       y,
       size,
@@ -272,6 +351,8 @@ export async function drawCertificateComposition(
       font,
       color,
       opacity: element.opacity ?? 1,
+      rotate: degrees(element.rotation || 0),
+      letterSpacing: tracking,
     });
   }
 }

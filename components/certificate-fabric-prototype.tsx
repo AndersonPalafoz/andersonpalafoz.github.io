@@ -149,15 +149,20 @@ export function CertificateFabricPrototype() {
     toast.success(`Modelo "${tmpl.name}" carregado!`);
   };
 
-  const handleAddElement = (type: 'text' | 'badge' | 'line') => {
+  const handleAddElement = (type: 'text' | 'badge' | 'line' | 'shape') => {
     commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
-      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
+      content: newElemText || (type === 'line' ? 'Linha divisória' : type === 'shape' ? 'Forma decorativa' : 'Elemento'),
       x: 50,
       y: 50,
       size: type === 'badge' ? 10 : 12,
       color: type === 'badge' ? '#0F766E' : '#333333',
+      fill: type === 'shape' ? '#dbeafe' : undefined,
+      stroke: type === 'shape' ? '#2563eb' : undefined,
+      strokeWidth: type === 'shape' ? 1 : 0,
+      shape: type === 'shape' ? 'rectangle' : undefined,
+      rotation: 0,
       align: 'center'
     }]);
     toast.success("Elemento adicionado à prancheta e conectado à emissão.");
@@ -207,15 +212,15 @@ export function CertificateFabricPrototype() {
     handleUpdateElement(id, { x: Math.round(x), y: Math.round(y) });
   };
 
-  const handleNewElementDragStart = (e: React.DragEvent<HTMLButtonElement>, type: 'text' | 'badge' | 'line') => {
+  const handleNewElementDragStart = (e: React.DragEvent<HTMLButtonElement>, type: 'text' | 'badge' | 'line' | 'shape') => {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('application/x-certificate-element', type);
   };
 
   const handleNewElementDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const type = e.dataTransfer.getData('application/x-certificate-element') as 'text' | 'badge' | 'line';
-    if (!['text', 'badge', 'line'].includes(type)) return;
+    const type = e.dataTransfer.getData('application/x-certificate-element') as 'text' | 'badge' | 'line' | 'shape';
+    if (!['text', 'badge', 'line', 'shape'].includes(type)) return;
     const rect = artboardRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = Math.max(4, Math.min(96, ((e.clientX - rect.left) / rect.width) * 100));
@@ -223,11 +228,16 @@ export function CertificateFabricPrototype() {
     commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
-      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
+      content: newElemText || (type === 'line' ? 'Linha divisória' : type === 'shape' ? 'Forma decorativa' : 'Elemento'),
       x: Math.round(x),
       y: Math.round(y),
       size: type === 'badge' ? 10 : 12,
       color: type === 'badge' ? '#0F766E' : '#333333',
+      fill: type === 'shape' ? '#dbeafe' : undefined,
+      stroke: type === 'shape' ? '#2563eb' : undefined,
+      strokeWidth: type === 'shape' ? 1 : 0,
+      shape: type === 'shape' ? 'rectangle' : undefined,
+      rotation: 0,
       align: 'center'
     }]);
     toast.success('Elemento posicionado na prancheta.');
@@ -462,6 +472,7 @@ export function CertificateFabricPrototype() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'line')} onClick={() => handleAddElement('line')} size="sm" variant="outline" className="h-8 text-xs">Linha</Button>
+                    <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'shape')} onClick={() => handleAddElement('shape')} size="sm" variant="outline" className="h-8 border-blue-300 bg-blue-50 text-xs text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200">Forma</Button>
                     <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-border bg-background px-3 text-xs font-bold text-foreground hover:bg-muted">
                       Imagem / logo
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
@@ -480,6 +491,7 @@ export function CertificateFabricPrototype() {
                           <option value="badge">Badge</option>
                           <option value="line">Linha</option>
                           <option value="image">Imagem</option>
+                          <option value="shape">Forma</option>
                         </select>
                         <input
                           value={el.content}
@@ -584,7 +596,9 @@ export function CertificateFabricPrototype() {
                   </h4>
                   <div className="flex items-center gap-1">
                     {extraElements.map(el => (
-                      el.type === 'image' && el.src ? (
+                      el.type === 'shape' ? (
+                        <span key={el.id} className="absolute cursor-move rounded-lg border-2 shadow-sm hover:ring-2 hover:ring-blue-500" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30, width: `${el.width || 140}px`, height: `${el.height || 80}px`, transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`, backgroundColor: el.fill || el.color || '#dbeafe', borderColor: el.stroke || el.color || '#2563eb', borderWidth: `${el.strokeWidth || 1}px`, borderRadius: el.shape === 'circle' || el.shape === 'pill' ? '9999px' : el.shape === 'diamond' ? '0' : '10px', opacity: el.opacity ?? 1 }} draggable onDragEnd={(e) => handleElementDragEnd(el.id, e)} aria-label={el.content} />
+                      ) : el.type === 'image' && el.src ? (
                         <img
                           key={el.id}
                           src={el.src}
