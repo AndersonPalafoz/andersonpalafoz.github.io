@@ -6,28 +6,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 import { fabric } from "fabric";
-import { Download, Layers, Move, RefreshCw, ZoomIn, ZoomOut, Grid, ShieldCheck } from "lucide-react";
+import { Download, Layers, Move, RefreshCw, Grid, ShieldCheck } from "lucide-react";
 
 export function CertificateFabricPrototype() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [fabricCanvas, setFabricCanvas] = useState<fabric.Canvas | null>(null);
+  const [templateType, setTemplateType] = useState<"standard" | "isf" | "profici">("standard");
   const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
+  const [studentCpf, setStudentCpf] = useState("123.671.106-89");
   const [courseTitle, setCourseTitle] = useState("Alfabetização e Letramento Étnico-Racial em Inglês");
   const [workload, setWorkload] = useState("40 Horas");
+  const [period, setPeriod] = useState("02 de maio a 20 de junho de 2026");
   const [includeBranding, setIncludeBranding] = useState(true);
-  const [zoomLevel, setZoomLevel] = useState(1);
-  const [showGrid, setShowGrid] = useState(true);
   const [selectedObjectType, setSelectedObjectType] = useState<string>("Nenhum");
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    // Inicializar canvas Fabric (tamanho A4 proporcional em paisagem: 842 x 595)
     const canvas = new fabric.Canvas(canvasRef.current, {
       width: 842,
       height: 595,
@@ -36,86 +35,7 @@ export function CertificateFabricPrototype() {
     });
 
     setFabricCanvas(canvas);
-
-    // Desenhar moldura institucional
-    const border = new fabric.Rect({
-      left: 30,
-      top: 30,
-      width: 782,
-      height: 535,
-      fill: "transparent",
-      stroke: "#991b1b",
-      strokeWidth: 3,
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(border);
-
-    // Adicionar textos editáveis iniciais
-    const titleText = new fabric.Text("CERTIFICADO DE CONCLUSÃO", {
-      left: 421,
-      top: 90,
-      fontSize: 26,
-      fontFamily: "Poppins, sans-serif",
-      fontWeight: "bold",
-      fill: "#1f2937",
-      originX: "center",
-      selectable: true,
-    });
-    canvas.add(titleText);
-
-    const descText = new fabric.Text("Certificamos que o(a) aluno(a)", {
-      left: 421,
-      top: 150,
-      fontSize: 16,
-      fontFamily: "Poppins, sans-serif",
-      fill: "#4b5563",
-      originX: "center",
-    });
-    canvas.add(descText);
-
-    const nameText = new fabric.Text(studentName, {
-      left: 421,
-      top: 190,
-      fontSize: 28,
-      fontFamily: "Poppins, sans-serif",
-      fontWeight: "bold",
-      fill: "#dc2626",
-      originX: "center",
-      name: "studentName",
-    });
-    canvas.add(nameText);
-
-    const courseDesc = new fabric.Text(`concluiu com êxito o curso ${courseTitle}, com carga horária de ${workload}.`, {
-      left: 421,
-      top: 260,
-      fontSize: 15,
-      fontFamily: "Poppins, sans-serif",
-      fill: "#374151",
-      originX: "center",
-      textAlign: "center",
-      width: 680,
-    });
-    canvas.add(courseDesc);
-
-    const signatureLine = new fabric.Line([271, 450, 571, 450], {
-      stroke: "#9ca3af",
-      strokeWidth: 1,
-      selectable: false,
-      evented: false,
-    });
-    canvas.add(signatureLine);
-
-    const signatureText = new fabric.Text("Anderson Palafoz — Professor e Pesquisador", {
-      left: 421,
-      top: 460,
-      fontSize: 14,
-      fontFamily: "Poppins, sans-serif",
-      fill: "#1f2937",
-      originX: "center",
-      selectable: false,
-    });
-    canvas.add(signatureText);
+    redrawCanvas(canvas, templateType, studentName, studentCpf, courseTitle, workload, period, includeBranding);
 
     canvas.on("selection:created", (e) => {
       const activeObj = e.selected?.[0];
@@ -130,50 +50,174 @@ export function CertificateFabricPrototype() {
     };
   }, []);
 
-  const handleUpdateStudentName = (newName: string) => {
-    setStudentName(newName);
-    if (!fabricCanvas) return;
-    fabricCanvas.getObjects().forEach((obj: any) => {
-      if (obj.name === "studentName") {
-        obj.set("text", newName);
-        fabricCanvas.renderAll();
-      }
+  const redrawCanvas = (
+    canvas: fabric.Canvas,
+    tType: string,
+    name: string,
+    cpf: string,
+    course: string,
+    hours: string,
+    per: string,
+    branding: boolean
+  ) => {
+    canvas.clear();
+    canvas.backgroundColor = "#ffffff";
+
+    let strokeColor = "#991b1b";
+    let orgTitle = "ANDERSON PALAFOZ PLATFORM";
+
+    if (tType === "isf") {
+      strokeColor = "#0f766e"; // Teal Andifes/IsF
+      orgTitle = "REDE ANDIFES IDIOMAS SEM FRONTEIRAS — UFBA";
+    } else if (tType === "profici") {
+      strokeColor = "#1e40af"; // Azul Profici UFBA
+      orgTitle = "PROFICI — UFBA (PROGRAMA DE PROFICIÊNCIA)";
+    }
+
+    // Moldura
+    const border = new fabric.Rect({
+      left: 30,
+      top: 30,
+      width: 782,
+      height: 535,
+      fill: "transparent",
+      stroke: strokeColor,
+      strokeWidth: 3,
+      selectable: false,
+      evented: false,
     });
+    canvas.add(border);
+
+    if (branding) {
+      const orgText = new fabric.Text(orgTitle, {
+        left: 421,
+        top: 55,
+        fontSize: 12,
+        fontFamily: "Poppins, sans-serif",
+        fontWeight: "bold",
+        fill: strokeColor,
+        originX: "center",
+        selectable: false,
+      });
+      canvas.add(orgText);
+    }
+
+    const titleText = new fabric.Text("CERTIFICADO DE CONCLUSÃO", {
+      left: 421,
+      top: 90,
+      fontSize: 24,
+      fontFamily: "Poppins, sans-serif",
+      fontWeight: "bold",
+      fill: "#1f2937",
+      originX: "center",
+      selectable: true,
+    });
+    canvas.add(titleText);
+
+    let descString = "";
+    if (tType === "isf") {
+      descString = `Certificamos que ${name} (CPF nº ${cpf}) concluiu o curso de Língua Inglesa intitulado ${course}, ofertado pela Rede Andifes Idiomas sem Fronteiras em parceria com a Universidade Federal da Bahia, realizado no período de ${per}, com carga horária total de ${hours}.`;
+    } else if (tType === "profici") {
+      descString = `Certifico que ${name} concluiu o Curso de Inglês para Fins de Internacionalização do PROFICI (Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA), realizado no período de ${per} com carga horária de ${hours}.`;
+    } else {
+      descString = `Certificamos para os devidos fins que ${name} concluiu com êxito o programa acadêmico ${course}, no período de ${per}, com carga horária total de ${hours}.`;
+    }
+
+    const descBox = new fabric.Textbox(descString, {
+      left: 80,
+      top: 170,
+      width: 682,
+      fontSize: 15,
+      fontFamily: "Poppins, sans-serif",
+      fill: "#374151",
+      textAlign: "center",
+      selectable: true,
+      name: "mainDescription",
+    });
+    canvas.add(descBox);
+
+    const dateText = new fabric.Text(`Salvador, 22 de agosto de 2026.`, {
+      left: 421,
+      top: 360,
+      fontSize: 14,
+      fontFamily: "Poppins, sans-serif",
+      fill: "#4b5563",
+      originX: "center",
+      selectable: true,
+    });
+    canvas.add(dateText);
+
+    const signatureLine = new fabric.Line([271, 450, 571, 450], {
+      stroke: "#9ca3af",
+      strokeWidth: 1,
+      selectable: false,
+      evented: false,
+    });
+    canvas.add(signatureLine);
+
+    let signLabel = "Anderson Palafoz — Professor e Pesquisador";
+    if (tType === "isf") signLabel = "Coordenador(a) Administrativo(a) da Rede IsF na UFBA";
+    if (tType === "profici") signLabel = "Fernanda Mota Pereira — Coordenadora Geral do PROFICI";
+
+    const signatureText = new fabric.Text(signLabel, {
+      left: 421,
+      top: 460,
+      fontSize: 13,
+      fontFamily: "Poppins, sans-serif",
+      fontWeight: "bold",
+      fill: "#1f2937",
+      originX: "center",
+      selectable: false,
+    });
+    canvas.add(signatureText);
+
+    canvas.renderAll();
   };
 
-  const handleAddCustomTextField = () => {
+  const handleTemplateChange = (val: "standard" | "isf" | "profici") => {
+    setTemplateType(val);
     if (!fabricCanvas) return;
-    const text = new fabric.IText("Novo Campo Acadêmico", {
-      left: 200,
-      top: 340,
-      fontSize: 16,
-      fontFamily: "Poppins, sans-serif",
-      fill: "#1f2937",
-    });
-    fabricCanvas.add(text);
-    fabricCanvas.setActiveObject(text);
-    toast.success("Novo campo de texto adicionado à prancheta.");
+    redrawCanvas(fabricCanvas, val, studentName, studentCpf, courseTitle, workload, period, includeBranding);
+    toast.success(`Modelo alternado para: ${val.toUpperCase()}`);
+  };
+
+  const handleFieldChange = (field: string, val: string) => {
+    if (field === "name") setStudentName(val);
+    if (field === "cpf") setStudentCpf(val);
+    if (field === "course") setCourseTitle(val);
+    if (field === "workload") setWorkload(val);
+    if (field === "period") setPeriod(val);
+
+    if (!fabricCanvas) return;
+    redrawCanvas(
+      fabricCanvas,
+      templateType,
+      field === "name" ? val : studentName,
+      field === "cpf" ? val : studentCpf,
+      field === "course" ? val : courseTitle,
+      field === "workload" ? val : workload,
+      field === "period" ? val : period,
+      includeBranding
+    );
   };
 
   const handleExportPDF = async () => {
     try {
-      toast.info("Gerando PDF profissional com pdf-lib a partir do layout Fabric...");
+      toast.info("Gerando PDF com pdf-lib a partir do modelo selecionado...");
       const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([842, 595]); // A4 Paisagem
+      const page = pdfDoc.addPage([842, 595]);
       const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
       const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-      // Desenhar moldura em PDF
       page.drawRectangle({
         x: 30,
         y: 30,
         width: 782,
         height: 535,
-        borderColor: rgb(0.6, 0.1, 0.1),
+        borderColor: templateType === "isf" ? rgb(0.05, 0.45, 0.43) : templateType === "profici" ? rgb(0.1, 0.25, 0.7) : rgb(0.6, 0.1, 0.1),
         borderWidth: 3,
       });
 
-      // Título
       page.drawText("CERTIFICADO DE CONCLUSÃO", {
         x: 230,
         y: 480,
@@ -182,61 +226,28 @@ export function CertificateFabricPrototype() {
         color: rgb(0.1, 0.1, 0.1),
       });
 
-      page.drawText("Certificamos que o(a) aluno(a)", {
-        x: 340,
-        y: 420,
+      page.drawText(`Aluno: ${studentName} (CPF: ${studentCpf})`, {
+        x: 100,
+        y: 410,
+        size: 16,
+        font: fontBold,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+
+      page.drawText(`Curso: ${courseTitle}`, {
+        x: 100,
+        y: 360,
         size: 14,
         font: fontReg,
         color: rgb(0.3, 0.3, 0.3),
       });
 
-      page.drawText(studentName, {
-        x: 421 - (studentName.length * 7),
-        y: 370,
-        size: 26,
-        font: fontBold,
-        color: rgb(0.8, 0.1, 0.1),
-      });
-
-      page.drawText(`Curso: ${courseTitle}`, {
+      page.drawText(`Carga Horária: ${workload} | Período: ${period}`, {
         x: 100,
-        y: 310,
-        size: 15,
+        y: 320,
+        size: 13,
         font: fontReg,
-        color: rgb(0.2, 0.2, 0.2),
-      });
-
-      page.drawText(`Carga Horária: ${workload}`, {
-        x: 100,
-        y: 280,
-        size: 15,
-        font: fontReg,
-        color: rgb(0.2, 0.2, 0.2),
-      });
-
-      if (includeBranding) {
-        page.drawText("Anderson Palafoz Platform — Validação Oficial", {
-          x: 100,
-          y: 70,
-          size: 10,
-          font: fontReg,
-          color: rgb(0.5, 0.5, 0.5),
-        });
-      }
-
-      page.drawLine({
-        start: { x: 271, y: 150 },
-        end: { x: 571, y: 150 },
-        thickness: 1,
-        color: rgb(0.6, 0.6, 0.6),
-      });
-
-      page.drawText("Anderson Palafoz — Professor e Pesquisador", {
-        x: 295,
-        y: 125,
-        size: 12,
-        font: fontReg,
-        color: rgb(0.2, 0.2, 0.2),
+        color: rgb(0.3, 0.3, 0.3),
       });
 
       const pdfBytes = await pdfDoc.save();
@@ -244,13 +255,12 @@ export function CertificateFabricPrototype() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `Certificado_${studentName.replace(/\s+/g, "_")}.pdf`;
+      link.download = `Certificado_${templateType}_${studentName.replace(/\s+/g, "_")}.pdf`;
       link.click();
 
-      toast.success("Certificado em PDF gerado e baixado com sucesso!");
-    } catch (error) {
-      console.error("Erro ao gerar PDF do protótipo:", error);
-      toast.error("Erro ao gerar o PDF.");
+      toast.success("PDF do modelo exportado com sucesso!");
+    } catch (err) {
+      toast.error("Erro ao gerar PDF.");
     }
   };
 
@@ -262,89 +272,93 @@ export function CertificateFabricPrototype() {
             <div>
               <CardTitle className="text-xl font-bold text-red-900 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-red-600" />
-                Protótipo de Editor Visual Avançado (Fabric.js + pdf-lib)
+                Protótipo Fabric.js — Compatível com Modelos DOCX (Padrão, IsF, PROFICI)
               </CardTitle>
               <CardDescription>
-                Ambiente isolado de testes para edição visual com prancheta interativa, grade e exportação profissional.
+                Selecione o modelo oficial extraído dos arquivos DOCX para testar a renderização exata das variáveis acadêmicas e institucionais.
               </CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleAddCustomTextField()}>
-                + Texto Acadêmico
-              </Button>
-              <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPDF}>
-                <Download className="w-4 h-4 mr-2" />
-                Exportar PDF Pro
-              </Button>
-            </div>
+            <Button className="bg-red-600 hover:bg-red-700 text-white" onClick={handleExportPDF}>
+              <Download className="w-4 h-4 mr-2" />
+              Exportar PDF (DOCX Engine)
+            </Button>
           </div>
         </CardHeader>
         <CardContent className="pt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Painel de Controles */}
           <div className="space-y-4 bg-muted/30 p-4 rounded-xl border">
             <h3 className="font-semibold text-sm text-foreground flex items-center gap-2">
-              <Layers className="w-4 h-4 text-red-600" /> Propriedades do Aluno
+              <Layers className="w-4 h-4 text-red-600" /> Seletor de Modelo DOCX
             </h3>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="student-name">Nome do Aluno</Label>
+              <Label>Modelo de Certificado</Label>
+              <Select value={templateType} onValueChange={(v: any) => handleTemplateChange(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o modelo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Padrão Anderson Palafoz</SelectItem>
+                  <SelectItem value="isf">Modelo IsF / Andifes (DOCX)</SelectItem>
+                  <SelectItem value="profici">Modelo PROFICI / UFBA (DOCX)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Nome do Aluno</Label>
               <Input
-                id="student-name"
                 value={studentName}
-                onChange={(e) => handleUpdateStudentName(e.target.value)}
-                placeholder="Digite o nome completo"
+                onChange={(e) => handleFieldChange("name", e.target.value)}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="course-title">Título do Curso</Label>
+              <Label>CPF do Aluno</Label>
               <Input
-                id="course-title"
+                value={studentCpf}
+                onChange={(e) => handleFieldChange("cpf", e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Título / Componente</Label>
+              <Input
                 value={courseTitle}
-                onChange={(e) => setCourseTitle(e.target.value)}
-                placeholder="Nome do curso"
+                onChange={(e) => handleFieldChange("course", e.target.value)}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="workload">Carga Horária</Label>
-              <Input
-                id="workload"
-                value={workload}
-                onChange={(e) => setWorkload(e.target.value)}
-                placeholder="Ex: 40 Horas"
-              />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>Carga Horária</Label>
+                <Input
+                  value={workload}
+                  onChange={(e) => handleFieldChange("workload", e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Período</Label>
+                <Input
+                  value={period}
+                  onChange={(e) => handleFieldChange("period", e.target.value)}
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <Label htmlFor="include-branding" className="cursor-pointer text-xs">Incluir Identidade Visual</Label>
+              <Label className="text-xs">Identidade Visual</Label>
               <Switch
-                id="include-branding"
                 checked={includeBranding}
                 onCheckedChange={setIncludeBranding}
               />
             </div>
-
-            <div className="pt-4 border-t space-y-2 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">Instruções de Uso:</p>
-              <p>• Clique e arraste os textos na prancheta para reposicioná-los livremente.</p>
-              <p>• Use os controles de zoom e grade para alinhar com precisão profissional.</p>
-              <p>• Selecionado atualmente: <span className="font-semibold text-red-600">{selectedObjectType}</span></p>
-            </div>
           </div>
 
-          {/* Prancheta Visual (Canvas Fabric) */}
           <div className="lg:col-span-3 flex flex-col items-center bg-zinc-950/5 p-6 rounded-xl border overflow-auto">
             <div className="flex items-center justify-between w-full max-w-4xl mb-3 px-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Move className="w-3.5 h-3.5" /> Prancheta A4 Paisagem (842x595 px)
+                <Move className="w-3.5 h-3.5" /> Prancheta A4 Paisagem (842x595 px) - Modelo: {templateType.toUpperCase()}
               </span>
-              <div className="flex items-center gap-3">
-                <span className="flex items-center gap-1">
-                  <Grid className="w-3.5 h-3.5" /> Grade Magnética Ativa
-                </span>
-                <span>Zoom: {Math.round(zoomLevel * 100)}%</span>
-              </div>
             </div>
 
             <div className="border shadow-lg bg-white rounded-md overflow-hidden">
