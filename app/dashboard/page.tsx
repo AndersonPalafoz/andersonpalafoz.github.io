@@ -52,7 +52,7 @@ export default async function DashboardPage() {
       <StreakCelebrationModal />
       <OnboardingModal />
 
-      <header className="flex flex-col gap-4 border-b border-border/70 pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <header className="dashboard-hero flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7">
         <div>
           <span className="eyebrow">Área do aluno</span>
           <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Olá, {primeiroNome}</h1>
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
 
       <section aria-label="Resumo acadêmico" className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {metrics.map(({ label, value, icon: Icon, tone }) => (
-          <article key={label} className="surface-card interactive-card p-5 sm:p-6">
+          <article key={label} className="metric-card interactive-card">
             <div className="flex items-start justify-between gap-4">
               <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tone}`}><Icon size={21} /></div>
               <span className="text-3xl font-black tracking-tight text-foreground">{value}</span>
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
               const percentage = enrollment.resume?.percentage ?? enrollment.progress;
               const courseHref = enrollment.resume?.lesson ? `/cursos/${enrollment.course?.id}/aulas/${enrollment.resume.lesson.id}` : `/cursos/${enrollment.course?.id}`;
               return (
-                <article key={enrollment.id} className="surface-card interactive-card overflow-hidden p-5 sm:p-6">
+                <article key={enrollment.id} className="surface-card interactive-card overflow-hidden rounded-3xl p-5 sm:p-6">
                   <div className="flex items-start gap-4">
                     {enrollment.course?.imageUrl ? <img src={enrollment.course.imageUrl} alt="" className="h-16 w-24 shrink-0 rounded-2xl object-cover" /> : <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-400 dark:bg-red-950/40"><BookOpen size={22} /></div>}
                     <div className="min-w-0 flex-1">

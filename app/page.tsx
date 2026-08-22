@@ -40,14 +40,14 @@ export default async function HomePage() {
   const stat1Title = String(lessonCount);
 
   return (
-    <div className="w-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-red-600 selection:text-white">
+    <div className="site-shell w-full text-slate-900 selection:bg-red-600 selection:text-white dark:text-slate-100">
       {/* Hero Section Refinada */}
-      <section className="relative min-h-[90vh] flex items-center py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-b from-white via-slate-50 to-slate-100 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950 border-b border-slate-200/80 dark:border-slate-800">
+      <section className="public-hero relative min-h-[90vh] flex items-center py-24 px-4 sm:px-6 lg:px-8 border-b border-slate-200/80 dark:border-slate-800">
         <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] dark:bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
         
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           <div className="lg:col-span-7 space-y-8 text-left">
-            <div className="inline-flex items-center gap-2 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900/50 px-4 py-2 rounded-full text-red-700 dark:text-red-300 text-xs font-black uppercase tracking-wider shadow-xs">
+              <div className="section-kicker shadow-sm">
               <Sparkles size={15} /> Metodologia Exclusiva & Interativa
             </div>
 
@@ -105,9 +105,9 @@ export default async function HomePage() {
       </section>
 
       {/* Destaques da Plataforma */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section className="public-section page-container py-20">
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <span className="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400">Metodologia Comprovada</span>
+          <span className="section-kicker">Metodologia comprovada</span>
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight">Por que estudar com Anderson Palafoz?</h2>
           <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
             Uma abordagem autoral desenvolvida por Anderson Palafoz que une o rigor da morfossintaxe universitária, o modelo ESA (Engage, Study, Activate) e aulas dinâmicas para acelerar a fluência natural.
@@ -115,7 +115,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all space-y-4">
+          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <BookOpen size={24} />
             </div>
@@ -125,7 +125,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all space-y-4">
+          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Sparkles size={24} />
             </div>
@@ -135,7 +135,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-lg hover:shadow-xl transition-all space-y-4">
+          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Award size={24} />
             </div>
