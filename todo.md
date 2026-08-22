@@ -1360,7 +1360,7 @@
 - [x] Auditar e corrigir contraste, fundos, textos, badges, links e estados interativos no modo escuro de `/cursos/[id]`
 
 ## Retomada do Incidente HTTP 500 em Turmas Externas
-- [ ] Confirmar a correção da rota `/api/professor/external-classes` com teste autenticado e verificar compatibilidade do schema de produção
+- [x] Confirmar a correção da rota `/api/professor/external-classes` com teste autenticado e verificar compatibilidade do schema de produção; a resposta autenticada retornou HTTP 200 com `{ success: true, classes: [] }` e o schema ativo contém as colunas exigidas.
 
 ## Homologação Multimídia do Player de Aulas
 - [x] Auditar o player no curso de teste 5 e na aula 4 para reprodução de vídeos hospedados localmente ou externamente
@@ -1962,9 +1962,9 @@
 
 ## Investigação Definitiva da Tela de Erro no Site Publicado — 22/08/2026
 
-- [ ] Auditar o status de deploy no painel/CLI, a configuração de build e se há divergência entre a versão local e a publicada na Vercel (`andersonpalafoz.vercel.app`).
-- [ ] Verificar se há exceções não tratadas no carregamento de componentes de certificados em produção.
-- [ ] Orientar o usuário sobre a necessidade de novo deploy na Vercel para refletir o checkpoint atualizado com o carregamento dinâmico dos editores.
+- [x] Auditar o status de deploy no painel/CLI, a configuração de build e se há divergência entre a versão local e a publicada na Vercel (`andersonpalafoz.vercel.app`); o projeto correto está vinculado ao repositório e o deployment `b899f25e` estava READY.
+- [x] Verificar se há exceções não tratadas no carregamento de componentes de certificados em produção; a causa autenticada foi identificada no Navbar global, e não nos editores de certificados.
+- [x] Orientar o usuário sobre a necessidade de novo deploy na Vercel para refletir o checkpoint atualizado com o carregamento dinâmico dos editores; a orientação foi enviada e o checkpoint atualizado foi salvo.
 
 ## Investigação Autenticada da Tela de Erro em `/admin/certificados` — 22/08/2026
 
@@ -1976,3 +1976,9 @@
 - [x] Executar a suíte completa; 136 arquivos e 417 testes aprovados.
 - [x] Executar build de produção; concluído sem erros após a correção de `next/image`.
 - [x] Salvar checkpoint da correção e orientar a publicação da versão atualizada.
+
+## Investigação da Tela de Erro em `/admin` — 22/08/2026
+
+- [x] Auditar a rota e o layout raiz do painel administrativo (`app/admin/layout.tsx` ou equivalente) para identificar o motivo da mensagem "Não foi possível carregar esta área" sob sessão autenticada; identificada incompatibilidade na prop `commerce` repassada para `<AdminCommerceMonitor />` em `app/admin/page.tsx`.
+- [x] Verificar permissões e checagens de role (`admin`, `super_admin`) que possam rejeitar o usuário logado e disparar o error boundary do admin; a verificação de papéis estava correta, sendo o crash causado exclusivamente pelo erro de renderização do monitor de comércio.
+- [x] Aplicar correção, validar o build de produção e salvar checkpoint atualizado; o build de produção passou com 100% de sucesso.
