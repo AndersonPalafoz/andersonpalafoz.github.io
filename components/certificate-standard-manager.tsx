@@ -11,6 +11,7 @@ import { useCertificateWorkspace } from "@/components/certificate-workspace-cont
 import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
 import { parseCertificateComposition, type CertificateVisualVariant } from "@/lib/certificate-composition";
 import { CERTIFICATE_VISUAL_VARIANT_LIST } from "@/lib/certificate-visual-variants";
+import { getCertificateLayoutPreset } from "@/lib/certificate-layout-presets";
 
 export function CertificateStandardManager() {
   const {
@@ -259,14 +260,28 @@ export function CertificateStandardManager() {
                       A escolha é aplicada à prévia e à composição enviada para emissão.
                     </p>
                   </div>
-                  <Select value={visualVariant} onValueChange={value => setVisualVariant(value as CertificateVisualVariant)}>
+                  <Select
+                    value={visualVariant}
+                    onValueChange={value => {
+                      const nextVariant = value as CertificateVisualVariant;
+                      setVisualVariant(nextVariant);
+                      updateComposition(current => ({
+                        ...current,
+                        visualVariant: nextVariant,
+                        fieldMappings: {
+                          ...current.fieldMappings,
+                          ...getCertificateLayoutPreset(nextVariant),
+                        },
+                      }));
+                    }}
+                  >
                     <SelectTrigger id="std-visual-variant" className="bg-white dark:bg-background">
                       <SelectValue placeholder="Escolha uma variação" />
                     </SelectTrigger>
                     <SelectContent>
                       {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => (
                         <SelectItem key={variant.id} value={variant.id}>
-                          {variant.label}
+                          {variant.label} · {variant.family}
                         </SelectItem>
                       ))}
                     </SelectContent>

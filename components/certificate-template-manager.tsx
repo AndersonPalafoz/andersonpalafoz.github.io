@@ -15,6 +15,7 @@ import {
   CERTIFICATE_VISUAL_VARIANT_LIST,
   getCertificateVisualVariant,
 } from "@/lib/certificate-visual-variants";
+import { getCertificateLayoutPreset } from "@/lib/certificate-layout-presets";
 
 type CertificateTemplate = {
   id: number;
@@ -52,6 +53,7 @@ export function CertificateTemplateManager() {
   const [previewCode, setPreviewCode] = useState(sampleData.certificateCode);
   const [previewDate, setPreviewDate] = useState(sampleData.issuedAt);
   const [activePreset, setActivePreset] = useState<CertificateVisualVariant>(visualVariant);
+  const [libraryFilter, setLibraryFilter] = useState("Todos");
 
   const [customElements, setCustomElements] = useState<CertificateCompositionElement[]>(composition.elements);
 
@@ -111,6 +113,13 @@ export function CertificateTemplateManager() {
     { key: "institutionName", label: "Instituição parceira", value: sampleData.institutionName },
   ];
   const currentVariant = getCertificateVisualVariant(visualVariant);
+  const variantFamilies = [
+    "Todos",
+    ...Array.from(new Set(CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.family))),
+  ];
+  const visibleVariants = libraryFilter === "Todos"
+    ? CERTIFICATE_VISUAL_VARIANT_LIST
+    : CERTIFICATE_VISUAL_VARIANT_LIST.filter(variant => variant.family === libraryFilter);
 
   function commitFieldMappings(next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>>) {
     setFieldMappings(next);
@@ -128,61 +137,7 @@ export function CertificateTemplateManager() {
   function applyPreset(preset: CertificateVisualVariant) {
     setActivePreset(preset);
     setVisualVariant(preset);
-    let next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>> = {};
-    if (preset === "profici") {
-      next = {
-        institutionName: { x: 70, y: 70, size: 11, maxWidth: 350 },
-        studentName: { x: 120, y: 210, size: 20, maxWidth: 540 },
-        studentCpf: { x: 120, y: 240, size: 12, maxWidth: 220 },
-        courseTitle: { x: 120, y: 280, size: 15, maxWidth: 520 },
-        level: { x: 500, y: 280, size: 14, maxWidth: 180 },
-        workloadHours: { x: 120, y: 320, size: 12, maxWidth: 180 },
-        period: { x: 300, y: 320, size: 12, maxWidth: 260 },
-        issuedAt: { x: 120, y: 420, size: 11, maxWidth: 180 },
-        coordinatorName: { x: 480, y: 420, size: 11, maxWidth: 220 },
-        certificateCode: { x: 560, y: 460, size: 10, maxWidth: 180 },
-      };
-    } else if (preset === "isf") {
-      next = {
-        institutionName: { x: 60, y: 60, size: 11, maxWidth: 380 },
-        studentName: { x: 100, y: 200, size: 21, maxWidth: 560 },
-        studentCpf: { x: 100, y: 235, size: 12, maxWidth: 220 },
-        courseTitle: { x: 100, y: 275, size: 16, maxWidth: 520 },
-        level: { x: 480, y: 275, size: 14, maxWidth: 200 },
-        workloadHours: { x: 100, y: 315, size: 12, maxWidth: 180 },
-        period: { x: 290, y: 315, size: 12, maxWidth: 260 },
-        coordinatorName: { x: 460, y: 410, size: 11, maxWidth: 220 },
-        issuedAt: { x: 100, y: 410, size: 11, maxWidth: 180 },
-        certificateCode: { x: 540, y: 455, size: 10, maxWidth: 180 },
-      };
-    } else if (preset === "minimal") {
-      next = {
-        studentName: { x: 90, y: 315, size: 27, maxWidth: 650, weight: "bold" },
-        courseTitle: { x: 90, y: 250, size: 19, maxWidth: 620, weight: "bold" },
-        level: { x: 90, y: 215, size: 13, maxWidth: 260 },
-        issuedAt: { x: 90, y: 120, size: 11, maxWidth: 180 },
-        certificateCode: { x: 90, y: 95, size: 10, maxWidth: 240 },
-        workloadHours: { x: 390, y: 215, size: 13, maxWidth: 170 },
-        studentCpf: { x: 90, y: 285, size: 11, maxWidth: 260 },
-        period: { x: 560, y: 215, size: 13, maxWidth: 190 },
-        coordinatorName: { x: 560, y: 120, size: 11, maxWidth: 190 },
-        institutionName: { x: 90, y: 505, size: 13, maxWidth: 360 },
-      };
-    } else {
-      next = {
-        studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
-        courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
-        level: { x: 300, y: 300, size: 13, maxWidth: 300 },
-        issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
-        certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
-        workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
-        studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
-        period: { x: 300, y: 360, size: 12, maxWidth: 240 },
-        coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
-        institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
-      };
-    }
-    commitFieldMappings(next);
+    commitFieldMappings(getCertificateLayoutPreset(preset));
   }
 
   function handleFieldDragStart(
@@ -546,8 +501,22 @@ export function CertificateTemplateManager() {
                   Ativa: {getCertificateVisualVariant(visualVariant).shortLabel}
                 </div>
               </div>
+              <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filtrar modelos por família">
+                {variantFamilies.map(family => (
+                  <button
+                    key={family}
+                    type="button"
+                    role="tab"
+                    aria-selected={libraryFilter === family}
+                    onClick={() => setLibraryFilter(family)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition ${libraryFilter === family ? "border-red-600 bg-red-600 text-white" : "border-border bg-muted/30 text-muted-foreground hover:border-red-300 hover:text-red-700"}`}
+                  >
+                    {family}
+                  </button>
+                ))}
+              </div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => {
+                {visibleVariants.map(variant => {
                   const isActive = activePreset === variant.id;
                   return (
                     <button
@@ -567,14 +536,20 @@ export function CertificateTemplateManager() {
                       <span className="mb-2 flex items-center justify-between gap-2">
                         <span className="h-1.5 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
                         <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${isActive ? "bg-red-600 text-white" : "bg-background text-muted-foreground"}`}>
-                          {isActive ? "Ativa" : variant.shortLabel}
+                          {isActive ? "Ativa" : variant.family}
                         </span>
                       </span>
                       <span className="block text-xs font-black text-foreground">{variant.label}</span>
                       <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">{variant.description}</span>
+                      <span className="mt-2 block text-[9px] font-semibold uppercase tracking-wide" style={{ color: variant.accentDark }}>Ideal para: {variant.recommendedFor}</span>
                     </button>
                   );
                 })}
+              </div>
+              <div className="mt-3 flex flex-col gap-1 rounded-xl border border-border/70 bg-muted/25 px-3 py-2.5 text-[10px] sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-black uppercase tracking-[0.12em] text-muted-foreground">Modelo ativo</span>
+                <span className="font-bold text-foreground">{currentVariant.label} · {currentVariant.family}</span>
+                <span className="text-muted-foreground">{currentVariant.recommendedFor}</span>
               </div>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
@@ -623,6 +598,27 @@ export function CertificateTemplateManager() {
                   {currentVariant.motif === "double" && <div className="pointer-events-none absolute inset-[30px] rounded border" style={{ borderColor: `${currentVariant.accent}66` }} />}
                   {currentVariant.motif === "institutional" && <div className="pointer-events-none absolute left-0 top-0 h-full w-4" style={{ backgroundColor: currentVariant.accent }} />}
                   {currentVariant.motif === "editorial" && <div className="pointer-events-none absolute left-0 top-0 h-10 w-full" style={{ backgroundColor: currentVariant.ink }} />}
+                  {currentVariant.motif === "laureate" && (
+                    <>
+                      <div className="pointer-events-none absolute inset-[24px] rounded-xl border-2" style={{ borderColor: currentVariant.border }} />
+                      <div className="pointer-events-none absolute left-12 top-12 h-7 w-7 border-l-2 border-t-2" style={{ borderColor: currentVariant.accent }} />
+                      <div className="pointer-events-none absolute right-12 top-12 h-7 w-7 border-r-2 border-t-2" style={{ borderColor: currentVariant.accent }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "botanical" && (
+                    <>
+                      <div className="pointer-events-none absolute -left-4 top-12 h-44 w-28 -rotate-12 rounded-[55%] border-2" style={{ borderColor: currentVariant.accent, opacity: 0.45 }} />
+                      <div className="pointer-events-none absolute -right-4 bottom-12 h-44 w-28 rotate-12 rounded-[55%] border-2" style={{ borderColor: currentVariant.accent, opacity: 0.45 }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "geometric" && (
+                    <>
+                      <div className="pointer-events-none absolute right-0 top-0 h-36 w-44 [clip-path:polygon(100%_0,100%_100%,0_0)]" style={{ backgroundColor: currentVariant.accentSoft }} />
+                      <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-36 [clip-path:polygon(0_100%,0_0,100%_100%)]" style={{ backgroundColor: currentVariant.accent, opacity: 0.12 }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "midnight" && <div className="pointer-events-none absolute inset-[24px] rounded-xl border" style={{ borderColor: currentVariant.accent }} />}
+                  <div className="pointer-events-none absolute bottom-[70px] left-[68px] right-[68px] top-[88px] rounded-xl border" style={{ borderColor: currentVariant.border, backgroundColor: currentVariant.panel, opacity: 0.58 }} />
                   <div className="pointer-events-none absolute left-10 top-7 z-[1] text-[9px] font-black uppercase tracking-[0.16em]" style={{ color: currentVariant.accent }}>{currentVariant.headerLabel}</div>
                   {includeSiteBranding && (
                     <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-2 shadow-sm ring-1 ring-red-600/10">
