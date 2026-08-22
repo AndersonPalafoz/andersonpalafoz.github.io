@@ -662,3 +662,108 @@ body {
     transform: none;
   }
 }
+
+
+.dashboard-bottom-nav {
+  padding-bottom: calc(0.375rem + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 767px) {
+  .dashboard-content {
+    overscroll-behavior-y: contain;
+  }
+
+  .dashboard-sidebar {
+    width: min(21rem, calc(100vw - 2rem));
+    border-radius: 0 1.5rem 1.5rem 0;
+  }
+}
+
+
+@media (max-width: 767px) {
+  .dashboard-content .snap-x {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .dashboard-content .snap-x::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dashboard-feature-card {
+    background:
+      radial-gradient(circle at 100% 0%, rgba(214, 40, 40, 0.1), transparent 14rem),
+      var(--surface);
+  }
+}
+
+
+@media (max-width: 767px) {
+  .dashboard-history-table thead {
+    display: none;
+  }
+
+  .dashboard-history-table,
+  .dashboard-history-table tbody,
+  .dashboard-history-table tr,
+  .dashboard-history-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .dashboard-history-table tbody {
+    padding: 0.5rem;
+  }
+
+  .dashboard-history-table tr {
+    margin-bottom: 0.65rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 1.1rem;
+    background: hsl(var(--card));
+    padding: 0.4rem;
+  }
+
+  .dashboard-history-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .dashboard-history-table td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 0;
+    padding: 0.6rem 0.7rem;
+    text-align: right;
+  }
+
+  .dashboard-history-table td:first-child {
+    display: block;
+    padding-bottom: 0.75rem;
+    text-align: left;
+  }
+
+  .dashboard-history-table td:not(:first-child)::before {
+    color: hsl(var(--muted-foreground));
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .dashboard-history-table td:last-child {
+    border-top: 1px solid var(--line-soft);
+    justify-content: flex-end;
+    padding-top: 0.75rem;
+  }
+
+  .dashboard-history-table td:last-child::before {
+    display: none;
+  }
+
+  .dashboard-history-table td:last-child a {
+    width: 100%;
+  }
+}
