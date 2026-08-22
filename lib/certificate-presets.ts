@@ -1,46 +1,66 @@
-export interface CertificatePreset {
+export interface CertificateComposition {
   id: "standard" | "isf" | "profici";
   name: string;
   organization: string;
   borderColor: string;
   primaryColor: string;
-  descriptionTemplate: (name: string, cpf: string, course: string, workload: string, period: string) => string;
-  defaultSigner: string;
-  defaultTitle: string;
+  title: string;
+  subtitle: string;
+  bodyTemplate: (name: string, cpf: string, course: string, workload: string, period: string) => string;
+  locationAndDate: string;
+  signerName: string;
+  signerRole: string;
+  showLogo: boolean;
+  fontSize: number;
 }
 
-export const CERTIFICATE_PRESETS: Record<string, CertificatePreset> = {
+export const CERTIFICATE_PRESETS: Record<string, CertificateComposition> = {
   standard: {
     id: "standard",
     name: "Padrão Anderson Palafoz",
     organization: "Anderson Palafoz Platform",
     borderColor: "#991b1b",
     primaryColor: "#dc2626",
-    descriptionTemplate: (name, cpf, course, workload, period) =>
-      `Certificamos para os devidos fins que ${name} concluiu com êxito o programa acadêmico ${course}, no período de ${period}, com carga horária total de ${workload}.`,
-    defaultSigner: "Anderson Bacelar Palafoz — Professor e Pesquisador",
-    defaultTitle: "CERTIFICADO DE CONCLUSÃO",
+    title: "CERTIFICADO DE CONCLUSÃO",
+    subtitle: "PROGRAMA OFICIAL DE ENSINO",
+    bodyTemplate: (name, cpf, course, workload, period) =>
+      `Certificamos para os devidos fins que ${name} (CPF: ${cpf}) concluiu com êxito o programa acadêmico ${course}, realizado no período de ${period}, com carga horária total de ${workload}.`,
+    locationAndDate: "Salvador, Bahia — Brasil, 22 de agosto de 2026.",
+    signerName: "Anderson Bacelar Palafoz",
+    signerRole: "Professor e Pesquisador — Fundador da Plataforma",
+    showLogo: true,
+    fontSize: 14,
   },
   isf: {
     id: "isf",
-    name: "Rede IsF / Andifes (DOCX)",
-    organization: "Rede Andifes Idiomas sem Fronteiras — UFBA",
+    name: "Rede IsF / Andifes (DOCX Oficial)",
+    organization: "REDE ANDIFES IDIOMAS SEM FRONTEIRAS — UFBA",
     borderColor: "#0f766e",
     primaryColor: "#0d9488",
-    descriptionTemplate: (name, cpf, course, workload, period) =>
-      `Certificamos que ${name} (CPF nº ${cpf}) concluiu o curso de Língua Inglesa intitulado ${course}, ofertado pela Rede Andifes Idiomas sem Fronteiras em parceria com a Universidade Federal da Bahia, realizado no período de ${period}, com carga horária total de ${workload}.`,
-    defaultSigner: "Coordenador(a) Administrativo(a) da Rede IsF na UFBA",
-    defaultTitle: "CERTIFICADO DE CONCLUSÃO",
+    title: "CERTIFICADO",
+    subtitle: "Ofertado pela Rede Andifes Idiomas sem Fronteiras em parceria com a UFBA",
+    bodyTemplate: (name, cpf, course, workload, period) =>
+      `Certificamos que ${name} CPF nº ${cpf} concluiu o curso de Língua Inglesa intitulado ${course}, ofertado pela Rede Andifes Idiomas sem Fronteiras na Oferta [Coletiva] em parceria com a Universidade Federal da Bahia, realizado no período de ${period}, com carga horária total de ${workload}.`,
+    locationAndDate: "Salvador, 22 de agosto de 2026.",
+    signerName: "Coordenador(a) Administrativo(a) da Rede IsF na UFBA",
+    signerRole: "Rede IsF — Andifes / UFBA",
+    showLogo: false,
+    fontSize: 13,
   },
   profici: {
     id: "profici",
-    name: "PROFICI / UFBA (DOCX)",
-    organization: "PROFICI — UFBA (Programa de Proficiência)",
+    name: "PROFICI / UFBA (DOCX Oficial)",
+    organization: "PROFICI — PROGRAMA DE PROFICIÊNCIA DA UFBA",
     borderColor: "#1e40af",
     primaryColor: "#2563eb",
-    descriptionTemplate: (name, cpf, course, workload, period) =>
+    title: "CERTIFICADO",
+    subtitle: "Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA",
+    bodyTemplate: (name, cpf, course, workload, period) =>
       `Certifico que ${name} concluiu o ${course} do PROFICI (Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA), realizado no período de ${period} com carga horária de ${workload}.`,
-    defaultSigner: "Fernanda Mota Pereira — Coordenadora Geral do PROFICI",
-    defaultTitle: "CERTIFICADO DE CONCLUSÃO",
+    locationAndDate: "Salvador, 22 de agosto de 2026.",
+    signerName: "Fernanda Mota Pereira",
+    signerRole: "Coordenadora Geral do PROFICI",
+    showLogo: false,
+    fontSize: 13,
   },
 };

@@ -7,19 +7,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
-import { Download, Layers, RefreshCw, ShieldCheck } from "lucide-react";
+import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
+import { Download, RefreshCw, ShieldCheck } from "lucide-react";
+import { jsPDF } from "jspdf";
 
 export function CertificateFabricPrototype() {
-  const [templateType, setTemplateType] = useState<"standard" | "isf" | "profici">("isf");
+  const [templateId, setTemplateId] = useState<string>("isf");
+  const preset = CERTIFICATE_PRESETS[templateId] || CERTIFICATE_PRESETS.standard;
+
   const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
   const [studentCpf, setStudentCpf] = useState("123.671.106-89");
   const [courseTitle, setCourseTitle] = useState("Alfabetização e Letramento Étnico-Racial em Inglês");
-  const [workloadHours, setWorkloadHours] = useState("40 horas");
+  const [workload, setWorkload] = useState("40 horas");
   const [period, setPeriod] = useState("02 de maio a 20 de junho de 2026");
-  const [includeBranding, setIncludeBranding] = useState(true);
+  const [customTitle, setCustomTitle] = useState(preset.title);
+  const [customSigner, setCustomSigner] = useState(preset.signerName);
+  const [customRole, setCustomRole] = useState(preset.signerRole);
+  const [customDate, setCustomDate] = useState(preset.locationAndDate);
+  const [fontSize, setFontSize] = useState<number>(preset.fontSize);
   const [isExporting, setIsExporting] = useState(false);
+
+  const handlePresetChange = (v: string) => {
+    setTemplateId(v);
+    const p = CERTIFICATE_PRESETS[v];
+    if (p) {
+      setCustomTitle(p.title);
+      setCustomSigner(p.signerName);
+      setCustomRole(p.signerRole);
+      setCustomDate(p.locationAndDate);
+      setFontSize(p.fontSize);
+    }
+  };
 
   const handleExportPDF = async () => {
     setIsExporting(true);
@@ -31,45 +51,39 @@ export function CertificateFabricPrototype() {
       doc.setFillColor(255, 255, 255);
       doc.rect(0, 0, pageWidth, pageHeight, "F");
 
-      const strokeColor = templateType === "isf" ? [15, 118, 110] : templateType === "profici" ? [30, 64, 175] : [153, 27, 27];
       doc.setLineWidth(3);
-      doc.setStrokeColor(strokeColor[0], strokeColor[1], strokeColor[2]);
+      doc.setStrokeColor(15, 118, 110);
       doc.rect(30, 30, pageWidth - 60, pageHeight - 60);
 
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(24);
+      doc.setFontSize(22);
       doc.setTextColor(30, 41, 59);
-      doc.text("CERTIFICADO DE CONCLUSÃO", pageWidth / 2, 100, { align: "center" });
+      doc.text(customTitle, pageWidth / 2, 90, { align: "center" });
 
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(13);
+      doc.setFontSize(fontSize);
       doc.setTextColor(60, 60, 60);
 
-      let textDesc = "";
-      if (templateType === "isf") {
-        textDesc = `Certificamos que ${studentName} (CPF nº ${studentCpf}) concluiu o curso de Língua Inglesa intitulado ${courseTitle}, ofertado pela Rede Andifes Idiomas sem Fronteiras em parceria com a UFBA, no período de ${period}, com carga horária total de ${workloadHours}.`;
-      } else if (templateType === "profici") {
-        textDesc = `Certifico que ${studentName} concluiu o ${courseTitle} do PROFICI (Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA), realizado no período de ${period} com carga horária de ${workloadHours}.`;
-      } else {
-        textDesc = `Certificamos que ${studentName} concluiu com êxito o programa acadêmico ${courseTitle}, com carga horária de ${workloadHours}.`;
-      }
-
-      const splitText = doc.splitTextToSize(textDesc, pageWidth - 140);
-      doc.text(splitText, 70, 180, { align: "center" });
+      const bodyText = preset.bodyTemplate(studentName, studentCpf, courseTitle, workload, period);
+      const splitText = doc.splitTextToSize(bodyText, pageWidth - 140);
+      doc.text(splitText, 70, 160, { align: "center" });
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
-      doc.text("Salvador, 22 de agosto de 2026.", pageWidth / 2, 340, { align: "center" });
+      doc.text(customDate, pageWidth / 2, 320, { align: "center" });
 
       doc.setLineWidth(1);
       doc.setStrokeColor(150, 150, 150);
-      doc.line(pageWidth / 2 - 150, 430, pageWidth / 2 + 150, 430);
+      doc.line(pageWidth / 2 - 160, 420, pageWidth / 2 + 160, 420);
 
-      const signLabel = templateType === "isf" ? "Coordenador(a) Administrativo(a) da Rede IsF na UFBA" : templateType === "profici" ? "Fernanda Mota Pereira — Coordenadora Geral do PROFICI" : "Anderson Bacelar Palafoz — Professor e Pesquisador";
-      doc.text(signLabel, pageWidth / 2, 450, { align: "center" });
+      doc.text(customSigner, pageWidth / 2, 440, { align: "center" });
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(customRole, pageWidth / 2, 458, { align: "center" });
 
-      doc.save(`certificado-fabric-${templateType}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
-      toast.success("Certificado Fabric.js exportado com sucesso em PDF!");
+      doc.save(`certificado-fabric-pro-${templateId}-${studentName.toLowerCase().replace(/\s+/g, "-")}.pdf`);
+      toast.success("Certificado exportado com sucesso via Fabric Engine!");
     } catch (err) {
       toast.error("Erro ao gerar PDF.");
     } finally {
@@ -85,14 +99,14 @@ export function CertificateFabricPrototype() {
             <div>
               <CardTitle className="text-xl font-bold text-red-900 flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-red-600" />
-                Protótipo Fabric.js (Canvas Orientado a Objetos & DOCX Engine)
+                Fabric.js Engine — Réplica Avançada dos Modelos DOCX
               </CardTitle>
               <CardDescription>
-                Editor visual estável com suporte completo aos modelos Padrão, IsF e PROFICI extraídos dos arquivos DOCX.
+                Edite todos os campos textuais, título, signatários, data, CPF e estrutura dos modelos IsF e PROFICI.
               </CardDescription>
             </div>
             <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-700">
-              <Layers size={14} /> Fabric Stable Engine
+              Fabric Pro Engine
             </span>
           </div>
         </CardHeader>
@@ -100,17 +114,22 @@ export function CertificateFabricPrototype() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="space-y-4 lg:col-span-1 border-r pr-0 lg:pr-6 border-border">
               <div className="space-y-2">
-                <Label>Modelo de Certificado</Label>
-                <Select value={templateType} onValueChange={(v: any) => setTemplateType(v)}>
+                <Label>Preset Base (Réplica DOCX)</Label>
+                <Select value={templateId} onValueChange={handlePresetChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Padrão Anderson Palafoz</SelectItem>
-                    <SelectItem value="isf">Modelo IsF / Andifes (DOCX)</SelectItem>
-                    <SelectItem value="profici">Modelo PROFICI / UFBA (DOCX)</SelectItem>
+                    {Object.values(CERTIFICATE_PRESETS).map((p: any) => (
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Título do Certificado</Label>
+                <Input value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} />
               </div>
 
               <div className="space-y-2">
@@ -124,19 +143,34 @@ export function CertificateFabricPrototype() {
               </div>
 
               <div className="space-y-2">
-                <Label>Título do Curso / Componente</Label>
+                <Label>Curso / Componente</Label>
                 <Input value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-2">
                   <Label>Carga Horária</Label>
-                  <Input value={workloadHours} onChange={(e) => setWorkloadHours(e.target.value)} />
+                  <Input value={workload} onChange={(e) => setWorkload(e.target.value)} />
                 </div>
                 <div className="space-y-2">
                   <Label>Período</Label>
                   <Input value={period} onChange={(e) => setPeriod(e.target.value)} />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Signatário Principal</Label>
+                <Input value={customSigner} onChange={(e) => setCustomSigner(e.target.value)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Cargo / Instituição do Signatário</Label>
+                <Input value={customRole} onChange={(e) => setCustomRole(e.target.value)} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Local e Data</Label>
+                <Input value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
               </div>
 
               <div className="pt-4">
@@ -148,29 +182,23 @@ export function CertificateFabricPrototype() {
             </div>
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
-              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-6 relative flex flex-col justify-between text-center">
-                <div className="space-y-1">
-                  <h4 className="font-black text-red-600 tracking-wider text-xs uppercase">
-                    {templateType === "isf" ? "Rede Andifes Idiomas sem Fronteiras — UFBA" : templateType === "profici" ? "PROFICI — UFBA (Programa de Proficiência)" : "Anderson Palafoz Platform"}
-                  </h4>
+              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-8 relative flex flex-col justify-between text-center">
+                <div>
+                  <h4 className="font-black text-red-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
                 </div>
-                <div className="space-y-3">
-                  <h3 className="font-black text-lg text-foreground">CERTIFICADO DE CONCLUSÃO</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed px-4">
-                    {templateType === "isf"
-                      ? `Certificamos que ${studentName} (CPF nº ${studentCpf}) concluiu o curso ${courseTitle}, ofertado pela Rede Andifes IsF em parceria com a UFBA, no período de ${period}, com carga horária de ${workloadHours}.`
-                      : templateType === "profici"
-                      ? `Certifico que ${studentName} concluiu o ${courseTitle} do PROFICI (UFBA), no período de ${period} com carga horária de ${workloadHours}.`
-                      : `Certificamos que ${studentName} concluiu com êxito o programa ${courseTitle} (${workloadHours}).`}
+                <div className="space-y-4">
+                  <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed px-6">
+                    {preset.bodyTemplate(studentName, studentCpf, courseTitle, workload, period)}
                   </p>
+                  <p className="text-xs font-semibold text-foreground">{customDate}</p>
                 </div>
-                <div className="border-t pt-2 w-64 mx-auto">
-                  <p className="text-xs font-bold text-foreground">
-                    {templateType === "isf" ? "Coordenador(a) Administrativo(a) da Rede IsF na UFBA" : templateType === "profici" ? "Fernanda Mota Pereira — Coordenadora Geral do PROFICI" : "Anderson Bacelar Palafoz"}
-                  </p>
+                <div className="border-t pt-2 w-72 mx-auto">
+                  <p className="text-xs font-bold text-foreground">{customSigner}</p>
+                  <p className="text-[10px] text-muted-foreground">{customRole}</p>
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização estável compatível com a estrutura dos documentos DOCX (Fabric.js).</p>
+              <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização em tempo real baseada nos modelos DOCX (Fabric Pro).</p>
             </div>
           </div>
         </CardContent>

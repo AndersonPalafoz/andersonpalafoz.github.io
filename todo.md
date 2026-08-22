@@ -1901,3 +1901,5 @@
 - [x] Isolar e corrigir o erro de renderização do protótipo Fabric.js em /admin/certificados para impedir que a área administrativa seja derrubada
 
 - [x] Criar arquivo de configuração compartilhada para presets institucionais (Padrão, IsF e PROFICI) compatível com os motores Fabric.js, Konva.js e GrapesJS em /admin/certificados
+
+- [x] Expandir Fabric.js, Konva.js e GrapesJS para permitir edição completa de textos, margens, fontes, assinaturas, molduras e réplica exata dos modelos DOCX fornecidos
