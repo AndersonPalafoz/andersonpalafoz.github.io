@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MessageSquare, BarChart3, Loader2, ExternalLink, CheckCircle2, AlertCircle } from "lucide-react";
+import { MessageSquare, BarChart3, Loader2, ExternalLink, CheckCircle2, AlertCircle, Award, Mic2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 interface PendingQuestion {
@@ -82,30 +82,18 @@ export function ProfessorSummaryDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-wider text-red-600">Dúvidas Pendentes</h2>
-            <div className="p-2 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600">
-              <MessageSquare size={18} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-gray-900 dark:text-white">{questions.length}</p>
-          <p className="text-xs text-gray-500">Perguntas enviadas por alunos nos materiais didáticos aguardando resposta.</p>
+      <section className="overflow-hidden rounded-3xl border border-red-200/70 bg-gradient-to-br from-red-50 via-card to-card p-5 shadow-[0_18px_45px_rgba(220,38,38,0.08)] dark:border-red-900/40 dark:from-red-950/20 sm:p-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div><p className="text-[10px] font-black uppercase tracking-[0.18em] text-red-600">Fila de trabalho docente</p><h2 className="mt-1 text-xl font-black text-foreground">Prioridades da sua área</h2><p className="mt-1 text-xs leading-relaxed text-muted-foreground">Acesse diretamente os fluxos que mais exigem uma decisão pedagógica.</p></div>
+          <span className="w-fit rounded-full border border-red-200 bg-background/80 px-3 py-1 text-[10px] font-black text-red-700 dark:border-red-900/50 dark:text-red-300">{questions.length + classes.length} sinal(is) no resumo</span>
         </div>
-
-        <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xs font-black uppercase tracking-wider text-red-600">Turmas Externas Ativas</h2>
-            <div className="p-2 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600">
-              <BarChart3 size={18} />
-            </div>
-          </div>
-          <p className="text-3xl font-black text-gray-900 dark:text-white">{classes.length}</p>
-          <p className="text-xs text-gray-500">Turmas gerenciadas com notas e frequência monitoradas.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/professor/turmas-externas" className="group rounded-2xl border border-red-200 bg-white/80 p-4 transition hover:-translate-y-0.5 hover:shadow-md dark:border-red-900/50 dark:bg-card/70"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300"><MessageSquare size={17} /></span><span className="text-2xl font-black text-foreground">{questions.length}</span></div><p className="mt-3 text-sm font-black text-foreground">Responder dúvidas</p><span className="mt-1 block text-[11px] text-muted-foreground">Materiais e turmas</span><span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-red-600">Abrir fila <ExternalLink size={12} /></span></Link>
+          <Link href="/professor/progresso-aulas" className="group rounded-2xl border border-violet-200 bg-white/80 p-4 transition hover:-translate-y-0.5 hover:shadow-md dark:border-violet-900/50 dark:bg-card/70"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950/50 dark:text-violet-300"><Mic2 size={17} /></span><span className="text-[10px] font-black uppercase tracking-wide text-violet-700 dark:text-violet-300">Revisão</span></div><p className="mt-3 text-sm font-black text-foreground">Aulas & speaking</p><span className="mt-1 block text-[11px] text-muted-foreground">Avalie progresso e feedback</span><span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-violet-700">Abrir área <ExternalLink size={12} /></span></Link>
+          <Link href="/professor/turmas-externas" className="group rounded-2xl border border-blue-200 bg-white/80 p-4 transition hover:-translate-y-0.5 hover:shadow-md dark:border-blue-900/50 dark:bg-card/70"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"><Users size={17} /></span><span className="text-2xl font-black text-foreground">{classes.length}</span></div><p className="mt-3 text-sm font-black text-foreground">Acompanhar turmas</p><span className="mt-1 block text-[11px] text-muted-foreground">Médias e frequência</span><span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-blue-700">Ver turmas <ExternalLink size={12} /></span></Link>
+          <Link href="/professor/certificados" className="group rounded-2xl border border-amber-200 bg-white/80 p-4 transition hover:-translate-y-0.5 hover:shadow-md dark:border-amber-900/50 dark:bg-card/70"><div className="flex items-center justify-between"><span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"><Award size={17} /></span><span className="text-[10px] font-black uppercase tracking-wide text-amber-700 dark:text-amber-300">Operação</span></div><p className="mt-3 text-sm font-black text-foreground">Assinar certificados</p><span className="mt-1 block text-[11px] text-muted-foreground">Revisar documentos finais</span><span className="mt-3 inline-flex items-center gap-1 text-[11px] font-black text-amber-700">Abrir área <ExternalLink size={12} /></span></Link>
         </div>
-      </div>
+      </section>
 
       {/* Listagem de Dúvidas Pendentes */}
       <div className="rounded-3xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm space-y-6">
