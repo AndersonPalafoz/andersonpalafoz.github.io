@@ -1,5 +1,19 @@
 import { jsPDF } from "jspdf";
 
+export interface CertificatePdfElement {
+  id: string;
+  type: "text" | "badge" | "line" | "image";
+  content: string;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  align?: "left" | "center" | "right";
+  src?: string;
+  width?: number;
+  height?: number;
+}
+
 export interface CertificatePdfOptions {
   title: string;
   studentName: string;
@@ -14,6 +28,7 @@ export interface CertificatePdfOptions {
   templateName: string;
   logoUrl?: string;
   fontSize?: number;
+  additionalElements?: CertificatePdfElement[];
 }
 
 export async function generateCertificatePdf(options: CertificatePdfOptions) {
@@ -76,6 +91,43 @@ export async function generateCertificatePdf(options: CertificatePdfOptions) {
   doc.setFontSize(10);
   doc.setTextColor(100, 100, 100);
   doc.text(options.signerRole || "Professor & Coordenador Acadêmico", pageWidth / 2, 436, { align: "center" });
+
+  // Elementos livres adicionados na prancheta. As coordenadas do editor são percentuais.
+  for (const element of options.additionalElements || []) {
+    const x = Math.max(40, Math.min(pageWidth - 40, (element.x / 100) * pageWidth));
+    const y = Math.max(40, Math.min(pageHeight - 40, (element.y / 100) * pageHeight));
+
+    if (element.type === "image" && element.src) {
+      try {
+        const imageResponse = await fetch(element.src);
+        const imageBlob = await imageResponse.blob();
+        const imageData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error("Não foi possível ler a imagem do elemento."));
+          reader.readAsDataURL(imageBlob);
+        });
+        const width = Math.max(24, Math.min(240, element.width || 120));
+        const height = Math.max(18, Math.min(160, element.height || width * 0.56));
+        doc.addImage(imageData, "PNG", x - width / 2, y - height / 2, width, height);
+      } catch (error) {
+        console.warn("Elemento de imagem ignorado na exportação do certificado:", error);
+      }
+      continue;
+    }
+
+    if (element.type === "line") {
+      doc.setDrawColor(element.color || "#333333");
+      doc.setLineWidth(Math.max(1, element.size / 4));
+      doc.line(x - 70, y, x + 70, y);
+      continue;
+    }
+
+    doc.setFont("helvetica", element.type === "badge" ? "bold" : "normal");
+    doc.setFontSize(Math.max(7, Math.min(30, element.size || 12)));
+    doc.setTextColor(element.color || "#333333");
+    doc.text(element.content || "Elemento", x, y, { align: element.align || "center" });
+  }
 
   // Salvar arquivo
   const safeName = (options.studentName || "certificado").toLowerCase().replace(/[^a-z0-9]/g, "-");

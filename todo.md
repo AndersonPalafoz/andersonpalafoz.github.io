@@ -1824,15 +1824,15 @@
 - [x] Validar exportação em lote (PDF único e ZIP) e testes automatizados.
 
 ## Inserção de Novos Textos e Imagens por Drag-and-Drop — 21/08/2026
-- [ ] Criar painel de elementos na barra lateral do editor com opções para adicionar caixas de texto personalizadas e imagens/logos.
-- [ ] Implementar manipuladores de arrastar e soltar (HTML5 Drag and Drop API) para posicionar novos elementos diretamente na prancheta A4.
-- [ ] Permitir a edição do conteúdo textual, tamanho, alinhamento e URL da imagem diretamente no painel de propriedades.
-- [ ] Salvar os elementos customizados no JSON de mapeamento do template e renderizá-los corretamente no motor de PDF.
+- [x] Criar painel de elementos na barra lateral do editor com opções para adicionar caixas de texto personalizadas e imagens/logos.
+- [x] Implementar manipuladores de arrastar e soltar (HTML5 Drag and Drop API) para posicionar novos elementos diretamente na prancheta A4.
+- [x] Permitir a edição do conteúdo textual, tamanho, alinhamento e URL da imagem diretamente no painel de propriedades.
+- [x] Salvar os elementos customizados no JSON de mapeamento do template e renderizá-los corretamente no motor de PDF.
 
 ## Correção Definitiva da Ausência das Logos no Header e Footer — 21/08/2026
-- [ ] Inspecionar por que a tag `Image` do Next.js pode falhar com URLs relativas em alguns ambientes de hospedagem ou preview.
-- [ ] Substituir o uso de `Image` do Next.js por tag `img` nativa otimizada para a logo do cabeçalho e rodapé, garantindo exibição universal.
-- [ ] Validar a renderização visual das logos em ambiente de desenvolvimento e produção.
+- [x] Inspecionar por que a tag `Image` do Next.js pode falhar com URLs relativas em alguns ambientes de hospedagem ou preview.
+- [x] Substituir o uso de `Image` do Next.js por tag `img` nativa otimizada para a logo do cabeçalho e rodapé, garantindo exibição universal.
+- [x] Validar a renderização visual das logos em ambiente de desenvolvimento e produção.
 
 ## Melhoria de Responsividade e Busca em /admin/certificados — 21/08/2026
 - [x] Inspecionar o componente de administração de certificados (`app/admin/certificados/page.tsx` ou equivalente).
@@ -1851,14 +1851,14 @@
 - [x] Validar a pré-visualização e o build de produção.
 
 ## Edição Rápida de Textos na Pré-visualização do Certificado — 21/08/2026
-- [ ] Adicionar campos de edição rápida (nome do aluno, título do curso, nível e CPF) diretamente no modal `PreviewModal` em `certificate-signature-manager.tsx`.
-- [ ] Ajustar a rota `/api/admin/certificates/preview` para aceitar valores customizados enviados no corpo da requisição sem alterar a base de dados.
-- [ ] Validar a regeneração instantânea do PDF e o build de produção.
+- [x] Adicionar campos de edição rápida (nome do aluno, título do curso, nível e CPF) diretamente no modal `PreviewModal` em `certificate-signature-manager.tsx`.
+- [x] Ajustar a rota `/api/admin/certificates/preview` para aceitar valores customizados enviados no corpo da requisição sem alterar a base de dados.
+- [x] Validar a regeneração instantânea do PDF e o build de produção.
 
 ## Eliminação de Rolagem Lateral (Overflow Horizontal) em Mobile — 21/08/2026
-- [ ] Garantir que `overflow-x: hidden` e `max-w-full` estejam aplicados globalmente no container raiz (`html`, `body`, `.site-shell`).
-- [ ] Revisar modais, tabelas e cards em `/admin/certificados` e nas demais páginas para que se adaptem a larguras reduzidas sem forçar scroll lateral.
-- [ ] Validar a responsividade mobile e o build de produção.
+- [x] Garantir que `overflow-x: hidden` e `max-w-full` estejam aplicados globalmente no container raiz (`html`, `body`, `.site-shell`).
+- [x] Revisar modais, tabelas e cards em `/admin/certificados` e nas demais páginas para que se adaptem a larguras reduzidas sem forçar scroll lateral.
+- [x] Validar a responsividade mobile e o build de produção.
 
 ## Customização de Cor e Tamanho do Nome na Pré-visualização — 21/08/2026
 - [x] Adicionar seletores de cor e tamanho da fonte para o nome do aluno no modal `PreviewModal`.
@@ -1866,9 +1866,9 @@
 - [x] Validar a geração em tempo real e o build de produção.
 
 ## Auditoria Completa de Responsividade e Estouro Lateral (Mobile Overflow) — 21/08/2026
-- [ ] Executar inspeção por capturas de tela em viewport mobile (375x812) nas páginas principais (Home, Sobre, Cursos, Materiais, Blog, Contato, Dashboard e Painel Admin).
-- [ ] Garantir que nenhum bloco utilize larguras rígidas (`w-[...]` estáticos sem `max-w-full`) ou tabelas sem contêiner de rolagem interna (`overflow-x-auto`).
-- [ ] Validar a ausência de overflow horizontal e aprovar o build de produção.
+- [x] Executar inspeção por capturas de tela em viewport mobile (375x812) nas páginas principais (Home, Sobre, Cursos, Materiais, Blog, Contato, Dashboard e Painel Admin). Observação: as rotas protegidas redirecionaram para login por ausência de sessão.
+- [x] Garantir que nenhum bloco utilize larguras rígidas (`w-[...]` estáticos sem `max-w-full`) ou tabelas sem contêiner de rolagem interna (`overflow-x-auto`). Auditoria concluída; tabelas de exportação HTML são geradas fora da interface e as tabelas visíveis relevantes têm contêiner ou layout responsivo.
+- [x] Validar a ausência de overflow horizontal e aprovar o build de produção.
 
 - [x] Implementar editor Canva/Word de certificados com zoom, grades magnéticas e tipografia customizada
 - [x] Otimizar logos da marca abaixo de 1MB e corrigir exibição em cabeçalho, rodapé e favicon
