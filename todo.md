@@ -1828,3 +1828,8 @@
 - [ ] Implementar manipuladores de arrastar e soltar (HTML5 Drag and Drop API) para posicionar novos elementos diretamente na prancheta A4.
 - [ ] Permitir a edição do conteúdo textual, tamanho, alinhamento e URL da imagem diretamente no painel de propriedades.
 - [ ] Salvar os elementos customizados no JSON de mapeamento do template e renderizá-los corretamente no motor de PDF.
+
+## Correção Definitiva da Ausência das Logos no Header e Footer — 21/08/2026
+- [ ] Inspecionar por que a tag `Image` do Next.js pode falhar com URLs relativas em alguns ambientes de hospedagem ou preview.
+- [ ] Substituir o uso de `Image` do Next.js por tag `img` nativa otimizada para a logo do cabeçalho e rodapé, garantindo exibição universal.
+- [ ] Validar a renderização visual das logos em ambiente de desenvolvimento e produção.
