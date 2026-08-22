@@ -35,18 +35,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => null);
-    if (!body || !body.courseId) {
+    if (!body) {
       return NextResponse.json(
-        { error: "Informe pelo menos o courseId para emitir o certificado." },
+        { error: "Dados inválidos na requisição." },
         { status: 400 }
       );
     }
 
-    const courseId = Number(body.courseId);
+    let courseId = body.courseId ? Number(body.courseId) : null;
     let userId = body.userId ? Number(body.userId) : null;
     const directStudentName = typeof body.studentName === "string" ? body.studentName.trim() : "";
     const directStudentEmail = typeof body.studentEmail === "string" ? body.studentEmail.trim() : "";
-    const directStudentCpf = typeof body.studentCpf === "string" ? body.studentCpf.trim() : "";
+    
+    const customCourseTitle = typeof body.customCourseTitle === "string" ? body.customCourseTitle.trim() : "";
+    const customCourseLevel = typeof body.customCourseLevel === "string" ? body.customCourseLevel.trim() : "Geral";
+    const customWorkloadHours = body.customWorkloadHours ? Number(body.customWorkloadHours) : 40;
+    const customInstitution = typeof body.customInstitution === "string" ? body.customInstitution.trim() : "";
 
     if (!userId && !directStudentName) {
       return NextResponse.json(
@@ -54,38 +58,24 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    if (!courseId && !customCourseTitle) {
+      return NextResponse.json(
+        { error: "Selecione um curso da lista ou preencha o título do curso manualmente." },
+        { status: 400 }
+      );
+    }
+
     const templateId =
       body.templateId == null || body.templateId === ""
         ? null
         : Number(body.templateId);
     const requestedBranding = parseOptionalBoolean(body.includeSiteBranding);
 
-    if (
-      !Number.isInteger(userId) ||
-      userId <= 0 ||
-      !Number.isInteger(courseId) ||
-      courseId <= 0
-    ) {
-      return NextResponse.json(
-        { error: "Informe identificadores válidos de aluno e curso." },
-        { status: 400 }
-      );
-    }
-    if (
-      templateId !== null &&
-      (!Number.isInteger(templateId) || templateId <= 0)
-    ) {
-      return NextResponse.json(
-        { error: "Selecione um modelo de certificado válido." },
-        { status: 400 }
-      );
-    }
-
     let student: any = null;
     if (userId) {
       student = await db.query.users.findFirst({ where: eq(users.id, userId) });
     } else if (directStudentName) {
-      // Cria ou localiza um registro de usuário placeholder para a pessoa sem cadastro
       const placeholderEmail = directStudentEmail || `nao-cadastrado-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@external.placeholder`;
       const existingPlaceholder = await db.query.users.findFirst({
         where: eq(users.email, placeholderEmail),
@@ -97,9 +87,9 @@ export async function POST(request: NextRequest) {
         const [insertedUser] = await db
           .insert(users)
           .values({
-            fullName: directStudentName,
+            name: directStudentName,
             email: placeholderEmail,
-            role: "student",
+            role: "user",
           })
           .$returningId();
         student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
@@ -107,31 +97,39 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
+    let course: any = null;
+    if (courseId) {
+      course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
+    }
 
-    if (!student || !course) {
+    if (!course && !customCourseTitle) {
       return NextResponse.json(
-        { error: "Aluno ou curso não encontrado." },
+        { error: "Curso ou informações customizadas não encontrados." },
         { status: 404 }
       );
     }
 
-    const isExternalCourse = course.courseType === 4;
-    // Cursos externos não têm uma regra global: a decisão é obrigatória na emissão.
-    if (isExternalCourse && requestedBranding === undefined) {
-      return NextResponse.json(
-        {
-          error:
-            "Antes de emitir este certificado externo, escolha se a logo do site deve ser incluída.",
-          code: "CERTIFICATE_BRANDING_DECISION_REQUIRED",
-          requiresBrandingDecision: true,
-          options: [
-            { value: true, label: "Incluir logo do site" },
-            { value: false, label: "Não incluir logo do site" },
-          ],
-        },
-        { status: 400 }
-      );
+    if (!courseId && customCourseTitle) {
+      const existingCustomCourse = await db.query.courses.findFirst({
+        where: eq(courses.title, customCourseTitle),
+      });
+      if (existingCustomCourse) {
+        courseId = existingCustomCourse.id;
+        course = existingCustomCourse;
+      } else {
+        const [newCourse] = await db
+          .insert(courses)
+          .values({
+            title: customCourseTitle,
+            level: customCourseLevel || "Geral",
+            workloadHours: customWorkloadHours || 40,
+            category: customInstitution || "Curso Externo / Avulso",
+            isFree: false,
+          })
+          .$returningId();
+        courseId = newCourse.id;
+        course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
+      }
     }
 
     const selectedTemplate = templateId
@@ -187,7 +185,7 @@ export async function POST(request: NextRequest) {
       certificateCode,
       workloadHours: course.workloadHours || 40,
       includeSiteBranding,
-      institutionName: selectedTemplate?.institution || undefined,
+      institutionName: customInstitution || selectedTemplate?.institution || undefined,
       templateBackgroundBytes,
       logoBytes,
       fieldMappings,
@@ -231,18 +229,21 @@ export async function POST(request: NextRequest) {
           signedPdfUrl: fileUrl,
           signedAt: new Date(),
         })
-        .returning();
+        .$returningId();
+      const created = await db.query.certificates.findFirst({
+        where: eq(certificates.id, inserted.id),
+      });
       return NextResponse.json({
         success: true,
-        certificate: inserted,
-        message: "Certificado emitido automaticamente com sucesso.",
+        certificate: created,
+        message: "Certificado emitido com sucesso para a pessoa sem cadastro.",
         includeSiteBranding,
-      });
+      }, { status: 201 });
     }
   } catch (error) {
-    console.error("Error issuing certificate automatically:", error);
+    console.error("Error issuing certificate:", error);
     return NextResponse.json(
-      { error: "Erro ao emitir certificado." },
+      { error: error instanceof Error ? error.message : "Erro ao emitir certificado." },
       { status: 500 }
     );
   }
