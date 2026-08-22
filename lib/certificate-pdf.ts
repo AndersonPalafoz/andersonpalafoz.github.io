@@ -28,6 +28,10 @@ export interface CertificatePdfInput {
   /** PDF ou PNG/JPG de terceiros usado como fundo do certificado. */
   templateBackgroundBytes?: Uint8Array;
   /** Coordenadas opcionais para campos de modelos institucionais. */
+  studentCpf?: string;
+  period?: string;
+  coordinatorName?: string;
+  institutionName?: string;
   fieldMappings?: Partial<
     Record<
       | "studentName"
@@ -35,7 +39,11 @@ export interface CertificatePdfInput {
       | "level"
       | "issuedAt"
       | "certificateCode"
-      | "workloadHours",
+      | "workloadHours"
+      | "studentCpf"
+      | "period"
+      | "coordinatorName"
+      | "institutionName",
       CertificateFieldMapping
     >
   >;
@@ -192,6 +200,16 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
     { x: 70, y: 355, size: 28, maxWidth: 700 },
     graphite
   );
+  if (input.studentCpf) {
+    drawTextAt(
+      page,
+      regular,
+      `CPF: ${input.studentCpf}`,
+      mappings.studentCpf,
+      { x: 70, y: 320, size: 12, maxWidth: 300 },
+      muted
+    );
+  }
   page.drawLine({
     start: { x: 70, y: 342 },
     end: { x: 772, y: 342 },
@@ -217,11 +235,21 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   drawTextAt(
     page,
     regular,
-    `Nível: ${input.level}  •  Carga Horária: ${workloadText}`,
+    `Nível: ${input.level}  •  Carga Horária: ${workloadText}${input.period ? `  •  Período: ${input.period}` : ""}`,
     mappings.level,
     { x: 70, y: 218, size: 14 },
     muted
   );
+  if (input.coordinatorName) {
+    drawTextAt(
+      page,
+      bold,
+      input.coordinatorName,
+      mappings.coordinatorName,
+      { x: 500, y: 140, size: 11, maxWidth: 240 },
+      graphite
+    );
+  }
   drawTextAt(
     page,
     regular,

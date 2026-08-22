@@ -1778,3 +1778,9 @@
 
 ## Resolução de Incidente: Falha ao carregar modelos em certificate-templates — 21/08/2026
 - [x] Auditar e corrigir a rota GET `/api/admin/certificate-templates` e o helper `getCertificateTemplates` para garantir que o carregamento de modelos não falhe com erro HTTP ou JSON inválido.
+
+## Aprimoramento do Editor Visual Baseado nos Modelos IsF e PROFICI — 21/08/2026
+- [x] Adicionar variáveis institucionais extras (CPF do aluno, carga horária, período, nome da instituição/coordenador) extraídas dos modelos DOCX enviados.
+- [x] Criar presets de layout pré-configurados para o modelo PROFICI e o modelo IsF no editor visual de certificados.
+- [x] Aprimorar o canvas do editor visual com guias de alinhamento, blocos textuais contextuais e melhor fidelidade institucional na pré-visualização.
+- [x] Garantir que o gerador PDF e o backend processem as novas variáveis institucionais corretamente nas emissões.
