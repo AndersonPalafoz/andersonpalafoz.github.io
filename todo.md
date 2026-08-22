@@ -1925,4 +1925,7 @@
 - [x] Reestruturar o fluxo de emissão para permitir escolher ou fazer upload de um modelo de certificado ANTES da emissão, carregar dados reais dos certificados emitidos do banco de dados, e suportar exclusão em massa e exportação conjunta.
 - [x] Implementar pré-visualização visual imediata do modelo de certificado selecionado antes do preenchimento e modal de confirmação de segurança para exclusão em massa.
 - [x] Corrigir a persistência na exclusão de certificados para garantir remoção definitiva no banco de dados e atualização real na listagem administrativa.
-- [ ] Integrar a seleção e upload de modelos institucionais (Editor visual do modelo & Presets) como etapa inicial obrigatória e funcional no fluxo de emissão de certificados, removendo protótipos decorativos sem efeito.
+- [x] Integrar a seleção e upload de modelos institucionais (Editor visual do modelo & Presets) como etapa inicial obrigatória e funcional no fluxo de emissão de certificados, removendo protótipos decorativos sem efeito.
+- [x] Corrigir exclusão individual e em lote de certificados emitidos para usuários não cadastrados, incluindo registros vinculados a usuários manual_external e possíveis referências legadas.
+- [x] Reorganizar a tabela administrativa de certificados para exibir usuários manuais de forma limpa, sem e-mails placeholder, estouro horizontal ou informações duplicadas.
+- [x] Validar exclusão persistente de certificados manuais e mistos, exportação conjunta e responsividade da área administrativa.

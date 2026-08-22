@@ -12,6 +12,7 @@ import {
   Eye,
   Calendar,
   Sparkles,
+  Trash2,
   X,
 } from "lucide-react";
 
@@ -33,6 +34,7 @@ type CertificateItem = {
   studentName: string;
   studentEmail: string | null;
   studentCpf?: string | null;
+  isManualEntry?: boolean;
   courseTitle: string;
   level: string;
   certificateCode: string | null;
@@ -70,6 +72,11 @@ export function CertificateSignatureManager() {
   const [currentPage, setCurrentPage] = useState(1);
   const certificatesPerPage = 12;
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    ids: number[];
+    description: string;
+  } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
 
@@ -359,10 +366,16 @@ export function CertificateSignatureManager() {
   }, [currentPage, totalPages]);
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredCertificates.length) {
-      setSelectedIds([]);
+    const allFilteredSelected =
+      filteredCertificates.length > 0 &&
+      filteredCertificates.every(certificate => selectedIds.includes(certificate.id));
+    if (allFilteredSelected) {
+      const filteredIds = new Set(filteredCertificates.map(certificate => certificate.id));
+      setSelectedIds(previous => previous.filter(id => !filteredIds.has(id)));
     } else {
-      setSelectedIds(filteredCertificates.map(c => c.id));
+      setSelectedIds(previous =>
+        Array.from(new Set([...previous, ...filteredCertificates.map(certificate => certificate.id)]))
+      );
     }
   };
 
@@ -371,6 +384,54 @@ export function CertificateSignatureManager() {
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
+
+  function requestDelete(ids: number[]) {
+    if (ids.length === 0) return;
+    setDeleteTarget({
+      ids,
+      description:
+        ids.length === 1
+          ? "Este certificado será removido definitivamente da plataforma."
+          : `${ids.length} certificados serão removidos definitivamente da plataforma.`,
+    });
+  }
+
+  async function handleDeleteConfirmed() {
+    if (!deleteTarget || deleteTarget.ids.length === 0) return;
+    const ids = deleteTarget.ids;
+    setDeleting(true);
+    setMessage(null);
+    try {
+      const response = await fetch(
+        `/api/admin/certificates?ids=${encodeURIComponent(ids.join(","))}`,
+        { method: "DELETE" }
+      );
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || "Não foi possível excluir os certificados.");
+      }
+
+      const deletedIds = Array.isArray(payload.deletedIds) ? payload.deletedIds : ids;
+      setCertificates(previous => previous.filter(certificate => !deletedIds.includes(certificate.id)));
+      setSelectedIds(previous => previous.filter(id => !deletedIds.includes(id)));
+      setDeleteTarget(null);
+      setMessage({
+        type: "success",
+        text: payload.message || "Certificado(s) excluído(s) definitivamente.",
+      });
+      await loadCertificates();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível excluir os certificados.",
+      });
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function handleBatchDownload() {
     if (selectedIds.length === 0) return;
@@ -603,11 +664,11 @@ export function CertificateSignatureManager() {
       {/* Batch Actions Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between surface-card p-4 border border-border/70">
         <div className="flex items-center gap-3">
-          <input
+            <input
             type="checkbox"
             checked={
               filteredCertificates.length > 0 &&
-              selectedIds.length === filteredCertificates.length
+              filteredCertificates.every(certificate => selectedIds.includes(certificate.id))
             }
             onChange={toggleSelectAll}
             className="rounded border-border text-red-600 focus:ring-red-600 w-4 h-4 cursor-pointer"
@@ -617,11 +678,19 @@ export function CertificateSignatureManager() {
             selecionados (Total: {certificates.length})
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => requestDelete(selectedIds)}
+            disabled={selectedIds.length === 0 || batchLoading || deleting}
+            className="inline-flex items-center gap-2 rounded-xl border border-red-600/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-500/20 dark:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Trash2 size={16} /> Excluir selecionados ({selectedIds.length})
+          </button>
           <button
             type="button"
             onClick={handleBatchDownload}
-            disabled={selectedIds.length === 0 || batchLoading}
+            disabled={selectedIds.length === 0 || batchLoading || deleting}
             className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50"
           >
             {batchLoading ? (
@@ -679,12 +748,22 @@ export function CertificateSignatureManager() {
                         <h2 className="mt-1 truncate text-lg font-black text-foreground">
                           {certificate.courseTitle}
                         </h2>
-                        <p className="text-sm text-muted-foreground">
-                          {certificate.studentName}
-                          {certificate.studentEmail
-                            ? ` · ${certificate.studentEmail}`
-                            : ""}
-                        </p>
+                        <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2 text-xs">
+                          <span
+                            className={`inline-flex items-center rounded-full border px-2.5 py-1 font-bold ${certificate.isManualEntry ? "border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200" : "border-border bg-muted/50 text-foreground"}`}
+                          >
+                            {certificate.isManualEntry ? "Sem cadastro no site" : "Aluno cadastrado"}
+                          </span>
+                          {certificate.studentEmail ? (
+                            <span className="max-w-full break-all text-muted-foreground">
+                              {certificate.studentEmail}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">
+                              E-mail não informado
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
@@ -718,7 +797,7 @@ export function CertificateSignatureManager() {
                   <dl className="grid grid-cols-2 gap-3 border-y border-border/60 py-4 text-xs">
                     <div>
                       <dt className="text-muted-foreground">Aluno</dt>
-                      <dd className="mt-1 font-bold text-foreground">
+                      <dd className="mt-1 break-words font-bold text-foreground">
                         {certificate.studentName}
                         {certificate.studentCpf && (
                           <span className="block text-[11px] font-mono text-muted-foreground">
@@ -777,6 +856,14 @@ export function CertificateSignatureManager() {
                         PDF
                       </a>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => requestDelete([certificate.id])}
+                      disabled={deleting}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-600/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-500/20 dark:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Trash2 size={16} /> Excluir
+                    </button>
                   </div>
 
                   <form
@@ -1266,6 +1353,56 @@ export function CertificateSignatureManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-certificate-title"
+        >
+          <div className="surface-card w-full max-w-md space-y-5 rounded-2xl border border-red-500/30 bg-background p-6 shadow-2xl">
+            <div className="flex items-start gap-3">
+              <div className="rounded-xl bg-red-500/10 p-3 text-red-600">
+                <Trash2 size={22} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">
+                  Ação permanente
+                </p>
+                <h3 id="delete-certificate-title" className="mt-1 text-lg font-black text-foreground">
+                  Excluir certificado?
+                </h3>
+              </div>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              {deleteTarget.description} A ação também funciona para certificados de pessoas sem cadastro e não pode ser desfeita.
+            </p>
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs font-semibold text-amber-800 dark:text-amber-200">
+              Serão excluídos <strong>{deleteTarget.ids.length}</strong> registro(s) selecionado(s), independentemente de estarem assinados ou apenas disponíveis para download.
+            </div>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="rounded-xl border border-border px-5 py-2.5 text-sm font-bold text-foreground hover:bg-muted disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleDeleteConfirmed()}
+                disabled={deleting}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
+              >
+                {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                {deleting ? "Excluindo..." : "Sim, excluir definitivamente"}
+              </button>
+            </div>
           </div>
         </div>
       )}

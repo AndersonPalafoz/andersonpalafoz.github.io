@@ -5,6 +5,10 @@ const source = readFileSync(
   new URL("./certificate-signature-manager.tsx", import.meta.url),
   "utf8"
 );
+const routeSource = readFileSync(
+  new URL("../app/api/admin/certificates/route.ts", import.meta.url),
+  "utf8"
+);
 
 describe("gerenciador administrativo de certificados", () => {
   it("exibe badges claros para certificados com e sem a marca do site", () => {
@@ -28,5 +32,22 @@ describe("gerenciador administrativo de certificados", () => {
     expect(source).toContain("paginatedCertificates");
     expect(source).toContain("Página {currentPage} de {totalPages}");
     expect(source).toContain('aria-label="Paginação dos certificados"');
+  });
+
+  it("oferece exclusão individual e em lote com confirmação", () => {
+    expect(source).toContain("requestDelete([certificate.id])");
+    expect(source).toContain("Excluir selecionados");
+    expect(source).toContain("Sim, excluir definitivamente");
+    expect(source).toContain("/api/admin/certificates?ids=");
+    expect(source).toContain("setDeleteTarget(null)");
+  });
+
+  it("trata pessoas sem cadastro sem renderizar e-mail placeholder", () => {
+    expect(source).toContain("Sem cadastro no site");
+    expect(source).toContain("isManualEntry");
+    expect(routeSource).toContain("export async function DELETE");
+    expect(routeSource).toContain("inArray(certificates.id, existingIds)");
+    expect(routeSource).toContain("@external.placeholder");
+    expect(routeSource).toContain("studentEmail: getDisplayEmail(certificate.user)");
   });
 });
