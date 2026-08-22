@@ -1877,3 +1877,5 @@
 - [x] Corrigir estabilidade de build de produção, resolvendo a tabela de respostas de comentários e validando 407 testes Vitest
 - [ ] Configuração do ambiente de produção da Stripe no painel Vercel (Requer ação do usuário na dashboard da Stripe para reclamar o sandbox/live e injetar variáveis)
 - [ ] Autorização OAuth da API do Google Calendar em produção (Requer conexão da conta Google no fluxo de consentimento)
+
+- [x] Desenvolver protótipo isolado com Fabric.js e pdf-lib para edição visual avançada e exportação de certificados em PDF
