@@ -333,50 +333,99 @@ export function CertificateFabricPrototype() {
             </div>
 
             <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
-              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-md border border-red-200 p-8 relative flex flex-col justify-between text-center overflow-hidden">
+              <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between w-full max-w-[620px] px-1 font-mono">
+                <span>Prancheta A4 Interativa (Clique nos textos ou use arrastar)</span>
+                <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">Modo Canva Ativo</span>
+              </div>
+              <div className="w-full max-w-[620px] aspect-[1.414/1] bg-white rounded-xl shadow-xl border-2 border-red-300 p-8 relative flex flex-col justify-between text-center overflow-hidden select-none">
                 {showGrid && (
-                  <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-[size:20px_20px] opacity-60 z-10" />
+                  <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:24px_24px] opacity-80 z-10" />
                 )}
+                
+                {/* Logo / Imagem arrastável livremente */}
                 <div className="absolute inset-0 pointer-events-none z-20">
                   {logoUrl && (
                     <div 
-                      className="absolute pointer-events-auto cursor-grab active:cursor-grabbing transition-all"
+                      className="absolute pointer-events-auto cursor-move hover:ring-2 hover:ring-red-500 rounded p-1 transition-shadow bg-white/90 shadow-sm"
                       style={{ 
                         left: `${logoPosX}%`, 
                         top: `${logoPosY}%`, 
                         zIndex: logoLayer,
                         width: `${logoWidth}px` 
                       }}
+                      draggable
+                      onDragEnd={(e) => {
+                        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                        if (rect) {
+                          const x = Math.max(5, Math.min(85, ((e.clientX - rect.left) / rect.width) * 100));
+                          const y = Math.max(5, Math.min(40, ((e.clientY - rect.top) / rect.height) * 100));
+                          setLogoPosX(Math.round(x));
+                          setLogoPosY(Math.round(y));
+                          toast.success(`Logo reposicionada para X: ${Math.round(x)}%, Y: ${Math.round(y)}%`);
+                        }
+                      }}
                     >
-                      <img src={logoUrl} alt="Logo Customizada" className="w-full object-contain drop-shadow-sm border border-dashed border-red-300 p-1 bg-white/80 rounded" />
+                      <img src={logoUrl} alt="Logo Customizada" className="w-full object-contain" />
                     </div>
                   )}
                 </div>
 
                 <div className="flex justify-between items-center relative z-20">
-                  <h4 className="font-black text-red-700 tracking-wider text-xs uppercase">{preset.organization}</h4>
+                  <h4 className="font-black text-red-700 tracking-wider text-xs uppercase bg-red-50/80 px-2 py-1 rounded border border-red-200">
+                    {preset.organization}
+                  </h4>
                   <div className="flex items-center gap-1">
                     {extraElements.map(el => (
-                      <span key={el.id} className="absolute text-[9px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded font-mono shadow-sm cursor-move" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30 }}>
-                        {el.content}
+                      <span key={el.id} className="absolute text-[10px] bg-amber-50 text-amber-900 border border-amber-300 px-2 py-1 rounded font-mono shadow cursor-move hover:bg-amber-100" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30 }} draggable onDragEnd={(e) => {
+                        const rect = e.currentTarget.parentElement?.getBoundingClientRect();
+                        if (rect) {
+                          const x = Math.max(5, Math.min(85, ((e.clientX - rect.left) / rect.width) * 100));
+                          const y = Math.max(5, Math.min(85, ((e.clientY - rect.top) / rect.height) * 100));
+                          setExtraElements(prev => prev.map(item => item.id === el.id ? { ...item, x: Math.round(x), y: Math.round(y) } : item));
+                        }
+                      }}>
+                        📌 {el.content}
                       </span>
                     ))}
-                    <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded font-mono">Modo Canva Ativo</span>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <h3 className="font-black text-xl text-foreground tracking-wide">{customTitle}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed px-6">
+
+                <div className="space-y-4 relative z-20 bg-white/70 backdrop-blur-[1px] p-2 rounded-lg border border-transparent hover:border-red-200 transition-colors">
+                  <input 
+                    type="text" 
+                    value={customTitle} 
+                    onChange={(e) => setCustomTitle(e.target.value)}
+                    className="w-full text-center font-black text-xl text-foreground bg-transparent border-b border-dashed border-red-300 focus:outline-none focus:border-red-600 py-1"
+                    title="Clique para editar o título em tempo real"
+                  />
+                  <p className="text-xs text-muted-foreground leading-relaxed px-6 font-medium">
                     {preset.bodyTemplate(studentName, studentCpf, courseTitle, workload, period)}
                   </p>
-                  <p className="text-xs font-semibold text-foreground">{customDate}</p>
                 </div>
-                <div className="border-t pt-2 w-72 mx-auto">
-                  <p className="text-xs font-bold text-foreground">{customSigner}</p>
-                  <p className="text-[10px] text-muted-foreground">{customRole}</p>
+
+                <div className="space-y-2 relative z-20 bg-white/70 backdrop-blur-[1px] p-3 rounded-lg border border-transparent hover:border-red-200 transition-colors">
+                  <input 
+                    type="text" 
+                    value={customDate} 
+                    onChange={(e) => setCustomDate(e.target.value)}
+                    className="w-full text-center text-xs font-semibold text-foreground bg-transparent border-b border-dashed border-red-300 focus:outline-none focus:border-red-600 py-0.5"
+                  />
+                  <div className="w-56 mx-auto border-b-2 border-muted-foreground/60 pb-1">
+                    <input 
+                      type="text" 
+                      value={customSigner} 
+                      onChange={(e) => setCustomSigner(e.target.value)}
+                      className="w-full text-center text-xs font-bold text-foreground bg-transparent focus:outline-none focus:border-red-600"
+                    />
+                  </div>
+                  <input 
+                    type="text" 
+                    value={customRole} 
+                    onChange={(e) => setCustomRole(e.target.value)}
+                    className="w-full text-center text-[10px] text-muted-foreground bg-transparent focus:outline-none focus:border-red-600"
+                  />
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-3">Pré-visualização em tempo real baseada nos modelos DOCX (Fabric Pro).</p>
             </div>
           </div>
         </CardContent>
