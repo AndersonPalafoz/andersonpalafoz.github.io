@@ -1959,3 +1959,20 @@
 - [x] Validar a rota em desktop e mobile e registrar os resultados de build e testes; a entrada protegida foi validada em desktop/mobile e o conteúdo autenticado ficou documentado como dependente de sessão administrativa.
 - [x] Salvar checkpoint estável após a validação.
 
+
+## Investigação Definitiva da Tela de Erro no Site Publicado — 22/08/2026
+
+- [ ] Auditar o status de deploy no painel/CLI, a configuração de build e se há divergência entre a versão local e a publicada na Vercel (`andersonpalafoz.vercel.app`).
+- [ ] Verificar se há exceções não tratadas no carregamento de componentes de certificados em produção.
+- [ ] Orientar o usuário sobre a necessidade de novo deploy na Vercel para refletir o checkpoint atualizado com o carregamento dinâmico dos editores.
+
+## Investigação Autenticada da Tela de Erro em `/admin/certificados` — 22/08/2026
+
+- [x] Navegar para `/admin/certificados` com a sessão ativa para capturar o erro exato renderizado pelo React Error Boundary; a reprodução exibiu o `app/global-error.tsx`.
+- [x] Inspecionar o console do navegador e as requisições de API disparadas pelos componentes da página de certificados; o console estava limpo e a falha ocorreu antes da hidratação útil, no layout raiz.
+- [x] Aplicar correção imediata no componente ou consulta que causou o crash em produção; adicionada a importação explícita de `Image` de `next/image` em `components/navbar.tsx`, evitando `ReferenceError: Image is not defined` em sessões autenticadas.
+
+- [x] Executar teste regressivo do Navbar autenticado; aprovado com 1 teste.
+- [x] Executar a suíte completa; 136 arquivos e 417 testes aprovados.
+- [x] Executar build de produção; concluído sem erros após a correção de `next/image`.
+- [x] Salvar checkpoint da correção e orientar a publicação da versão atualizada.
