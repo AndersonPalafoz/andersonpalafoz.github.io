@@ -56,6 +56,20 @@ export function CertificateTemplateManager() {
     certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
     workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
   });
+  const [fieldMappingsText, setFieldMappingsText] = useState(() =>
+    JSON.stringify(
+      {
+        studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
+        courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
+        level: { x: 300, y: 300, size: 13, maxWidth: 300 },
+        issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
+        certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
+        workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
+      },
+      null,
+      2
+    )
+  );
   const draggingField = useRef<CertificateFieldKey | null>(null);
 
   const previewFields: Array<{
@@ -117,7 +131,9 @@ export function CertificateTemplateManager() {
         throw new Error(
           payload.error || "Não foi possível carregar os modelos."
         );
-      setTemplates(payload.templates || []);
+      if (!Array.isArray(payload.templates))
+        throw new Error("Resposta inválida do servidor ao carregar modelos.");
+      setTemplates(payload.templates);
     } catch (error) {
       setFeedback({
         type: "error",
@@ -134,6 +150,10 @@ export function CertificateTemplateManager() {
   useEffect(() => {
     void loadTemplates();
   }, []);
+
+  useEffect(() => {
+    setFieldMappingsText(JSON.stringify(fieldMappings, null, 2));
+  }, [fieldMappings]);
 
   function handleCategoryChange(value: "internal" | "external") {
     setCategory(value);
@@ -157,7 +177,16 @@ export function CertificateTemplateManager() {
         method: "POST",
         body: formData,
       });
-      const payload = await response.json();
+      const text = await response.text();
+      let payload: {
+        error?: string;
+        message?: string;
+      } = {};
+      try {
+        payload = text ? JSON.parse(text) : {};
+      } catch {
+        throw new Error("Resposta inválida do servidor ao cadastrar o modelo.");
+      }
       if (!response.ok)
         throw new Error(
           payload.error || "Não foi possível cadastrar o modelo."
@@ -543,16 +572,34 @@ export function CertificateTemplateManager() {
           <textarea
             id="certificate-template-field-mappings"
             name="fieldMappings"
-            rows={4}
-            placeholder={
-              '{"studentName":{"x":120,"y":300,"fontSize":24},"courseTitle":{"x":120,"y":240}}'
-            }
+            rows={8}
+            value={fieldMappingsText}
+            onChange={event => {
+              const nextText = event.target.value;
+              setFieldMappingsText(nextText);
+              try {
+                const parsed = JSON.parse(nextText);
+                if (
+                  parsed &&
+                  typeof parsed === "object" &&
+                  !Array.isArray(parsed)
+                ) {
+                  setFieldMappings(parsed);
+                }
+              } catch {
+                // Permite edição manual temporária até que o JSON seja válido.
+              }
+            }}
+            aria-describedby="certificate-template-field-mappings-help"
             className="w-full rounded-xl border border-border bg-background px-4 py-3 font-mono text-xs text-foreground outline-none transition focus:border-red-600 focus:ring-2 focus:ring-red-600/20"
           />
-          <p className="text-xs text-muted-foreground">
-            As posições atuais serão convertidas automaticamente para JSON e
-            armazenadas para o preenchimento coordenado do template. O campo
-            abaixo permanece disponível para ajustes avançados.
+          <p
+            id="certificate-template-field-mappings-help"
+            className="text-xs text-muted-foreground"
+          >
+            O JSON é atualizado automaticamente ao arrastar uma variável. Você
+            também pode editar coordenadas manualmente; o cadastro só será
+            aceito quando o conteúdo for um objeto JSON válido.
           </p>
         </div>
 
@@ -597,9 +644,16 @@ export function CertificateTemplateManager() {
             <Loader2 size={16} className="animate-spin" /> Carregando modelos...
           </div>
         ) : templates.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-            Nenhum modelo cadastrado.
-          </p>
+          <div className="rounded-xl border border-dashed border-border bg-muted/20 p-6 text-center">
+            <p className="text-sm font-bold text-foreground">
+              Nenhum modelo cadastrado ainda.
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Selecione um PDF, PNG ou DOCX no formulário acima e clique em
+              “Cadastrar modelo de certificado”. Os modelos aparecerão aqui após
+              o cadastro ser confirmado pelo servidor.
+            </p>
+          </div>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
             {templates.map(template => (
