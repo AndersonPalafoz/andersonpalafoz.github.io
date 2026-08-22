@@ -1784,3 +1784,9 @@
 - [x] Criar presets de layout pré-configurados para o modelo PROFICI e o modelo IsF no editor visual de certificados.
 - [x] Aprimorar o canvas do editor visual com guias de alinhamento, blocos textuais contextuais e melhor fidelidade institucional na pré-visualização.
 - [x] Garantir que o gerador PDF e o backend processem as novas variáveis institucionais corretamente nas emissões.
+
+## Geração em Lote por CSV e Personalização Tipográfica no Editor — 21/08/2026
+- [x] Implementar importação e validação de arquivo CSV para emissão em lote de certificados (com suporte a Nome, CPF, Curso, Nível, Período, Carga Horária e Instituição).
+- [x] Criar a rota backend para processamento em lote do CSV, gerando os PDFs, registrando no banco e compactando em ZIP para download imediato.
+- [x] Expandir o editor visual de certificados para permitir customização de tamanho da fonte (`size`), largura máxima (`maxWidth`), cor e estilo para cada variável acadêmica.
+- [x] Validar a compatibilidade dos novos recursos com a suíte Vitest e o build de produção.
