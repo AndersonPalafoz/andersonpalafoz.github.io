@@ -148,6 +148,7 @@ export async function POST(request: NextRequest) {
           })
           .returning({ id: users.id });
         const insertedUser = insertedUsers[0];
+        userId = insertedUser.id;
         student = {
           id: insertedUser.id,
           name: directStudentName,
