@@ -1809,3 +1809,16 @@
 - [x] Implementar área central estilo prancheta (Artboard/Canvas A4) com zoom interativo, régua e moldura profissional.
 - [x] Adicionar suporte a seleção visual, redimensionamento por alças (handles), arrastar e soltar suave (drag-and-drop) e teclas de atalho (Delete, Ctrl+Z, setas de precisão).
 - [x] Garantir salvamento automático do estado e perfeita compatibilidade com o motor de PDF.
+
+## Exportação em Lote de Certificados (PDF Único ou ZIP) — 21/08/2026
+- [x] Criar a rota de API para exportação em lote (`/api/admin/certificates/export-bulk`) com suporte a formato `pdf` (consolidado) e `zip` (individuais).
+- [x] Implementar a mesclagem de páginas PDF usando `pdf-lib` para o arquivo único consolidado.
+- [x] Adicionar suporte ao empacotamento com `jszip` para o arquivo ZIP com nomenclatura organizada por aluno e curso.
+- [x] Incluir botões de seleção e exportação em lote na interface de administração de certificados.
+- [x] Executar testes automatizados e validar build de produção.
+
+## Aprimoramento Profissional Estilo Canva/Word/PPT — 21/08/2026
+- [x] Adicionar suporte a alinhamento rápido (esquerda, centro, direita, topo, meio, base) na barra de propriedades do editor de certificados.
+- [x] Incluir comandos de ordenação de camadas (trazer para frente, enviar para trás) e duplicação rápida de blocos de texto.
+- [x] Refinar a interface com réguas interativas e indicadores de coordenadas em tempo real.
+- [x] Validar exportação em lote (PDF único e ZIP) e testes automatizados.
