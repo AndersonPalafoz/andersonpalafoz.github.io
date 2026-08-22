@@ -307,7 +307,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
       regular,
       bold,
       composition,
-      input,
+      { ...input, hasTemplateBackground: hasTemplate },
       includeBranding
     );
   }

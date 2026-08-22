@@ -7,6 +7,7 @@ import {
   resolveCertificateText,
   type CertificateFieldKey,
 } from "@/lib/certificate-composition";
+import { getCertificateVisualVariant } from "@/lib/certificate-visual-variants";
 
 export type PdfCompositionDocument = PDFDocument;
 export type PdfCompositionPage = PDFPage;
@@ -47,6 +48,7 @@ export type PdfCompositionRenderInput = {
   period?: string;
   coordinatorName?: string;
   institutionName?: string;
+  hasTemplateBackground?: boolean;
 };
 
 function resolveRenderValues(input: PdfCompositionRenderInput): Record<CertificateFieldKey, string> {
@@ -64,6 +66,70 @@ function resolveRenderValues(input: PdfCompositionRenderInput): Record<Certifica
   };
 }
 
+function drawVariantShell(
+  page: PdfCompositionPage,
+  regular: PdfCompositionFont,
+  bold: PdfCompositionFont,
+  composition: CertificateComposition,
+  includeBranding: boolean,
+  hasTemplateBackground: boolean
+) {
+  if (hasTemplateBackground) return;
+
+  const variant = getCertificateVisualVariant(composition.visualVariant);
+  const paper = parseHexColor(variant.paper, rgb(1, 1, 1));
+  const accent = parseHexColor(variant.accent, rgb(0.84, 0.16, 0.16));
+  const accentDark = parseHexColor(variant.accentDark, accent);
+  const ink = parseHexColor(variant.ink, rgb(0.12, 0.12, 0.12));
+  const muted = parseHexColor(variant.muted, rgb(0.42, 0.45, 0.48));
+  const border = parseHexColor(variant.border, rgb(0.9, 0.91, 0.92));
+
+  page.drawRectangle({ x: 0, y: 0, width: 842, height: 595, color: paper });
+  if (variant.motif === "double") {
+    page.drawRectangle({ x: 0, y: 0, width: 18, height: 595, color: accent });
+    page.drawRectangle({ x: 824, y: 0, width: 18, height: 595, color: accent });
+    page.drawRectangle({ x: 34, y: 28, width: 774, height: 539, borderColor: border, borderWidth: 1 });
+    page.drawRectangle({ x: 48, y: 42, width: 746, height: 511, borderColor: accent, borderWidth: 0.8, opacity: 0.42 });
+  } else if (variant.motif === "institutional") {
+    page.drawRectangle({ x: 0, y: 0, width: 20, height: 595, color: accent });
+    page.drawLine({ start: { x: 52, y: 550 }, end: { x: 790, y: 550 }, thickness: 1.2, color: accent });
+    page.drawLine({ start: { x: 52, y: 44 }, end: { x: 790, y: 44 }, thickness: 0.8, color: border });
+    page.drawCircle({ x: 752, y: 523, size: 31, borderColor: accent, borderWidth: 1.2 });
+    page.drawText("IsF", { x: 738, y: 518, size: 10, font: bold, color: accentDark });
+  } else if (variant.motif === "editorial") {
+    page.drawRectangle({ x: 0, y: 555, width: 842, height: 40, color: ink });
+    page.drawRectangle({ x: 52, y: 535, width: 160, height: 3, color: accent });
+    page.drawRectangle({ x: 52, y: 42, width: 62, height: 54, borderColor: accent, borderWidth: 1 });
+    page.drawRectangle({ x: 728, y: 42, width: 62, height: 54, borderColor: border, borderWidth: 1 });
+  } else {
+    page.drawRectangle({ x: 28, y: 28, width: 786, height: 539, borderColor: border, borderWidth: 1 });
+    page.drawRectangle({ x: 52, y: 540, width: 150, height: 4, color: accent });
+  }
+
+  page.drawText(variant.headerLabel, {
+    x: 52,
+    y: variant.motif === "editorial" ? 520 : 520,
+    size: 10,
+    font: bold,
+    color: accentDark,
+    characterSpacing: 1.1,
+  });
+  page.drawText(variant.shortLabel.toUpperCase(), {
+    x: 718,
+    y: 520,
+    size: 8,
+    font: bold,
+    color: accentDark,
+  });
+  page.drawText(includeBranding ? variant.footerLabel : "Documento acadêmico", {
+    x: 52,
+    y: 24,
+    size: 8,
+    font: regular,
+    color: muted,
+  });
+}
+
 export async function drawCertificateComposition(
   pdf: PdfCompositionDocument,
   page: PdfCompositionPage,
@@ -75,7 +141,16 @@ export async function drawCertificateComposition(
 ) {
   const composition = parseCertificateComposition(rawComposition);
   const values = resolveRenderValues(input);
-  const graphite = parseHexColor("#242a30", rgb(0.14, 0.16, 0.19));
+  drawVariantShell(
+    page,
+    regular,
+    bold,
+    composition,
+    includeBranding,
+    input.hasTemplateBackground ?? false
+  );
+  const variant = getCertificateVisualVariant(composition.visualVariant);
+  const graphite = parseHexColor(variant.ink, rgb(0.14, 0.16, 0.19));
   const fieldEntries = Object.entries(composition.fieldMappings) as [
     CertificateFieldKey,
     NonNullable<CertificateComposition["fieldMappings"][CertificateFieldKey]>

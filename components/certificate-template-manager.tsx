@@ -8,8 +8,13 @@ import {
   type CertificateCompositionElement,
   type CertificateFieldKey,
   type CertificateFieldMapping,
+  type CertificateVisualVariant,
 } from "@/lib/certificate-composition";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
+import {
+  CERTIFICATE_VISUAL_VARIANT_LIST,
+  getCertificateVisualVariant,
+} from "@/lib/certificate-visual-variants";
 
 type CertificateTemplate = {
   id: number;
@@ -30,6 +35,8 @@ export function CertificateTemplateManager() {
     updateComposition,
     setSampleData,
     setIncludeSiteBranding: setWorkspaceBranding,
+    visualVariant,
+    setVisualVariant,
   } = useCertificateWorkspace();
   const [templates, setTemplates] = useState<CertificateTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +51,7 @@ export function CertificateTemplateManager() {
   const [previewCourse, setPreviewCourse] = useState(sampleData.courseTitle);
   const [previewCode, setPreviewCode] = useState(sampleData.certificateCode);
   const [previewDate, setPreviewDate] = useState(sampleData.issuedAt);
-  const [activePreset, setActivePreset] = useState<"default" | "profici" | "isf">("default");
+  const [activePreset, setActivePreset] = useState<CertificateVisualVariant>(visualVariant);
 
   const [customElements, setCustomElements] = useState<CertificateCompositionElement[]>(composition.elements);
 
@@ -65,6 +72,10 @@ export function CertificateTemplateManager() {
     setFieldMappings(composition.fieldMappings);
     setFieldMappingsText(JSON.stringify(composition.fieldMappings, null, 2));
   }, [composition.elements, composition.fieldMappings]);
+
+  useEffect(() => {
+    setActivePreset(visualVariant);
+  }, [visualVariant]);
 
   useEffect(() => {
     const shell = canvasShellRef.current;
@@ -99,6 +110,7 @@ export function CertificateTemplateManager() {
     { key: "coordinatorName", label: "Coordenador / Professor", value: sampleData.coordinatorName },
     { key: "institutionName", label: "Instituição parceira", value: sampleData.institutionName },
   ];
+  const currentVariant = getCertificateVisualVariant(visualVariant);
 
   function commitFieldMappings(next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>>) {
     setFieldMappings(next);
@@ -113,8 +125,9 @@ export function CertificateTemplateManager() {
     updateComposition(current => ({ ...current, elements: next }));
   }
 
-  function applyPreset(preset: "default" | "profici" | "isf") {
+  function applyPreset(preset: CertificateVisualVariant) {
     setActivePreset(preset);
+    setVisualVariant(preset);
     let next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>> = {};
     if (preset === "profici") {
       next = {
@@ -141,6 +154,19 @@ export function CertificateTemplateManager() {
         coordinatorName: { x: 460, y: 410, size: 11, maxWidth: 220 },
         issuedAt: { x: 100, y: 410, size: 11, maxWidth: 180 },
         certificateCode: { x: 540, y: 455, size: 10, maxWidth: 180 },
+      };
+    } else if (preset === "minimal") {
+      next = {
+        studentName: { x: 90, y: 315, size: 27, maxWidth: 650, weight: "bold" },
+        courseTitle: { x: 90, y: 250, size: 19, maxWidth: 620, weight: "bold" },
+        level: { x: 90, y: 215, size: 13, maxWidth: 260 },
+        issuedAt: { x: 90, y: 120, size: 11, maxWidth: 180 },
+        certificateCode: { x: 90, y: 95, size: 10, maxWidth: 240 },
+        workloadHours: { x: 390, y: 215, size: 13, maxWidth: 170 },
+        studentCpf: { x: 90, y: 285, size: 11, maxWidth: 260 },
+        period: { x: 560, y: 215, size: 13, maxWidth: 190 },
+        coordinatorName: { x: 560, y: 120, size: 11, maxWidth: 190 },
+        institutionName: { x: 90, y: 505, size: 13, maxWidth: 360 },
       };
     } else {
       next = {
@@ -484,37 +510,45 @@ export function CertificateTemplateManager() {
             </label>
           </div>
           <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
-                  Editor visual do modelo & Presets Institucionais
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Escolha um preset oficial (Padrão, PROFICI ou IsF) ou arraste as variáveis livremente.
-                </p>
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-wider text-red-600">
+                    Identidade visual do certificado
+                  </p>
+                  <h4 className="mt-1 text-base font-black text-foreground sm:text-lg">
+                    Escolha uma variação antes de editar os campos
+                  </h4>
+                  <p className="mt-1 max-w-3xl text-xs leading-relaxed text-muted-foreground">
+                    A seleção altera a moldura, a hierarquia, os detalhes institucionais e a prévia compartilhada. As posições dos campos continuam editáveis na prancheta.
+                  </p>
+                </div>
+                <div className="rounded-full border border-border bg-muted/40 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">
+                  Ativa: {getCertificateVisualVariant(visualVariant).shortLabel}
+                </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => applyPreset("default")}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "default" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
-                >
-                  Padrão
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyPreset("profici")}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "profici" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
-                >
-                  Preset PROFICI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyPreset("isf")}
-                  className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition ${activePreset === "isf" ? "bg-red-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
-                >
-                  Preset IsF
-                </button>
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => {
+                  const isActive = activePreset === variant.id;
+                  return (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => applyPreset(variant.id)}
+                      className={`group rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 ${isActive ? "border-red-600 bg-red-50 shadow-sm dark:border-red-500 dark:bg-red-950/30" : "border-border bg-muted/20 hover:border-red-300 hover:bg-muted/40"}`}
+                      aria-pressed={isActive}
+                    >
+                      <span className="mb-2 flex items-center justify-between gap-2">
+                        <span className="h-3 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${isActive ? "bg-red-600 text-white" : "bg-background text-muted-foreground"}`}>
+                          {isActive ? "Ativa" : variant.shortLabel}
+                        </span>
+                      </span>
+                      <span className="block text-xs font-black text-foreground">{variant.label}</span>
+                      <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">{variant.description}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
@@ -544,10 +578,12 @@ export function CertificateTemplateManager() {
                 className="min-w-0 overflow-hidden rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900"
               >
                 <div
-                  className="relative mx-auto overflow-hidden rounded-lg border-2 border-red-600/30 bg-background shadow-inner"
+                  className="relative mx-auto overflow-hidden rounded-lg border-2 shadow-inner"
                   style={{
                     width: `${CANVAS_WIDTH * canvasScale}px`,
                     height: `${CANVAS_HEIGHT * canvasScale}px`,
+                    borderColor: currentVariant.accent,
+                    backgroundColor: currentVariant.paper,
                   }}
                 >
                   <div
@@ -555,8 +591,13 @@ export function CertificateTemplateManager() {
                     style={{ transform: `scale(${canvasScale})` }}
                     onDragOver={event => event.preventDefault()}
                     onDrop={handleFieldDrop}
-                    aria-label="Canvas de posicionamento do certificado"
+                    aria-label={`Canvas de posicionamento do certificado: ${currentVariant.label}`}
                   >
+                  <div className="pointer-events-none absolute inset-[18px] rounded-md border" style={{ borderColor: currentVariant.border }} />
+                  {currentVariant.motif === "double" && <div className="pointer-events-none absolute inset-[30px] rounded border" style={{ borderColor: `${currentVariant.accent}66` }} />}
+                  {currentVariant.motif === "institutional" && <div className="pointer-events-none absolute left-0 top-0 h-full w-4" style={{ backgroundColor: currentVariant.accent }} />}
+                  {currentVariant.motif === "editorial" && <div className="pointer-events-none absolute left-0 top-0 h-10 w-full" style={{ backgroundColor: currentVariant.ink }} />}
+                  <div className="pointer-events-none absolute left-10 top-7 z-[1] text-[9px] font-black uppercase tracking-[0.16em]" style={{ color: currentVariant.accent }}>{currentVariant.headerLabel}</div>
                   {includeSiteBranding && (
                     <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-2 shadow-sm ring-1 ring-red-600/10">
                       {/* A marca é exibida como ativo oficial, sem reconstrução textual. */}
@@ -568,7 +609,7 @@ export function CertificateTemplateManager() {
                       />
                     </div>
                   )}
-                  <p className="absolute left-1/2 top-24 -translate-x-1/2 text-xs text-muted-foreground">
+                  <p className="absolute left-1/2 top-24 -translate-x-1/2 text-xs" style={{ color: currentVariant.muted }}>
                     Certificamos para os devidos fins que
                   </p>
                   {previewFields.map(field => {
@@ -615,11 +656,14 @@ export function CertificateTemplateManager() {
                             },
                           });
                         }}
-                        className="absolute max-w-[240px] cursor-grab rounded-md border border-red-600/50 bg-red-50/90 px-2 py-1 text-left shadow-sm outline-none transition hover:z-10 hover:scale-[1.02] focus:z-10 focus:ring-2 focus:ring-red-600 active:cursor-grabbing dark:bg-red-950/70"
+                        className="absolute max-w-[240px] cursor-grab rounded-md border px-2 py-1 text-left shadow-sm outline-none transition hover:z-10 hover:scale-[1.02] focus:z-10 focus:ring-2 focus:ring-red-600 active:cursor-grabbing"
                         style={{
                           left: mapping.x,
                           top,
                           fontSize: mapping.size ? `${Math.min(mapping.size, 18)}px` : undefined,
+                          borderColor: `${currentVariant.accent}99`,
+                          backgroundColor: currentVariant.accentSoft,
+                          color: currentVariant.ink,
                         }}
                         aria-label={`Variável ${field.label}. Posição X ${mapping.x}, Y ${mapping.y}. Tamanho ${mapping.size || 12}px.`}
                         title="Arraste para reposicionar; use as setas para ajustes finos"

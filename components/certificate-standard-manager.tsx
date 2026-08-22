@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square, Eye, AlertTriangle } from "lucide-react";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
+import { parseCertificateComposition, type CertificateVisualVariant } from "@/lib/certificate-composition";
+import { CERTIFICATE_VISUAL_VARIANT_LIST } from "@/lib/certificate-visual-variants";
 
 export function CertificateStandardManager() {
   const {
@@ -19,6 +21,9 @@ export function CertificateStandardManager() {
     setSampleData,
     setSelectedTemplateId: setWorkspaceTemplateId,
     setIncludeSiteBranding: setWorkspaceBranding,
+    visualVariant,
+    setVisualVariant,
+    updateComposition,
   } = useCertificateWorkspace();
   const [studentName, setStudentName] = useState(sampleData.studentName);
   const [courseTitle, setCourseTitle] = useState(sampleData.courseTitle);
@@ -213,6 +218,15 @@ export function CertificateStandardManager() {
                   onValueChange={value => {
                     setSelectedTemplateId(value);
                     setWorkspaceTemplateId(value);
+                    const template = templates.find((item: any) => String(item.id) === value);
+                    if (template?.fieldMappings) {
+                      const parsed = parseCertificateComposition(template.fieldMappings);
+                      updateComposition(current => ({
+                        ...current,
+                        ...parsed,
+                        visualVariant: parsed.visualVariant || current.visualVariant,
+                      }));
+                    }
                   }}
                 >
                   <SelectTrigger id="std-template-select" className="bg-white">
@@ -227,6 +241,29 @@ export function CertificateStandardManager() {
                     ))}
                   </SelectContent>
                 </Select>
+
+                <div className="grid gap-3 rounded-xl border border-red-100 bg-white/70 p-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] dark:border-red-900/40 dark:bg-red-950/10">
+                  <div>
+                    <Label htmlFor="std-visual-variant" className="text-xs font-black uppercase tracking-wide text-red-900 dark:text-red-200">
+                      Variação visual
+                    </Label>
+                    <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+                      A escolha é aplicada à prévia e à composição enviada para emissão.
+                    </p>
+                  </div>
+                  <Select value={visualVariant} onValueChange={value => setVisualVariant(value as CertificateVisualVariant)}>
+                    <SelectTrigger id="std-visual-variant" className="bg-white dark:bg-background">
+                      <SelectValue placeholder="Escolha uma variação" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => (
+                        <SelectItem key={variant.id} value={variant.id}>
+                          {variant.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Pré-visualização visual imediata do modelo selecionado */}
                 <div className="mt-3 bg-white p-3 rounded-lg border shadow-sm">
