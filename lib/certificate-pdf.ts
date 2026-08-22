@@ -5,12 +5,24 @@ import {
   type PDFPage,
   type PDFFont,
 } from "pdf-lib";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import {
+  parseCertificateComposition,
+  resolveCertificateText,
+  type CertificateComposition,
+  type CertificateFieldKey,
+} from "@/lib/certificate-composition";
+import { drawCertificateComposition } from "@/lib/certificate-pdf-composition";
 
 export type CertificateFieldMapping = {
   x: number;
   y: number;
   size?: number;
   maxWidth?: number;
+  color?: string;
+  weight?: "normal" | "bold";
+  align?: "left" | "center" | "right";
 };
 
 export interface CertificatePdfInput {
@@ -27,11 +39,12 @@ export interface CertificatePdfInput {
   institutionName?: string;
   /** PDF ou PNG/JPG de terceiros usado como fundo do certificado. */
   templateBackgroundBytes?: Uint8Array;
+  /** Estado único salvo pelo editor e reutilizado na prévia e na emissão. */
+  composition?: CertificateComposition;
   /** Coordenadas opcionais para campos de modelos institucionais. */
   studentCpf?: string;
   period?: string;
   coordinatorName?: string;
-  institutionName?: string;
   fieldMappings?: Partial<
     Record<
       | "studentName"
@@ -71,6 +84,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   const pdf = await PDFDocument.create();
   const includeBranding = input.includeSiteBranding ?? true;
   const hasTemplate = Boolean(input.templateBackgroundBytes?.length);
+  const composition = input.composition ? parseCertificateComposition(input.composition) : null;
 
   if (hasTemplate) {
     try {
@@ -160,7 +174,10 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
     }
   }
 
-  if (includeBranding && input.logoBytes?.length) {
+  const compositionHasSiteLogo = Boolean(
+    composition?.elements.some(element => element.type === "image" && element.isSiteBranding)
+  );
+  if (includeBranding && input.logoBytes?.length && !compositionHasSiteLogo) {
     try {
       let logo;
       try {
@@ -180,6 +197,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
     }
   }
 
+  if (!composition) {
   const issuedAtText = input.issuedAt.toLocaleDateString("pt-BR");
   const workloadText = `${input.workloadHours || 40} horas`;
   const mappings = input.fieldMappings || {};
@@ -280,6 +298,18 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
       font: regular,
       color: muted,
     });
+  }
+
+  } else {
+    await drawCertificateComposition(
+      pdf,
+      page,
+      regular,
+      bold,
+      composition,
+      input,
+      includeBranding
+    );
   }
 
   if (input.signatureImageBytes?.length) {

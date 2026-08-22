@@ -7,14 +7,25 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square, Eye, AlertTriangle } from "lucide-react";
+import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
+import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
 
 export function CertificateStandardManager() {
-  const [studentName, setStudentName] = useState("Adna Caroline Vale Oliveira");
-  const [courseTitle, setCourseTitle] = useState("Alfabetização e Letramento Étnico-Racial em Inglês");
-  const [level, setLevel] = useState("Intermediário [B1-B2]");
-  const [workloadHours, setWorkloadHours] = useState("40");
-  const [includeBranding, setIncludeBranding] = useState(true);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("default");
+  const {
+    composition,
+    sampleData,
+    selectedTemplateId: workspaceTemplateId,
+    includeSiteBranding: workspaceBranding,
+    setSampleData,
+    setSelectedTemplateId: setWorkspaceTemplateId,
+    setIncludeSiteBranding: setWorkspaceBranding,
+  } = useCertificateWorkspace();
+  const [studentName, setStudentName] = useState(sampleData.studentName);
+  const [courseTitle, setCourseTitle] = useState(sampleData.courseTitle);
+  const [level, setLevel] = useState(sampleData.level);
+  const [workloadHours, setWorkloadHours] = useState(sampleData.workloadHours.replace(/\\D/g, "") || "40");
+  const [includeBranding, setIncludeBranding] = useState(workspaceBranding);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(workspaceTemplateId);
   const [templates, setTemplates] = useState<Array<any>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [issuedResult, setIssuedResult] = useState<{ code: string; url: string } | null>(null);
@@ -53,6 +64,21 @@ export function CertificateStandardManager() {
     fetchCertificates();
     fetchTemplates();
   }, []);
+
+  useEffect(() => {
+    setStudentName(sampleData.studentName);
+    setCourseTitle(sampleData.courseTitle);
+    setLevel(sampleData.level);
+    setWorkloadHours(sampleData.workloadHours.replace(/\\D/g, "") || "40");
+  }, [sampleData]);
+
+  useEffect(() => {
+    setSelectedTemplateId(workspaceTemplateId);
+  }, [workspaceTemplateId]);
+
+  useEffect(() => {
+    setIncludeBranding(workspaceBranding);
+  }, [workspaceBranding]);
 
   const handleDeleteCertificate = async (id: number) => {
     if (!confirm("Tem certeza que deseja excluir este certificado permanentemente do banco de dados?")) return;
@@ -133,6 +159,7 @@ export function CertificateStandardManager() {
           customWorkloadHours: Number(workloadHours) || 40,
           includeSiteBranding: includeBranding,
           templateId: selectedTemplateId === "default" ? null : Number(selectedTemplateId),
+          composition,
         }),
       });
 
@@ -181,7 +208,13 @@ export function CertificateStandardManager() {
                 <Label htmlFor="std-template-select" className="font-bold text-red-900 flex items-center gap-2">
                   <Award size={16} /> 1. Escolher Modelo de Certificado (Início do Fluxo)
                 </Label>
-                <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={value => {
+                    setSelectedTemplateId(value);
+                    setWorkspaceTemplateId(value);
+                  }}
+                >
                   <SelectTrigger id="std-template-select" className="bg-white">
                     <SelectValue placeholder="Selecione um modelo cadastrado..." />
                   </SelectTrigger>
@@ -205,23 +238,12 @@ export function CertificateStandardManager() {
                       {selectedTemplateId === "default" ? "Padrão Oficial" : (activeTemplate?.institution || "Personalizado")}
                     </span>
                   </div>
-                  <div className="relative aspect-[1.414/1] w-full bg-slate-900 rounded border overflow-hidden flex flex-col items-center justify-center p-4 text-center text-white">
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-950/80 via-slate-900/90 to-slate-950 flex flex-col items-center justify-center p-6 border-4 border-amber-500/30 m-2">
-                      <p className="text-[10px] tracking-widest text-amber-400 uppercase font-bold mb-1">
-                        {selectedTemplateId === "default" ? "Anderson Palafoz Platform" : (activeTemplate?.category || "Modelo Institucional")}
-                      </p>
-                      <h4 className="text-sm font-serif font-bold text-white mb-2">
-                        {selectedTemplateId === "default" ? "Certificado de Conclusão" : (activeTemplate?.name || "Certificado Customizado")}
-                      </h4>
-                      <p className="text-[11px] text-slate-300 italic mb-3">
-                        {selectedTemplateId === "default" ? "Modelo padrão com QR Code e selo oficial" : `Instituição: ${activeTemplate?.institution || "Parceira"}`}
-                      </p>
-                      <div className="w-24 h-0.5 bg-amber-500/50 mb-3" />
-                      <p className="text-[9px] text-slate-400">
-                        Os dados do aluno preencherão este layout automaticamente.
-                      </p>
-                    </div>
-                  </div>
+                  <CertificateCompositionPreview
+                    composition={composition}
+                    values={sampleData}
+                    includeSiteBranding={includeBranding}
+                    interactive
+                  />
                 </div>
               </div>
 
@@ -234,7 +256,10 @@ export function CertificateStandardManager() {
                       id="std-student-name"
                       required
                       value={studentName}
-                      onChange={(e) => setStudentName(e.target.value)}
+                      onChange={(e) => {
+                        setStudentName(e.target.value);
+                        setSampleData({ studentName: e.target.value });
+                      }}
                       placeholder="Ex: Adna Caroline"
                     />
                   </div>
@@ -243,7 +268,10 @@ export function CertificateStandardManager() {
                     <Input
                       id="std-level"
                       value={level}
-                      onChange={(e) => setLevel(e.target.value)}
+                      onChange={(e) => {
+                        setLevel(e.target.value);
+                        setSampleData({ level: e.target.value });
+                      }}
                       placeholder="Ex: B1 - Intermediário"
                     />
                   </div>
@@ -256,7 +284,10 @@ export function CertificateStandardManager() {
                   id="std-course-title"
                   required
                   value={courseTitle}
-                  onChange={(e) => setCourseTitle(e.target.value)}
+                  onChange={(e) => {
+                    setCourseTitle(e.target.value);
+                    setSampleData({ courseTitle: e.target.value });
+                  }}
                   placeholder="Nome do curso"
                 />
               </div>
@@ -267,7 +298,10 @@ export function CertificateStandardManager() {
                   <Input
                     type="number"
                     value={workloadHours}
-                    onChange={(e) => setWorkloadHours(e.target.value)}
+                    onChange={(e) => {
+                    setWorkloadHours(e.target.value);
+                    setSampleData({ workloadHours: `${e.target.value || "0"} horas` });
+                  }}
                     placeholder="40"
                   />
                 </div>
@@ -276,7 +310,10 @@ export function CertificateStandardManager() {
                   <Switch
                     id="std-branding"
                     checked={includeBranding}
-                    onCheckedChange={setIncludeBranding}
+                    onCheckedChange={value => {
+                      setIncludeBranding(value);
+                      setWorkspaceBranding(value);
+                    }}
                   />
                 </div>
               </div>
@@ -352,7 +389,7 @@ export function CertificateStandardManager() {
               <Button variant="outline" size="sm" onClick={handleBulkExport} className="h-8 text-xs bg-white">
                 <Download size={14} className="mr-1" /> Baixar Selecionados ({selectedIds.length})
               </Button>
-              <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteModal(true)} className="h-8 text-xs bg-red-600 hover:bg-red-700">
+              <Button variant="outline" size="sm" onClick={() => setShowBulkDeleteModal(true)} className="h-8 text-xs bg-red-600 hover:bg-red-700">
                 <Trash2 size={14} className="mr-1" /> Excluir Selecionados ({selectedIds.length})
               </Button>
             </div>
@@ -423,7 +460,7 @@ export function CertificateStandardManager() {
                           >
                             Baixar
                           </a>
-                          <Button variant="destructive" size="sm" onClick={() => handleDeleteCertificate(cert.id)} className="h-7 text-xs bg-red-600 hover:bg-red-700">Excluir</Button>
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteCertificate(cert.id)} className="h-7 text-xs bg-red-600 hover:bg-red-700">Excluir</Button>
                         </td>
                       </tr>
                     );
@@ -457,7 +494,7 @@ export function CertificateStandardManager() {
               <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)} className="text-xs">
                 Cancelar
               </Button>
-              <Button variant="destructive" onClick={handleBulkDeleteConfirmed} className="text-xs bg-red-600 hover:bg-red-700 font-bold">
+              <Button variant="outline" onClick={handleBulkDeleteConfirmed} className="text-xs bg-red-600 hover:bg-red-700 font-bold">
                 Sim, Excluir {selectedIds.length} Certificado(s)
               </Button>
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 import {
   CheckCircle2,
   FileSignature,
@@ -1422,6 +1423,7 @@ function PreviewModal({
   cert: CertificateItem;
   onClose: () => void;
 }) {
+  const { composition } = useCertificateWorkspace();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -1477,6 +1479,7 @@ function PreviewModal({
           studentCpf: cpfVal,
           customStudentNameSize: sizeVal ? Number(sizeVal) : undefined,
           customStudentNameColor: colorVal || undefined,
+          composition,
         }),
       });
       const data = await response.json();
