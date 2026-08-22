@@ -796,7 +796,7 @@ export default function AdminCmsPage() {
             <div className="flex-1 overflow-auto flex items-center justify-center bg-slate-100 p-6 rounded-2xl border border-slate-200">
               <div
                 className={`transition-all duration-300 bg-white shadow-2xl rounded-2xl border border-slate-300 overflow-hidden ${
-                  previewDevice === "mobile" ? "w-[375px] h-[600px]" : previewDevice === "tablet" ? "w-[768px] h-[550px]" : "w-full h-full min-h-[400px]"
+                  previewDevice === "mobile" ? "w-full max-w-[375px] h-[600px]" : previewDevice === "tablet" ? "w-full max-w-[768px] h-[550px]" : "w-full h-full min-h-[400px]"
                 } p-6 flex flex-col`}
               >
                 <div className="border-b border-slate-100 pb-3 mb-4 flex items-center justify-between">

@@ -16,7 +16,7 @@ describe("gerenciador administrativo de certificados", () => {
   });
 
   it("pesquisa por aluno, e-mail, curso ou código", () => {
-    expect(source).toContain("Pesquisar Aluno/Curso");
+    expect(source).toContain("Pesquisar Aluno (Nome, CPF, E-mail)");
     expect(source).toContain("studentEmail");
     expect(source).toContain("certificateCode");
     expect(source).toContain("searchQuery");

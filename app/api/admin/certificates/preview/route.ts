@@ -1,18 +1,20 @@
 import { NextResponse } from "next/server";
-import { requireTeacherOrAdmin } from "@/server/_core/auth-helpers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { courses, users, certificateTemplates } from "@/drizzle/schema";
-import {
-  buildCertificatePdf,
-  loadOfficialPrincipalLogoBytes,
-  downloadCertificateTemplate,
-} from "@/lib/certificate-pdf";
+import { buildCertificatePdf } from "@/lib/certificate-pdf";
+import { downloadCertificateTemplate } from "@/lib/learning-storage";
+import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
 
 export async function POST(req: Request) {
   try {
-    const session = await requireTeacherOrAdmin();
-    if (!session) {
+    const session = await getServerSession(authOptions);
+    if (
+      !session?.user ||
+      !["admin", "super_admin", "professor"].includes(session.user.role || "")
+    ) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 

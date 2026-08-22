@@ -1181,3 +1181,17 @@ export const certificateTemplates = pgTable("certificate_templates", {
 export type CertificateTemplate = typeof certificateTemplates.$inferSelect;
 export type InsertCertificateTemplate =
   typeof certificateTemplates.$inferInsert;
+
+export const articleCommentReplies = pgTable("article_comment_replies", {
+  id: serial("id").primaryKey(),
+  commentId: integer("commentId")
+    .notNull()
+    .references(() => articleComments.id, { onDelete: "cascade" }),
+  authorId: integer("authorId")
+    .notNull()
+    .references(() => users.id),
+  message: text("message").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ArticleCommentReply = typeof articleCommentReplies.$inferSelect;
+export type InsertArticleCommentReply = typeof articleCommentReplies.$inferInsert;
