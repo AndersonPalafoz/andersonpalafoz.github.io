@@ -1881,3 +1881,7 @@
 - [x] Desenvolver protótipo isolado com Fabric.js e pdf-lib para edição visual avançada e exportação de certificados em PDF
 
 - [x] Adicionar abas na emissão avulsa de certificados para permitir escolher um curso da lista existente ou digitar manualmente informações de cursos externos/avulsos
+
+- [x] Desenvolver protótipo com Konva.js + react-konva para edição em camadas e suporte a React state
+- [x] Desenvolver protótipo com GrapesJS para edição de templates baseados em HTML/CSS estruturado
+- [x] Comparar Fabric.js, Konva.js e GrapesJS quanto à usabilidade, desempenho e facilidade de integração com pdf-lib
