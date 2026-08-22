@@ -3,6 +3,8 @@ export const CERTIFICATE_CANVAS = {
   height: 595,
 } as const;
 
+export type CertificateVisualVariant = "standard" | "isf" | "profici" | "minimal";
+
 export type CertificateFieldKey =
   | "studentName"
   | "courseTitle"
@@ -49,6 +51,7 @@ export type CertificateCompositionElement = {
 
 export type CertificateComposition = {
   version: 1;
+  visualVariant?: CertificateVisualVariant;
   canvas: {
     width: number;
     height: number;
@@ -74,6 +77,7 @@ export const DEFAULT_FIELD_MAPPINGS: Partial<
 
 export const DEFAULT_CERTIFICATE_COMPOSITION: CertificateComposition = {
   version: 1,
+  visualVariant: "standard",
   canvas: { ...CERTIFICATE_CANVAS },
   fieldMappings: DEFAULT_FIELD_MAPPINGS,
   elements: [],
@@ -192,8 +196,17 @@ export function parseCertificateComposition(raw: unknown): CertificateCompositio
     .map((element, index) => sanitizeElement(element, index))
     .filter((element): element is CertificateCompositionElement => Boolean(element));
 
+  const visualVariant =
+    object.visualVariant === "isf" ||
+    object.visualVariant === "profici" ||
+    object.visualVariant === "minimal" ||
+    object.visualVariant === "standard"
+      ? object.visualVariant
+      : "standard";
+
   return {
     version: 1,
+    visualVariant,
     canvas: { ...CERTIFICATE_CANVAS },
     fieldMappings: fields,
     elements,

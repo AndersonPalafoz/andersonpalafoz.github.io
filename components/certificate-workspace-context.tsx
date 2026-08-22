@@ -5,6 +5,7 @@ import {
   DEFAULT_CERTIFICATE_COMPOSITION,
   type CertificateComposition,
   type CertificateFieldKey,
+  type CertificateVisualVariant,
 } from "@/lib/certificate-composition";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 
@@ -28,6 +29,7 @@ type CertificateWorkspaceValue = {
   sampleData: CertificateWorkspaceSampleData;
   selectedTemplateId: string;
   includeSiteBranding: boolean;
+  visualVariant: CertificateVisualVariant;
   updateComposition: (
     updater:
       | Partial<CertificateComposition>
@@ -37,6 +39,7 @@ type CertificateWorkspaceValue = {
   setSampleData: (data: Partial<CertificateWorkspaceSampleData>) => void;
   setSelectedTemplateId: (value: string) => void;
   setIncludeSiteBranding: (value: boolean) => void;
+  setVisualVariant: (value: CertificateVisualVariant) => void;
 };
 
 const CertificateWorkspaceContext = createContext<CertificateWorkspaceValue | null>(null);
@@ -72,6 +75,7 @@ export function CertificateWorkspaceProvider({ children }: { children: ReactNode
       sampleData,
       selectedTemplateId,
       includeSiteBranding,
+      visualVariant: composition.visualVariant ?? "standard",
       updateComposition: updater => {
         setComposition(current =>
           typeof updater === "function"
@@ -87,6 +91,9 @@ export function CertificateWorkspaceProvider({ children }: { children: ReactNode
       },
       setSelectedTemplateId,
       setIncludeSiteBranding,
+      setVisualVariant: value => {
+        setComposition(current => ({ ...current, visualVariant: value }));
+      },
     }),
     [composition, sampleData, selectedTemplateId, includeSiteBranding]
   );
