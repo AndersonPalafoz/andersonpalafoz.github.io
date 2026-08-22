@@ -83,6 +83,7 @@ function drawVariantShell(
   const ink = parseHexColor(variant.ink, rgb(0.12, 0.12, 0.12));
   const muted = parseHexColor(variant.muted, rgb(0.42, 0.45, 0.48));
   const border = parseHexColor(variant.border, rgb(0.9, 0.91, 0.92));
+  const panel = parseHexColor(variant.panel, rgb(0.97, 0.98, 0.98));
 
   page.drawRectangle({ x: 0, y: 0, width: 842, height: 595, color: paper });
   if (variant.motif === "double") {
@@ -105,6 +106,26 @@ function drawVariantShell(
     page.drawRectangle({ x: 28, y: 28, width: 786, height: 539, borderColor: border, borderWidth: 1 });
     page.drawRectangle({ x: 52, y: 540, width: 150, height: 4, color: accent });
   }
+
+  page.drawRectangle({
+    x: 68,
+    y: 82,
+    width: 706,
+    height: 430,
+    color: panel,
+    opacity: 0.58,
+    borderColor: border,
+    borderWidth: 0.65,
+  });
+  page.drawRectangle({ x: 68, y: 510, width: 128, height: 2, color: accent });
+  const editorialLabel = "RECONHECIMENTO ACADÊMICO";
+  page.drawText(editorialLabel, {
+    x: (842 - regular.widthOfTextAtSize(editorialLabel, 6)) / 2,
+    y: 498,
+    size: 6,
+    font: bold,
+    color: muted,
+  });
 
   const watermarkSize = variant.watermarkLabel.length > 2 ? 84 : 128;
   const watermarkWidth = bold.widthOfTextAtSize(variant.watermarkLabel, watermarkSize);
