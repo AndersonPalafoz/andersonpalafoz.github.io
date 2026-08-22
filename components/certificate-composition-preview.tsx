@@ -141,6 +141,23 @@ export function CertificateCompositionPreview({
       )}
 
       <div
+        className="pointer-events-none absolute bottom-[14%] left-[8%] right-[8%] top-[15%] z-[0] rounded-[1.25rem] border shadow-inner"
+        style={{ borderColor: variant.border, backgroundColor: variant.panel, opacity: 0.58 }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-[8%] top-[15%] z-[1] h-[2px] w-[18%] rounded-full"
+        style={{ backgroundColor: variant.accent }}
+        aria-hidden="true"
+      />
+      <div
+        className="pointer-events-none absolute left-1/2 top-[16.5%] z-[2] -translate-x-1/2 text-center text-[5px] font-black uppercase tracking-[0.24em]"
+        style={{ color: variant.muted }}
+      >
+        Reconhecimento acadêmico
+      </div>
+
+      <div
         className="pointer-events-none absolute left-1/2 top-1/2 z-[1] -translate-x-1/2 -translate-y-1/2 select-none text-[7rem] font-black leading-none tracking-[-0.12em] opacity-[0.035] sm:text-[10rem]"
         style={{ color: variant.accent }}
         aria-hidden="true"
