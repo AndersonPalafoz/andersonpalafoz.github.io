@@ -80,9 +80,9 @@ export default async function DashboardPage() {
       {/* Banner de Notificações de Notas do Google Classroom */}
       <ClassroomGradesNotificationBanner />
 
-      <section aria-label="Resumo acadêmico" className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <section aria-label="Resumo acadêmico" className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
         {metrics.map(({ label, value, icon: Icon, tone }) => (
-          <article key={label} className="metric-card interactive-card">
+          <article key={label} className="metric-card interactive-card min-w-[14rem] snap-start md:min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tone}`}><Icon size={21} /></div>
               <span className="text-3xl font-black tracking-tight text-foreground">{value}</span>
@@ -109,10 +109,10 @@ export default async function DashboardPage() {
 
         {cursosAtivos.length === 0 ? (
           <div className="space-y-6">
-            <div className="surface-card border-dashed p-8 text-center sm:p-12">
+            <div className="empty-state p-8 text-center sm:p-12">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={24} /></div>
-              <h3 className="mt-4 text-lg font-black text-foreground">Sua próxima conquista começa aqui</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Você ainda não está inscrito em um curso. Como sua conta começou zerada por padrão, encontre uma trilha adequada ao seu nível ou importe do Classroom.</p>
+              <h3 className="mt-4 text-xl font-black tracking-tight text-foreground">Sua próxima conquista começa aqui</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Você ainda não está inscrito em um curso. Escolha uma trilha adequada ao seu nível ou importe uma turma do Classroom para começar.</p>
               <Button asChild className="mt-6"><Link href="/aulas">Explorar cursos <ArrowRight size={17} /></Link></Button>
             </div>
             {/* Ação para importar do Google Classroom em painéis vazios */}
@@ -120,11 +120,12 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-            {cursosAtivos.map((enrollment) => {
+            {cursosAtivos.map((enrollment, index) => {
               const percentage = enrollment.resume?.percentage ?? enrollment.progress;
               const courseHref = enrollment.resume?.lesson ? `/cursos/${enrollment.course?.id}/aulas/${enrollment.resume.lesson.id}` : `/cursos/${enrollment.course?.id}`;
               return (
-                <article key={enrollment.id} className="surface-card interactive-card overflow-hidden rounded-3xl p-5 sm:p-6">
+                <article key={enrollment.id} className={`surface-card interactive-card overflow-hidden rounded-3xl p-5 sm:p-6 ${index === 0 ? "dashboard-feature-card lg:col-span-2" : ""}`}>
+                  {index === 0 && <div className="mb-4 flex items-center justify-between gap-3"><span className="section-kicker">Seu próximo passo</span><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">Recomendado</span></div>}
                   <div className="flex items-start gap-4">
                     {enrollment.course?.imageUrl ? <img src={enrollment.course.imageUrl} alt="" className="h-16 w-24 shrink-0 rounded-2xl object-cover" /> : <div className="flex h-16 w-24 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-400 dark:bg-red-950/40"><BookOpen size={22} /></div>}
                     <div className="min-w-0 flex-1">
@@ -133,11 +134,11 @@ export default async function DashboardPage() {
                     </div>
                   </div>
                   <div className="mt-6 space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{percentage}%</span></div>
-                    <div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }} /></div>
+                    <div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso do curso</span><span className="text-primary">{percentage}%</span></div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }} /></div>
                   </div>
                   {enrollment.resume?.lesson && <p className="mt-4 rounded-xl border border-red-100 bg-red-50/70 px-3 py-2.5 text-xs leading-5 text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200"><span className="font-black">Próxima aula:</span> {enrollment.resume.lesson.title}</p>}
-                  <Button asChild variant="outline" className="mt-5 w-full"><Link href={courseHref}>{enrollment.resume?.lesson ? "Continuar da última aula" : "Abrir curso"}<ArrowRight size={16} /></Link></Button>
+                  <Button asChild variant={index === 0 ? "default" : "outline"} className="mt-5 w-full"><Link href={courseHref}>{enrollment.resume?.lesson ? "Continuar da última aula" : "Abrir curso"}<ArrowRight size={16} /></Link></Button>
                 </article>
               );
             })}
@@ -158,9 +159,9 @@ export default async function DashboardPage() {
             Nenhum histórico de curso registrado até o momento.
           </div>
         ) : (
-          <div className="surface-card overflow-hidden">
+          <div className="surface-card overflow-hidden rounded-3xl">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="dashboard-history-table w-full text-left text-sm">
                 <thead className="bg-muted/55 text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Curso / Nível</th>
@@ -177,17 +178,17 @@ export default async function DashboardPage() {
                     const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
                     return (
                       <tr key={enr.id} className="hover:bg-muted/30 transition-colors">
-                        <td className="px-5 py-4">
+                        <td data-label="Curso / nível" className="px-5 py-4">
                           <p className="font-bold text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p>
                           <p className="text-xs text-muted-foreground uppercase">{enr.course?.level || "Geral"}</p>
                         </td>
-                        <td className="px-5 py-4 text-xs font-semibold text-muted-foreground">{formattedDate}</td>
-                        <td className="px-5 py-4">
+                        <td data-label="Data de matrícula" className="px-5 py-4 text-xs font-semibold text-muted-foreground">{formattedDate}</td>
+                        <td data-label="Status" className="px-5 py-4">
                           <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>
                             {isCompleted ? "Concluído" : "Em andamento"}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
+                        <td data-label="Progresso" className="px-5 py-4">
                           <div className="w-32 space-y-1">
                             <div className="flex justify-between text-[11px] font-bold text-muted-foreground">
                               <span>{pct}%</span>
@@ -197,7 +198,7 @@ export default async function DashboardPage() {
                             </div>
                           </div>
                         </td>
-                        <td className="px-5 py-4 text-right">
+                        <td data-label="Ação" className="px-5 py-4 text-right">
                           <Button asChild size="sm" variant="outline">
                             <Link href={`/cursos/${enr.courseId}`}>Acessar</Link>
                           </Button>
