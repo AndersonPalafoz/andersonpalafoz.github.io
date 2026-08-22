@@ -1922,4 +1922,5 @@
 - [x] Substituir o mapeamento estático e form de variáveis por uma prancheta interativa real baseada em canvas (clicar, arrastar, redimensionar, gerenciar camadas e exportar para PDF) no laboratório em /admin/certificados.
 - [x] Corrigir o alinhamento e a quebra de linha do corpo do texto no gerador de PDF (`lib/certificate-pdf-generator.ts`) para impedir cortes laterais e garantir centralização perfeita dentro da moldura A4.
 - [x] Reorganizar o layout da página de certificados no painel administrativo (/admin/certificados) e implementar exclusão segura de certificados emitidos (assinados ou não) com confirmação e atualização em tempo real.
-- [ ] Reestruturar o fluxo de emissão para permitir escolher ou fazer upload de um modelo de certificado ANTES da emissão, carregar dados reais dos certificados emitidos do banco de dados, e suportar exclusão em massa e exportação conjunta.
+- [x] Reestruturar o fluxo de emissão para permitir escolher ou fazer upload de um modelo de certificado ANTES da emissão, carregar dados reais dos certificados emitidos do banco de dados, e suportar exclusão em massa e exportação conjunta.
+- [ ] Implementar pré-visualização visual imediata do modelo de certificado selecionado antes do preenchimento e modal de confirmação de segurança para exclusão em massa.
