@@ -36,9 +36,9 @@ function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
   const groupWidth = data.length > 0 ? chartWidth / data.length : chartWidth;
 
   return (
-    <div className="w-full overflow-x-auto py-2">
-      <div className="min-w-[600px]">
-        <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 40}`} className="w-full h-auto">
+    <div className="w-full min-w-0 overflow-hidden py-2">
+      <div className="w-full min-w-0">
+        <svg viewBox={`0 0 ${chartWidth} ${chartHeight + 40}`} className="block w-full max-w-full h-auto">
           <line x1="0" y1={chartHeight} x2={chartWidth} y2={chartHeight} stroke="currentColor" className="text-border" strokeWidth="1" />
           {data.map((item, index) => {
             const barWidth = Math.min(26, groupWidth / 3);

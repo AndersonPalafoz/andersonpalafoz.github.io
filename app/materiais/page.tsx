@@ -113,7 +113,7 @@ export default function MateriaisPage() {
               </div>
 
               <div className="flex flex-wrap gap-4 items-center justify-between pt-2">
-                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <div className="flex flex-wrap items-center gap-2 pb-2 min-w-0">
                   <span className="text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
                     <Filter size={14} /> Nível:
                   </span>
@@ -138,7 +138,7 @@ export default function MateriaisPage() {
                   ))}
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                <div className="flex flex-wrap items-center gap-2 pb-2 min-w-0">
                   <span className="text-xs font-bold uppercase text-gray-500">Categoria:</span>
                   <button
                     onClick={() => { setSelectedCategory("all"); setPage(1); }}
