@@ -84,14 +84,15 @@ export async function POST(request: NextRequest) {
         student = existingPlaceholder;
         userId = student.id;
       } else {
-        const [insertedUser] = await db
+        const insertedUsers = await db
           .insert(users)
           .values({
             name: directStudentName,
             email: placeholderEmail,
             role: "user",
           })
-          .$returningId();
+          .returning({ id: users.id });
+        const insertedUser = insertedUsers[0];
         student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
         userId = student.id;
       }
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
         courseId = existingCustomCourse.id;
         course = existingCustomCourse;
       } else {
-        const [newCourse] = await db
+        const newCourses = await db
           .insert(courses)
           .values({
             title: customCourseTitle,
@@ -126,7 +127,8 @@ export async function POST(request: NextRequest) {
             category: customInstitution || "Curso Externo / Avulso",
             isFree: false,
           })
-          .$returningId();
+          .returning({ id: courses.id });
+        const newCourse = newCourses[0];
         courseId = newCourse.id;
         course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
       }
@@ -195,7 +197,7 @@ export async function POST(request: NextRequest) {
     const fileUrl = uploaded.url;
 
     if (existing) {
-      const [updated] = await db
+      const updatedRows = await db
         .update(certificates)
         .set({
           certificateUrl: fileUrl,
@@ -208,6 +210,7 @@ export async function POST(request: NextRequest) {
         })
         .where(eq(certificates.id, existing.id))
         .returning();
+      const updated = updatedRows[0];
       return NextResponse.json({
         success: true,
         certificate: updated,
@@ -215,7 +218,7 @@ export async function POST(request: NextRequest) {
         includeSiteBranding,
       });
     } else {
-      const [inserted] = await db
+      const insertedRows = await db
         .insert(certificates)
         .values({
           userId,
@@ -229,7 +232,8 @@ export async function POST(request: NextRequest) {
           signedPdfUrl: fileUrl,
           signedAt: new Date(),
         })
-        .$returningId();
+        .returning({ id: certificates.id });
+      const inserted = insertedRows[0];
       const created = await db.query.certificates.findFirst({
         where: eq(certificates.id, inserted.id),
       });
