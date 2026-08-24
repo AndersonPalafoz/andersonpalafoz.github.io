@@ -693,6 +693,12 @@ export const lessonNotes = pgTable(
     note: text("note").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+    // Quando um administrador exclui a anotação de um aluno (em vez do
+    // próprio aluno), o texto original é preservado para fins de auditoria,
+    // mas o conteúdo não é mais exibido ao aluno — a interface mostra um
+    // aviso "Excluído por um administrador" no lugar.
+    deletedByAdminAt: timestamp("deletedByAdminAt"),
+    deletedByAdminEmail: text("deletedByAdminEmail"),
   },
   table => ({
     userLessonIdentity: uniqueIndex("lesson_notes_user_lesson_idx").on(
