@@ -162,7 +162,7 @@ export default function AdminCourseModulesPage({
             <Link href="/admin/cursos" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
               <ArrowLeft size={16} /> Voltar para Cursos
             </Link>
-            <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase">
+            <span className="bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-xs font-bold uppercase">
               Hierarquia: Curso → Módulos → Aulas
             </span>
             <h1 className="text-3xl font-bold text-foreground mt-2">
@@ -180,7 +180,7 @@ export default function AdminCourseModulesPage({
         </div>
 
         {/* Ação destacada para adicionar módulo */}
-        <section className="flex flex-col gap-4 rounded-2xl border border-red-100 bg-gradient-to-br from-red-50 to-white p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between md:p-8">
+        <section className="flex flex-col gap-4 rounded-2xl border border-red-100 dark:border-red-900/50 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-slate-900 p-6 shadow-sm sm:flex-row sm:items-center sm:justify-between md:p-8">
           <div><p className="text-xs font-black uppercase tracking-[0.18em] text-red-600">Próximo nível da hierarquia</p><h2 className="mt-2 text-xl font-black text-foreground">Construa o primeiro módulo do curso</h2><p className="mt-1 text-sm text-muted-foreground">Depois de criar o módulo, você poderá adicionar e ordenar as aulas correspondentes.</p></div>
           <button type="button" onClick={() => setShowModuleModal(true)} className="inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 text-sm font-black text-white shadow-lg shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-red-700"><Plus size={18} /> Adicionar módulo</button>
         </section>
@@ -205,7 +205,7 @@ export default function AdminCourseModulesPage({
                     <div className="cursor-grab text-muted-foreground hover:text-muted-foreground">
                       <GripVertical size={20} />
                     </div>
-                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-sm">
+                    <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold flex items-center justify-center text-sm">
                       {index + 1}
                     </div>
                     <div>
