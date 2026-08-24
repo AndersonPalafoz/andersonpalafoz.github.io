@@ -14,10 +14,10 @@ export async function GET(request: Request) {
   if (!userId) return NextResponse.json({ error: "Autenticação necessária." }, { status: 401 });
   if (lessonId) {
     const note = await db.query.lessonNotes.findFirst({ where: and(eq(lessonNotes.userId, userId), eq(lessonNotes.lessonId, lessonId)) });
-    return NextResponse.json({ note: note || null });
+    return NextResponse.json({ note: note ? { ...note, note: note.deletedByAdminAt ? "" : note.note } : null });
   }
   const notes = await db.query.lessonNotes.findMany({ where: eq(lessonNotes.userId, userId), with: { lesson: true }, orderBy: desc(lessonNotes.updatedAt) });
-  return NextResponse.json({ notes });
+  return NextResponse.json({ notes: notes.map((n) => ({ ...n, note: n.deletedByAdminAt ? "" : n.note })) });
 }
 
 export async function PUT(request: Request) {
@@ -28,6 +28,7 @@ export async function PUT(request: Request) {
   if (!userId || !lessonId) return NextResponse.json({ error: "Parâmetros inválidos." }, { status: 400 });
   if (noteText.length > 10000) return NextResponse.json({ error: "A anotação excede o limite de 10.000 caracteres." }, { status: 400 });
   const existing = await db.query.lessonNotes.findFirst({ where: and(eq(lessonNotes.userId, userId), eq(lessonNotes.lessonId, lessonId)) });
+  if (existing?.deletedByAdminAt) return NextResponse.json({ error: "Esta anotação foi excluída por um administrador e não pode mais ser editada." }, { status: 403 });
   if (existing) { const [updated] = await db.update(lessonNotes).set({ note: noteText, updatedAt: new Date() }).where(eq(lessonNotes.id, existing.id)).returning(); return NextResponse.json({ note: updated }); }
   const [created] = await db.insert(lessonNotes).values({ userId, lessonId, note: noteText }).returning();
   return NextResponse.json({ note: created }, { status: 201 });
@@ -37,6 +38,8 @@ export async function DELETE(request: Request) {
   const userId = userIdFromSession(await getServerSession(authOptions));
   const lessonId = lessonIdFrom(request);
   if (!userId || !lessonId) return NextResponse.json({ error: "Parâmetros inválidos." }, { status: 400 });
+  const existing = await db.query.lessonNotes.findFirst({ where: and(eq(lessonNotes.userId, userId), eq(lessonNotes.lessonId, lessonId)) });
+  if (existing?.deletedByAdminAt) return NextResponse.json({ removed: true });
   await db.delete(lessonNotes).where(and(eq(lessonNotes.userId, userId), eq(lessonNotes.lessonId, lessonId)));
   return NextResponse.json({ removed: true });
 }
