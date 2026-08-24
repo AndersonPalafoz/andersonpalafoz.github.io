@@ -175,7 +175,7 @@ export function ProfileForm({
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-gray-200 bg-gray-50/80 p-5 sm:p-6" aria-labelledby="avatar-title">
+      <section className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-gray-50/80 dark:bg-slate-900/40 p-5 sm:p-6" aria-labelledby="avatar-title">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
           <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-red-100 ring-4 ring-white shadow-sm">
             {avatarPreview || avatarUrl ? (
@@ -192,10 +192,10 @@ export function ProfileForm({
           </div>
 
           <div className="min-w-0 flex-1">
-            <h4 id="avatar-title" className="text-base font-semibold text-gray-900">Foto de perfil</h4>
-            <p className="mt-1 text-sm leading-6 text-gray-600">Use uma imagem clara para identificar sua conta. JPG, PNG ou WebP de até 2 MB.</p>
+            <h4 id="avatar-title" className="text-base font-semibold text-gray-900 dark:text-white">Foto de perfil</h4>
+            <p className="mt-1 text-sm leading-6 text-gray-600 dark:text-slate-400">Use uma imagem clara para identificar sua conta. JPG, PNG ou WebP de até 2 MB.</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <label htmlFor="avatar-file" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-red-300 hover:text-red-700 focus-within:ring-2 focus-within:ring-red-200">
+              <label htmlFor="avatar-file" className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-gray-800 dark:text-slate-200 transition hover:border-red-300 hover:text-red-700 dark:hover:border-red-700 dark:hover:text-red-400 focus-within:ring-2 focus-within:ring-red-200">
                 <Camera size={16} aria-hidden="true" />
                 Escolher foto
               </label>
@@ -227,40 +227,40 @@ export function ProfileForm({
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-gray-700">Nome Completo</label>
-            <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" required />
+            <label htmlFor="profile-name" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Completo</label>
+            <input id="profile-name" type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" required />
           </div>
           <div>
-            <label htmlFor="profile-socialName" className="mb-1.5 block text-sm font-medium text-gray-700">Nome Social (Opcional)</label>
-            <input id="profile-socialName" type="text" value={socialName} onChange={(e) => setSocialName(e.target.value)} placeholder="Como prefere ser chamado" className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label htmlFor="profile-cpf" className="mb-1.5 block text-sm font-medium text-gray-700">CPF</label>
-            <input id="profile-cpf" type="text" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
-          </div>
-          <div>
-            <label htmlFor="profile-phone" className="mb-1.5 block text-sm font-medium text-gray-700">Celular / WhatsApp</label>
-            <input id="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={15} className="w-full rounded-xl border border-gray-300 px-3 py-2.5 font-mono focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+            <label htmlFor="profile-socialName" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Nome Social (Opcional)</label>
+            <input id="profile-socialName" type="text" value={socialName} onChange={(e) => setSocialName(e.target.value)} placeholder="Como prefere ser chamado" className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="profile-phone" className="mb-1.5 block text-sm font-medium text-gray-700">Telefone</label>
-            <input id="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(11) 99999-9999" className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+            <label htmlFor="profile-cpf" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">CPF</label>
+            <input id="profile-cpf" type="text" value={cpf} onChange={(e) => setCpf(formatCpf(e.target.value))} placeholder="000.000.000-00" maxLength={14} className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 font-mono dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
           </div>
           <div>
-            <label htmlFor="profile-location" className="mb-1.5 block text-sm font-medium text-gray-700">Localização</label>
-            <input id="profile-location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Cidade, Estado" className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+            <label htmlFor="profile-phone" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Celular / WhatsApp</label>
+            <input id="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="(11) 99999-9999" maxLength={15} className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 font-mono dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label htmlFor="profile-phone" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Telefone</label>
+            <input id="profile-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(11) 99999-9999" className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          </div>
+          <div>
+            <label htmlFor="profile-location" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Localização</label>
+            <input id="profile-location" type="text" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Cidade, Estado" className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
           </div>
         </div>
 
         <div>
-          <label htmlFor="profile-bio" className="mb-1.5 block text-sm font-medium text-gray-700">Bio</label>
-          <textarea id="profile-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Conte um pouco sobre você" className="w-full rounded-xl border border-gray-300 px-3 py-2.5 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
+          <label htmlFor="profile-bio" className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-slate-300">Bio</label>
+          <textarea id="profile-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={3} placeholder="Conte um pouco sobre você" className="w-full rounded-xl border border-gray-300 dark:border-slate-700 px-3 py-2.5 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500 focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/20" />
         </div>
 
         {feedback && <p className={feedback.type === "success" ? "text-sm font-medium text-green-700" : "text-sm font-medium text-red-700"} role={feedback.type === "success" ? "status" : "alert"}>{feedback.text}</p>}
