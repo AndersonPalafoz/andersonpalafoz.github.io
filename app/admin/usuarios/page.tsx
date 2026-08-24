@@ -195,6 +195,35 @@ export default function UsuariosPage() {
     await updateUser(user.id, { action: "restore" }, "Usuário recuperado com sucesso.");
   };
 
+  const handlePermanentDelete = async (user: User) => {
+    if (user.email?.toLowerCase() === SUPER_ADMIN_EMAIL) return;
+
+    const confirmation = window.prompt(
+      `Isso vai apagar PERMANENTEMENTE a conta e os dados pessoais de ${user.name || user.email} (progresso, notas, avaliações, mensagens, etc.). Essa ação não pode ser desfeita.\n\nDigite o e-mail da conta para confirmar:`,
+    );
+    if (!confirmation || confirmation.trim().toLowerCase() !== user.email?.toLowerCase()) {
+      if (confirmation !== null) toast.error("E-mail não confere. Exclusão definitiva cancelada.");
+      return;
+    }
+
+    try {
+      setBusyId(user.id);
+      setFeedback(null);
+      const response = await fetch(`/api/admin/users?id=${user.id}&permanent=true`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível excluir o usuário definitivamente.");
+      setUsers((current) => current.filter((item) => item.id !== user.id));
+      setFeedback("Usuário excluído definitivamente.");
+      toast.success("Usuário excluído definitivamente.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Não foi possível excluir o usuário definitivamente.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const filteredUsers = useMemo(() => {
     const rawQuery = query.trim().toLowerCase();
     const cleanQueryQuery = rawQuery.replace(/\D/g, "");
@@ -318,7 +347,12 @@ export default function UsuariosPage() {
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {user.deletedAt ? (
-                          <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="min-h-10 flex-1 gap-1.5 border-green-200 text-green-700"><RefreshCw size={15} />Recuperar</Button>
+                          !isPrincipal ? (
+                            <>
+                              <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="min-h-10 flex-1 gap-1.5 border-green-200 text-green-700"><RefreshCw size={15} />Recuperar</Button>
+                              <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handlePermanentDelete(user)} className="min-h-10 flex-1 gap-1.5 border-red-300 dark:border-red-900/60 text-red-700 dark:text-red-400"><Trash2 size={15} />Excluir definitivamente</Button>
+                            </>
+                          ) : null
                         ) : (
                           <>
                             {user.approvalStatus === "pending" ? (
@@ -349,7 +383,7 @@ export default function UsuariosPage() {
                       <td className="px-5 py-4">{user.role === "user" ? (<select value={user.teacherId ?? ""} disabled={isBusy || Boolean(user.deletedAt)} onChange={(event) => void updateUser(user.id, { teacherId: event.target.value ? Number(event.target.value) : null }, "Professor responsável atualizado.")} className="h-10 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-sm font-medium text-gray-700 dark:text-slate-300 outline-none focus:border-red-600 disabled:cursor-not-allowed disabled:bg-gray-100"><option value="">Nenhum</option>{teachers.map((t) => (<option key={t.id} value={t.id}>{t.name || t.email}</option>))}</select>) : (<span className="text-xs text-gray-400 dark:text-slate-500">—</span>)}</td>
                       <td className="px-5 py-4"><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClasses(user.approvalStatus, user.deletedAt)}`}>{user.deletedAt ? "Excluído" : statusLabels[user.approvalStatus]}</span></td>
                       <td className="px-5 py-4 text-sm text-gray-600 dark:text-slate-400">{formatDate(user.createdAt)}</td>
-                      <td className="px-5 py-4"><div className="flex justify-end gap-2">{user.deletedAt ? <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><RefreshCw size={15} />Recuperar</Button> : <>{user.approvalStatus === "pending" && <><Button size="sm" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 bg-green-600 text-white hover:bg-green-700"><Check size={15} />Aprovar</Button><Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "rejected" }, "Solicitação recusada.")} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50"><X size={15} />Recusar</Button></>}{user.approvalStatus === "rejected" && <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><Check size={15} />Liberar</Button>}{!isPrincipal && <Button size="sm" variant="ghost" disabled={isBusy} onClick={() => void handleDelete(user)} className="text-red-600 hover:bg-red-50 hover:text-red-700" aria-label={`Excluir ${user.name || user.email}`}><Trash2 size={16} /></Button>}</>}</div></td>
+                      <td className="px-5 py-4"><div className="flex justify-end gap-2">{user.deletedAt ? (!isPrincipal ? <><Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handleRestore(user)} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><RefreshCw size={15} />Recuperar</Button><Button size="sm" variant="outline" disabled={isBusy} onClick={() => void handlePermanentDelete(user)} className="gap-1.5 border-red-300 dark:border-red-900/60 text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30" aria-label={`Excluir ${user.name || user.email} definitivamente`}><Trash2 size={15} />Excluir definitivamente</Button></> : null) : <>{user.approvalStatus === "pending" && <><Button size="sm" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 bg-green-600 text-white hover:bg-green-700"><Check size={15} />Aprovar</Button><Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "rejected" }, "Solicitação recusada.")} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50"><X size={15} />Recusar</Button></>}{user.approvalStatus === "rejected" && <Button size="sm" variant="outline" disabled={isBusy} onClick={() => void updateUser(user.id, { approvalStatus: "approved" }, "Conta aprovada com sucesso.")} className="gap-1.5 border-green-200 text-green-700 hover:bg-green-50"><Check size={15} />Liberar</Button>}{!isPrincipal && <Button size="sm" variant="ghost" disabled={isBusy} onClick={() => void handleDelete(user)} className="text-red-600 hover:bg-red-50 hover:text-red-700" aria-label={`Excluir ${user.name || user.email}`}><Trash2 size={16} /></Button>}</>}</div></td>
                     </tr>;
                   })}
                 </tbody>
