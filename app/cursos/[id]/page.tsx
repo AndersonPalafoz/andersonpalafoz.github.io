@@ -322,7 +322,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
 
           <section
             aria-labelledby="google-drive-materials-title"
-            className="relative overflow-hidden rounded-3xl border border-sky-200 dark:border-sky-900/70 bg-gradient-to-br from-sky-50 via-white to-indigo-50 dark:from-sky-950/35 dark:via-background dark:to-indigo-950/25 p-5 shadow-sm sm:p-7"
+            className="relative overflow-hidden rounded-3xl border border-sky-200 dark:border-sky-900/70 bg-gradient-to-br from-sky-50 via-white to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/25 p-5 shadow-sm sm:p-7"
           >
             <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-100/70 dark:bg-sky-900/30 blur-2xl" aria-hidden="true" />
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -351,7 +351,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                       href={link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-sky-100 dark:border-sky-900/60 bg-white/90 dark:bg-slate-900/45 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+                      className="group flex min-h-16 items-center justify-between gap-4 rounded-2xl border border-sky-100 dark:border-sky-900/60 bg-white/90 dark:bg-slate-900/40 px-4 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
                       aria-label={`Abrir material ${index + 1} no Google Drive em nova aba`}
                     >
                       <span className="flex min-w-0 items-center gap-3">
@@ -369,7 +369,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
                 ))}
               </ul>
             ) : (
-              <div className="relative mt-6 rounded-2xl border border-dashed border-sky-200 dark:border-sky-900/70 bg-white/70 dark:bg-slate-900/35 px-4 py-5 text-sm text-slate-600 dark:text-slate-300">
+              <div className="relative mt-6 rounded-2xl border border-dashed border-sky-200 dark:border-sky-900/70 bg-white/70 dark:bg-slate-900/30 px-4 py-5 text-sm text-slate-600 dark:text-slate-300">
                 Nenhum material do Google Drive está vinculado a este curso no momento.
               </div>
             )}

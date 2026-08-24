@@ -197,7 +197,7 @@ export function CertificateLaboratoryManager() {
             <TabsContent value="standard" className="mt-0 space-y-4 focus-visible:outline-none">
               <div className="flex flex-col gap-3 rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3.5 text-xs text-foreground sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-start gap-2"><CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600 dark:text-emerald-300" size={15} /><span><strong className="text-emerald-700 dark:text-emerald-300">Gerador oficial:</strong> fluxo completo de seleção, prévia, emissão e gestão dos certificados.</span></div>
-                <span className="w-fit rounded-lg bg-emerald-500/15 px-2.5 py-1 font-bold text-emerald-700 dark:text-emerald-300">Pronto para emissão</span>
+                <span className="w-fit rounded-lg bg-emerald-500/10 px-2.5 py-1 font-bold text-emerald-700 dark:text-emerald-300">Pronto para emissão</span>
               </div>
               <CertificateStandardManager />
             </TabsContent>
@@ -205,7 +205,7 @@ export function CertificateLaboratoryManager() {
             <TabsContent value="fabric" className="mt-0 space-y-4 focus-visible:outline-none">
               <div className="flex flex-col gap-3 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3.5 text-xs text-foreground sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-start gap-2"><MousePointer2 className="mt-0.5 shrink-0 text-red-600 dark:text-red-300" size={15} /><span><strong className="text-red-700 dark:text-red-300">Fabric.js:</strong> arraste elementos, organize camadas e experimente uma composição livre.</span></div>
-                <span className="w-fit rounded-lg bg-red-500/15 px-2.5 py-1 font-bold text-red-700 dark:text-red-300">Canvas interativo</span>
+                <span className="w-fit rounded-lg bg-red-500/10 px-2.5 py-1 font-bold text-red-700 dark:text-red-300">Canvas interativo</span>
               </div>
               <CertificateFabricPrototype />
             </TabsContent>
@@ -213,7 +213,7 @@ export function CertificateLaboratoryManager() {
             <TabsContent value="konva" className="mt-0 space-y-4 focus-visible:outline-none">
               <div className="flex flex-col gap-3 rounded-2xl border border-blue-500/25 bg-blue-500/10 px-4 py-3.5 text-xs text-foreground sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-start gap-2"><Layers className="mt-0.5 shrink-0 text-blue-600 dark:text-blue-300" size={15} /><span><strong className="text-blue-700 dark:text-blue-300">Konva.js:</strong> teste uma prancheta reativa com foco em transformação e precisão.</span></div>
-                <span className="w-fit rounded-lg bg-blue-500/15 px-2.5 py-1 font-bold text-blue-700 dark:text-blue-300">Camadas reativas</span>
+                <span className="w-fit rounded-lg bg-blue-500/10 px-2.5 py-1 font-bold text-blue-700 dark:text-blue-300">Camadas reativas</span>
               </div>
               <CertificateKonvaPrototype />
             </TabsContent>
@@ -221,7 +221,7 @@ export function CertificateLaboratoryManager() {
             <TabsContent value="grapes" className="mt-0 space-y-4 focus-visible:outline-none">
               <div className="flex flex-col gap-3 rounded-2xl border border-purple-500/25 bg-purple-500/10 px-4 py-3.5 text-xs text-foreground sm:flex-row sm:items-center sm:justify-between sm:px-5">
                 <div className="flex items-start gap-2"><Code className="mt-0.5 shrink-0 text-purple-600 dark:text-purple-300" size={15} /><span><strong className="text-purple-700 dark:text-purple-300">GrapesJS / HTML:</strong> explore uma estrutura de blocos para tipografia, grids e CSS.</span></div>
-                <span className="w-fit rounded-lg bg-purple-500/15 px-2.5 py-1 font-bold text-purple-700 dark:text-purple-300">Layout estruturado</span>
+                <span className="w-fit rounded-lg bg-purple-500/10 px-2.5 py-1 font-bold text-purple-700 dark:text-purple-300">Layout estruturado</span>
               </div>
               <CertificateGrapesPrototype />
             </TabsContent>
