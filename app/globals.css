@@ -599,6 +599,12 @@ body {
   box-shadow: var(--shadow-soft);
 }
 
+.dark .dashboard-hero {
+  background:
+    radial-gradient(circle at 92% 12%, rgba(214, 40, 40, 0.18), transparent 16rem),
+    linear-gradient(135deg, hsl(var(--card)) 0%, rgba(30, 20, 21, 0.72) 100%);
+}
+
 .dashboard-hero::after {
   position: absolute;
   right: -4rem;
