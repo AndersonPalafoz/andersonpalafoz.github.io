@@ -521,6 +521,13 @@ body {
     linear-gradient(135deg, #ffffff 0%, #f7f8fb 52%, #fff8f5 100%);
 }
 
+.dark .public-hero {
+  background:
+    radial-gradient(circle at 78% 16%, rgba(214, 40, 40, 0.16), transparent 18rem),
+    radial-gradient(circle at 15% 80%, rgba(245, 158, 11, 0.1), transparent 20rem),
+    linear-gradient(135deg, #0c111d 0%, #10151f 52%, #151923 100%);
+}
+
 .public-hero::after {
   position: absolute;
   right: -8rem;
@@ -551,6 +558,12 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
+}
+
+.dark .section-kicker {
+  border-color: rgba(214, 40, 40, 0.32);
+  background: rgba(214, 40, 40, 0.14);
+  color: #fca5a5;
 }
 
 .dashboard-frame {
@@ -766,4 +779,11 @@ body {
   .dashboard-history-table td:last-child a {
     width: 100%;
   }
+}
+
+/* A logo do rodapé precisa manter fundo claro sempre (a marca é desenhada para
+   fundo branco), mesmo com a regra global ".dark .bg-white" forçando fundo
+   escuro em qualquer elemento com a classe "bg-white". */
+.dark .footer-logo-badge {
+  background-color: #ffffff !important;
 }
