@@ -75,15 +75,15 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 pt-6 border-t border-slate-200 dark:border-slate-800">
               <div className="space-y-1">
                 <p className="text-3xl font-black text-red-600 dark:text-red-400">{stat1Title}</p>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat1Desc}</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat1Desc}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-3xl font-black text-red-600 dark:text-red-400">{stat2Title}</p>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{stat2Desc}</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat2Desc}</p>
               </div>
               <div className="space-y-1 col-span-2 sm:col-span-1">
                 <p className="text-3xl font-black text-red-600 dark:text-red-400">{lessonCount > 0 ? "Ativo" : "Em preparação"}</p>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Conteúdo real disponível</p>
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Conteúdo real disponível</p>
               </div>
             </div>
           </div>

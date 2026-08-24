@@ -25,7 +25,7 @@ export function Footer() {
       <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.35fr_0.8fr_0.9fr_1.2fr] lg:gap-14">
           <div className="max-w-sm space-y-5">
-            <Link href="/" className="inline-flex rounded-2xl border border-white/10 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
+            <Link href="/" className="footer-logo-badge inline-flex rounded-2xl border border-white/10 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
               <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain" loading="lazy" />
             </Link>
             <p className="text-sm leading-7 text-slate-300">Ensino de inglês, materiais autorais e formação acadêmica para aprender com clareza, prática e propósito.</p>

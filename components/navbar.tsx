@@ -155,7 +155,7 @@ export function Navbar() {
         </aside>
       )}
 
-      <nav className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/88 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/88" : "border-slate-200/60 bg-white/94 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/94"}`}>
+      <nav className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/90" : "border-slate-200/60 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/95"}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
             <Link href="/" className="group shrink-0 rounded-2xl border border-slate-200/70 bg-white/95 px-2.5 py-1.5 shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-red-600 dark:border-slate-700 dark:bg-slate-100" aria-label="Anderson Palafoz — página inicial">
