@@ -154,25 +154,25 @@ export default function AdminAulasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 md:px-8 lg:px-12">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900/50 py-12 px-4 md:px-8 lg:px-12">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Breadcrumbs Hierárquicos */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 bg-white px-6 py-3 rounded-2xl border border-gray-200 shadow-sm">
+        <nav className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400 bg-white dark:bg-slate-900 px-6 py-3 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm">
           <Link href="/admin" className="hover:text-red-600 font-medium">Painel Admin</Link>
           <span>/</span>
           <Link href="/admin/cursos" className="hover:text-red-600 font-medium">Cursos</Link>
           <span>/</span>
-          <span className="text-gray-900 font-bold">Gerenciamento de Aulas & Materiais</span>
+          <span className="text-gray-900 dark:text-white font-bold">Gerenciamento de Aulas & Materiais</span>
         </nav>
 
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
               <BookOpen className="text-red-600" size={32} />
               Construtor de Aulas & Materiais de Apoio
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-600 dark:text-slate-400 mt-1">
               Organize aulas por módulos, adicione vídeos, texto explicativo e faça upload de materiais complementares.
             </p>
           </div>
@@ -186,16 +186,16 @@ export default function AdminAulasPage() {
         </div>
 
         {/* Seletor de Curso */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Selecionar Curso Ativo</label>
+            <label className="block text-xs font-bold uppercase text-gray-500 dark:text-slate-400 mb-1">Selecionar Curso Ativo</label>
             {loadingCourses ? (
-              <p className="text-sm text-gray-500">Carregando cursos...</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">Carregando cursos...</p>
             ) : (
               <select
                 value={selectedCourseId || ""}
                 onChange={(e) => setSelectedCourseId(Number(e.target.value))}
-                className="w-full md:w-80 h-11 px-4 rounded-xl border border-gray-300 bg-white font-medium text-gray-900 outline-none focus:border-red-600 transition"
+                className="w-full md:w-80 h-11 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-medium text-gray-900 dark:text-white outline-none focus:border-red-600 transition"
               >
                 {courses.map((c) => (
                   <option key={c.id} value={c.id}>
@@ -209,8 +209,8 @@ export default function AdminAulasPage() {
 
         {/* Formulário de Criação de Aula com Upload de Material */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-8 space-y-6 animate-fadeIn">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-lg p-8 space-y-6 animate-fadeIn">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <BookOpen size={20} className="text-red-600" />
               Cadastrar Nova Aula & Material de Apoio
             </h2>
@@ -218,55 +218,55 @@ export default function AdminAulasPage() {
             <form onSubmit={handleCreateLesson} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título do Módulo *</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Título do Módulo *</label>
                   <input
                     type="text"
                     required
                     value={formData.moduleTitle}
                     onChange={(e) => setFormData({ ...formData, moduleTitle: e.target.value })}
                     placeholder="Ex: Módulo 1: Introdução ao Simple Present"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Título da Aula *</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Título da Aula *</label>
                   <input
                     type="text"
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     placeholder="Ex: Aula 1: Rotinas Diárias e Afirmativas"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Vídeo (YouTube / Vídeo Aula)</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">URL do Vídeo (YouTube / Vídeo Aula)</label>
                   <div className="relative">
-                    <Video className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <Video className="absolute left-3 top-3.5 text-gray-400 dark:text-slate-500" size={18} />
                     <input
                       type="text"
                       value={formData.videoUrl}
                       onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
                       placeholder="https://www.youtube.com/watch?v=..."
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">URL do Áudio de Listening</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">URL do Áudio de Listening</label>
                   <div className="relative flex gap-2">
-                    <Headphones className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <Headphones className="absolute left-3 top-3.5 text-gray-400 dark:text-slate-500" size={18} />
                     <input
                       type="url"
                       value={formData.audioUrl}
                       onChange={(e) => setFormData({ ...formData, audioUrl: e.target.value })}
                       placeholder="https://.../listening.mp3"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition"
                     />
-                    <label className="cursor-pointer shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+                    <label className="cursor-pointer shrink-0 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 px-4 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
                       <Upload size={16} />
                       <span>Enviar</span>
                       <input
@@ -293,37 +293,37 @@ export default function AdminAulasPage() {
                       />
                     </label>
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">Aceita MP3, WAV, OGG, WebM ou MP4, com limite de 15 MB.</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Aceita MP3, WAV, OGG, WebM ou MP4, com limite de 15 MB.</p>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Duração (minutos)</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Duração (minutos)</label>
                   <div className="relative">
-                    <Clock className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <Clock className="absolute left-3 top-3.5 text-gray-400 dark:text-slate-500" size={18} />
                     <input
                       type="number"
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: Number(e.target.value) })}
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Material de Apoio (PDF / Worksheet / Exercício)</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Material de Apoio (PDF / Worksheet / Exercício)</label>
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1">
-                    <FileText className="absolute left-3 top-3.5 text-gray-400" size={18} />
+                    <FileText className="absolute left-3 top-3.5 text-gray-400 dark:text-slate-500" size={18} />
                     <input
                       type="text"
                       value={formData.materialUrl}
                       onChange={(e) => setFormData({ ...formData, materialUrl: e.target.value })}
                       placeholder="URL do PDF ou anexo (ex: /materiais/everyday-vocabulary-b1.pdf)"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition bg-white"
+                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition bg-white dark:bg-slate-900"
                     />
                   </div>
-                  <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
+                  <label className="cursor-pointer bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-slate-300 px-5 py-3 rounded-xl font-semibold text-sm transition flex items-center gap-2">
                     <Upload size={18} />
                     <span>{uploadingMaterial ? "Carregando..." : "Carregar Arquivo"}</span>
                     <input
@@ -356,21 +356,21 @@ export default function AdminAulasPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Resumo ou Roteiro da Aula</label>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">Resumo ou Roteiro da Aula</label>
                 <textarea
                   rows={3}
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Breve descrição dos tópicos abordados nesta aula..."
-                  className="w-full p-4 rounded-xl border border-gray-300 outline-none focus:border-red-600 transition resize-none"
+                  className="w-full p-4 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 transition resize-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-4 pt-4 border-t border-gray-200">
+              <div className="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition"
+                  className="px-6 py-3 rounded-xl border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold hover:bg-gray-50 transition"
                 >
                   Cancelar
                 </button>
@@ -388,28 +388,28 @@ export default function AdminAulasPage() {
         )}
 
         {/* Lista de Aulas Cadastradas */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-gray-900">Aulas Cadastradas no Curso ({lessons.length})</h2>
-            <span className="text-xs font-semibold text-gray-400 uppercase">Hierarquia Ativa</span>
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Aulas Cadastradas no Curso ({lessons.length})</h2>
+            <span className="text-xs font-semibold text-gray-400 dark:text-slate-500 uppercase">Hierarquia Ativa</span>
           </div>
 
           {loadingLessons ? (
-            <div className="p-12 text-center text-gray-500 flex items-center justify-center gap-2">
+            <div className="p-12 text-center text-gray-500 dark:text-slate-400 flex items-center justify-center gap-2">
               <Loader2 className="animate-spin text-red-600" size={24} />
               <span>Carregando aulas...</span>
             </div>
           ) : lessons.length === 0 ? (
             <div className="p-12 text-center space-y-2">
-              <BookOpen size={48} className="mx-auto text-gray-300" />
-              <p className="text-gray-600 font-medium">Nenhuma aula cadastrada para este curso ainda.</p>
+              <BookOpen size={48} className="mx-auto text-gray-300 dark:text-slate-600" />
+              <p className="text-gray-600 dark:text-slate-400 font-medium">Nenhuma aula cadastrada para este curso ainda.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-slate-800">
               {lessons.map((lesson, index) => (
-                <div key={lesson.id} className="p-6 flex items-center justify-between hover:bg-gray-50 transition">
+                <div key={lesson.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/60 transition">
                   <div className="flex items-center gap-4">
-                    <div className="cursor-grab text-gray-400">
+                    <div className="cursor-grab text-gray-400 dark:text-slate-500">
                       <GripVertical size={20} />
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-sm">
@@ -426,8 +426,8 @@ export default function AdminAulasPage() {
                           </span>
                         )}
                       </div>
-                      <h3 className="font-bold text-gray-900 mt-1">{lesson.title}</h3>
-                      <p className="text-xs text-gray-500">{lesson.description || "Sem descrição informada."}</p>
+                      <h3 className="font-bold text-gray-900 dark:text-white mt-1">{lesson.title}</h3>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{lesson.description || "Sem descrição informada."}</p>
                     </div>
                   </div>
 
@@ -436,14 +436,14 @@ export default function AdminAulasPage() {
                       <button
                         onClick={() => moveLesson(index, "up")}
                         disabled={index === 0}
-                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                        className="p-1 rounded bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 disabled:opacity-30 transition"
                       >
                         <ChevronUp size={14} />
                       </button>
                       <button
                         onClick={() => moveLesson(index, "down")}
                         disabled={index === lessons.length - 1}
-                        className="p-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-30 transition"
+                        className="p-1 rounded bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 disabled:opacity-30 transition"
                       >
                         <ChevronDown size={14} />
                       </button>
