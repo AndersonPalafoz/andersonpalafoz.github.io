@@ -22,14 +22,14 @@ export default async function PerfilPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Perfil</h1>
-        <p className="text-gray-600">Gerencie suas informações pessoais e visualize suas conquistas</p>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Meu Perfil</h1>
+        <p className="text-gray-600 dark:text-slate-400">Gerencie suas informações pessoais e visualize suas conquistas</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Avatar e Info Principal */}
         <div className="md:col-span-1 space-y-6">
-          <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4 text-center">
+          <div className="p-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4 text-center">
             {dbUser?.avatarUrl ?? session?.user?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -43,27 +43,27 @@ export default async function PerfilPage() {
               </div>
             )}
             <div>
-              <h2 className="font-bold text-gray-900 text-lg">
+              <h2 className="font-bold text-gray-900 dark:text-white text-lg">
                 {dbUser?.name ?? session?.user?.name ?? "Aluno"}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-slate-400">
                 {ROLE_LABEL[session?.user?.role ?? "user"] ?? "Aluno"}
               </p>
             </div>
             {dbUser?.location && (
-              <p className="text-sm text-gray-500">{dbUser.location}</p>
+              <p className="text-sm text-gray-500 dark:text-slate-400">{dbUser.location}</p>
             )}
           </div>
 
-          <div className="p-6 rounded-xl border border-gray-200 bg-white space-y-4">
-            <h3 className="font-bold text-gray-900 text-sm">Conta</h3>
+          <div className="p-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
+            <h3 className="font-bold text-gray-900 dark:text-white text-sm">Conta</h3>
             <div className="flex items-center gap-3">
               <Mail size={16} className="text-red-600 flex-shrink-0" />
-              <p className="text-sm text-gray-700 truncate">{session?.user?.email}</p>
+              <p className="text-sm text-gray-700 dark:text-slate-300 truncate">{session?.user?.email}</p>
             </div>
             <div className="flex items-center gap-3">
               <ShieldCheck size={16} className="text-red-600 flex-shrink-0" />
-              <p className="text-sm text-gray-700">Conectado via Google</p>
+              <p className="text-sm text-gray-700 dark:text-slate-300">Conectado via Google</p>
             </div>
           </div>
 
@@ -72,8 +72,8 @@ export default async function PerfilPage() {
 
         {/* Formulário de Edição e Faturamento */}
         <div className="md:col-span-2 space-y-6">
-          <div className="p-6 rounded-xl border border-gray-200 bg-white">
-            <h3 className="font-bold text-gray-900 mb-6">Editar Informações</h3>
+          <div className="p-6 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <h3 className="font-bold text-gray-900 dark:text-white mb-6">Editar Informações</h3>
             <ProfileForm
               initialName={dbUser?.name ?? session?.user?.name ?? ""}
               initialSocialName={dbUser?.socialName ?? ""}
