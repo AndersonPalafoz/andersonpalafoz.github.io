@@ -46,19 +46,19 @@ const faqItems = [
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen bg-white text-[#1F1F1F]">
-      <section className="bg-[#F8F9FA] px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28">
+    <main className="min-h-screen bg-white dark:bg-slate-900 text-[#1F1F1F] dark:text-white">
+      <section className="bg-[#F8F9FA] dark:bg-slate-950/40 px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Central de ajuda</p>
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <div>
               <h1 className="max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">Perguntas frequentes</h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">Encontre orientações rápidas sobre as aulas, os cursos, os materiais e o funcionamento da plataforma educacional Anderson Palafoz.</p>
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-slate-400">Encontre orientações rápidas sobre as aulas, os cursos, os materiais e o funcionamento da plataforma educacional Anderson Palafoz.</p>
             </div>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+            <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
               <MessageCircle className="text-red-600" size={28} aria-hidden="true" />
-              <h2 className="mt-4 text-2xl font-bold text-gray-900">Ainda ficou com dúvida?</h2>
-              <p className="mt-3 leading-7 text-gray-600">Nossa equipe pode orientar você sobre acesso, aulas, materiais e próximos passos.</p>
+              <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">Ainda ficou com dúvida?</h2>
+              <p className="mt-3 leading-7 text-gray-600 dark:text-slate-400">Nossa equipe pode orientar você sobre acesso, aulas, materiais e próximos passos.</p>
               <Link href="/contato" className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200 focus:ring-offset-2 active:scale-[0.98]">Falar conosco <ArrowRight size={18} aria-hidden="true" /></Link>
             </div>
           </div>
@@ -69,11 +69,11 @@ export default function FaqPage() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-3">
             {faqItems.map((item) => (
-              <details key={item.question} className="group rounded-2xl border border-gray-200 bg-[#F8F9FA] px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
-                <summary className="cursor-pointer list-none pr-10 font-semibold text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
+              <details key={item.question} className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-800/60 px-5 py-4 shadow-sm transition open:border-red-200 dark:open:border-red-900/60 sm:px-6">
+                <summary className="cursor-pointer list-none pr-10 font-semibold text-gray-900 dark:text-white outline-none focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
                   <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">{item.question}</span>
                 </summary>
-                <p className="max-w-3xl pt-3 leading-7 text-gray-600">{item.answer}</p>
+                <p className="max-w-3xl pt-3 leading-7 text-gray-600 dark:text-slate-400">{item.answer}</p>
               </details>
             ))}
           </div>
