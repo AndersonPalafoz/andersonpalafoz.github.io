@@ -218,7 +218,7 @@ export function CertificateStandardManager() {
               ))}
             </div>
             <div className="space-y-4 lg:col-span-2">
-              <div className="space-y-4 rounded-2xl border border-red-100 bg-red-50/45 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/15">
+              <div className="space-y-4 rounded-2xl border border-red-100 bg-red-50/40 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/10">
                 <Label htmlFor="std-template-select" className="font-bold text-red-900 flex items-center gap-2">
                   <Award size={16} /> 1. Escolher Modelo de Certificado (Início do Fluxo)
                 </Label>

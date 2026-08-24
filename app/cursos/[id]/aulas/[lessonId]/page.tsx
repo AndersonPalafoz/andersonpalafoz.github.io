@@ -365,7 +365,7 @@ export default function LessonPageClient() {
           <div className="border-t border-gray-100 pt-6 space-y-6">
             <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/35 dark:to-orange-950/25 border border-red-200 dark:border-red-900/70 space-y-4">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/25 border border-red-200 dark:border-red-900/70 space-y-4">
                 <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-200 bg-white dark:bg-black/20 px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span><span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Listening Exercise</span></div>
                 <h4 className="font-bold text-gray-900 dark:text-gray-100 text-base">Ouça o áudio de referência</h4>
                 <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">Pratique a escuta ativa acompanhando o diálogo principal da aula.</p>

@@ -1096,7 +1096,7 @@ export function CertificateTemplateManager() {
                     </p>
                   </div>
                   {template.isDefault && (
-                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-200">
+                    <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-200">
                       Padrão
                     </span>
                   )}
