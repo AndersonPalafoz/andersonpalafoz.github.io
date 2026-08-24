@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, asc, desc, eq, inArray, isNull, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, isNotNull, or } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import {
   normalizeCourseType,
@@ -942,18 +942,105 @@ export async function restoreUser(id: number) {
     .returning();
 }
 
+/**
+ * Exclusão definitiva de um usuário e de todos os dados que pertencem
+ * exclusivamente a ele. Roda em transação: ou tudo é limpo com sucesso e o
+ * usuário é removido, ou nada é alterado.
+ *
+ * Antes de apagar qualquer coisa, verifica se o usuário é responsável por
+ * conteúdo que pertence a OUTRAS pessoas (sessões de aula com chamada de
+ * outros alunos, turmas externas com notas/materiais, concessões de acesso
+ * ou cupons que ele criou). Nesses casos, a exclusão é bloqueada com uma
+ * mensagem clara em vez de apagar ou corromper silenciosamente dados de
+ * terceiros — é preciso reatribuir ou remover esse conteúdo primeiro.
+ *
+ * Tabelas com onDelete: "cascade" no schema (notifications, progresso de
+ * materiais, gamificação, fórum, etc.) são limpas automaticamente pelo
+ * próprio Postgres e não precisam de tratamento aqui.
+ */
 export async function deleteUserPermanently(id: number) {
-  await db.delete(schema.enrollments).where(eq(schema.enrollments.userId, id));
-  await db
-    .delete(schema.certificates)
-    .where(eq(schema.certificates.userId, id));
-  await db
-    .delete(schema.coursePurchases)
-    .where(eq(schema.coursePurchases.userId, id));
-  return await db
-    .delete(schema.users)
-    .where(eq(schema.users.id, id))
-    .returning();
+  return await db.transaction(async (tx) => {
+    const blockingChecks: Array<{
+      rows: Array<{ id: number }>;
+      message: string;
+    }> = [
+      {
+        rows: await tx
+          .select({ id: schema.classSessions.id })
+          .from(schema.classSessions)
+          .where(eq(schema.classSessions.teacherId, id))
+          .limit(1),
+        message:
+          "Este usuário é professor de sessões de aula com chamada de outros alunos. Reatribua ou remova essas sessões antes de excluir definitivamente.",
+      },
+      {
+        rows: await tx
+          .select({ id: schema.externalClasses.id })
+          .from(schema.externalClasses)
+          .where(eq(schema.externalClasses.teacherId, id))
+          .limit(1),
+        message:
+          "Este usuário é professor de turmas externas com alunos, notas ou materiais vinculados. Reatribua ou remova essas turmas antes de excluir definitivamente.",
+      },
+      {
+        rows: await tx
+          .select({ id: schema.manualAccessGrants.id })
+          .from(schema.manualAccessGrants)
+          .where(eq(schema.manualAccessGrants.grantedBy, id))
+          .limit(1),
+        message:
+          "Este usuário concedeu acessos manuais a outras contas. Reatribua essas concessões antes de excluir definitivamente.",
+      },
+      {
+        rows: await tx
+          .select({ id: schema.coupons.id })
+          .from(schema.coupons)
+          .where(eq(schema.coupons.createdBy, id))
+          .limit(1),
+        message:
+          "Este usuário criou cupons de desconto. Reatribua ou remova esses cupons antes de excluir definitivamente.",
+      },
+    ];
+
+    for (const check of blockingChecks) {
+      if (check.rows.length > 0) {
+        throw new Error(check.message);
+      }
+    }
+
+    // Referências de atribuição/autoria que podem ficar nulas sem perder o
+    // registro principal (o registro em si pertence a outra entidade, não
+    // ao usuário sendo excluído).
+    await tx.update(schema.certificates).set({ signedBy: null }).where(eq(schema.certificates.signedBy, id));
+    await tx.update(schema.lessonProgress).set({ approvedBy: null }).where(eq(schema.lessonProgress.approvedBy, id));
+    await tx.update(schema.eventLogs).set({ userId: null }).where(eq(schema.eventLogs.userId, id));
+    await tx.update(schema.userMedals).set({ awardedBy: null }).where(eq(schema.userMedals.awardedBy, id));
+    await tx.update(schema.mediaAssets).set({ uploaderId: null }).where(eq(schema.mediaAssets.uploaderId, id));
+    await tx.update(schema.forumPosts).set({ moderatedBy: null }).where(eq(schema.forumPosts.moderatedBy, id));
+    await tx.update(schema.certificateTemplates).set({ createdBy: null }).where(eq(schema.certificateTemplates.createdBy, id));
+    await tx.update(schema.materials).set({ instructorId: null }).where(eq(schema.materials.instructorId, id));
+
+    // Dados pessoais que pertencem exclusivamente a este usuário.
+    await tx.delete(schema.passwordResetTokens).where(eq(schema.passwordResetTokens.userId, id));
+    await tx.delete(schema.progress).where(eq(schema.progress.userId, id));
+    await tx.delete(schema.lessonProgress).where(eq(schema.lessonProgress.userId, id));
+    await tx.delete(schema.userActivityProgress).where(eq(schema.userActivityProgress.userId, id));
+    await tx.delete(schema.speakingAttempts).where(eq(schema.speakingAttempts.userId, id));
+    await tx.delete(schema.wishlistItems).where(eq(schema.wishlistItems.userId, id));
+    await tx.delete(schema.lessonNotes).where(eq(schema.lessonNotes.userId, id));
+    await tx.delete(schema.courseReviews).where(eq(schema.courseReviews.userId, id));
+    await tx.delete(schema.courseReviewReplies).where(eq(schema.courseReviewReplies.authorId, id));
+    await tx.delete(schema.articleCommentReplies).where(eq(schema.articleCommentReplies.authorId, id));
+    await tx
+      .delete(schema.directMessages)
+      .where(or(eq(schema.directMessages.senderId, id), eq(schema.directMessages.receiverId, id)));
+    await tx.delete(schema.attendances).where(eq(schema.attendances.studentId, id));
+    await tx.delete(schema.enrollments).where(eq(schema.enrollments.userId, id));
+    await tx.delete(schema.certificates).where(eq(schema.certificates.userId, id));
+    await tx.delete(schema.coursePurchases).where(eq(schema.coursePurchases.userId, id));
+
+    return await tx.delete(schema.users).where(eq(schema.users.id, id)).returning();
+  });
 }
 
 /**
