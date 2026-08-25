@@ -2010,3 +2010,21 @@
 - [ ] Confirmar em ambiente autenticado a prévia e a emissão usando cada um dos três modelos DOCX; os registros e arquivos foram confirmados no banco, faltando apenas o teste com sessão administrativa.
 - [x] Executar a suíte completa, validar o build de produção e revisar os erros de TypeScript preexistentes antes do checkpoint final; 139 arquivos e 423 testes passaram, build concluído.
 - [ ] Auditar e cobrir com teste integrado a exclusão permanente de usuário que possui mensagens diretas, mantendo a ordem segura de remoção.
+
+## Correção de artefato Next.js ausente — 25/08/2026
+- [x] Limpar artefatos `.next` inconsistentes, reiniciar o servidor e confirmar que o erro `Cannot find module './6321.js'` não reaparece na rota inicial; a home compilou e foi capturada corretamente após a limpeza.
+- [x] Validar novamente a home e as rotas críticas após a limpeza do cache, sem confundir falhas transitórias do dev server com falhas do build de produção; a home ficou estável e o build de produção já estava aprovado.
+
+## Bloqueio de autenticação Google OAuth — 25/08/2026
+- [ ] Recriar ou selecionar um cliente OAuth ativo no Google Cloud, pois o cliente atual retorna `401 deleted_client`.
+- [ ] Atualizar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` nos ambientes necessários, preservando as URLs de callback corretas.
+- [ ] Repetir o consentimento Google e validar a sessão autenticada nas áreas administrativas e no Google Calendar.
+- [ ] Concluir a validação autenticada da prévia e emissão usando os três modelos DOCX institucionais após o login ser restabelecido.
+
+## Anotações e catálogo de medalhas — 25/08/2026
+- [x] Permitir que o aluno exclua a própria anotação somente pelo vínculo autenticado entre sua conta e a aula.
+- [x] Permitir que administrador exclua a anotação de qualquer aluno com confirmação, registro do administrador e preservação do texto apenas para auditoria.
+- [x] Exibir “Excluído por um administrador” no painel de anotações, no perfil do aluno e nas exportações, sem expor o conteúdo removido.
+- [x] Auditar o catálogo real de medalhas no banco ativo sem inserir dados fictícios; a consulta retornou catálogo vazio.
+- [x] Documentar limitações e recomendações para CRUD/arquivamento, regras estruturadas, auditoria, filtros e progresso pedagógico das medalhas.
+- [ ] Aprovar pelo administrador um catálogo inicial real antes de cadastrar medalhas; nenhuma medalha foi inventada ou inserida automaticamente.

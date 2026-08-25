@@ -13,12 +13,17 @@ export async function GET() {
   const user = await getUserByEmail(session.user.email);
   if (!user) return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404, headers: { "Cache-Control": "no-store" } });
 
-  const notes = await db.select({ id: lessonNotes.id, lessonId: lessonNotes.lessonId, note: lessonNotes.note, lessonTitle: lessons.title, createdAt: lessonNotes.createdAt, updatedAt: lessonNotes.updatedAt })
+  const notes = await db.select({ id: lessonNotes.id, lessonId: lessonNotes.lessonId, note: lessonNotes.note, deletedByAdminAt: lessonNotes.deletedByAdminAt, deletedByAdminEmail: lessonNotes.deletedByAdminEmail, lessonTitle: lessons.title, createdAt: lessonNotes.createdAt, updatedAt: lessonNotes.updatedAt })
     .from(lessonNotes)
     .innerJoin(lessons, eq(lessonNotes.lessonId, lessons.id))
     .where(eq(lessonNotes.userId, user.id))
     .orderBy(desc(lessonNotes.updatedAt))
     .limit(100);
 
-  return NextResponse.json({ notes }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({
+    notes: notes.map((item) => ({
+      ...item,
+      note: item.deletedByAdminAt ? "" : item.note,
+    })),
+  }, { headers: { "Cache-Control": "no-store" } });
 }
