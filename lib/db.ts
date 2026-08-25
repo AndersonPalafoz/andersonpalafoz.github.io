@@ -457,7 +457,11 @@ function validateCourseWriteData(
     "courseType" | "externalRedirectUrl" | "syncModality"
   >
 ) {
-  const error = validateCourseTypeFields(data);
+  const error = validateCourseTypeFields({
+    courseType: data.courseType ?? 1,
+    externalRedirectUrl: data.externalRedirectUrl,
+    syncModality: data.syncModality,
+  });
   if (error) throw new Error(error);
 }
 
