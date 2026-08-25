@@ -2089,3 +2089,5 @@
 - [x] Validar a correção de autorização do download de certificados; 4 arquivos e 10 testes focados passaram e o build de produção foi aprovado.
 - [x] Corrigir a falha de exclusão de usuários criando/aplicando a tabela `direct_messages` definida no schema, mas ausente no banco conectado pela aplicação; validar a exclusão sem dados de teste.
 - [x] Validar a correção da exclusão de usuários com 11 testes regressivos aprovados e confirmar que direct_messages existe com zero registros artificiais.
+- [x] Permitir exclusão administrativa de professores com exclusão lógica, recuperação, confirmação e bloqueio seguro quando houver dependências acadêmicas.
+- [x] Validar a exclusão de professores pelo super-admin; 10 testes da API/regressão passaram e o build de produção foi aprovado.
