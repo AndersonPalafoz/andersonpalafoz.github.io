@@ -212,7 +212,14 @@ export default function AdminMedalsPage() {
         {/* Catálogo de Medalhas Disponíveis */}
         <div className="space-y-4">
           <h2 className="text-xl font-black">Catálogo Oficial de Medalhas</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {catalog.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
+              <p className="text-base font-black text-foreground">Nenhuma medalha cadastrada</p>
+              <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+                O catálogo real está vazio. Cadastre e aprove as medalhas institucionais antes de concedê-las aos alunos; nenhuma medalha fictícia é criada automaticamente.
+              </p>
+            </div>
+          ) : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {catalog.map((medal) => (
               <div key={medal.code} className="bg-card border border-border/70 rounded-3xl p-6 shadow-md flex flex-col justify-between hover:shadow-lg transition">
                 <div>
@@ -231,7 +238,7 @@ export default function AdminMedalsPage() {
                 </div>
               </div>
             ))}
-          </div>
+          </div>}
         </div>
 
         {/* Histórico de Concessões */}
