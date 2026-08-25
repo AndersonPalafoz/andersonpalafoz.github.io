@@ -2172,4 +2172,4 @@
 
 ## Preparação final para Vercel — 25/08/2026
 - [x] Revalidar a versão atual com testes, build de produção e verificação de artefatos.
-- [ ] Criar ou atualizar o checkpoint final e sincronizar o branch validado com o GitHub para disparar o build do Vercel.
+- [x] Criar ou atualizar o checkpoint final e sincronizar o branch validado com o GitHub para disparar o build do Vercel.
