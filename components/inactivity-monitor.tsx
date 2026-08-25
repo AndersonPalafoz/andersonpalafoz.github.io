@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Clock, ShieldAlert } from "lucide-react";
 
 const DEFAULT_INACTIVITY_MINUTES = 20;
@@ -10,6 +10,7 @@ const WARNING_BEFORE_MS = 60 * 1000; // Aviso 1 minuto antes
 export function InactivityMonitor() {
   const [showWarning, setShowWarning] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState(60);
+  const { status } = useSession();
   
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -18,7 +19,8 @@ export function InactivityMonitor() {
   const getLimitMinutes = () => {
     if (typeof window === "undefined") return DEFAULT_INACTIVITY_MINUTES;
     const stored = localStorage.getItem("ap_inactivity_minutes");
-    return stored ? parseInt(stored, 10) : DEFAULT_INACTIVITY_MINUTES;
+    const parsed = stored ? Number.parseInt(stored, 10) : DEFAULT_INACTIVITY_MINUTES;
+    return [10, 20, 30, 45, 60].includes(parsed) ? parsed : DEFAULT_INACTIVITY_MINUTES;
   };
 
   const triggerLogout = useCallback(() => {
@@ -33,7 +35,9 @@ export function InactivityMonitor() {
     setShowWarning(false);
     setSecondsRemaining(60);
 
+    if (status !== "authenticated") return;
     const limitMs = getLimitMinutes() * 60 * 1000;
+    const warningDelay = Math.max(1000, limitMs - WARNING_BEFORE_MS);
 
     // Configurar temporizador de aviso
     warningTimerRef.current = setTimeout(() => {
@@ -49,15 +53,20 @@ export function InactivityMonitor() {
           triggerLogout();
         }
       }, 1000);
-    }, limitMs - WARNING_BEFORE_MS);
+    }, warningDelay);
 
     // Configurar temporizador final de logout
     timerRef.current = setTimeout(() => {
       triggerLogout();
     }, limitMs);
-  }, [triggerLogout]);
+    }, [status, triggerLogout]);
 
   useEffect(() => {
+    if (status !== "authenticated") {
+      setShowWarning(false);
+      return;
+    }
+
     const events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
 
     const handleUserActivity = () => {
@@ -66,9 +75,12 @@ export function InactivityMonitor() {
       }
     };
 
+    const handlePreferenceChange = () => resetTimers();
     events.forEach(eventName => {
       window.addEventListener(eventName, handleUserActivity);
     });
+    window.addEventListener("storage", handlePreferenceChange);
+    window.addEventListener("ap:inactivity-changed", handlePreferenceChange);
 
     resetTimers();
 
@@ -76,11 +88,13 @@ export function InactivityMonitor() {
       events.forEach(eventName => {
         window.removeEventListener(eventName, handleUserActivity);
       });
+      window.removeEventListener("storage", handlePreferenceChange);
+      window.removeEventListener("ap:inactivity-changed", handlePreferenceChange);
       if (timerRef.current) clearTimeout(timerRef.current);
       if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
       if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
-  }, [resetTimers, showWarning]);
+  }, [resetTimers, showWarning, status]);
 
   if (!showWarning) return null;
 

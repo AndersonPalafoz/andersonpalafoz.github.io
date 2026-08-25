@@ -2163,3 +2163,8 @@
 ## Exclusão segura de anotações de aula — 25/08/2026
 - [x] Permitir que o aluno exclua apenas as próprias anotações e que administradores excluam anotações de quaisquer alunos, com confirmação e registro visual da autoria da exclusão.
 - [x] Adicionar testes de autorização, exclusão e regressão para as interfaces do aluno e do administrador.
+
+## Segurança de inatividade e avatar da sidebar — 25/08/2026
+- [x] Fazer o limite de inatividade encerrar efetivamente a sessão e sincronizar a preferência entre páginas e recarregamentos.
+- [x] Exibir a foto de perfil do usuário no menu lateral, com fallback para iniciais e tratamento acessível de imagem ausente ou inválida.
+- [x] Adicionar testes de regressão e validar responsividade, autenticação e build de produção.
