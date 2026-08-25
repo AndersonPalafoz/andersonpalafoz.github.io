@@ -2084,3 +2084,4 @@
 - [x] Reexecutar o build de produção após a integração dos pilotos e da correção de tipagem; build aprovado.
 - [x] Corrigir o retorno binário do endpoint de download em lote para `Uint8Array`, mantendo compatibilidade com Response/Node/Vercel; build aprovado.
 - [x] Confirmar novamente os testes focados de medalhas, anotações e payload de certificado após as últimas alterações; 5 arquivos e 11 testes passaram.
+- [x] Corrigir a exportação administrativa em lote: usar `includeSiteBranding` no contrato PDF e `Uint8Array` nos retornos PDF/ZIP; 3 arquivos e 8 testes focados passaram e o build foi aprovado.
