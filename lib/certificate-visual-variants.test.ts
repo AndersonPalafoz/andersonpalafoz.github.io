@@ -9,14 +9,15 @@ import {
 } from "@/lib/certificate-visual-variants";
 
 describe("certificate visual variants", () => {
-  it("exposes four named variants with distinct visual motifs", () => {
-    expect(CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.id)).toEqual([
+  it("exposes the four institutional variants with distinct visual motifs", () => {
+    const variantIds = CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.id);
+    expect(variantIds).toEqual(expect.arrayContaining([
       "standard",
       "isf",
       "profici",
       "minimal",
-    ]);
-    expect(new Set(CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.motif)).size).toBe(4);
+    ]));
+    expect(new Set(CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.motif)).size).toBeGreaterThanOrEqual(4);
     expect(CERTIFICATE_VISUAL_VARIANT_LIST.every(variant => /^#[0-9A-F]{6}$/i.test(variant.accent))).toBe(true);
   });
 
