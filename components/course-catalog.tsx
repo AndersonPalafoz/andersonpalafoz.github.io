@@ -110,7 +110,7 @@ export function CourseCatalog({
             value={selectedCourseType}
             onChange={(event) => setSelectedCourseType(event.target.value)}
             aria-label="Filtrar cursos por tipo"
-            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/15"
+            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10"
           >
             <option value="all">Todos os tipos</option>
             {COURSE_TYPE_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.shortLabel}</option>)}
@@ -122,7 +122,7 @@ export function CourseCatalog({
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
                 aria-label="Filtrar cursos por categoria"
-                className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/15"
+                className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10"
               >
                 <option value="all">Todas</option>
                 {categories.map((category) => <option key={category} value={category}>{category}</option>)}

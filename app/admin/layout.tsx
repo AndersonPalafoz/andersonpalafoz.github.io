@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { AdminMobileNav } from "@/components/admin-mobile-nav";
 
 export const metadata: Metadata = {
   title: "Admin Panel | Anderson Palafoz",
@@ -23,8 +24,9 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="site-shell min-h-screen text-foreground">
+    <div className="site-shell min-h-screen pb-24 text-foreground md:pb-0">
       {children}
+      <AdminMobileNav />
     </div>
   );
 }

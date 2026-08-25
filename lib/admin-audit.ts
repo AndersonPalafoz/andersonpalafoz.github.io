@@ -6,6 +6,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   REJECT: "reject",
   ROLE_CHANGE: "role_change",
   SOFT_DELETE: "soft_delete",
+  PERMANENT_DELETE: "permanent_delete",
   RESTORE: "restore",
   CREATE: "create",
 } as const;

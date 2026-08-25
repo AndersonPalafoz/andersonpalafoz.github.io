@@ -144,7 +144,7 @@ export function Navbar() {
   }, [session]);
 
   const isActive = (href: string) => href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-  const linkClass = (href: string) => `relative rounded-full px-3.5 py-2 text-sm font-semibold transition-all ${isActive(href) ? "bg-red-50 text-red-700 dark:bg-red-950/60 dark:text-red-300 border border-red-200/60 dark:border-red-900/40" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"}`;
+  const linkClass = (href: string) => `relative rounded-full px-3.5 py-2 text-[13px] font-bold transition-all hover:-translate-y-0.5 ${isActive(href) ? "bg-red-50 text-red-700 shadow-sm ring-1 ring-red-200/70 dark:bg-red-950/60 dark:text-red-300 dark:ring-red-900/40" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"}`;
 
   return (
     <>
@@ -155,10 +155,10 @@ export function Navbar() {
         </aside>
       )}
 
-      <nav className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300 border-b ${scrolled ? "border-slate-200/80 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-xl shadow-slate-900/[0.03] backdrop-blur-xl" : "border-slate-200/50 dark:border-slate-800/50 bg-white/95 dark:bg-slate-900/95 shadow-xs backdrop-blur-md"}`}>
+      <nav className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/90" : "border-slate-200/60 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/95"}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
-            <Link href="/" className="shrink-0 rounded-xl bg-white/95 dark:bg-white/95 px-2.5 py-1.5 shadow-xs transition-opacity hover:opacity-90 focus-visible:outline-red-600 flex items-center" aria-label="Anderson Palafoz — página inicial">
+            <Link href="/" className="group shrink-0 rounded-2xl border border-slate-200/70 bg-white/95 px-2.5 py-1.5 shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-red-600 dark:border-slate-700 dark:bg-slate-100" aria-label="Anderson Palafoz — página inicial">
               <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain sm:h-10" fetchPriority="high" />
             </Link>
 
@@ -300,7 +300,7 @@ export function Navbar() {
             </div>
           </div>
 
-          {isOpen && <div id="mobile-navigation" className="border-t border-gray-100 dark:border-slate-800 py-4 lg:hidden bg-white dark:bg-slate-900 px-2 rounded-2xl shadow-xl my-2">
+          {isOpen && <div id="mobile-navigation" className="my-2 rounded-3xl border border-slate-200/80 bg-white/95 px-2 py-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
             <div className="grid gap-1">
               {navLinks.map((link) => <Link key={link.href} href={link.href} className={linkClass(link.href)} onClick={() => setIsOpen(false)}>{link.label}</Link>)}
             </div>

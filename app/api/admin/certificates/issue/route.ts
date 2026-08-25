@@ -16,6 +16,8 @@ import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
 
+const MAX_CUSTOM_COURSE_LEVEL_LENGTH = 50;
+
 function parseOptionalBoolean(value: unknown) {
   if (typeof value === "boolean") return value;
   if (value === "true" || value === "1") return true;
@@ -41,15 +43,15 @@ export async function GET(request: NextRequest) {
         user: true,
         course: true,
       },
-      orderBy: (certificates, { desc }) => [desc(certificates.issueDate)],
+      orderBy: (certificate, { desc }) => [desc(certificate.issuedAt)],
     });
 
     const formatted = allCertificates.map(c => ({
       id: c.id,
       studentName: c.user?.name || "Estudante",
       courseTitle: c.course?.title || "Curso Oficial",
-      verificationCode: c.verificationCode || `AP-${c.id}`,
-      issueDate: c.issueDate ? new Date(c.issueDate).toLocaleDateString("pt-BR") : "Hoje",
+      verificationCode: c.certificateCode || `AP-${c.id}`,
+      issueDate: c.issuedAt ? new Date(c.issuedAt).toLocaleDateString("pt-BR") : "Hoje",
       certificateUrl: c.certificateUrl,
       signed: Boolean(c.certificateUrl),
     }));
@@ -94,6 +96,13 @@ export async function POST(request: NextRequest) {
     const customCourseLevel = typeof body.customCourseLevel === "string" ? body.customCourseLevel.trim() : "Geral";
     const customWorkloadHours = body.customWorkloadHours ? Number(body.customWorkloadHours) : 40;
     const customInstitution = typeof body.customInstitution === "string" ? body.customInstitution.trim() : "";
+
+    if (customCourseLevel.length > MAX_CUSTOM_COURSE_LEVEL_LENGTH) {
+      return NextResponse.json(
+        { error: `O nível do curso deve ter no máximo ${MAX_CUSTOM_COURSE_LEVEL_LENGTH} caracteres.` },
+        { status: 400 }
+      );
+    }
 
     if (!userId && !directStudentName) {
       return NextResponse.json(
@@ -140,7 +149,13 @@ export async function POST(request: NextRequest) {
           })
           .returning({ id: users.id });
         const insertedUser = insertedUsers[0];
-        student = await db.query.users.findFirst({ where: eq(users.id, insertedUser.id) });
+        userId = insertedUser.id;
+        student = {
+          id: insertedUser.id,
+          name: directStudentName,
+          email: placeholderEmail,
+          cpf: null,
+        };
       }
     }
 
@@ -174,11 +189,23 @@ export async function POST(request: NextRequest) {
               workloadHours: customWorkloadHours,
             })
           )
-          .returning({ id: courses.id });
+          .returning({
+            id: courses.id,
+            title: courses.title,
+            level: courses.level,
+            workloadHours: courses.workloadHours,
+          });
         const newCourse = newCourses[0];
         courseId = newCourse.id;
-        course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
+        course = newCourse;
       }
+    }
+
+    if (!userId || !courseId || !course) {
+      return NextResponse.json(
+        { error: "Aluno ou curso não encontrado para a emissão." },
+        { status: 404 }
+      );
     }
 
     const selectedTemplate = templateId
@@ -235,8 +262,8 @@ export async function POST(request: NextRequest) {
       composition,
     });
 
-    const fileKey = `certificates/${userId}-${courseId}-${Date.now()}.pdf`;
-    const certificateUrl = await uploadCertificatePdf(fileKey, pdfBytes);
+    const uploaded = await uploadCertificatePdf(userId, courseId, pdfBytes);
+    const certificateUrl = uploaded.url;
 
     const existing = await db.query.certificates.findFirst({
       where: and(
@@ -251,8 +278,11 @@ export async function POST(request: NextRequest) {
         .update(certificates)
         .set({
           certificateUrl,
-          verificationCode,
-          issueDate: new Date(),
+          certificateCode: verificationCode,
+          level: course?.level || customCourseLevel || "Geral",
+          issuedAt: new Date(),
+          certificateTemplateId: templateId,
+          includeSiteBranding,
         })
         .where(eq(certificates.id, existing.id))
         .returning();
@@ -263,9 +293,12 @@ export async function POST(request: NextRequest) {
         .values({
           userId,
           courseId,
+          level: course?.level || customCourseLevel || "Geral",
           certificateUrl,
-          verificationCode,
-          issueDate: new Date(),
+          certificateCode: verificationCode,
+          issuedAt,
+          certificateTemplateId: templateId,
+          includeSiteBranding,
         })
         .returning();
       certificateRecord = inserted[0];

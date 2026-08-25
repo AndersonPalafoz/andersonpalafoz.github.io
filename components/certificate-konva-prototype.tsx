@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { CERTIFICATE_PRESETS } from "@/lib/certificate-presets";
+import { CERTIFICATE_ELEMENT_PRESETS, createCertificateElementPreset } from "@/lib/certificate-element-presets";
 import { generateCertificatePdf } from "@/lib/certificate-pdf-generator";
 import { Download, Layers, RefreshCw } from "lucide-react";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
@@ -76,6 +77,13 @@ export function CertificateKonvaPrototype() {
       setCustomRole(p.signerRole);
       setCustomDate(p.locationAndDate);
     }
+  };
+
+  const handleAddPreset = (presetId: string) => {
+    const element = createCertificateElementPreset(presetId, composition.elements.length + 1);
+    if (!element) return;
+    updateComposition(current => ({ ...current, elements: [...current.elements, element] }));
+    toast.success("Bloco inserido na camada compartilhada.");
   };
 
   const handleExportPDF = async () => {
@@ -199,6 +207,16 @@ export function CertificateKonvaPrototype() {
                   <span className="text-xs text-muted-foreground">Tamanho da Logo:</span>
                   <input type="range" min="80" max="220" value={logoWidth} onChange={(e) => setLogoWidth(Number(e.target.value))} className="w-full" />
                 </div>
+              </div>
+
+              <div className="space-y-2 rounded-xl border border-blue-200/70 bg-blue-50/50 p-3 dark:border-blue-900/50 dark:bg-blue-950/20">
+                <Label className="text-xs font-black text-blue-900 dark:text-blue-100">Blocos e camadas rápidas</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {CERTIFICATE_ELEMENT_PRESETS.slice(0, 4).map(item => (
+                    <Button key={item.id} type="button" variant="outline" size="sm" onClick={() => handleAddPreset(item.id)} className="h-8 justify-start truncate text-[10px]">{item.label}</Button>
+                  ))}
+                </div>
+                <p className="text-[10px] leading-relaxed text-blue-800/70 dark:text-blue-200/70">Os blocos entram na composição única e também aparecem na prévia e no PDF.</p>
               </div>
 
               <div className="pt-4">

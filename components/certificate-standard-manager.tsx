@@ -11,6 +11,7 @@ import { useCertificateWorkspace } from "@/components/certificate-workspace-cont
 import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
 import { parseCertificateComposition, type CertificateVisualVariant } from "@/lib/certificate-composition";
 import { CERTIFICATE_VISUAL_VARIANT_LIST } from "@/lib/certificate-visual-variants";
+import { getCertificateLayoutPreset } from "@/lib/certificate-layout-presets";
 
 export function CertificateStandardManager() {
   const {
@@ -189,11 +190,11 @@ export function CertificateStandardManager() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-red-200 shadow-md">
-        <CardHeader className="bg-red-50/50 pb-4">
-          <div className="flex items-center justify-between">
+      <Card className="overflow-hidden rounded-[2rem] border-border/70 bg-card shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+        <CardHeader className="border-b border-red-200/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.12),transparent_36%),linear-gradient(135deg,rgba(254,242,242,0.92),rgba(255,255,255,0.98))] pb-5 pt-6 sm:px-7 dark:border-red-900/50 dark:bg-red-950/20">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <CardTitle className="text-xl font-bold text-red-900 flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl font-black tracking-tight text-red-950 dark:text-red-100">
                 <ShieldCheck className="w-5 h-5 text-red-600" />
                 Gerador Oficial Padrão (100% Funcional e Integrado)
               </CardTitle>
@@ -201,15 +202,23 @@ export function CertificateStandardManager() {
                 Selecione o modelo institucional ou envie um template personalizado antes de emitir e persistir o certificado no banco de dados.
               </CardDescription>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
+            <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300">
               <CheckCircle2 size={14} /> Sistema Principal Ativo
             </span>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <form onSubmit={handleGenerateOfficial} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <CardContent className="px-4 pb-6 pt-5 sm:px-7 sm:pb-8">
+          <form onSubmit={handleGenerateOfficial} className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-3 grid gap-2 rounded-2xl border border-emerald-200/70 bg-emerald-50/70 p-3 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-emerald-200/70 dark:border-emerald-900/50 dark:bg-emerald-950/20 dark:sm:divide-emerald-900/50">
+              {[["01", "Modelo", "Escolha a identidade"], ["02", "Dados", "Preencha o certificado"], ["03", "Emissão", "Gere o PDF oficial"]].map(([number, title, description]) => (
+                <div key={number} className="flex items-center gap-2 px-2 py-2 sm:flex-col sm:items-start sm:px-3 sm:first:pl-1">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[10px] font-black text-emerald-700 shadow-sm ring-1 ring-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-200 dark:ring-emerald-900/60">{number}</span>
+                  <span><strong className="block text-[11px] font-black text-emerald-900 dark:text-emerald-100">{title}</strong><span className="block text-[10px] text-emerald-700/75 dark:text-emerald-200/70">{description}</span></span>
+                </div>
+              ))}
+            </div>
             <div className="space-y-4 lg:col-span-2">
-              <div className="space-y-3 bg-red-50/40 p-4 rounded-xl border border-red-100">
+              <div className="space-y-4 rounded-2xl border border-red-100 bg-red-50/40 p-4 shadow-sm dark:border-red-900/50 dark:bg-red-950/10">
                 <Label htmlFor="std-template-select" className="font-bold text-red-900 flex items-center gap-2">
                   <Award size={16} /> 1. Escolher Modelo de Certificado (Início do Fluxo)
                 </Label>
@@ -251,14 +260,28 @@ export function CertificateStandardManager() {
                       A escolha é aplicada à prévia e à composição enviada para emissão.
                     </p>
                   </div>
-                  <Select value={visualVariant} onValueChange={value => setVisualVariant(value as CertificateVisualVariant)}>
+                  <Select
+                    value={visualVariant}
+                    onValueChange={value => {
+                      const nextVariant = value as CertificateVisualVariant;
+                      setVisualVariant(nextVariant);
+                      updateComposition(current => ({
+                        ...current,
+                        visualVariant: nextVariant,
+                        fieldMappings: {
+                          ...current.fieldMappings,
+                          ...getCertificateLayoutPreset(nextVariant),
+                        },
+                      }));
+                    }}
+                  >
                     <SelectTrigger id="std-visual-variant" className="bg-white dark:bg-background">
                       <SelectValue placeholder="Escolha uma variação" />
                     </SelectTrigger>
                     <SelectContent>
                       {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => (
                         <SelectItem key={variant.id} value={variant.id}>
-                          {variant.label}
+                          {variant.label} · {variant.family}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -266,9 +289,9 @@ export function CertificateStandardManager() {
                 </div>
 
                 {/* Pré-visualização visual imediata do modelo selecionado */}
-                <div className="mt-3 bg-white p-3 rounded-lg border shadow-sm">
+                <div className="mt-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <span className="text-[11px] font-black uppercase tracking-[0.12em] text-muted-foreground flex items-center gap-1.5">
                       <Eye size={14} className="text-red-600" /> Pré-visualização do Modelo Selecionado
                     </span>
                     <span className="text-[10px] bg-red-100 text-red-800 font-bold px-2 py-0.5 rounded">
@@ -374,7 +397,7 @@ export function CertificateStandardManager() {
               </div>
             </div>
 
-            <div className="bg-muted/30 p-5 rounded-2xl border flex flex-col justify-between space-y-4">
+            <div className="flex flex-col justify-between space-y-5 rounded-2xl border border-border/70 bg-muted/25 p-5 shadow-sm">
               <div className="space-y-3">
                 <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                   <Award className="text-red-600" size={16} /> Status da Emissão
@@ -411,10 +434,10 @@ export function CertificateStandardManager() {
         </CardContent>
       </Card>
 
-      <Card className="border-red-200 shadow-md mt-6">
-        <CardHeader className="bg-red-50/50 pb-3 flex flex-row items-center justify-between">
+      <Card className="mt-6 overflow-hidden rounded-[2rem] border-border/70 bg-card shadow-[0_18px_60px_rgba(15,23,42,0.07)]">
+        <CardHeader className="flex flex-col items-start gap-3 border-b border-red-200/70 bg-red-50/60 pb-4 pt-5 sm:flex-row sm:items-center sm:justify-between dark:border-red-900/50 dark:bg-red-950/20">
           <div>
-            <CardTitle className="text-lg font-bold text-red-900 flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-lg font-black text-red-950 dark:text-red-100">
               <Award className="w-5 h-5 text-red-600" /> Certificados Emitidos (Banco de Dados)
             </CardTitle>
             <CardDescription>
@@ -432,7 +455,7 @@ export function CertificateStandardManager() {
             </div>
           )}
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="p-4 sm:p-6">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/50 uppercase text-[10px] text-muted-foreground font-semibold border-b">

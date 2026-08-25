@@ -7,6 +7,8 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
+import { AdminActionCenter } from "@/components/admin-action-center";
+import { AdminModerationHub } from "@/components/admin-moderation-hub";
 
 interface Stats {
   totalCourses: number;
@@ -151,7 +153,7 @@ export default function AdminDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header Harmonizado com o Painel do Professor */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl shadow-sm border border-border/70 bg-card">
+        <div className="dashboard-hero flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <ShieldCheck size={16} />
@@ -162,7 +164,7 @@ export default function AdminDashboardPage() {
               Visão geral, controle total do ecossistema acadêmico, gerenciamento de cursos, lixeira e auditoria de acessos.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+          <div className="admin-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
             <Link
               href="/admin/relatorios-academicos"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
@@ -200,6 +202,12 @@ export default function AdminDashboardPage() {
               Cupons
             </Link>
             <Link
+              href="/admin/anotacoes"
+              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+            >
+              Anotações dos Alunos
+            </Link>
+            <Link
               href="/admin/cursos"
               className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
             >
@@ -208,20 +216,20 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Estatísticas em Estilo Alinhado com a Área do Aluno */}
+        <AdminActionCenter />
+        <AdminModerationHub />
+
+        {/* Cards de KPIs em estilo alinhado com a área do aluno */}
         <StudentStyleDashboardStats
-          stats={{
-            totalCourses: stats?.totalCourses || 0,
-            totalMaterials: stats?.totalMaterials || 0,
-            totalArticles: stats?.totalArticles || 0,
-            totalUsers: stats?.totalUsers || 0,
-            totalEnrollments: stats?.totalEnrollments || 0,
-            roleCounts: stats?.roleCounts || { admin: 1, professor: 1, student: 0 },
-          }}
+          coursesCount={stats?.totalCourses || 0}
+          studentsCount={stats?.totalUsers || 0}
+          materialsCount={stats?.totalMaterials || 0}
+          enrollmentsCount={stats?.totalEnrollments || 0}
+          isLoading={loading}
         />
 
         {/* Monitor de Vendas / Stripe & Matrículas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2 surface-card p-6 sm:p-8 rounded-3xl space-y-4">
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               <BarChart3 className="text-red-600" size={22} />
