@@ -14,6 +14,7 @@ import {
   type CertificateFieldKey,
 } from "@/lib/certificate-composition";
 import { drawCertificateComposition } from "@/lib/certificate-pdf-composition";
+import { generateCertificateQrDataUrl } from "@/lib/certificate-qr";
 
 export type CertificateFieldMapping = {
   x: number;
@@ -354,6 +355,23 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
     font: regular,
     color: muted,
   });
+
+  // O QR permanece presente em todos os modelos, inclusive institucionais e externos.
+  // A decisão de branding controla a logo e a identificação visual, não a autenticidade.
+  try {
+    const qrDataUrl = await generateCertificateQrDataUrl(input.certificateCode, { width: 180, margin: 1 });
+    const qrImage = await pdf.embedPng(qrDataUrl);
+    page.drawImage(qrImage, { x: 710, y: 32, width: 72, height: 72 });
+    page.drawText("Validar documento", {
+      x: 710,
+      y: 24,
+      size: 7,
+      font: regular,
+      color: muted,
+    });
+  } catch (error) {
+    console.error("Failed to embed certificate verification QR code", error);
+  }
 
   return pdf.save();
 }
