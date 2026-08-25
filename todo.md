@@ -2302,3 +2302,8 @@
 ## Resiliência do dashboard publicado — 25/08/2026
 - [x] Impedir que uma consulta secundária com falha derrube toda a área do aluno e exibir estado parcial seguro com retry.
 - [x] Adicionar teste de regressão para falha isolada de consulta no carregamento do dashboard.
+
+## Resiliência do dashboard publicado — 25/08/2026
+- [x] Impedir que uma consulta secundária com falha derrube toda a área do aluno e exibir estado parcial seguro com retry.
+- [x] Adicionar teste de regressão para falha isolada de consulta no carregamento do dashboard.
+- [x] Confirmar no deployment de produção `d2a1658` que o dashboard autenticado volta a exibir dados reais, matrículas e atalhos sem a mensagem de erro.
