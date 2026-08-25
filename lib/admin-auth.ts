@@ -20,7 +20,7 @@ export async function requireAdmin(): Promise<AdminAuthSession | null> {
   const email = session?.user?.email?.toLowerCase();
   if (!email || !session?.user) return null;
   const role = session.user.role;
-  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin" || role === "professor") {
+  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin") {
     return session as AdminAuthSession;
   }
   return null;

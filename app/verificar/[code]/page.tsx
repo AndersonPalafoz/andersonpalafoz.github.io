@@ -1,17 +1,17 @@
 import { db } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
-import { and, eq, isNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { Award, CheckCircle2, Download, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { generateCertificateQrDataUrl } from "@/lib/certificate-qr";
 
 interface Props {
-  params: { code: string };
+  params: Promise<{ code: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<any> {
-  const code = params.code;
+  const { code } = await params;
   const cert = await db.select({
     studentName: users.name,
     courseTitle: courses.title,
@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<any> {
     .from(certificates)
     .leftJoin(users, eq(certificates.userId, users.id))
     .leftJoin(courses, eq(certificates.courseId, courses.id))
-    .where(and(eq(certificates.certificateCode, code), isNull(certificates.deletedAt)))
+    .where(eq(certificates.certificateCode, code))
     .limit(1);
 
   const title = cert.length > 0 ? `Certificado de Conclusão — ${cert[0].studentName} (${cert[0].courseTitle})` : "Verificação de Certificado | Anderson Palafoz";
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<any> {
 }
 
 export default async function PublicVerifyCertificatePage({ params }: Props) {
-  const code = params.code;
+  const { code } = await params;
   const cert = await db.select({
     id: certificates.id,
     level: certificates.level,
@@ -67,7 +67,7 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
     .from(certificates)
     .leftJoin(users, eq(certificates.userId, users.id))
     .leftJoin(courses, eq(certificates.courseId, courses.id))
-    .where(and(eq(certificates.certificateCode, code), isNull(certificates.deletedAt)))
+    .where(eq(certificates.certificateCode, code))
     .limit(1);
 
   if (cert.length === 0) {

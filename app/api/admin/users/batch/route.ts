@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     try {
       const actionLabel = action === "restore" ? "batch_restore_user" : action === "permanent_delete" ? "batch_permanent_delete_user" : "batch_soft_delete_user";
       await db.insert(adminActivityLogs).values({
-        userId: admin.id || null,
-        userEmail: admin.email || "palafozanderson@gmail.com",
-        userName: admin.name || "Administrador",
+        userId: admin.user.id || null,
+        userEmail: admin.user.email || "palafozanderson@gmail.com",
+        userName: admin.user.name || "Administrador",
         action: actionLabel,
         targetType: "user",
         targetIds: ids.join(","),

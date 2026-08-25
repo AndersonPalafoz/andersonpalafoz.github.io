@@ -13,7 +13,8 @@ export async function POST(request: Request) {
     const { email } = await request.json();
     const normalizedEmail = String(email || "").trim().toLowerCase();
     const user = await db.query.users.findFirst({ where: eq(users.email, normalizedEmail) });
-    if (user?.email) {
+    const canRecoverExternalPassword = user?.loginMethod === "external-password" && user.mustChangePassword === false && user.approvalStatus === "approved";
+    if (user?.email && canRecoverExternalPassword) {
       const token = randomBytes(32).toString("hex");
       await db.insert(passwordResetTokens).values({ userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 30 * 60 * 1000) });
       const origin = request.headers.get("origin") || process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -34,7 +35,10 @@ export async function PUT(request: Request) {
     const tokenHash = hashToken(String(token || ""));
     const reset = await db.query.passwordResetTokens.findFirst({ where: and(eq(passwordResetTokens.tokenHash, tokenHash), isNull(passwordResetTokens.usedAt)) });
     if (!reset || reset.expiresAt.getTime() < Date.now()) return NextResponse.json({ error: "Token inválido ou expirado." }, { status: 400 });
-    await db.update(users).set({ passwordHash: hashPassword(String(password)), updatedAt: new Date() }).where(eq(users.id, reset.userId));
+    const resetUser = await db.query.users.findFirst({ where: eq(users.id, reset.userId) });
+    const canResetExternalPassword = resetUser?.loginMethod === "external-password" && resetUser.mustChangePassword === false && resetUser.approvalStatus === "approved";
+    if (!canResetExternalPassword) return NextResponse.json({ error: "Esta conta não pode usar este fluxo de recuperação." }, { status: 403 });
+    await db.update(users).set({ passwordHash: hashPassword(String(password)), mustChangePassword: false, updatedAt: new Date() }).where(eq(users.id, reset.userId));
     await db.update(passwordResetTokens).set({ usedAt: new Date() }).where(eq(passwordResetTokens.id, reset.id));
     return NextResponse.json({ reset: true });
   } catch (error) {

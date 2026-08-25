@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, Loader2, MessageCircle, Send, Star, BookOpen, FileText, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Eye, EyeOff, Loader2, MessageCircle, RotateCcw, Send, Star, BookOpen, FileText, CheckCircle2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Course = { id: number; title: string };
 type Article = { id: number; title: string };
 type Reply = { id: number; message: string; authorName: string; createdAt: string };
-type Review = { id: number; rating: number; comment: string | null; authorName: string; createdAt: string; replies: Reply[] };
+type Review = { id: number; rating: number; comment: string | null; authorName: string; createdAt: string; moderationStatus?: "visible" | "hidden" | "deleted"; replies: Reply[] };
 
 export default function AdminReviewsPage() {
   const [mode, setMode] = useState<"courses" | "articles">("courses");
@@ -21,6 +21,7 @@ export default function AdminReviewsPage() {
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [replyDrafts, setReplyDrafts] = useState<Record<number, string>>({});
   const [sendingId, setSendingId] = useState<number | null>(null);
+  const [moderatingId, setModeratingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = useCallback(async (selectedCourseId: string, selectedArticleId: string) => {
@@ -55,6 +56,21 @@ export default function AdminReviewsPage() {
   useEffect(() => {
     void loadData(courseId, articleId);
   }, [courseId, articleId, mode, loadData]);
+
+  const moderateComment = async (reviewId: number, action: "hide" | "restore" | "delete") => {
+    if (action === "delete" && !window.confirm("Excluir este comentário logicamente? O histórico será preservado no painel, mas ele deixará de aparecer publicamente.")) return;
+    const selectedId = mode === "articles" ? articleId : "";
+    if (!selectedId) { toast.error("Selecione um artigo antes de moderar."); return; }
+    setModeratingId(reviewId);
+    try {
+      const response = await fetch("/api/admin/article-reviews", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ articleId: selectedId, reviewId, action }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível atualizar o comentário.");
+      setReviews((current) => current.map((review) => review.id === reviewId ? { ...review, moderationStatus: data.comment.moderationStatus } : review));
+      toast.success(action === "hide" ? "Comentário ocultado." : action === "delete" ? "Comentário excluído logicamente." : "Comentário restaurado.");
+    } catch (cause) { toast.error(cause instanceof Error ? cause.message : "Erro ao moderar comentário."); }
+    finally { setModeratingId(null); }
+  };
 
   const sendReply = async (reviewId: number) => {
     const message = (replyDrafts[reviewId] || "").trim();
@@ -199,8 +215,13 @@ export default function AdminReviewsPage() {
                   )}
                 </div>
 
+                {mode === "articles" && <div className="mt-4 flex flex-wrap items-center gap-2">
+                  <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wide ${review.moderationStatus === "deleted" ? "bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" : review.moderationStatus === "hidden" ? "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"}`}>{review.moderationStatus === "deleted" ? "Excluído" : review.moderationStatus === "hidden" ? "Oculto" : "Visível"}</span>
+                  <button type="button" onClick={() => void moderateComment(review.id, review.moderationStatus === "hidden" ? "restore" : "hide")} disabled={moderatingId === review.id} className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-bold text-foreground hover:bg-muted disabled:opacity-60">{review.moderationStatus === "hidden" ? <Eye size={14} /> : <EyeOff size={14} />}{review.moderationStatus === "hidden" ? "Restaurar" : "Ocultar"}</button>
+                  {review.moderationStatus === "deleted" ? <button type="button" onClick={() => void moderateComment(review.id, "restore")} disabled={moderatingId === review.id} className="inline-flex items-center gap-1 rounded-lg border border-emerald-200 px-2.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 disabled:opacity-60"><RotateCcw size={14} /> Restaurar</button> : <button type="button" onClick={() => void moderateComment(review.id, "delete")} disabled={moderatingId === review.id} className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60"><Trash2 size={14} /> Excluir</button>}
+                </div>}
                 {review.comment && (
-                  <p className="mt-4 rounded-xl bg-background p-4 text-sm leading-6 text-foreground border border-border/60">
+                  <p className={`mt-4 rounded-xl p-4 text-sm leading-6 border ${review.moderationStatus === "deleted" ? "border-red-200 bg-red-50/60 text-red-900 line-through dark:bg-red-950/20 dark:text-red-300" : review.moderationStatus === "hidden" ? "border-amber-200 bg-amber-50/60 text-amber-900 dark:bg-amber-950/20 dark:text-amber-300" : "border-border/60 bg-background text-foreground"}`}>
                     {review.comment}
                   </p>
                 )}

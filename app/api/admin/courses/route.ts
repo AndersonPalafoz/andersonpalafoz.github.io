@@ -23,7 +23,15 @@ const coursePayloadSchema = z.object({
   workloadHours: z.number().int().min(0).max(5000).optional(),
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
+  durationType: z.enum(["annual", "semester", "workload", "custom"]).optional(),
+  durationValue: z.number().int().positive().max(9999).optional().nullable(),
+  durationUnit: z.string().trim().max(24).optional().nullable(),
   maxAbsencePercent: z.number().int().min(0).max(100).optional(),
+  hasUnits: z.boolean().optional(),
+  unitCount: z.number().int().min(1).max(100).optional().nullable(),
+  gradingScope: z.enum(["course", "unit"]).optional(),
+  passingAverage: z.number().min(0).max(10).optional(),
+  unitPassingAverages: z.string().max(5000).optional().nullable(),
   courseType: z.number().int().min(1).max(5).optional(),
   externalRedirectUrl: z.string().trim().max(1000).optional().nullable(),
   syncModality: z.enum(["none", "online_individual", "online_group", "presencial"]).optional(),
@@ -80,9 +88,9 @@ export async function POST(request: NextRequest) {
     }
 
     const payload = parsePayload(await request.json());
-    if (payload.error) return NextResponse.json({ error: payload.error, code: "COURSE_VALIDATION_FAILED" }, { status: 400 });
+    if (payload.error || !payload.data) return NextResponse.json({ error: payload.error || "Os dados do curso são inválidos.", code: "COURSE_VALIDATION_FAILED" }, { status: 400 });
 
-    const course = await createCourse(payload.data);
+    const course = await createCourse(payload.data as unknown as Parameters<typeof createCourse>[0]);
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
     console.error("Error creating course:", error);
@@ -104,14 +112,14 @@ export async function PUT(request: NextRequest) {
     }
 
     const payload = parsePayload(Object.fromEntries(Object.entries(body).filter(([key]) => key !== "id")), true);
-    if (payload.error) return NextResponse.json({ error: payload.error, code: "COURSE_VALIDATION_FAILED" }, { status: 400 });
+    if (payload.error || !payload.data) return NextResponse.json({ error: payload.error || "Os dados do curso são inválidos.", code: "COURSE_VALIDATION_FAILED" }, { status: 400 });
 
     const allowed = await canManageCourse(admin, id);
     if (!allowed) {
       return NextResponse.json({ error: "Professores só podem gerenciar seus próprios cursos.", code: "COURSE_FORBIDDEN" }, { status: 403 });
     }
 
-    const course = await updateCourse(id, payload.data);
+    const course = await updateCourse(id, payload.data as unknown as Parameters<typeof updateCourse>[1]);
     return NextResponse.json(course);
   } catch (error) {
     console.error("Error updating course:", error);

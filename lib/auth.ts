@@ -98,6 +98,7 @@ export const authOptions: NextAuthOptions = {
         if (token.approvalStatus) {
           session.user.approvalStatus = token.approvalStatus as "pending" | "approved" | "rejected";
         }
+        session.user.mustChangePassword = Boolean(token.mustChangePassword);
         if (token.avatarUrl) {
           session.user.avatarUrl = token.avatarUrl as string;
           session.user.image = token.avatarUrl as string;
@@ -134,6 +135,7 @@ export const authOptions: NextAuthOptions = {
           if (dbUser) {
             token.role = dbUser.role;
             token.approvalStatus = dbUser.approvalStatus;
+            token.mustChangePassword = dbUser.mustChangePassword;
             token.deletedAt = dbUser.deletedAt?.toISOString() ?? null;
             token.id = dbUser.id.toString();
             token.avatarUrl = dbUser.avatarUrl;

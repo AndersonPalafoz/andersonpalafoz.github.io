@@ -19,6 +19,11 @@ interface Course {
   courseType?: number;
   externalRedirectUrl?: string | null;
   syncModality?: SyncModality;
+  hasUnits?: boolean;
+  unitCount?: number | null;
+  gradingScope?: "course" | "unit" | string;
+  passingAverage?: string | number;
+  unitPassingAverages?: string | null;
 }
 
 export default function AdminCursos() {
@@ -61,6 +66,11 @@ export default function AdminCursos() {
     startDate: "",
     endDate: "",
     maxAbsencePercent: 25,
+    hasUnits: false,
+    unitCount: 1,
+    gradingScope: "course" as "course" | "unit",
+    passingAverage: 5,
+    unitPassingAverages: null as string | null,
     courseType: 1,
     externalRedirectUrl: "",
     syncModality: "none" as SyncModality,
@@ -272,6 +282,11 @@ export default function AdminCursos() {
       startDate: course.startDate || "",
       endDate: course.endDate || "",
       maxAbsencePercent: course.maxAbsencePercent ?? 25,
+      hasUnits: Boolean(course.hasUnits),
+      unitCount: course.unitCount ?? 1,
+      gradingScope: course.gradingScope === "unit" ? "unit" : "course",
+      passingAverage: Number(course.passingAverage) || 5,
+      unitPassingAverages: course.unitPassingAverages || null,
       courseType: course.courseType ?? 1,
       externalRedirectUrl: course.externalRedirectUrl || "",
       syncModality: course.syncModality || "none",
@@ -359,6 +374,11 @@ export default function AdminCursos() {
           startDate: "",
           endDate: "",
           maxAbsencePercent: 25,
+          hasUnits: false,
+          unitCount: 1,
+          gradingScope: "course" as "course" | "unit",
+          passingAverage: 5,
+          unitPassingAverages: null,
           courseType: 1,
           externalRedirectUrl: "",
           syncModality: "none" as SyncModality,
@@ -435,6 +455,11 @@ export default function AdminCursos() {
                 startDate: "",
                 endDate: "",
                 maxAbsencePercent: 25,
+                hasUnits: false,
+                unitCount: 1,
+                gradingScope: "course" as "course" | "unit",
+                passingAverage: 5,
+                unitPassingAverages: null,
                 courseType: 1,
                 externalRedirectUrl: "",
                 syncModality: "none" as SyncModality,
@@ -719,6 +744,11 @@ export default function AdminCursos() {
                     className="w-full px-4 py-3 rounded-xl border border-border focus:ring-2 focus:ring-red-600 focus:border-transparent outline-none transition bg-card text-card-foreground"
                   />
                   <p className="text-xs text-muted-foreground mt-1">Acima deste percentual, o aluno reprova por frequência.</p>
+                </div>
+                <div className="md:col-span-2 rounded-2xl border border-red-200 bg-red-50/60 p-4 dark:border-red-900/50 dark:bg-red-950/20">
+                  <label className="flex items-center gap-2 text-sm font-bold"><input type="checkbox" checked={formData.hasUnits} onChange={(e) => setFormData({ ...formData, hasUnits: e.target.checked, gradingScope: e.target.checked ? formData.gradingScope : "course" })} /> Dividir este curso em unidades</label>
+                  {formData.hasUnits && <div className="mt-3 grid gap-3 sm:grid-cols-3"><label className="text-xs font-bold">Quantidade de unidades<input type="number" min={1} max={100} value={formData.unitCount} onChange={(e) => setFormData({ ...formData, unitCount: Math.max(1, Number(e.target.value) || 1) })} className="mt-1 w-full rounded-xl border border-border bg-card p-2" /></label><label className="text-xs font-bold">Critério<select value={formData.gradingScope} onChange={(e) => setFormData({ ...formData, gradingScope: e.target.value as "course" | "unit" })} className="mt-1 w-full rounded-xl border border-border bg-card p-2"><option value="course">Média do curso todo</option><option value="unit">Média de cada unidade</option></select></label><label className="text-xs font-bold">Média mínima<select value={formData.passingAverage} onChange={(e) => setFormData({ ...formData, passingAverage: Number(e.target.value) })} className="mt-1 w-full rounded-xl border border-border bg-card p-2"><option value={5}>5,0</option><option value={6}>6,0</option><option value={7}>7,0</option></select></label><label className="text-xs font-bold sm:col-span-3">Médias por unidade (opcional)<input type="text" placeholder='Ex.: {"1":5,"2":6,"3":7}' value={formData.unitPassingAverages || ""} onChange={(e) => setFormData({ ...formData, unitPassingAverages: e.target.value || null })} className="mt-1 w-full rounded-xl border border-border bg-card p-2" /></label></div>}
+                  <p className="mt-2 text-xs text-muted-foreground">A regra define o critério acadêmico do curso e não altera notas já lançadas.</p>
                 </div>
                 </div>
               </details>

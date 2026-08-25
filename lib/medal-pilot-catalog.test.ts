@@ -2,12 +2,18 @@ import { describe, expect, it } from "vitest";
 import { getPilotMedal, isPilotMedalCode, PILOT_MEDALS } from "./medal-pilot-catalog";
 
 describe("catálogo piloto de medalhas", () => {
-  it("mantém exatamente os quatro pilotos autorizados", () => {
+  it("mantém o catálogo pedagógico autorizado", () => {
     expect(PILOT_MEDALS.map((medal) => medal.code)).toEqual([
       "primeiro-passo",
       "trilha-iniciada",
       "voz-em-pratica",
       "participacao-destacada",
+      "constancia-na-trilha",
+      "explorador-do-vocabulario",
+      "mestre-da-gramatica",
+      "voz-confiante",
+      "escrita-em-destaque",
+      "colaborador-da-turma",
     ]);
   });
 

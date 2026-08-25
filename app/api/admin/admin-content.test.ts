@@ -144,7 +144,7 @@ describe("Admin content API contracts", () => {
 
   describe("Materials", () => {
     it("rejects unauthenticated list requests", async () => {
-      const response = await getMaterials();
+      const response = await getMaterials(new Request("http://localhost/api/admin/materials") as never);
 
       expect(response.status).toBe(401);
       expect(await response.json()).toEqual({ error: "Unauthorized" });

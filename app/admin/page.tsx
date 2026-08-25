@@ -191,6 +191,12 @@ export default function AdminDashboardPage() {
               Tarefas docentes
             </Link>
             <Link
+              href="/professor/turmas-externas?tab=students"
+              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-amber-800 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 shadow-sm"
+            >
+              Acessos externos
+            </Link>
+            <Link
               href="/admin/cms"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
