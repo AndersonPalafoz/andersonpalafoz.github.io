@@ -2154,4 +2154,6 @@
 - [ ] Sincronizar a versão validada com o GitHub e encaminhar a publicação no deployment escolhido após criar checkpoint.
 - [x] Executar a validação global solicitada: suíte Vitest completa e build de produção.
 - [x] Conferir integridade do repositório, arquivos rastreados e ausência de artefatos `.next-build` no commit.
-- [ ] Criar o checkpoint final e sincronizar o código validado com o GitHub para disparar o build automático do Vercel.
+- [x] Criar o checkpoint final e sincronizar o código validado com o GitHub para disparar o build automático do Vercel.
+- [x] Corrigir o erro Vercel `.next/routes-manifest.json` ausente causado pelo uso de `.next-build` como diretório de saída.
+- [x] Revalidar testes, build e sincronização após ajustar o diretório de saída para produção.
