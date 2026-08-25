@@ -2289,3 +2289,6 @@
 ## Auditoria final de permissões — 25/08/2026
 - [x] Restringir `requireAdmin` a admin, super_admin e super-administrador, mantendo professores em `requireTeacherOrAdmin`.
 - [x] Revalidar TypeScript após a regeneração dos tipos `.next` e repetir os testes de autorização.
+
+## Resend sem domínio próprio — 25/08/2026
+- [ ] Registrar um domínio próprio e adicionar os registros DNS exigidos pelo Resend antes de trocar `RESEND_FROM_EMAIL` para um remetente profissional.
