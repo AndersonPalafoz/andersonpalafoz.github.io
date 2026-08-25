@@ -2085,3 +2085,5 @@
 - [x] Corrigir o retorno binário do endpoint de download em lote para `Uint8Array`, mantendo compatibilidade com Response/Node/Vercel; build aprovado.
 - [x] Confirmar novamente os testes focados de medalhas, anotações e payload de certificado após as últimas alterações; 5 arquivos e 11 testes passaram.
 - [x] Corrigir a exportação administrativa em lote: usar `includeSiteBranding` no contrato PDF e `Uint8Array` nos retornos PDF/ZIP; 3 arquivos e 8 testes focados passaram e o build foi aprovado.
+- [x] Corrigir a comparação impossível com `super_admin` na rota de download de certificados, alinhando a autorização aos papéis reais do schema; o typecheck reduziu de 55 para 54 erros.
+- [x] Validar a correção de autorização do download de certificados; 4 arquivos e 10 testes focados passaram e o build de produção foi aprovado.

@@ -35,7 +35,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     }
 
     const isOwner = certificate.userId === currentUser.id;
-    const isGlobalAdmin = currentUser.email?.toLowerCase() === "palafozanderson@gmail.com" || currentUser.role === "admin" || currentUser.role === "super_admin";
+    const isGlobalAdmin = currentUser.email?.toLowerCase() === "palafozanderson@gmail.com" || currentUser.role === "admin";
     const canManage = !isOwner && currentUser.role === "professor"
       ? await canManageCourse({ user: { id: currentUser.id, email: currentUser.email, name: currentUser.name, role: currentUser.role } } as AdminAuthSession, certificate.courseId)
       : false;
