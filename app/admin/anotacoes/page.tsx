@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, FileText, Loader, Search, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface StudentOption {
   id: number;
@@ -33,6 +34,7 @@ export default function AdminNotesPage() {
   const [notes, setNotes] = useState<NoteRecord[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<NoteRecord | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/notes/students")
@@ -68,13 +70,13 @@ export default function AdminNotesPage() {
   }
 
   async function deleteNote(note: NoteRecord) {
-    if (!window.confirm(`Excluir esta anotação de ${studentLabel}? O aluno verá um aviso de que ela foi excluída por um administrador.`)) return;
     setDeletingId(note.id);
     try {
       const res = await fetch(`/api/admin/notes?id=${note.id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Não foi possível excluir a anotação.");
       setNotes((current) => current.map((item) => (item.id === note.id ? data.note : item)));
+      setPendingDelete(null);
       toast.success("Anotação excluída. O aluno verá o aviso de exclusão administrativa.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível excluir a anotação.");
@@ -150,7 +152,7 @@ export default function AdminNotesPage() {
                       </div>
                       {!note.deletedByAdminAt && (
                         <button
-                          onClick={() => void deleteNote(note)}
+                          onClick={() => setPendingDelete(note)}
                           disabled={deletingId === note.id}
                           aria-label="Excluir anotação"
                           className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/30"
@@ -178,6 +180,14 @@ export default function AdminNotesPage() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Excluir anotação do aluno?"
+        description={`O aluno ${studentLabel || "selecionado"} verá um aviso de exclusão administrativa. O conteúdo original será preservado somente para auditoria.`}
+        busy={Boolean(pendingDelete && deletingId === pendingDelete.id)}
+        onCancel={() => { if (!deletingId) setPendingDelete(null); }}
+        onConfirm={() => { if (pendingDelete) void deleteNote(pendingDelete); }}
+      />
     </div>
   );
 }

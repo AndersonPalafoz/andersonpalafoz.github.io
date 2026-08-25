@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2, ShieldAlert, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface SpeakingAttempt {
   id: number;
@@ -54,6 +55,7 @@ export default function LessonPageClient() {
   const [noteDeletedByAdminEmail, setNoteDeletedByAdminEmail] = useState<string | null>(null);
   const [savingNote, setSavingNote] = useState(false);
   const [deletingNote, setDeletingNote] = useState(false);
+  const [confirmDeleteNote, setConfirmDeleteNote] = useState(false);
   const [listeningCompleted, setListeningCompleted] = useState(false);
   const [savingListening, setSavingListening] = useState(false);
 
@@ -128,14 +130,15 @@ export default function LessonPageClient() {
   };
 
   const deletePersonalNote = async () => {
-    if (deletingNote || !window.confirm("Excluir esta anotação definitivamente? Esta ação remove apenas sua anotação desta aula.")) return;
+    if (deletingNote) return;
     setDeletingNote(true);
     try {
       const response = await fetch(`/api/notes?lessonId=${Number(lessonId)}`, { method: "DELETE" });
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error || "Não foi possível excluir sua anotação.");
       setPersonalNote("");
-      toast.success("Anotação excluída.");
+      setConfirmDeleteNote(false);
+      toast.success("Anotação excluída com sucesso.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Não foi possível excluir sua anotação.");
     } finally {
@@ -341,7 +344,7 @@ export default function LessonPageClient() {
             {noteDeletedByAdminAt ? (
               <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"><ShieldAlert size={18} className="mt-0.5 shrink-0" /><p>Esta anotação foi excluída por um administrador{noteDeletedByAdminEmail ? ` (${noteDeletedByAdminEmail})` : ""} em {new Date(noteDeletedByAdminAt).toLocaleString("pt-BR")}. O conteúdo original não pode mais ser editado.</p></div>
             ) : (
-              <><textarea value={personalNote} onChange={(event) => setPersonalNote(event.target.value)} placeholder="Registre vocabulário, dúvidas e observações importantes..." className="min-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 outline-none focus:border-red-500" /><div className="flex flex-wrap gap-2"><Button onClick={savePersonalNote} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-gray-300 font-bold">{savingNote && <Loader2 className="animate-spin" size={16} />} Salvar anotação</Button>{personalNote.trim() && <Button onClick={deletePersonalNote} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-red-200 font-bold text-red-600 hover:bg-red-50">{deletingNote ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />} Excluir anotação</Button>}</div></>
+              <><textarea value={personalNote} onChange={(event) => setPersonalNote(event.target.value)} placeholder="Registre vocabulário, dúvidas e observações importantes..." className="min-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 outline-none focus:border-red-500" /><div className="flex flex-wrap gap-2"><Button onClick={savePersonalNote} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-gray-300 font-bold">{savingNote && <Loader2 className="animate-spin" size={16} />} Salvar anotação</Button>{personalNote.trim() && <Button onClick={() => setConfirmDeleteNote(true)} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-red-200 font-bold text-red-600 hover:bg-red-50">{deletingNote ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />} Excluir anotação</Button>}</div></>
             )}
           </div>
 
@@ -443,6 +446,14 @@ export default function LessonPageClient() {
         </div>
       </div>
 
+      <ConfirmDialog
+        open={confirmDeleteNote}
+        title="Excluir anotação desta aula?"
+        description="A anotação será removida da sua conta. O progresso da aula, atividades e certificado não serão alterados."
+        busy={deletingNote}
+        onCancel={() => { if (!deletingNote) setConfirmDeleteNote(false); }}
+        onConfirm={() => void deletePersonalNote()}
+      />
       {certificateCelebration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/75 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="certificate-celebration-title">
           <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-red-200 bg-white p-8 text-center shadow-2xl animate-in fade-in zoom-in-95">

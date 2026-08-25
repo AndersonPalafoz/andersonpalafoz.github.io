@@ -55,6 +55,7 @@ export default function DashboardLayout({
   const [wishlistPulse, setWishlistPulse] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
+  const [avatarLoading, setAvatarLoading] = useState(true);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -101,12 +102,13 @@ export default function DashboardLayout({
   }, [session?.user?.role]);
 
   useEffect(() => {
-    if (!session?.user?.email) return;
+    if (!session?.user?.email) { setAvatarLoading(false); return; }
     let active = true;
+    setAvatarLoading(true);
     fetch("/api/user/profile", { cache: "no-store" })
       .then(async (response) => response.ok ? response.json() : null)
-      .then((payload) => { if (active) { setAvatarUrl(payload?.user?.avatarUrl || null); setAvatarLoadFailed(false); } })
-      .catch(() => undefined);
+      .then((payload) => { if (active) { const nextUrl = payload?.user?.avatarUrl || session.user?.image || null; setAvatarUrl(payload?.user?.avatarUrl || null); setAvatarLoadFailed(false); if (!nextUrl) setAvatarLoading(false); } })
+      .catch(() => { if (active) setAvatarLoading(false); });
     return () => { active = false; };
   }, [session?.user?.email]);
 
@@ -123,6 +125,7 @@ export default function DashboardLayout({
       if (!response.ok) throw new Error(payload.error || "Não foi possível atualizar a foto.");
       setAvatarUrl(payload.user?.avatarUrl || null);
       setAvatarLoadFailed(false);
+      setAvatarLoading(!payload.user?.avatarUrl);
       toast.success("Foto de perfil atualizada.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao atualizar a foto.");
@@ -184,7 +187,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
           <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} aria-label="Alterar foto de perfil" title="Clique para alterar sua foto" className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-red-600 text-white font-semibold shadow-lg shadow-red-600/20 transition hover:-translate-y-0.5 hover:ring-4 hover:ring-red-100 disabled:cursor-wait disabled:opacity-70">
-            {displayedAvatarUrl ? <img src={displayedAvatarUrl} alt={`Foto de perfil de ${session?.user?.name || "usuário"}`} className="h-full w-full object-cover" onError={() => setAvatarLoadFailed(true)} /> : <span aria-hidden="true">{getInitials(session?.user?.name)}</span>}
+            {displayedAvatarUrl ? <><img src={displayedAvatarUrl} alt={`Foto de perfil de ${session?.user?.name || "usuário"}`} className={`h-full w-full object-cover transition-opacity duration-200 ${avatarLoading ? "opacity-0" : "opacity-100"}`} onLoad={() => setAvatarLoading(false)} onError={() => { setAvatarLoadFailed(true); setAvatarLoading(false); }} />{avatarLoading && <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />}</> : avatarLoading ? <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" /> : <span aria-hidden="true">{getInitials(session?.user?.name)}</span>}
             {avatarUploading && <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px]">...</span>}
           </button>
           <div className="min-w-0 flex-1">

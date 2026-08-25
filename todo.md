@@ -2173,3 +2173,9 @@
 ## Preparação final para Vercel — 25/08/2026
 - [x] Revalidar a versão atual com testes, build de produção e verificação de artefatos.
 - [x] Criar ou atualizar o checkpoint final e sincronizar o branch validado com o GitHub para disparar o build do Vercel.
+
+## Feedback e carregamento visual — 25/08/2026
+- [x] Adicionar modal de confirmação antes da exclusão de qualquer anotação pelo aluno ou administrador.
+- [x] Exibir toast de sucesso e erro no fluxo de exclusão de anotações.
+- [x] Exibir skeleton enquanto a foto de perfil da sidebar estiver sendo carregada, incluindo fallback acessível para erro de imagem.
+- [x] Adicionar testes de regressão e validar suíte, build e responsividade dessas melhorias.
