@@ -2129,3 +2129,8 @@
 - [x] Identificar e documentar a origem das contas `manual_external`/`external.placeholder` observadas em produção, sem alterar seus registros; quatro registros reais (IDs 10–13) foram confirmados via API do Vercel e documentados.
 - [x] Tornar explícita no painel a diferença entre conta cadastrada e usuário técnico criado para certificado sem cadastro, com selo `Certificado externo` e indicação de que não possui login no site.
 - [x] Exibir a ação de exclusão lógica e o caminho de exclusão definitiva para esses usuários sem ocultação por corte visual, preservando confirmação, proteção da conta principal e verificações de integridade; 12 testes passaram.
+
+## Atualização local e preparação para publicação no Vercel — 25/08/2026
+- [x] Revisar mudanças locais e arquivos pendentes antes da publicação; o workspace está na branch `main` e o servidor local está respondendo.
+- [x] Executar testes relevantes e build isolado de produção; os testes administrativos passaram e o build Next.js isolado foi aprovado.
+- [ ] Salvar checkpoint recuperável antes de orientar o uso do Publish; tentativa em andamento.
