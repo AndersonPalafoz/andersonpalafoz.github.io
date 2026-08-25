@@ -37,10 +37,22 @@ function dataUriToBytes(source: string) {
 async function readCompositionImage(source: string) {
   const data = dataUriToBytes(source);
   if (data) return data;
+  if (source.startsWith("/manus-storage/")) {
+    try {
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL || "http://localhost:3000";
+      const absoluteUrl = source.startsWith("http") ? source : `${baseUrl.replace(/\/$/, "")}${source}`;
+      const response = await fetch(absoluteUrl);
+      if (!response.ok) return null;
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      return { bytes, type: /\.jpe?g(?:$|\?)/i.test(source) ? "image/jpeg" : "image/png" };
+    } catch {
+      return null;
+    }
+  }
   if (!source.startsWith("/") || source.includes("..")) return null;
   try {
     const bytes = new Uint8Array(await readFile(path.join(process.cwd(), "public", source.slice(1))));
-    return { bytes, type: /\\.jpe?g$/i.test(source) ? "image/jpeg" : "image/png" };
+    return { bytes, type: /\.jpe?g$/i.test(source) ? "image/jpeg" : "image/png" };
   } catch {
     return null;
   }

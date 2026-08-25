@@ -9,6 +9,58 @@ export type CertificateElementPreset = {
 
 export const CERTIFICATE_ELEMENT_PRESETS: CertificateElementPreset[] = [
   {
+    id: "profici-header",
+    label: "Cabeçalho PROFICI / UFBA",
+    description: "Brasão da UFBA, logotipo PROFICI e identificação institucional do modelo enviado.",
+    create: index => ({
+      type: "image",
+      content: "/manus-storage/image4-reference_863640d0.jpeg",
+      x: 704,
+      y: 548,
+      width: 122,
+      height: 92,
+      opacity: 0.96,
+      zIndex: index,
+      visible: true,
+      locked: false,
+    }),
+  },
+  {
+    id: "profici-crest",
+    label: "Brasão UFBA",
+    description: "Brasão institucional extraído do certificado PROFICI enviado.",
+    create: index => ({
+      type: "image",
+      content: "/manus-storage/ufba-crest_db3e90ef.jpeg",
+      x: 78,
+      y: 536,
+      width: 34,
+      height: 46,
+      opacity: 1,
+      zIndex: index,
+      visible: true,
+      locked: false,
+    }),
+  },
+  {
+    id: "profici-signature",
+    label: "Assinatura PROFICI",
+    description: "Assinatura manuscrita extraída do modelo, posicionada acima do nome da coordenadora.",
+    create: index => ({
+      type: "image",
+      content: "/manus-storage/profici-wordmark_7b5435b0.jpeg",
+      x: 421,
+      y: 112,
+      width: 150,
+      height: 42,
+      opacity: 0.9,
+      zIndex: index,
+      visible: true,
+      locked: false,
+    }),
+  },
+
+  {
     id: "seal",
     label: "Selo circular",
     description: "Selo de reconhecimento com preenchimento e contorno editáveis.",
@@ -127,4 +179,23 @@ export function createCertificateElementPreset(
     id: `${preset.id}_${Date.now()}_${index}`,
     ...preset.create(index),
   };
+}
+
+export function createProficiCertificateElements() {
+  const assets = ["profici-header", "profici-crest", "profici-signature"].map((presetId, index) =>
+    createCertificateElementPreset(presetId, index),
+  ).filter((element): element is CertificateCompositionElement => Boolean(element));
+  const textElements: CertificateCompositionElement[] = [
+    { id: "profici-institution", type: "text", content: "UNIVERSIDADE FEDERAL DA BAHIA", x: 421, y: 548, size: 14, width: 540, color: "#111827", weight: "bold", align: "center", zIndex: 20, visible: true, locked: false },
+    { id: "profici-program", type: "text", content: "PROFICI - Programa de Proficiência em Língua Estrangeira para", x: 421, y: 526, size: 11, width: 620, color: "#111827", weight: "bold", align: "center", zIndex: 20, visible: true, locked: false },
+    { id: "profici-audience", type: "text", content: "Estudantes e Servidores da UFBA", x: 421, y: 509, size: 11, width: 620, color: "#111827", weight: "bold", align: "center", zIndex: 20, visible: true, locked: false },
+    { id: "profici-title", type: "text", content: "CERTIFICADO", x: 421, y: 450, size: 20, width: 420, color: "#111827", weight: "bold", align: "center", letterSpacing: 0.4, zIndex: 20, visible: true, locked: false },
+    { id: "profici-body-prefix", type: "text", content: "Certifico que", x: 86, y: 392, size: 12, width: 660, color: "#111827", align: "left", zIndex: 20, visible: true, locked: false },
+    { id: "profici-body-course", type: "text", content: "concluiu o curso em nível {{level}} do PROFICI", x: 86, y: 315, size: 11, width: 660, color: "#111827", align: "left", zIndex: 20, visible: true, locked: false },
+    { id: "profici-body-program", type: "text", content: "(Programa de Proficiência em Língua Estrangeira para Estudantes e Servidores da UFBA)", x: 86, y: 280, size: 10, width: 660, color: "#111827", align: "left", zIndex: 20, visible: true, locked: false },
+    { id: "profici-body-period", type: "text", content: "realizado no período de {{period}} com carga horária de {{workloadHours}}.", x: 86, y: 260, size: 10, width: 660, color: "#111827", align: "left", zIndex: 20, visible: true, locked: false },
+    { id: "profici-signer-line", type: "line", content: "Linha de assinatura", x: 421, y: 112, width: 190, size: 1, color: "#1f2937", zIndex: 20, visible: true, locked: false },
+    { id: "profici-signer-role", type: "text", content: "Coordenadora Geral do PROFICI", x: 421, y: 72, size: 10, width: 300, color: "#111827", align: "center", zIndex: 20, visible: true, locked: false },
+  ];
+  return [...assets, ...textElements];
 }
