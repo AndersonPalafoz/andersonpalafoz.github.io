@@ -2,8 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // Permite que o build local use uma pasta própria sem sobrescrever o `.next` do preview.
-  distDir: process.env.NEXT_DIST_DIR ?? ".next",
+  // O preview gerenciado e o builder nativo do Vercel precisam compartilhar o diretório padrão.
+  // Artefatos `.next` são ignorados pelo Git e nunca devem ser enviados ao repositório.
+  distDir: ".next",
   // O indicador/devtools de segmentos do Next 15.5 pode gerar um Client Manifest inconsistente no preview gerenciado.
   devIndicators: false,
   images: {
