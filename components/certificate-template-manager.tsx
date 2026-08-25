@@ -16,7 +16,7 @@ import {
   getCertificateVisualVariant,
 } from "@/lib/certificate-visual-variants";
 import { getCertificateLayoutPreset } from "@/lib/certificate-layout-presets";
-import { CERTIFICATE_ELEMENT_PRESETS, createCertificateElementPreset } from "@/lib/certificate-element-presets";
+import { CERTIFICATE_ELEMENT_PRESETS, createCertificateElementPreset, createProficiCertificateElements } from "@/lib/certificate-element-presets";
 
 type CertificateTemplate = {
   id: number;
@@ -174,6 +174,9 @@ export function CertificateTemplateManager() {
     setActivePreset(preset);
     setVisualVariant(preset);
     commitFieldMappings(getCertificateLayoutPreset(preset));
+    if (preset === "profici") {
+      commitElements(createProficiCertificateElements());
+    }
   }
 
   function handleFieldDragStart(

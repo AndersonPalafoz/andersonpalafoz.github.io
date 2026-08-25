@@ -2102,3 +2102,9 @@
 - [x] Garantir código de verificação único e página pública segura para validar certificados internos e externos; certificados com `deletedAt` não são considerados válidos.
 - [x] Exibir estado de elegibilidade, código, QR Code, download e compartilhamento nas áreas admin, professor e aluno; documentação salva em `docs/certificacao-qr-code-2026-08-25.md`.
 - [x] Criar testes regressivos de emissão, QR Code, validação, duplicidade e autorização; 13 testes focados passaram, o build de produção foi aprovado e o layout mobile foi validado nos componentes integrados.
+
+## Modelo de certificado PROFICI enviado — 25/08/2026
+- [x] Extrair e documentar conteúdo, estilos, imagens, dimensões e posicionamento do DOCX de Adriana Marques de Oliveira; relatório técnico salvo em `docs/analise-modelo-certificado-profici-adriana-2026-08-25.md`.
+- [x] Criar preset PROFICI replicável com campos dinâmicos de aluno, curso, nível, período, carga horária, data, assinatura e código/QR de validação; camadas extraídas disponíveis no editor.
+- [x] Integrar o preset nas prévias, emissão administrativa/docente, área do aluno e PDF oficial sem alterar o arquivo original enviado.
+- [x] Validar fidelidade visual, exportação PDF, QR Code, responsividade e ausência de dados inventados; 9 testes focados e build de produção aprovados.
