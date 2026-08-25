@@ -51,6 +51,6 @@ describe("ContatoPage server rendering", () => {
     expect(markup).toContain('for="contact-message"');
     expect(markup).toContain('href="https://wa.me/5571991222257"');
     expect(markup).toContain('type="submit"');
-    expect(markup).toContain("Enviar por email");
+    expect(markup).toContain("Enviar mensagem");
   });
 });
