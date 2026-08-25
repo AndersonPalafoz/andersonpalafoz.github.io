@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 
     const zipContent = await zip.generateAsync({ type: "nodebuffer" });
 
-    return new NextResponse(zipContent, {
+    return new NextResponse(new Uint8Array(zipContent), {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": "attachment; filename=\"Meus_Certificados_Anderson_Palafoz.zip\"",

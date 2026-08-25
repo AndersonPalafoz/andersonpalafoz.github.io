@@ -2027,7 +2027,7 @@
 - [x] Exibir “Excluído por um administrador” no painel de anotações, no perfil do aluno e nas exportações, sem expor o conteúdo removido.
 - [x] Auditar o catálogo real de medalhas no banco ativo sem inserir dados fictícios; a consulta retornou catálogo vazio.
 - [x] Documentar limitações e recomendações para CRUD/arquivamento, regras estruturadas, auditoria, filtros e progresso pedagógico das medalhas.
-- [ ] Aprovar pelo administrador um catálogo inicial real antes de cadastrar medalhas; nenhuma medalha foi inventada ou inserida automaticamente.
+- [x] Aprovar pelo administrador um catálogo inicial real antes de cadastrar medalhas; o usuário autorizou a proposta e somente os quatro pilotos foram registrados pelo seed idempotente.
 
 ## Regressão visual no preview após reinício — 25/08/2026
 - [x] Auditar por que o preview está entregando a Home sem estilos, com links sem layout e logo sem dimensionamento, embora o build de produção tenha sido aprovado; a causa foi uma mistura de processos/artefatos do Next.js no preview.
@@ -2082,3 +2082,5 @@
 - [x] Corrigir o tipo `price` do curso auxiliar para o formato numeric string do PostgreSQL; o teste de payload foi atualizado e aprovado.
 - [x] Reexecutar testes focados após a integração dos pilotos; 5 arquivos e 11 testes passaram.
 - [x] Reexecutar o build de produção após a integração dos pilotos e da correção de tipagem; build aprovado.
+- [x] Corrigir o retorno binário do endpoint de download em lote para `Uint8Array`, mantendo compatibilidade com Response/Node/Vercel; build aprovado.
+- [x] Confirmar novamente os testes focados de medalhas, anotações e payload de certificado após as últimas alterações; 5 arquivos e 11 testes passaram.
