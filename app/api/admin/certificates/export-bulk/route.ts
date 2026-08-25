@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
         period: cert.period || undefined,
         coordinatorName: cert.coordinatorName || undefined,
         institutionName: cert.institutionName || undefined,
-        includeBranding: cert.includeSiteBranding ?? true,
+        includeSiteBranding: cert.includeSiteBranding ?? true,
         templateUrl: template?.templateUrl || undefined,
         fieldMappings,
       });
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
       const mergedPdfBytes = await mergedPdfDoc.save();
 
-      return new NextResponse(Buffer.from(mergedPdfBytes), {
+      return new NextResponse(new Uint8Array(mergedPdfBytes), {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="Certificados_Consolidados_${Date.now()}.pdf"`,
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
 
       const zipContent = await zip.generateAsync({ type: "nodebuffer" });
 
-      return new NextResponse(zipContent, {
+      return new NextResponse(new Uint8Array(zipContent), {
         headers: {
           "Content-Type": "application/zip",
           "Content-Disposition": `attachment; filename="Certificados_Lote_${Date.now()}.zip"`,
