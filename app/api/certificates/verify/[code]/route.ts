@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { eq, isNull, and } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: { code: st
       .from(certificates)
       .leftJoin(users, eq(certificates.userId, users.id))
       .leftJoin(courses, eq(certificates.courseId, courses.id))
-      .where(eq(certificates.certificateCode, code))
+      .where(and(eq(certificates.certificateCode, code), isNull(certificates.deletedAt)))
       .limit(1);
 
     if (cert.length === 0) {

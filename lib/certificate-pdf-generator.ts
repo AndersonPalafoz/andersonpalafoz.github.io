@@ -1,4 +1,6 @@
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
+import { getCertificateVerificationUrl } from "@/lib/certificate-qr";
 
 export interface CertificatePdfElement {
   id: string;
@@ -40,6 +42,7 @@ export interface CertificatePdfOptions {
   logoUrl?: string;
   fontSize?: number;
   additionalElements?: CertificatePdfElement[];
+  verificationCode?: string;
 }
 
 export async function generateCertificatePdf(options: CertificatePdfOptions) {
@@ -156,6 +159,23 @@ export async function generateCertificatePdf(options: CertificatePdfOptions) {
     doc.setFontSize(Math.max(7, Math.min(30, element.size || 12)));
     doc.setTextColor(element.color || "#333333");
     doc.text(element.content || "Elemento", x, y, { align: element.align || "center", angle: element.rotation || 0 });
+  }
+
+  if (options.verificationCode) {
+    try {
+      const qrDataUrl = await QRCode.toDataURL(getCertificateVerificationUrl(options.verificationCode), {
+        errorCorrectionLevel: "M",
+        margin: 1,
+        width: 180,
+        color: { dark: "#111827", light: "#ffffff" },
+      });
+      doc.addImage(qrDataUrl, "PNG", pageWidth - 120, pageHeight - 105, 72, 72);
+      doc.setFontSize(7);
+      doc.setTextColor("#666666");
+      doc.text("Validar documento", pageWidth - 120, pageHeight - 25);
+    } catch (error) {
+      console.warn("QR Code de validação ignorado na exportação:", error);
+    }
   }
 
   // Salvar arquivo

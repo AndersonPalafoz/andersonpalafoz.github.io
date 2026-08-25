@@ -1,9 +1,10 @@
 import { db } from "@/lib/db";
 import { certificates, courses, users } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Award, CheckCircle2, Download, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { generateCertificateQrDataUrl } from "@/lib/certificate-qr";
 
 interface Props {
   params: { code: string };
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<any> {
     .from(certificates)
     .leftJoin(users, eq(certificates.userId, users.id))
     .leftJoin(courses, eq(certificates.courseId, courses.id))
-    .where(eq(certificates.certificateCode, code))
+    .where(and(eq(certificates.certificateCode, code), isNull(certificates.deletedAt)))
     .limit(1);
 
   const title = cert.length > 0 ? `Certificado de Conclusão — ${cert[0].studentName} (${cert[0].courseTitle})` : "Verificação de Certificado | Anderson Palafoz";
@@ -66,7 +67,7 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
     .from(certificates)
     .leftJoin(users, eq(certificates.userId, users.id))
     .leftJoin(courses, eq(certificates.courseId, courses.id))
-    .where(eq(certificates.certificateCode, code))
+    .where(and(eq(certificates.certificateCode, code), isNull(certificates.deletedAt)))
     .limit(1);
 
   if (cert.length === 0) {
@@ -88,6 +89,9 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
 
   const item = cert[0];
   const downloadUrl = item.signedPdfUrl || item.certificateUrl || "#";
+  const qrDataUrl = item.certificateCode
+    ? await generateCertificateQrDataUrl(item.certificateCode, { width: 180, margin: 1 })
+    : null;
 
   return (
     <div className="site-shell min-h-screen bg-background pb-16 text-foreground">
@@ -124,9 +128,17 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-border/60">
-            <p className="text-xs text-muted-foreground">Emitido digitalmente com assinatura oficial da plataforma.</p>
-            {downloadUrl !== "#" && (
+          <div className="flex flex-col gap-4 pt-4 border-t border-border/60 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex items-center gap-3">
+              {qrDataUrl && <img src={qrDataUrl} alt="QR Code para validar este certificado" className="h-20 w-20 rounded-lg border border-border bg-white p-1" />}
+              <div>
+                <p className="text-xs font-bold text-foreground">Validação pública</p>
+                <p className="mt-1 max-w-xs text-xs text-muted-foreground">Escaneie o QR Code ou use o código de autenticidade acima.</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-start gap-3 sm:items-end">
+              <p className="text-xs text-muted-foreground">Emitido digitalmente com assinatura oficial da plataforma.</p>
+              {downloadUrl !== "#" && (
               <a
                 href={downloadUrl}
                 target="_blank"
@@ -135,7 +147,8 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
               >
                 <Download size={15} /> Baixar PDF Oficial
               </a>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </main>

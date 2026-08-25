@@ -2095,3 +2095,10 @@
 - [x] Alterar o formulário de contato para persistir mensagens na área administrativa, sem depender de envio por e-mail; respostas internas são gravadas com data e responsável no painel.
 - [x] Auditar as rotas protegidas em produção usando a sessão autenticada do Vercel; nenhuma ação destrutiva ou concessão real foi executada.
 - [ ] Investigar a falha de login no ambiente local, comparando URL de callback, variáveis OAuth e configuração de desenvolvimento, sem alterar as credenciais de produção.
+
+## Certificação automática com QR Code — 25/08/2026
+- [x] Integrar a emissão automática ao fluxo de conclusão de curso em 100%, com idempotência e sem emitir para cursos sem aulas concluídas; o endpoint de conclusão já reutiliza `issueCertificateIfEligible`.
+- [x] Incluir QR Code e URL pública de validação nos PDFs gerados por todos os modelos e editores compatíveis, incluindo o gerador pdf-lib e o gerador jsPDF dos protótipos.
+- [x] Garantir código de verificação único e página pública segura para validar certificados internos e externos; certificados com `deletedAt` não são considerados válidos.
+- [x] Exibir estado de elegibilidade, código, QR Code, download e compartilhamento nas áreas admin, professor e aluno; documentação salva em `docs/certificacao-qr-code-2026-08-25.md`.
+- [x] Criar testes regressivos de emissão, QR Code, validação, duplicidade e autorização; 13 testes focados passaram, o build de produção foi aprovado e o layout mobile foi validado nos componentes integrados.

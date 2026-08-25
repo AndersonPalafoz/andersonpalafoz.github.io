@@ -10,6 +10,7 @@ import {
   FileText,
 } from "lucide-react";
 import { CertificateShareButton } from "@/components/certificate-share-button";
+import { CertificateVerificationQr } from "@/components/certificate-verification-qr";
 import { toast } from "sonner";
 
 type CertificateItem = {
@@ -277,6 +278,7 @@ export function StudentCertificatesGallery() {
                   <p className="text-xs font-mono text-muted-foreground">
                     Código: {cert.certificateCode || "VERIFICADO"}
                   </p>
+                  <CertificateVerificationQr code={cert.certificateCode} compact />
                 </div>
 
                 <div className="mt-6 space-y-4 pt-4 border-t border-border/60">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Award, Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { CertificateVerificationQr } from "@/components/certificate-verification-qr";
 
 interface CertificateModalProps {
   courseId: number;
@@ -80,6 +81,8 @@ export function CertificateModal({ courseId, courseName, percentage }: Certifica
               </p>
               <p className="text-xs text-gray-400 pt-1">Ministrado pelo Prof. {certData.instructor}</p>
             </div>
+
+            <CertificateVerificationQr code={certData.certificateCode} />
 
             <div className="pt-6 border-t border-gray-200 flex items-center justify-between text-xs text-gray-500">
               <div>
