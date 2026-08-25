@@ -9,4 +9,14 @@ describe("external class authorization contract", () => {
     expect(source).toContain("return extClass.teacherId === dbUser.id");
     expect(source).toContain("session.user.role === \"admin\"");
   });
+
+  it("keeps administrative and teaching scopes separate", () => {
+    const source = readFileSync(resolve(process.cwd(), "lib/admin-auth.ts"), "utf8");
+    const adminBlock = source.slice(source.indexOf("export async function requireAdmin"), source.indexOf("export async function requireSuperAdmin"));
+    const teachingBlock = source.slice(source.indexOf("export async function requireTeacherOrAdmin"), source.indexOf("/**"));
+    expect(adminBlock).not.toContain('role === "professor"');
+    expect(teachingBlock).toContain('role === "professor"');
+    expect(source).toContain("canManageCourse");
+    expect(source).toContain("canManageExternalClass");
+  });
 });

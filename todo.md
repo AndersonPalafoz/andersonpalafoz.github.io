@@ -2229,14 +2229,14 @@
 
 ## Auditoria de poderes e evolução do painel administrativo — 25/08/2026
 - [x] Inventariar todas as operações atualmente disponíveis para professores e administradores.
-- [ ] Criar matriz de permissões professor versus administrador com escopo global e ações avançadas para administradores.
+- [x] Criar matriz de permissões professor versus administrador com escopo global e ações avançadas para administradores.
 - [x] Incorporar no painel administrativo as operações de turmas, alunos, tarefas, speaking, certificados e relatórios disponíveis ao professor.
 - [x] Atualizar sidebar, mobile navigation, dashboard e subáreas administrativas com organização orientada a tarefas.
-- [ ] Adicionar controles de escopo, auditoria e testes de autorização sem ampliar acesso de alunos ou visitantes.
+- [x] Adicionar controles de escopo, auditoria e testes de autorização sem ampliar acesso de alunos ou visitantes.
 - [x] Validar layout responsivo, acessibilidade, regressão e build.
 
 ## Evolução operacional de turmas externas — 25/08/2026
-- [ ] Sincronizar o checkpoint atual com o GitHub e preparar a publicação da mesma versão no Vercel.
+- [x] Sincronizar o checkpoint atual com o GitHub e preparar a publicação da mesma versão no Vercel.
 - [x] Reorganizar a visão principal de turmas externas com KPIs operacionais, próxima aula e pendências acionáveis.
 - [x] Simplificar o título e tornar a tela inicial orientada por tarefas, mantendo a identificação institucional nos cards.
 - [ ] Aprimorar o cadastro de turmas com validação de datas, resumo de calendário, campos de horário estruturados e cálculo de faltas permitidas.
@@ -2284,7 +2284,7 @@
 - [x] Aplicar no Neon principal as migrações aditivas pendentes de `courses` e `users.must_change_password`.
 - [x] Confirmar 161 arquivos de teste e 484 testes aprovados após a sincronização do banco.
 - [x] Confirmar build de produção Next.js concluído com sucesso.
-- [ ] Sincronizar checkpoint validado com GitHub e preparar publicação no Vercel.
+- [x] Sincronizar checkpoint validado com GitHub e preparar publicação no Vercel.
 
 ## Auditoria final de permissões — 25/08/2026
 - [x] Restringir `requireAdmin` a admin, super_admin e super-administrador, mantendo professores em `requireTeacherOrAdmin`.
