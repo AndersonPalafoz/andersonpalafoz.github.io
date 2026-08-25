@@ -30,25 +30,36 @@ export default async function DashboardPage() {
   let externalAcademic: Array<{ className: string; courseName: string; hasUnits: boolean; unitCount: number; gradingScope: string; passingAverage: number; units: Array<{ number: number; average: number | null; minimum: number; ratio: number }> }> = [];
 
   if (!isNaN(userId) && userId > 0) {
-    [enrollments, certificates, atividades] = await Promise.all([
+    const results = await Promise.allSettled([
       getUserEnrollments(userId),
       getCertificates(userId),
       getUserActivityProgress(userId),
     ]);
-    const account = session?.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
-    if (account?.email) {
-      const externalRecords = await db.query.externalStudents.findMany({ where: eq(externalStudents.email, account.email) });
-      const classIds = [...new Set(externalRecords.map((student) => student.externalClassId))];
-      if (classIds.length > 0) {
-        const classes = await db.query.externalClasses.findMany({ where: inArray(externalClasses.id, classIds) });
-        const gradeRows = await db.query.externalClassGrades.findMany({ where: inArray(externalClassGrades.studentId, externalRecords.map((student) => student.id)) });
-        externalAcademic = classes.map((externalClass) => {
-          const records = externalRecords.filter((student) => student.externalClassId === externalClass.id);
-          const grades = gradeRows.filter((grade) => records.some((student) => student.id === grade.studentId));
-          const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, grades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
-          return { className: externalClass.className, courseName: externalClass.courseName, hasUnits: Boolean(externalClass.hasUnits), unitCount: result.units.length || 1, gradingScope: result.scope, passingAverage: result.passingAverage, units: result.units.map((unit) => ({ number: unit.unit, average: unit.average, minimum: unit.passingAverage, ratio: unit.average === null ? 0 : Math.min(100, (unit.average / 10) * 100) })) };
-        });
+    if (results[0].status === "fulfilled") enrollments = results[0].value;
+    if (results[1].status === "fulfilled") certificates = results[1].value;
+    if (results[2].status === "fulfilled") atividades = results[2].value;
+    results.forEach((result, index) => {
+      if (result.status === "rejected") console.error(`[Dashboard] Falha na consulta ${index + 1}:`, result.reason);
+    });
+
+    try {
+      const account = session?.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
+      if (account?.email) {
+        const externalRecords = await db.query.externalStudents.findMany({ where: eq(externalStudents.email, account.email) });
+        const classIds = [...new Set(externalRecords.map((student) => student.externalClassId))];
+        if (classIds.length > 0) {
+          const classes = await db.query.externalClasses.findMany({ where: inArray(externalClasses.id, classIds) });
+          const gradeRows = await db.query.externalClassGrades.findMany({ where: inArray(externalClassGrades.studentId, externalRecords.map((student) => student.id)) });
+          externalAcademic = classes.map((externalClass) => {
+            const records = externalRecords.filter((student) => student.externalClassId === externalClass.id);
+            const grades = gradeRows.filter((grade) => records.some((student) => student.id === grade.studentId));
+            const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, grades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
+            return { className: externalClass.className, courseName: externalClass.courseName, hasUnits: Boolean(externalClass.hasUnits), unitCount: result.units.length || 1, gradingScope: result.scope, passingAverage: result.passingAverage, units: result.units.map((unit) => ({ number: unit.unit, average: unit.average, minimum: unit.passingAverage, ratio: unit.average === null ? 0 : Math.min(100, (unit.average / 10) * 100) })) };
+          });
+        }
       }
+    } catch (error) {
+      console.error("[Dashboard] Falha ao carregar dados de turmas externas:", error);
     }
   }
 
@@ -57,7 +68,10 @@ export default async function DashboardPage() {
       .filter((enrollment) => enrollment.status === "active")
       .map(async (enrollment) => ({
         ...enrollment,
-        resume: enrollment.course ? await getResumeLesson(userId, enrollment.course.id) : null,
+        resume: enrollment.course ? await getResumeLesson(userId, enrollment.course.id).catch((error) => {
+          console.error("[Dashboard] Falha ao carregar a última aula:", error);
+          return null;
+        }) : null,
       })),
   );
   const atividadesPendentes = atividades.filter((activity) => activity.status !== "completed");
