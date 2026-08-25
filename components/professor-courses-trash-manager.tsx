@@ -229,9 +229,9 @@ export function ProfessorCoursesTrashManager({ initialCourses }: { initialCourse
                   </Button>
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="outline"
                     onClick={() => setConfirmModal({ isOpen: true, type: "batch", permanent: true })}
-                    className="h-9 text-xs font-bold rounded-xl gap-1"
+                    className="h-9 border-red-600 bg-red-600 text-white hover:bg-red-700 hover:text-white text-xs font-bold rounded-xl gap-1"
                   >
                     <Trash2 size={13} /> Excluir ({selectedIds.length})
                   </Button>
@@ -281,10 +281,10 @@ export function ProfessorCoursesTrashManager({ initialCourses }: { initialCourse
                       </Button>
                       <Button
                         size="sm"
-                        variant="destructive"
+                        variant="outline"
                         onClick={() => setConfirmModal({ isOpen: true, type: "single", permanent: true, id: course.id, title: course.title })}
                         disabled={actionLoading === course.id}
-                        className="h-9 gap-1 text-xs font-bold rounded-xl"
+                        className="h-9 border-red-600 bg-red-600 text-white hover:bg-red-700 hover:text-white gap-1 text-xs font-bold rounded-xl"
                       >
                         <Trash2 size={13} /> Excluir Permanentemente
                       </Button>
@@ -319,9 +319,9 @@ export function ProfessorCoursesTrashManager({ initialCourses }: { initialCourse
                 Cancelar
               </Button>
               <Button
-                variant="destructive"
+                variant="outline"
                 onClick={() => void executeConfirmedAction()}
-                className="rounded-xl text-xs font-bold gap-1 bg-red-600 hover:bg-red-700 text-white"
+                className="rounded-xl text-xs font-bold gap-1 border-red-600 bg-red-600 text-white hover:bg-red-700 hover:text-white"
               >
                 <Trash2 size={14} /> Sim, Excluir Permanentemente
               </Button>
