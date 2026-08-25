@@ -88,6 +88,8 @@ export default async function TeacherDashboardPage() {
           studentsCount={data.stats.totalStudents}
           materialsCount={data.stats.totalMaterials}
           enrollmentsCount={data.stats.totalEnrollments}
+          contextLabel="Visão docente"
+          contextDescription="Acompanhe o alcance dos seus cursos, a produção de materiais e as matrículas ativas."
         />
 
         {/* Motor de Busca Acadêmica do Professor */}

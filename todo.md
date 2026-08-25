@@ -2292,3 +2292,9 @@
 
 ## Resend sem domínio próprio — 25/08/2026
 - [ ] Registrar um domínio próprio e adicionar os registros DNS exigidos pelo Resend antes de trocar `RESEND_FROM_EMAIL` para um remetente profissional.
+
+## Atualização integrada dos painéis — 25/08/2026
+- [x] Atualizar o componente compartilhado de métricas com hierarquia visual, contexto por papel e responsividade sem rolagem lateral.
+- [x] Melhorar a navegação mobile e os cabeçalhos dos painéis de aluno, professor e administrador.
+- [x] Adicionar estados de carregamento, erro, atualização e atalhos de ação com feedback consistente nos três painéis.
+- [x] Validar rotas protegidas, acessibilidade, responsividade, testes e build após a atualização dos painéis.
