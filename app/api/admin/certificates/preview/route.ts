@@ -43,7 +43,7 @@ export async function POST(req: Request) {
       const student = await db.query.users.findFirst({ where: eq(users.id, Number(userId)) });
       if (student) {
         studentNameVal = student.name || student.email || "Aluno";
-        studentCpfVal = student.cpf || "";
+        studentCpfVal = (student as { cpf?: string | null }).cpf || "";
       }
     }
 
@@ -75,13 +75,11 @@ export async function POST(req: Request) {
       requestedComposition || selectedTemplate?.fieldMappings || null
     );
     if (customStudentNameSize || customStudentNameColor) {
+      const studentNameMapping = composition.fieldMappings.studentName || { x: 70, y: 355, size: 28, maxWidth: 700, weight: "bold" as const };
       composition.fieldMappings.studentName = {
-        ...composition.fieldMappings.studentName,
-        size: customStudentNameSize
-          ? Number(customStudentNameSize)
-          : composition.fieldMappings.studentName?.size,
-        color:
-          customStudentNameColor || composition.fieldMappings.studentName?.color,
+        ...studentNameMapping,
+        size: customStudentNameSize ? Number(customStudentNameSize) : studentNameMapping.size,
+        color: customStudentNameColor ? String(customStudentNameColor) : studentNameMapping.color,
       };
     }
 

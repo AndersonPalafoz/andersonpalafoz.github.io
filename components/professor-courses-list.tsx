@@ -455,7 +455,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                 Cancelar
               </Button>
               <Button
-                variant="destructive"
+                variant="default"
                 onClick={() => void handlePermanentDelete()}
                 className="rounded-xl text-xs font-bold bg-red-600 hover:bg-red-700 text-white gap-1"
               >

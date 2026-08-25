@@ -273,7 +273,12 @@ export default function AdminMateriaisReal() {
 
         {showForm && (
           <div className="bg-card text-card-foreground p-8 rounded-2xl border border-border shadow-sm">
-            <h2 className="text-xl font-bold mb-6">{editingId ? "Editar Material" : "Cadastrar Novo Material"}</h2>
+            <h2 className="text-xl font-bold mb-3">{editingId ? "Editar Material" : "Cadastrar Novo Material"}</h2>
+            <div className="mb-6 grid grid-cols-1 gap-2 rounded-2xl border border-border bg-muted/30 p-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-card px-3 py-2 text-xs font-black text-foreground shadow-sm"><span className="mr-2 text-blue-600">01</span>Identificação</div>
+              <div className="rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground"><span className="mr-2">02</span>Arquivo e acesso</div>
+              <div className="rounded-xl px-3 py-2 text-xs font-bold text-muted-foreground"><span className="mr-2">03</span>Resumo e publicação</div>
+            </div>
             <form onSubmit={handleSave} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -330,7 +335,7 @@ export default function AdminMateriaisReal() {
 
               <div>
                 <label className="block text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Link Direto ou Arquivo do Google Drive / S3</label>
-                <div className="flex gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <input
                     value={formData.fileUrl}
                     onChange={(e) => setFormData({ ...formData, fileUrl: e.target.value })}
@@ -342,6 +347,10 @@ export default function AdminMateriaisReal() {
                     <span>Enviar Arquivo</span>
                     <input type="file" className="hidden" onChange={handleFileUpload} />
                   </label>
+                </div>
+                <div className="mt-3 rounded-2xl border border-border/70 bg-muted/30 p-3">
+                  <div className="flex items-center justify-between gap-3"><div className="flex min-w-0 items-center gap-2"><FileText size={16} className="shrink-0 text-blue-600" /><span className="truncate text-xs font-bold text-foreground">{formData.fileUrl ? "Arquivo vinculado ao material" : "Nenhum arquivo vinculado ainda"}</span></div><span className={`rounded-full px-2 py-1 text-[10px] font-black ${formData.fileUrl ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{formData.fileUrl ? "Pronto" : "Pendente"}</span></div>
+                  <p className="mt-1 truncate text-[11px] text-muted-foreground">{formData.fileUrl || "Cole um link ou use o botão Enviar Arquivo acima."}</p>
                 </div>
               </div>
 

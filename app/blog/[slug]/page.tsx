@@ -97,7 +97,7 @@ export default function BlogArticlePage({
 
   if (loadingArticle) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-900 flex items-center justify-center">
         <div className="flex items-center gap-2 text-red-600">
           <Loader2 className="animate-spin" size={24} />
           <span>Carregando artigo...</span>
@@ -108,9 +108,9 @@ export default function BlogArticlePage({
 
   if (!article || !article.published) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-4">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Artigo não encontrado</h1>
-        <p className="text-gray-600 mb-6">O artigo solicitado pode ter sido removido ou não está publicado.</p>
+      <div className="min-h-screen bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Artigo não encontrado</h1>
+        <p className="text-gray-600 dark:text-slate-400 mb-6">O artigo solicitado pode ter sido removido ou não está publicado.</p>
         <Link href="/blog" className="text-red-600 font-semibold hover:underline">
           ← Voltar para o Blog
         </Link>
@@ -129,7 +129,7 @@ export default function BlogArticlePage({
     : "5.0";
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Breadcrumbs
           items={[
@@ -145,11 +145,11 @@ export default function BlogArticlePage({
             </span>
           )}
 
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900 dark:text-white leading-tight">
             {article.title}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-6 text-gray-600 mb-8 text-sm border-b border-gray-100 pb-6">
+          <div className="flex flex-wrap items-center gap-6 text-gray-600 dark:text-slate-400 mb-8 text-sm border-b border-gray-100 dark:border-slate-800 pb-6">
             <div className="flex items-center gap-2">
               <Calendar size={16} className="text-red-600" />
               <span>{publishedDate}</span>
@@ -166,54 +166,54 @@ export default function BlogArticlePage({
             </div>
           </div>
 
-          <div className="prose prose-slate max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed text-lg mb-12">
+          <div className="prose prose-slate max-w-none text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed text-lg mb-12">
             {article.content}
           </div>
         </article>
 
         {/* Seção de Comentários e Avaliações */}
-        <section className="mt-16 pt-12 border-t border-gray-200">
+        <section className="mt-16 pt-12 border-t border-gray-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <MessageSquare className="text-red-600" size={24} />
               Avaliações e Comentários ({comments.length})
             </h3>
           </div>
 
           {/* Formulário de Envio */}
-          <div className="bg-gray-50 border border-gray-200 p-6 md:p-8 rounded-2xl mb-12 shadow-sm">
-            <h4 className="text-lg font-bold text-gray-900 mb-2">Deixe sua avaliação e comentário</h4>
-            <p className="text-sm text-gray-600 mb-6">
+          <div className="bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-800 p-6 md:p-8 rounded-2xl mb-12 shadow-sm">
+            <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Deixe sua avaliação e comentário</h4>
+            <p className="text-sm text-gray-600 dark:text-slate-400 mb-6">
               Sua opinião é fundamental para a melhoria contínua dos conteúdos acadêmicos.
             </p>
 
             <form onSubmit={handleCommentSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Seu Nome *</label>
+                  <label className="block text-xs font-semibold uppercase text-gray-600 dark:text-slate-400 mb-1">Seu Nome *</label>
                   <input
                     type="text"
                     required
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     placeholder="Ex: Maria Silva"
-                    className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white outline-none focus:border-red-600 text-sm transition"
+                    className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-red-600 text-sm transition"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Seu E-mail (opcional)</label>
+                  <label className="block text-xs font-semibold uppercase text-gray-600 dark:text-slate-400 mb-1">Seu E-mail (opcional)</label>
                   <input
                     type="email"
                     value={userEmail}
                     onChange={(e) => setUserEmail(e.target.value)}
                     placeholder="seu.email@exemplo.com"
-                    className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white outline-none focus:border-red-600 text-sm transition"
+                    className="w-full h-11 px-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-red-600 text-sm transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Avaliação por Estrelas</label>
+                <label className="block text-xs font-semibold uppercase text-gray-600 dark:text-slate-400 mb-1">Avaliação por Estrelas</label>
                 <div className="flex items-center gap-2 py-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -224,23 +224,23 @@ export default function BlogArticlePage({
                     >
                       <Star
                         size={28}
-                        className={star <= rating ? "fill-amber-500 text-amber-500" : "text-gray-300"}
+                        className={star <= rating ? "fill-amber-500 text-amber-500" : "text-gray-300 dark:text-slate-600"}
                       />
                     </button>
                   ))}
-                  <span className="ml-2 text-sm font-semibold text-gray-700">{rating} de 5 estrelas</span>
+                  <span className="ml-2 text-sm font-semibold text-gray-700 dark:text-slate-300">{rating} de 5 estrelas</span>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase text-gray-600 mb-1">Seu Comentário *</label>
+                <label className="block text-xs font-semibold uppercase text-gray-600 dark:text-slate-400 mb-1">Seu Comentário *</label>
                 <textarea
                   required
                   rows={4}
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Escreva sua reflexão, dúvida ou contribuição sobre o artigo..."
-                  className="w-full p-4 rounded-xl border border-gray-300 bg-white outline-none focus:border-red-600 text-sm transition resize-none"
+                  className="w-full p-4 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 outline-none focus:border-red-600 text-sm transition resize-none"
                 />
               </div>
 
@@ -266,21 +266,21 @@ export default function BlogArticlePage({
 
           {/* Lista de Comentários */}
           {loadingComments ? (
-            <div className="text-center py-8 text-gray-500">Carregando comentários...</div>
+            <div className="text-center py-8 text-gray-500 dark:text-slate-400">Carregando comentários...</div>
           ) : comments.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-100">
-              <MessageSquare size={48} className="mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-600 font-medium">Nenhum comentário ainda.</p>
-              <p className="text-sm text-gray-400 mt-1">Seja o primeiro a avaliar e comentar este artigo!</p>
+            <div className="text-center py-12 bg-gray-50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+              <MessageSquare size={48} className="mx-auto text-gray-300 dark:text-slate-600 mb-3" />
+              <p className="text-gray-600 dark:text-slate-400 font-medium">Nenhum comentário ainda.</p>
+              <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">Seja o primeiro a avaliar e comentar este artigo!</p>
             </div>
           ) : (
             <div className="space-y-6">
               {comments.map((c) => (
-                <div key={c.id} className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm space-y-3 transition hover:border-red-200">
+                <div key={c.id} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm space-y-3 transition hover:border-red-200">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h5 className="font-bold text-gray-900">{c.userName}</h5>
-                      <span className="text-xs text-gray-400">
+                      <h5 className="font-bold text-gray-900 dark:text-white">{c.userName}</h5>
+                      <span className="text-xs text-gray-400 dark:text-slate-500">
                         {new Date(c.createdAt).toLocaleDateString("pt-BR", {
                           day: "numeric",
                           month: "short",
@@ -293,12 +293,12 @@ export default function BlogArticlePage({
                         <Star
                           key={star}
                           size={16}
-                          className={star <= c.rating ? "fill-amber-500 text-amber-500" : "text-gray-200"}
+                          className={star <= c.rating ? "fill-amber-500 text-amber-500" : "text-gray-200 dark:text-slate-700"}
                         />
                       ))}
                     </div>
                   </div>
-                  <p className="text-gray-700 text-sm leading-relaxed">{c.comment}</p>
+                  <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed">{c.comment}</p>
                 </div>
               ))}
             </div>

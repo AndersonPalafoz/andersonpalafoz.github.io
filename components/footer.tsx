@@ -20,12 +20,12 @@ const resources = [
 
 export function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-slate-950 text-white">
+    <footer className="relative overflow-hidden bg-slate-950 text-white shadow-[0_-20px_70px_rgba(15,23,42,0.1)]">
       <div className="pointer-events-none absolute -right-32 -top-40 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
       <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
         <div className="grid gap-10 lg:grid-cols-[1.35fr_0.8fr_0.9fr_1.2fr] lg:gap-14">
           <div className="max-w-sm space-y-5">
-            <Link href="/" className="inline-flex rounded-xl bg-white px-3 py-2 transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
+            <Link href="/" className="footer-logo-badge inline-flex rounded-2xl border border-white/10 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
               <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain" loading="lazy" />
             </Link>
             <p className="text-sm leading-7 text-slate-300">Ensino de inglês, materiais autorais e formação acadêmica para aprender com clareza, prática e propósito.</p>
@@ -36,8 +36,8 @@ export function Footer() {
             </div>
           </div>
 
-          <div><h2 className="text-xs font-black uppercase tracking-[0.18em] text-red-300">Navegação</h2><ul className="mt-5 space-y-3">{navigation.map(([label, href]) => <li key={href}><Link href={href} className="group inline-flex items-center gap-1 text-sm text-slate-300 transition hover:text-white">{label}<ArrowUpRight size={13} className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></Link></li>)}</ul></div>
-          <div><h2 className="text-xs font-black uppercase tracking-[0.18em] text-red-300">Recursos</h2><ul className="mt-5 space-y-3">{resources.map(([label, href]) => <li key={href}><Link href={href} className="group inline-flex items-center gap-1 text-sm text-slate-300 transition hover:text-white">{label}<ArrowUpRight size={13} className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></Link></li>)}</ul></div>
+          <div className="rounded-2xl border border-white/5 bg-white/[0.025] p-4 sm:p-5"><h2 className="text-xs font-black uppercase tracking-[0.18em] text-red-300">Navegação</h2><ul className="mt-5 space-y-3">{navigation.map(([label, href]) => <li key={href}><Link href={href} className="group inline-flex items-center gap-1 text-sm text-slate-300 transition hover:text-white">{label}<ArrowUpRight size={13} className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></Link></li>)}</ul></div>
+          <div className="rounded-2xl border border-white/5 bg-white/[0.025] p-4 sm:p-5"><h2 className="text-xs font-black uppercase tracking-[0.18em] text-red-300">Recursos</h2><ul className="mt-5 space-y-3">{resources.map(([label, href]) => <li key={href}><Link href={href} className="group inline-flex items-center gap-1 text-sm text-slate-300 transition hover:text-white">{label}<ArrowUpRight size={13} className="opacity-0 transition group-hover:translate-x-0.5 group-hover:opacity-100" /></Link></li>)}</ul></div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 sm:p-6"><h2 className="text-xs font-black uppercase tracking-[0.18em] text-red-300">Fale comigo</h2><ul className="mt-5 space-y-4 text-sm"> <li className="flex items-start gap-3"><Mail size={18} className="mt-0.5 shrink-0 text-red-300" /><a href="mailto:palafozanderson@gmail.com" className="break-all text-slate-200 transition hover:text-white">palafozanderson@gmail.com</a></li><li className="flex items-start gap-3"><Phone size={18} className="mt-0.5 shrink-0 text-red-300" /><a href="https://wa.me/5571991222257" target="_blank" rel="noopener noreferrer" className="text-slate-200 transition hover:text-white">(71) 9 9122-2257</a></li><li className="flex items-start gap-3"><MapPin size={18} className="mt-0.5 shrink-0 text-red-300" /><span className="text-slate-200">Salvador, Bahia — Brasil</span></li></ul></div>
         </div>
 

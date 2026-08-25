@@ -160,11 +160,11 @@ export default function AdminEnrollmentsPage() {
       <header className="border-b border-border bg-card text-card-foreground">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5 sm:px-6">
           <div>
-            <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 hover:text-red-600">
+            <Link href="/admin" className="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-gray-500 dark:text-slate-400 hover:text-red-600">
               <ChevronLeft size={16} /> Voltar ao painel
             </Link>
-            <h1 className="text-2xl font-black text-gray-900">Matrículas</h1>
-            <p className="mt-1 text-sm text-gray-500">Vincule alunos aos cursos e preserve o histórico em caso de desistência.</p>
+            <h1 className="text-2xl font-black text-gray-900 dark:text-white">Matrículas</h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Vincule alunos aos cursos e preserve o histórico em caso de desistência.</p>
           </div>
           <div className="hidden h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 sm:flex"><GraduationCap size={26} /></div>
         </div>
@@ -178,26 +178,26 @@ export default function AdminEnrollmentsPage() {
               <div className="flex items-center gap-3 text-red-600">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50"><AlertTriangle size={24} /></div>
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900">Confirmar Desvinculação</h3>
-                  <p className="text-xs text-gray-500">Esta ação suspenderá o acesso do aluno ao curso selecionado.</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">Confirmar Desvinculação</h3>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">Esta ação suspenderá o acesso do aluno ao curso selecionado.</p>
                 </div>
               </div>
 
               <div className="rounded-xl bg-background p-4 border border-border space-y-2 text-sm">
-                <p><strong className="text-gray-900">Aluno:</strong> {confirmingEnrollment.student.name || confirmingEnrollment.student.email}</p>
-                <p><strong className="text-gray-900">Curso:</strong> {confirmingEnrollment.course.title}</p>
+                <p><strong className="text-gray-900 dark:text-white">Aluno:</strong> {confirmingEnrollment.student.name || confirmingEnrollment.student.email}</p>
+                <p><strong className="text-gray-900 dark:text-white">Curso:</strong> {confirmingEnrollment.course.title}</p>
                 <div className="pt-2 border-t border-border">
                   <div className="flex justify-between text-xs font-semibold mb-1">
-                    <span className="text-gray-600">Progresso atual do aluno:</span>
+                    <span className="text-gray-600 dark:text-slate-400">Progresso atual do aluno:</span>
                     <span className="text-red-600 font-bold">{confirmingEnrollment.progress}% concluído</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+                  <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-slate-800 overflow-hidden">
                     <div className="h-full bg-red-600 rounded-full" style={{ width: `${Math.min(100, Math.max(0, confirmingEnrollment.progress))}%` }} />
                   </div>
                 </div>
               </div>
 
-              <p className="text-xs text-gray-500">O histórico acadêmico e as notas serão mantidos no banco de dados, mas o aluno perderá o acesso ativo ao curso.</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">O histórico acadêmico e as notas serão mantidos no banco de dados, mas o aluno perderá o acesso ativo ao curso.</p>
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button type="button" variant="outline" onClick={() => setConfirmingEnrollment(null)}>Cancelar</Button>
@@ -213,21 +213,21 @@ export default function AdminEnrollmentsPage() {
           <div className="mb-5 flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600"><UserPlus size={20} /></div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Matricular aluno em um curso</h2>
-              <p className="mt-1 text-sm text-gray-500">A nova matrícula começa com progresso de 0%. Matrículas desvinculadas podem ser reativadas.</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Matricular aluno em um curso</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">A nova matrícula começa com progresso de 0%. Matrículas desvinculadas podem ser reativadas.</p>
             </div>
           </div>
           <form onSubmit={handleEnroll} className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
-            <label className="block text-sm font-semibold text-gray-700">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300">
               Aluno
-              <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
+              <select value={studentId} onChange={(event) => setStudentId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 dark:text-white outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
                 <option value="">Selecione um aluno</option>
                 {data?.students.map((student) => <option key={student.id} value={student.id}>{student.name || student.email || `Usuário #${student.id}`} — {student.approvalStatus === "approved" ? "Aprovado" : "Acesso pendente"}</option>)}
               </select>
             </label>
-            <label className="block text-sm font-semibold text-gray-700">
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300">
               Curso
-              <select value={courseId} onChange={(event) => setCourseId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
+              <select value={courseId} onChange={(event) => setCourseId(event.target.value)} className="mt-2 h-11 w-full rounded-xl border border-gray-300 dark:border-slate-700 bg-card text-card-foreground px-3 text-sm font-normal text-gray-900 dark:text-white outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100">
                 <option value="">Selecione um curso</option>
                 {data?.courses.map((course) => <option key={course.id} value={course.id}>{course.title} — {course.level}</option>)}
               </select>
@@ -242,15 +242,15 @@ export default function AdminEnrollmentsPage() {
         <section className="rounded-2xl border border-border bg-card text-card-foreground p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Matrículas registradas</h2>
-              <p className="mt-1 text-sm text-gray-500">Desvincule uma matrícula apenas quando houver desistência ou erro de cadastro.</p>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Matrículas registradas</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">Desvincule uma matrícula apenas quando houver desistência ou erro de cadastro.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <label className="relative block">
-                <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar aluno ou curso" className="h-10 w-full rounded-xl border border-gray-300 pl-9 pr-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 sm:w-64" />
+                <Search size={16} className="absolute left-3 top-3 text-gray-400 dark:text-slate-500" />
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar aluno ou curso" className="h-10 w-full rounded-xl border border-gray-300 dark:border-slate-700 pl-9 pr-3 text-sm outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100 sm:w-64" />
               </label>
-              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | Enrollment["status"])} className="h-10 rounded-xl border border-gray-300 bg-card text-card-foreground px-3 text-sm text-gray-700 outline-none focus:border-red-500">
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | Enrollment["status"])} className="h-10 rounded-xl border border-gray-300 dark:border-slate-700 bg-card text-card-foreground px-3 text-sm text-gray-700 dark:text-slate-300 outline-none focus:border-red-500">
                 <option value="active">Ativas</option>
                 <option value="all">Todas</option>
                 <option value="completed">Concluídas</option>
@@ -261,10 +261,10 @@ export default function AdminEnrollmentsPage() {
           </div>
 
           {filteredEnrollments.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 bg-background px-5 py-12 text-center">
-              <UserRound className="mx-auto text-gray-400" size={28} />
-              <p className="mt-3 text-sm font-semibold text-gray-700">Nenhuma matrícula encontrada</p>
-              <p className="mt-1 text-xs text-gray-500">Ajuste os filtros ou crie uma nova matrícula acima.</p>
+            <div className="rounded-xl border border-dashed border-gray-300 dark:border-slate-700 bg-background px-5 py-12 text-center">
+              <UserRound className="mx-auto text-gray-400 dark:text-slate-500" size={28} />
+              <p className="mt-3 text-sm font-semibold text-gray-700 dark:text-slate-300">Nenhuma matrícula encontrada</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">Ajuste os filtros ou crie uma nova matrícula acima.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -274,17 +274,17 @@ export default function AdminEnrollmentsPage() {
                   <div key={enrollment.id} className={`flex flex-col gap-4 rounded-xl border p-4 transition sm:flex-row sm:items-center sm:justify-between ${isCancelled ? "border-border bg-background opacity-75" : "border-border bg-card text-card-foreground hover:border-red-200"}`}>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold text-gray-900">{enrollment.student.name || "Aluno sem nome"}</h3>
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isCancelled ? "bg-gray-200 text-gray-600" : enrollment.status === "completed" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>{statusLabels[enrollment.status]}</span>
+                        <h3 className="font-bold text-gray-900 dark:text-white">{enrollment.student.name || "Aluno sem nome"}</h3>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isCancelled ? "bg-gray-200 dark:bg-slate-800 text-gray-600 dark:text-slate-400" : enrollment.status === "completed" ? "bg-green-100 dark:bg-green-950/40 text-green-700 dark:text-green-300" : "bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300"}`}>{statusLabels[enrollment.status]}</span>
                       </div>
-                      <p className="mt-1 text-xs text-gray-500">{enrollment.student.email || "Email não informado"}</p>
-                      <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-gray-700"><GraduationCap size={15} className="text-red-600" /> {enrollment.course.title} <span className="font-normal text-gray-400">· {enrollment.course.level}</span></p>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{enrollment.student.email || "Email não informado"}</p>
+                      <p className="mt-2 flex items-center gap-1.5 text-sm font-semibold text-gray-700 dark:text-slate-300"><GraduationCap size={15} className="text-red-600" /> {enrollment.course.title} <span className="font-normal text-gray-400 dark:text-slate-500">· {enrollment.course.level}</span></p>
                     </div>
                     <div className="flex items-center gap-4 sm:justify-end">
                       <div className="min-w-28 text-left sm:text-right">
-                        <p className="text-xs text-gray-500">Progresso</p>
-                        <p className="font-bold text-gray-900">{isCancelled ? "—" : `${enrollment.progress}%`}</p>
-                        <p className="text-[11px] text-gray-400">Desde {formatDate(enrollment.enrolledAt)}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Progresso</p>
+                        <p className="font-bold text-gray-900 dark:text-white">{isCancelled ? "—" : `${enrollment.progress}%`}</p>
+                        <p className="text-[11px] text-gray-400 dark:text-slate-500">Desde {formatDate(enrollment.enrolledAt)}</p>
                       </div>
                       {!isCancelled ? (
                         <Button type="button" variant="outline" onClick={() => setConfirmingEnrollment(enrollment)} disabled={busyEnrollmentId === enrollment.id} className="h-10 rounded-xl border-red-200 px-3 text-red-600 hover:bg-red-50 hover:text-red-700">
@@ -292,7 +292,7 @@ export default function AdminEnrollmentsPage() {
                           <span className="hidden sm:inline">Desvincular</span>
                         </Button>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500"><CheckCircle2 size={15} /> Histórico preservado</span>
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 dark:text-slate-400"><CheckCircle2 size={15} /> Histórico preservado</span>
                       )}
                     </div>
                   </div>

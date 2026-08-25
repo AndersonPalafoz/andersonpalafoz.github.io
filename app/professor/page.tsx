@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
-import { BookOpen, Users, FileText, CheckSquare, GraduationCap, ArrowRight, UserCheck } from "lucide-react";
+import { GraduationCap, ArrowRight } from "lucide-react";
 import { getTeacherDashboardData, getTeacherCourses, getTeacherStudents, getTeacherMaterials } from "@/lib/teacher";
 import { TeacherMaterialsZipExport } from "@/components/teacher-materials-zip-export";
 import { TeacherSearchWidget } from "@/components/teacher-search-widget";
@@ -31,7 +31,7 @@ export default async function TeacherDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl shadow-sm border border-border/70 bg-card">
+        <div className="dashboard-hero flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <GraduationCap size={16} />
@@ -42,7 +42,7 @@ export default async function TeacherDashboardPage() {
               Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub com alta governança e dados em tempo real.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+          <div className="teacher-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
             <Link
               href="/professor/progresso-aulas"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
@@ -115,53 +115,18 @@ export default async function TeacherDashboardPage() {
           }))}
         />
 
-        {/* KPIs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-sm font-medium">Cursos Ativos</span>
-              <BookOpen className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black tracking-tight text-foreground">{data.stats.totalCourses}</p>
-          </div>
-
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-sm font-medium">Alunos Aprovados</span>
-              <Users className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black tracking-tight text-foreground">{data.stats.totalStudents}</p>
-          </div>
-
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-sm font-medium">Materiais Publicados</span>
-              <FileText className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black tracking-tight text-foreground">{data.stats.totalMaterials}</p>
-          </div>
-
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-sm font-medium">Atividades Criadas</span>
-              <CheckSquare className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black tracking-tight text-foreground">{data.stats.totalActivities}</p>
-          </div>
-
-          <div className="surface-card p-5">
-            <div className="flex items-center justify-between text-muted-foreground mb-2">
-              <span className="text-sm font-medium">Total de Matrículas</span>
-              <UserCheck className="text-red-600" size={20} />
-            </div>
-            <p className="text-3xl font-black tracking-tight text-foreground">{data.stats.totalEnrollments}</p>
-          </div>
-        </div>
-
         {/* Seções de Conteúdo Recente */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Lista de Cursos com Paginação e Ações Rápidas */}
-          <ProfessorCoursesList initialCourses={allCourses} />
+          <ProfessorCoursesList initialCourses={allCourses.map((course) => ({
+            id: course.id,
+            title: course.title,
+            level: course.level,
+            category: course.category,
+            modules: course.modules ?? 0,
+            isFree: course.isFree ?? true,
+            price: Number(course.price ?? 0),
+          }))} />
 
           {/* Materiais Recentes */}
           <div className="surface-card space-y-6 p-6 sm:p-8">
@@ -199,7 +164,15 @@ export default async function TeacherDashboardPage() {
               Ver Todos os Alunos <ArrowRight size={16} />
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          <div className="space-y-3 md:hidden">
+            {data.recentStudents.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum aluno ativo no momento.</div> : data.recentStudents.map((student) => (
+              <article key={student.id} className="rounded-2xl border border-border/70 bg-background p-4 shadow-sm">
+                <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-50 font-black text-red-700">{(student.name || student.email || "?").slice(0, 1).toUpperCase()}</div><div className="min-w-0 flex-1"><p className="truncate font-bold text-foreground">{student.name || "Aluno sem nome"}</p><p className="truncate text-xs text-muted-foreground">{student.email}</p></div><span className="rounded-full bg-red-50 px-2 py-1 text-[10px] font-black uppercase text-red-700">{student.role}</span></div>
+                <p className="mt-3 text-[11px] text-muted-foreground">Último acesso: {new Date(student.lastSignedIn).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}</p>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm text-muted-foreground">
               <thead className="border-b border-border/70 text-xs uppercase text-muted-foreground font-semibold">
                 <tr>

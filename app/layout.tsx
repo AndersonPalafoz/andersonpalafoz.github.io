@@ -79,11 +79,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-slate-50 font-sans text-slate-900 antialiased">
+      <body className="site-shell font-sans text-slate-900 antialiased">
         <SessionProviderWrapper>
           <ThemeProvider>
             <Navbar />
-            <main className="min-h-screen bg-slate-50 pt-[4.5rem]">{children}</main>
+            <main className="min-h-screen pt-[4.5rem]">{children}</main>
             <Footer />
             <ToastProvider />
             <InactivityMonitor />

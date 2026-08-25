@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileUp, Loader2, ShieldCheck, UploadCloud } from "lucide-react";
+import { Circle, Eye, EyeOff, FileUp, Layers3, Loader2, RotateCw, ShieldCheck, Sparkles, Square, Type, UploadCloud } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 import {
   parseCertificateComposition,
@@ -15,6 +15,8 @@ import {
   CERTIFICATE_VISUAL_VARIANT_LIST,
   getCertificateVisualVariant,
 } from "@/lib/certificate-visual-variants";
+import { getCertificateLayoutPreset } from "@/lib/certificate-layout-presets";
+import { CERTIFICATE_ELEMENT_PRESETS, createCertificateElementPreset } from "@/lib/certificate-element-presets";
 
 type CertificateTemplate = {
   id: number;
@@ -52,6 +54,7 @@ export function CertificateTemplateManager() {
   const [previewCode, setPreviewCode] = useState(sampleData.certificateCode);
   const [previewDate, setPreviewDate] = useState(sampleData.issuedAt);
   const [activePreset, setActivePreset] = useState<CertificateVisualVariant>(visualVariant);
+  const [libraryFilter, setLibraryFilter] = useState("Todos");
 
   const [customElements, setCustomElements] = useState<CertificateCompositionElement[]>(composition.elements);
 
@@ -111,6 +114,13 @@ export function CertificateTemplateManager() {
     { key: "institutionName", label: "Instituição parceira", value: sampleData.institutionName },
   ];
   const currentVariant = getCertificateVisualVariant(visualVariant);
+  const variantFamilies = [
+    "Todos",
+    ...Array.from(new Set(CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => variant.family))),
+  ];
+  const visibleVariants = libraryFilter === "Todos"
+    ? CERTIFICATE_VISUAL_VARIANT_LIST
+    : CERTIFICATE_VISUAL_VARIANT_LIST.filter(variant => variant.family === libraryFilter);
 
   function commitFieldMappings(next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>>) {
     setFieldMappings(next);
@@ -125,64 +135,45 @@ export function CertificateTemplateManager() {
     updateComposition(current => ({ ...current, elements: next }));
   }
 
+  function updateElement(id: string, patch: Partial<CertificateCompositionElement>) {
+    commitElements(customElements.map(element => element.id === id ? { ...element, ...patch } : element));
+  }
+
+  function addDesignElement(type: "text" | "badge" | "line" | "shape") {
+    const isShape = type === "shape";
+    const nextElement: CertificateCompositionElement = {
+      id: `${type}_${Date.now()}`,
+      type,
+      content: isShape ? "Forma decorativa" : type === "line" ? "Linha divisória" : type === "badge" ? "Destaque" : "Texto personalizado",
+      x: 421,
+      y: isShape ? 300 : 250,
+      size: type === "badge" ? 11 : 14,
+      width: isShape ? 160 : type === "line" ? 260 : 240,
+      height: isShape ? 72 : type === "line" ? 8 : 40,
+      color: type === "badge" ? "#9a3412" : "#24313a",
+      fill: isShape ? "#fee2e2" : undefined,
+      stroke: isShape ? "#dc2626" : undefined,
+      strokeWidth: isShape ? 1 : 0,
+      radius: isShape ? 12 : 0,
+      shape: isShape ? "rectangle" : undefined,
+      align: "center",
+      opacity: 1,
+      zIndex: customElements.length + 1,
+      visible: true,
+    };
+    commitElements([...customElements, nextElement]);
+  }
+
+  function addElementPreset(presetId: string) {
+    const element = createCertificateElementPreset(presetId, customElements.length + 1);
+    if (!element) return;
+    commitElements([...customElements, element]);
+  }
+
   function applyPreset(preset: CertificateVisualVariant) {
     setActivePreset(preset);
     setVisualVariant(preset);
-    let next: Partial<Record<CertificateFieldKey, CertificateFieldMapping>> = {};
-    if (preset === "profici") {
-      next = {
-        institutionName: { x: 70, y: 70, size: 11, maxWidth: 350 },
-        studentName: { x: 120, y: 210, size: 20, maxWidth: 540 },
-        studentCpf: { x: 120, y: 240, size: 12, maxWidth: 220 },
-        courseTitle: { x: 120, y: 280, size: 15, maxWidth: 520 },
-        level: { x: 500, y: 280, size: 14, maxWidth: 180 },
-        workloadHours: { x: 120, y: 320, size: 12, maxWidth: 180 },
-        period: { x: 300, y: 320, size: 12, maxWidth: 260 },
-        issuedAt: { x: 120, y: 420, size: 11, maxWidth: 180 },
-        coordinatorName: { x: 480, y: 420, size: 11, maxWidth: 220 },
-        certificateCode: { x: 560, y: 460, size: 10, maxWidth: 180 },
-      };
-    } else if (preset === "isf") {
-      next = {
-        institutionName: { x: 60, y: 60, size: 11, maxWidth: 380 },
-        studentName: { x: 100, y: 200, size: 21, maxWidth: 560 },
-        studentCpf: { x: 100, y: 235, size: 12, maxWidth: 220 },
-        courseTitle: { x: 100, y: 275, size: 16, maxWidth: 520 },
-        level: { x: 480, y: 275, size: 14, maxWidth: 200 },
-        workloadHours: { x: 100, y: 315, size: 12, maxWidth: 180 },
-        period: { x: 290, y: 315, size: 12, maxWidth: 260 },
-        coordinatorName: { x: 460, y: 410, size: 11, maxWidth: 220 },
-        issuedAt: { x: 100, y: 410, size: 11, maxWidth: 180 },
-        certificateCode: { x: 540, y: 455, size: 10, maxWidth: 180 },
-      };
-    } else if (preset === "minimal") {
-      next = {
-        studentName: { x: 90, y: 315, size: 27, maxWidth: 650, weight: "bold" },
-        courseTitle: { x: 90, y: 250, size: 19, maxWidth: 620, weight: "bold" },
-        level: { x: 90, y: 215, size: 13, maxWidth: 260 },
-        issuedAt: { x: 90, y: 120, size: 11, maxWidth: 180 },
-        certificateCode: { x: 90, y: 95, size: 10, maxWidth: 240 },
-        workloadHours: { x: 390, y: 215, size: 13, maxWidth: 170 },
-        studentCpf: { x: 90, y: 285, size: 11, maxWidth: 260 },
-        period: { x: 560, y: 215, size: 13, maxWidth: 190 },
-        coordinatorName: { x: 560, y: 120, size: 11, maxWidth: 190 },
-        institutionName: { x: 90, y: 505, size: 13, maxWidth: 360 },
-      };
-    } else {
-      next = {
-        studentName: { x: 250, y: 190, size: 22, maxWidth: 520 },
-        courseTitle: { x: 280, y: 260, size: 16, maxWidth: 480 },
-        level: { x: 300, y: 300, size: 13, maxWidth: 300 },
-        issuedAt: { x: 70, y: 430, size: 11, maxWidth: 180 },
-        certificateCode: { x: 560, y: 430, size: 11, maxWidth: 200 },
-        workloadHours: { x: 300, y: 330, size: 12, maxWidth: 180 },
-        studentCpf: { x: 250, y: 225, size: 12, maxWidth: 220 },
-        period: { x: 300, y: 360, size: 12, maxWidth: 240 },
-        coordinatorName: { x: 480, y: 430, size: 11, maxWidth: 200 },
-        institutionName: { x: 70, y: 80, size: 12, maxWidth: 300 },
-      };
-    }
-    commitFieldMappings(next);
+    commitFieldMappings(getCertificateLayoutPreset(preset));
   }
 
   function handleFieldDragStart(
@@ -339,10 +330,12 @@ export function CertificateTemplateManager() {
   }
 
   return (
-    <section className="space-y-5">
-      <div className="surface-card space-y-2 border border-border/70 p-6">
+    <section className="space-y-6">
+      <div className="surface-card overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.10),transparent_34%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--muted)/0.42))] p-6 sm:p-7">
         <div className="flex items-start gap-3">
-          <ShieldCheck className="mt-0.5 shrink-0 text-red-600" size={22} />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/20">
+            <ShieldCheck size={20} />
+          </div>
           <div>
             <h2 className="text-xl font-black text-foreground">
               Modelos e identidade do certificado
@@ -369,8 +362,21 @@ export function CertificateTemplateManager() {
 
       <form
         onSubmit={handleSubmit}
-        className="surface-card grid gap-5 border border-border/70 p-6 lg:grid-cols-2"
+        className="surface-card overflow-hidden border border-border/70 bg-card p-4 shadow-[0_18px_55px_rgba(15,23,42,0.07)] sm:p-6 lg:p-7"
       >
+        <div className="mb-6 grid gap-2 rounded-2xl border border-red-100 bg-red-50/70 p-3 sm:grid-cols-4 sm:gap-0 sm:divide-x sm:divide-red-200/70 dark:border-red-900/50 dark:bg-red-950/20 dark:sm:divide-red-900/50">
+          {[
+            ["01", "Identidade", "Nome e contexto"],
+            ["02", "Arquivo", "PDF, PNG ou DOCX"],
+            ["03", "Composição", "Prévia e campos"],
+            ["04", "Publicação", "Branding e cadastro"],
+          ].map(([number, title, description]) => (
+            <div key={number} className="flex items-center gap-2 px-2 py-2 sm:flex-col sm:items-start sm:px-3 sm:first:pl-1">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-white text-[10px] font-black text-red-700 shadow-sm ring-1 ring-red-100 dark:bg-red-950/60 dark:text-red-200 dark:ring-red-900/60">{number}</span>
+              <span className="min-w-0"><strong className="block text-[11px] font-black text-red-900 dark:text-red-100">{title}</strong><span className="block text-[10px] leading-relaxed text-red-700/75 dark:text-red-200/70">{description}</span></span>
+            </div>
+          ))}
+        </div>
         <div className="space-y-2">
           <label
             htmlFor="certificate-template-name"
@@ -452,13 +458,17 @@ export function CertificateTemplateManager() {
         </div>
 
         <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">
-          <h3 className="text-sm font-black text-foreground">
-            Mapeamento dinâmico e pré-visualização em tempo real
-          </h3>
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Informe abaixo os valores de teste para visualizar em tempo real
-            como as variáveis preencherão o certificado.
-          </p>
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-300"><Sparkles size={17} /></div>
+            <div>
+              <h3 className="text-sm font-black text-foreground">
+                Mapeamento dinâmico e pré-visualização em tempo real
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Use estes dados de teste para visualizar a hierarquia antes de cadastrar o modelo.
+              </p>
+            </div>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <label className="block text-xs font-bold text-foreground">
               Nome de teste
@@ -509,7 +519,7 @@ export function CertificateTemplateManager() {
               />
             </label>
           </div>
-          <div className="rounded-xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
+          <div className="rounded-2xl border border-dashed border-red-600/40 bg-background p-4 shadow-sm sm:p-6">
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -527,8 +537,22 @@ export function CertificateTemplateManager() {
                   Ativa: {getCertificateVisualVariant(visualVariant).shortLabel}
                 </div>
               </div>
+              <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Filtrar modelos por família">
+                {variantFamilies.map(family => (
+                  <button
+                    key={family}
+                    type="button"
+                    role="tab"
+                    aria-selected={libraryFilter === family}
+                    onClick={() => setLibraryFilter(family)}
+                    className={`shrink-0 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition ${libraryFilter === family ? "border-red-600 bg-red-600 text-white" : "border-border bg-muted/30 text-muted-foreground hover:border-red-300 hover:text-red-700"}`}
+                  >
+                    {family}
+                  </button>
+                ))}
+              </div>
               <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-                {CERTIFICATE_VISUAL_VARIANT_LIST.map(variant => {
+                {visibleVariants.map(variant => {
                   const isActive = activePreset === variant.id;
                   return (
                     <button
@@ -538,21 +562,34 @@ export function CertificateTemplateManager() {
                       className={`group rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 ${isActive ? "border-red-600 bg-red-50 shadow-sm dark:border-red-500 dark:bg-red-950/30" : "border-border bg-muted/20 hover:border-red-300 hover:bg-muted/40"}`}
                       aria-pressed={isActive}
                     >
+                      <span className="mb-3 flex h-14 items-center justify-center overflow-hidden rounded-xl border bg-white/80 p-2 dark:bg-background">
+                        <span className="relative block h-full w-full overflow-hidden rounded-lg border" style={{ borderColor: variant.border, backgroundColor: variant.paper }}>
+                          <span className="absolute left-1.5 top-1.5 h-1 w-8 rounded-full" style={{ backgroundColor: variant.accent }} />
+                          <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg font-black opacity-[0.12]" style={{ color: variant.accent }}>{variant.watermarkLabel}</span>
+                          <span className="absolute bottom-1.5 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full" style={{ backgroundColor: variant.accentSoft }} />
+                        </span>
+                      </span>
                       <span className="mb-2 flex items-center justify-between gap-2">
-                        <span className="h-3 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
+                        <span className="h-1.5 w-10 rounded-full" style={{ backgroundColor: variant.accent }} />
                         <span className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${isActive ? "bg-red-600 text-white" : "bg-background text-muted-foreground"}`}>
-                          {isActive ? "Ativa" : variant.shortLabel}
+                          {isActive ? "Ativa" : variant.family}
                         </span>
                       </span>
                       <span className="block text-xs font-black text-foreground">{variant.label}</span>
                       <span className="mt-1 block text-[10px] leading-relaxed text-muted-foreground">{variant.description}</span>
+                      <span className="mt-2 block text-[9px] font-semibold uppercase tracking-wide" style={{ color: variant.accentDark }}>Ideal para: {variant.recommendedFor}</span>
                     </button>
                   );
                 })}
               </div>
+              <div className="mt-3 flex flex-col gap-1 rounded-xl border border-border/70 bg-muted/25 px-3 py-2.5 text-[10px] sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-black uppercase tracking-[0.12em] text-muted-foreground">Modelo ativo</span>
+                <span className="font-bold text-foreground">{currentVariant.label} · {currentVariant.family}</span>
+                <span className="text-muted-foreground">{currentVariant.recommendedFor}</span>
+              </div>
             </div>
             <div className="mt-4 grid gap-4 lg:grid-cols-[180px_minmax(0,1fr)]">
-              <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-3">
+              <div                 className="space-y-3 rounded-2xl border border-border/70 bg-muted/25 p-3 shadow-sm">
                 <p className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                   Variáveis disponíveis
                 </p>
@@ -575,10 +612,10 @@ export function CertificateTemplateManager() {
               </div>
               <div
                 ref={canvasShellRef}
-                className="min-w-0 overflow-hidden rounded-xl border border-border bg-slate-100 p-3 dark:bg-slate-900"
+                className="min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-[radial-gradient(circle_at_center,rgba(214,40,40,0.08),transparent_58%),linear-gradient(135deg,hsl(var(--muted)/0.65),hsl(var(--background)))] p-3 shadow-inner dark:bg-slate-950"
               >
                 <div
-                  className="relative mx-auto overflow-hidden rounded-lg border-2 shadow-inner"
+                  className="relative mx-auto overflow-hidden rounded-2xl border-2 shadow-[0_20px_50px_rgba(15,23,42,0.16)] ring-1 ring-black/5"
                   style={{
                     width: `${CANVAS_WIDTH * canvasScale}px`,
                     height: `${CANVAS_HEIGHT * canvasScale}px`,
@@ -597,6 +634,27 @@ export function CertificateTemplateManager() {
                   {currentVariant.motif === "double" && <div className="pointer-events-none absolute inset-[30px] rounded border" style={{ borderColor: `${currentVariant.accent}66` }} />}
                   {currentVariant.motif === "institutional" && <div className="pointer-events-none absolute left-0 top-0 h-full w-4" style={{ backgroundColor: currentVariant.accent }} />}
                   {currentVariant.motif === "editorial" && <div className="pointer-events-none absolute left-0 top-0 h-10 w-full" style={{ backgroundColor: currentVariant.ink }} />}
+                  {currentVariant.motif === "laureate" && (
+                    <>
+                      <div className="pointer-events-none absolute inset-[24px] rounded-xl border-2" style={{ borderColor: currentVariant.border }} />
+                      <div className="pointer-events-none absolute left-12 top-12 h-7 w-7 border-l-2 border-t-2" style={{ borderColor: currentVariant.accent }} />
+                      <div className="pointer-events-none absolute right-12 top-12 h-7 w-7 border-r-2 border-t-2" style={{ borderColor: currentVariant.accent }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "botanical" && (
+                    <>
+                      <div className="pointer-events-none absolute -left-4 top-12 h-44 w-28 -rotate-12 rounded-[55%] border-2" style={{ borderColor: currentVariant.accent, opacity: 0.45 }} />
+                      <div className="pointer-events-none absolute -right-4 bottom-12 h-44 w-28 rotate-12 rounded-[55%] border-2" style={{ borderColor: currentVariant.accent, opacity: 0.45 }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "geometric" && (
+                    <>
+                      <div className="pointer-events-none absolute right-0 top-0 h-36 w-44 [clip-path:polygon(100%_0,100%_100%,0_0)]" style={{ backgroundColor: currentVariant.accentSoft }} />
+                      <div className="pointer-events-none absolute bottom-0 left-0 h-24 w-36 [clip-path:polygon(0_100%,0_0,100%_100%)]" style={{ backgroundColor: currentVariant.accent, opacity: 0.12 }} />
+                    </>
+                  )}
+                  {currentVariant.motif === "midnight" && <div className="pointer-events-none absolute inset-[24px] rounded-xl border" style={{ borderColor: currentVariant.accent }} />}
+                  <div className="pointer-events-none absolute bottom-[70px] left-[68px] right-[68px] top-[88px] rounded-xl border" style={{ borderColor: currentVariant.border, backgroundColor: currentVariant.panel, opacity: 0.58 }} />
                   <div className="pointer-events-none absolute left-10 top-7 z-[1] text-[9px] font-black uppercase tracking-[0.16em]" style={{ color: currentVariant.accent }}>{currentVariant.headerLabel}</div>
                   {includeSiteBranding && (
                     <div className="absolute left-1/2 top-5 -translate-x-1/2 rounded-lg bg-white/95 px-3 py-2 shadow-sm ring-1 ring-red-600/10">
@@ -720,27 +778,24 @@ export function CertificateTemplateManager() {
                   <p className="text-xs font-black uppercase tracking-wider text-foreground">
                     Biblioteca de Elementos (Arraste ou Clique para Inserir)
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="mr-1 hidden text-[10px] font-bold uppercase tracking-wide text-muted-foreground sm:inline">Inserir:</span>
+                    {CERTIFICATE_ELEMENT_PRESETS.slice(0, 3).map(preset => (
+                      <button key={preset.id} type="button" onClick={() => addElementPreset(preset.id)} className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-[10px] font-bold text-foreground transition hover:border-red-300 hover:bg-red-50 hover:text-red-700" title={preset.description}>{preset.label}</button>
+                    ))}
                     <button
                       type="button"
-                      onClick={() => {
-                        commitElements([
-                          ...customElements,
-                          {
-                            id: `text_${Date.now()}`,
-                            type: "text",
-                            content: "Texto personalizado",
-                            x: 350,
-                            y: 250,
-                            size: 14,
-                            color: "#1e293b",
-                            align: "center",
-                          },
-                        ]);
-                      }}
-                      className="rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
+                      onClick={() => addDesignElement("text")}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
                     >
-                      + Adicionar Texto Livre
+                      <Type size={14} /> Texto
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addDesignElement("shape")}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-900 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+                    >
+                      <Square size={14} /> Forma
                     </button>
                     <button
                       type="button"
@@ -760,42 +815,73 @@ export function CertificateTemplateManager() {
                           },
                         ]);
                       }}
-                      className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground hover:bg-muted transition"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-bold text-foreground transition hover:bg-muted"
                     >
-                      + Adicionar Logo / Imagem
+                      <UploadCloud size={14} /> Imagem
                     </button>
                   </div>
                 </div>
 
                 {customElements.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-[11px] font-bold text-muted-foreground">Elementos Customizados Adicionados:</p>
-                    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    <p className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground"><Layers3 size={14} className="text-red-600" /> Elementos e propriedades avançadas</p>
+                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                       {customElements.map((el, index) => (
-                        <div key={el.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-2 text-xs">
-                          <span className="font-bold truncate max-w-[120px]">
-                            {el.type === "text" ? `Texto: ${el.content}` : `Imagem ${index + 1}`}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            {el.type === "text" && (
-                              <input
-                                type="text"
-                                value={el.content}
-                                onChange={e => {
-                                  const val = e.target.value;
-                                  commitElements(customElements.map(item => item.id === el.id ? { ...item, content: val } : item));
-                                }}
-                                className="h-6 w-24 rounded border border-border px-1 text-[11px]"
-                              />
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => commitElements(customElements.filter(item => item.id !== el.id))}
-                              className="text-red-600 hover:text-red-700 font-bold px-1"
-                              title="Remover elemento"
-                            >
-                              ✕
-                            </button>
+                        <div key={el.id} className="space-y-2 rounded-xl border border-border bg-background p-3 text-xs shadow-sm">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="flex min-w-0 items-center gap-1.5 font-black text-foreground">
+                              {el.type === "shape" ? <Circle size={13} className="shrink-0 text-amber-600" /> : <Type size={13} className="shrink-0 text-red-600" />}
+                              <span className="truncate">{el.type === "text" || el.type === "badge" ? `${el.type === "badge" ? "Badge" : "Texto"}: ${el.content}` : el.type === "shape" ? `Forma ${index + 1}` : "Imagem / linha"}</span>
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <button type="button" onClick={() => updateElement(el.id, { visible: el.visible === false })} className="rounded-md p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground" title={el.visible === false ? "Mostrar elemento" : "Ocultar elemento"} aria-label={el.visible === false ? "Mostrar elemento" : "Ocultar elemento"}>
+                                {el.visible === false ? <EyeOff size={14} /> : <Eye size={14} />}
+                              </button>
+                              <button type="button" onClick={() => commitElements(customElements.filter(item => item.id !== el.id))} className="rounded-md p-1 font-black text-red-600 transition hover:bg-red-50 hover:text-red-700" title="Remover elemento" aria-label="Remover elemento">✕</button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Tipo
+                              <select value={el.type} onChange={e => updateElement(el.id, { type: e.target.value as CertificateCompositionElement["type"] })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground">
+                                <option value="text">Texto</option><option value="badge">Badge</option><option value="line">Linha</option><option value="image">Imagem</option><option value="shape">Forma</option>
+                              </select>
+                            </label>
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Fonte
+                              <select value={el.fontFamily || "sans"} onChange={e => updateElement(el.id, { fontFamily: e.target.value as CertificateCompositionElement["fontFamily"] })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground">
+                                <option value="sans">Sans</option><option value="serif">Serif</option><option value="mono">Mono</option>
+                              </select>
+                            </label>
+                          </div>
+
+                          {(el.type === "text" || el.type === "badge") && <label className="block space-y-1 text-[10px] font-bold text-muted-foreground">Conteúdo / variável
+                            <input type="text" value={el.content} onChange={e => updateElement(el.id, { content: e.target.value })} className="h-8 w-full rounded-lg border border-border px-2 text-[11px] text-foreground" placeholder="Use {{studentName}}" />
+                          </label>}
+
+                          {el.type === "shape" && <div className="grid grid-cols-3 gap-2">
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Forma
+                              <select value={el.shape || "rectangle"} onChange={e => updateElement(el.id, { shape: e.target.value as CertificateCompositionElement["shape"] })} className="h-8 w-full rounded-lg border border-border bg-background px-1 text-[10px] text-foreground"><option value="rectangle">Retângulo</option><option value="circle">Círculo</option><option value="pill">Pílula</option><option value="diamond">Losango</option></select>
+                            </label>
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Preenchimento
+                              <input type="color" value={el.fill || "#fee2e2"} onChange={e => updateElement(el.id, { fill: e.target.value })} className="h-8 w-full cursor-pointer rounded-lg border border-border bg-background p-1" />
+                            </label>
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Contorno
+                              <input type="color" value={el.stroke || "#dc2626"} onChange={e => updateElement(el.id, { stroke: e.target.value })} className="h-8 w-full cursor-pointer rounded-lg border border-border bg-background p-1" />
+                            </label>
+                          </div>}
+
+                          {el.type !== "image" && el.type !== "shape" && <label className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">Cor <input type="color" value={el.color || "#24313a"} onChange={e => updateElement(el.id, { color: e.target.value })} className="h-7 w-10 cursor-pointer rounded border border-border bg-background p-0.5" /></label>}
+
+                          <div className="grid grid-cols-3 gap-2">
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground"><span className="flex items-center gap-1"><RotateCw size={10} /> Rotação</span>
+                              <input type="number" min={-180} max={180} value={el.rotation || 0} onChange={e => updateElement(el.id, { rotation: Number(e.target.value) || 0 })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground" />
+                            </label>
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground"><span className="flex items-center gap-1"><Layers3 size={10} /> Camada</span>
+                              <input type="number" min={0} max={100} value={el.zIndex || 0} onChange={e => updateElement(el.id, { zIndex: Number(e.target.value) || 0 })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground" />
+                            </label>
+                            <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Opacidade
+                              <input type="range" min={0} max={1} step={0.05} value={el.opacity ?? 1} onChange={e => updateElement(el.id, { opacity: Number(e.target.value) })} className="mt-2 w-full accent-red-600" />
+                            </label>
                           </div>
                         </div>
                       ))}
@@ -814,35 +900,23 @@ export function CertificateTemplateManager() {
                         <span className="block text-[11px] font-bold text-foreground truncate" title={field.label}>
                           {field.label}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <label className="text-[10px] text-muted-foreground">Fonte:</label>
-                              <input
-                            type="number"
-                            min={8}
-                            max={48}
-                            value={mapping.size || 12}
-                            onChange={e => {
-                              const size = Number(e.target.value);
-                              commitFieldMappings({
-                                ...fieldMappings,
-                                [field.key]: { ...mapping, size: isNaN(size) ? 12 : size },
-                              });
-                            }}
-                            className="h-7 w-16 rounded border border-border bg-background px-1 text-xs font-mono text-foreground"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              commitFieldMappings({
-                                ...fieldMappings,
-                                [field.key]: { ...mapping, x: 250 }, // Centralizar horizontalmente
-                              });
-                            }}
-                            className="rounded bg-muted px-1.5 py-1 text-[10px] font-bold text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                            title="Alinhar ao centro da página"
-                          >
-                            Centralizar
-                          </button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Tamanho
+                            <input type="number" min={8} max={48} value={mapping.size || 12} onChange={e => { const size = Number(e.target.value); commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, size: isNaN(size) ? 12 : size } }); }} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-xs font-mono text-foreground" />
+                          </label>
+                          <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Família
+                            <select value={mapping.fontFamily || "sans"} onChange={e => commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, fontFamily: e.target.value as CertificateFieldMapping["fontFamily"] } })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground"><option value="sans">Sans</option><option value="serif">Serif</option><option value="mono">Mono</option></select>
+                          </label>
+                          <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Espaçamento
+                            <input type="number" min={-5} max={20} value={mapping.letterSpacing || 0} onChange={e => commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, letterSpacing: Number(e.target.value) || 0 } })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-xs font-mono text-foreground" />
+                          </label>
+                          <label className="space-y-1 text-[10px] font-bold text-muted-foreground">Alinhamento
+                            <select value={mapping.align || "left"} onChange={e => commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, align: e.target.value as CertificateFieldMapping["align"] } })} className="h-8 w-full rounded-lg border border-border bg-background px-2 text-[11px] text-foreground"><option value="left">Esquerda</option><option value="center">Centro</option><option value="right">Direita</option></select>
+                          </label>
+                        </div>
+                        <div className="flex items-center justify-between gap-2">
+                          <label className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground">Cor <input type="color" value={mapping.color || "#24313a"} onChange={e => commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, color: e.target.value } })} className="h-7 w-10 cursor-pointer rounded border border-border bg-background p-0.5" /></label>
+                          <button type="button" onClick={() => commitFieldMappings({ ...fieldMappings, [field.key]: { ...mapping, x: 421, align: "center" } })} className="rounded-lg bg-muted px-2 py-1.5 text-[10px] font-bold text-muted-foreground transition hover:bg-accent hover:text-accent-foreground" title="Alinhar ao centro da página">Centralizar</button>
                         </div>
                       </div>
                     );
@@ -853,7 +927,7 @@ export function CertificateTemplateManager() {
           </div>
         </div>
 
-        <fieldset className="rounded-2xl border border-border/70 bg-muted/20 p-4 lg:col-span-2">
+        <fieldset className="rounded-2xl border border-border/70 bg-muted/25 p-4 shadow-sm lg:col-span-2">
           <legend className="px-1 text-sm font-black text-foreground">
             Pergunta de branding para este modelo
           </legend>
@@ -903,7 +977,12 @@ export function CertificateTemplateManager() {
           </div>
         </fieldset>
 
-        <div className="space-y-2 lg:col-span-2">
+        <details className="group lg:col-span-2">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl border border-border/70 bg-muted/25 px-4 py-3 text-sm font-black text-foreground shadow-sm transition hover:bg-muted/40 [&::-webkit-details-marker]:hidden">
+            <span>Mapeamento técnico dos campos <span className="font-normal text-muted-foreground">(JSON opcional)</span></span>
+            <span className="rounded-full border border-border/70 bg-card px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground transition group-open:rotate-180">⌄</span>
+          </summary>
+          <div className="space-y-2 pt-3">
           <label
             htmlFor="certificate-template-field-mappings"
             className="text-sm font-bold text-foreground"
@@ -945,7 +1024,8 @@ export function CertificateTemplateManager() {
             também pode editar coordenadas manualmente; o cadastro só será
             aceito quando o conteúdo for um objeto JSON válido.
           </p>
-        </div>
+          </div>
+        </details>
 
         <label className="flex items-center gap-3 text-sm font-semibold text-foreground lg:col-span-2">
           <input
@@ -1016,7 +1096,7 @@ export function CertificateTemplateManager() {
                     </p>
                   </div>
                   {template.isDefault && (
-                    <span className="rounded-full bg-amber-500/15 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-200">
+                    <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[11px] font-bold text-amber-700 dark:text-amber-200">
                       Padrão
                     </span>
                   )}

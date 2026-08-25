@@ -149,15 +149,20 @@ export function CertificateFabricPrototype() {
     toast.success(`Modelo "${tmpl.name}" carregado!`);
   };
 
-  const handleAddElement = (type: 'text' | 'badge' | 'line') => {
+  const handleAddElement = (type: 'text' | 'badge' | 'line' | 'shape') => {
     commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
-      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
+      content: newElemText || (type === 'line' ? 'Linha divisória' : type === 'shape' ? 'Forma decorativa' : 'Elemento'),
       x: 50,
       y: 50,
       size: type === 'badge' ? 10 : 12,
       color: type === 'badge' ? '#0F766E' : '#333333',
+      fill: type === 'shape' ? '#dbeafe' : undefined,
+      stroke: type === 'shape' ? '#2563eb' : undefined,
+      strokeWidth: type === 'shape' ? 1 : 0,
+      shape: type === 'shape' ? 'rectangle' : undefined,
+      rotation: 0,
       align: 'center'
     }]);
     toast.success("Elemento adicionado à prancheta e conectado à emissão.");
@@ -207,15 +212,15 @@ export function CertificateFabricPrototype() {
     handleUpdateElement(id, { x: Math.round(x), y: Math.round(y) });
   };
 
-  const handleNewElementDragStart = (e: React.DragEvent<HTMLButtonElement>, type: 'text' | 'badge' | 'line') => {
+  const handleNewElementDragStart = (e: React.DragEvent<HTMLButtonElement>, type: 'text' | 'badge' | 'line' | 'shape') => {
     e.dataTransfer.effectAllowed = 'copy';
     e.dataTransfer.setData('application/x-certificate-element', type);
   };
 
   const handleNewElementDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    const type = e.dataTransfer.getData('application/x-certificate-element') as 'text' | 'badge' | 'line';
-    if (!['text', 'badge', 'line'].includes(type)) return;
+    const type = e.dataTransfer.getData('application/x-certificate-element') as 'text' | 'badge' | 'line' | 'shape';
+    if (!['text', 'badge', 'line', 'shape'].includes(type)) return;
     const rect = artboardRef.current?.getBoundingClientRect();
     if (!rect) return;
     const x = Math.max(4, Math.min(96, ((e.clientX - rect.left) / rect.width) * 100));
@@ -223,11 +228,16 @@ export function CertificateFabricPrototype() {
     commitElements([...extraElements, {
       id: `${type}-${Date.now()}`,
       type,
-      content: newElemText || (type === 'line' ? 'Linha divisória' : 'Elemento'),
+      content: newElemText || (type === 'line' ? 'Linha divisória' : type === 'shape' ? 'Forma decorativa' : 'Elemento'),
       x: Math.round(x),
       y: Math.round(y),
       size: type === 'badge' ? 10 : 12,
       color: type === 'badge' ? '#0F766E' : '#333333',
+      fill: type === 'shape' ? '#dbeafe' : undefined,
+      stroke: type === 'shape' ? '#2563eb' : undefined,
+      strokeWidth: type === 'shape' ? 1 : 0,
+      shape: type === 'shape' ? 'rectangle' : undefined,
+      rotation: 0,
       align: 'center'
     }]);
     toast.success('Elemento posicionado na prancheta.');
@@ -313,11 +323,11 @@ export function CertificateFabricPrototype() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-red-200 shadow-md">
-        <CardHeader className="bg-red-50/50 pb-4">
+      <Card className="overflow-hidden rounded-[2rem] border-border/70 bg-card shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
+        <CardHeader className="border-b border-red-200/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.12),transparent_36%),linear-gradient(135deg,rgba(254,242,242,0.92),rgba(255,255,255,0.98))] pb-5 pt-6 sm:px-7 dark:border-red-900/50 dark:bg-red-950/20">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl font-bold text-red-900 flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-xl font-black tracking-tight text-red-950 dark:text-red-100">
                 <ShieldCheck className="w-5 h-5 text-red-600" />
                 Fabric.js Engine — Réplica Avançada dos Modelos DOCX
               </CardTitle>
@@ -325,14 +335,14 @@ export function CertificateFabricPrototype() {
                 Edite todos os campos textuais, título, signatários, data, CPF e estrutura dos modelos IsF e PROFICI.
               </CardDescription>
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1 text-xs font-bold text-red-700">
+            <span className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-white/80 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-red-700 shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
               Fabric Pro Engine
             </span>
           </div>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="space-y-4 lg:col-span-1 border-r pr-0 lg:pr-6 border-border">
+        <CardContent className="px-4 pb-6 pt-5 sm:px-7 sm:pb-8">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+            <div className="space-y-4 rounded-2xl border border-border/70 bg-muted/20 p-4 lg:sticky lg:top-6 lg:h-fit">
               <div className="space-y-2">
                 <Label>Preset Base (Réplica DOCX)</Label>
                 <Select value={templateId} onValueChange={handlePresetChange}>
@@ -393,9 +403,9 @@ export function CertificateFabricPrototype() {
                 <Input value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
               </div>
 
-              <div className="space-y-4 border p-3 rounded-xl bg-muted/30 shadow-sm">
+              <div className="space-y-4 rounded-2xl border border-border/70 bg-background/80 p-4 shadow-sm">
                 <div className="flex items-center justify-between pb-2 border-b">
-                  <Label className="font-bold text-red-900 text-sm">Editor Avançado (Undo/Redo & Snap)</Label>
+                    <Label className="text-sm font-black text-foreground">Controles de edição</Label>
                   <div className="flex gap-1">
                     <Button variant="outline" size="sm" onClick={handleUndo} className="h-7 text-xs px-2">↶ Desfazer</Button>
                     <Button variant="outline" size="sm" onClick={() => setShowGrid(!showGrid)} className={`h-7 text-xs px-2 ${showGrid ? 'bg-red-50 text-red-700' : ''}`}>Grid</Button>
@@ -462,6 +472,7 @@ export function CertificateFabricPrototype() {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'line')} onClick={() => handleAddElement('line')} size="sm" variant="outline" className="h-8 text-xs">Linha</Button>
+                    <Button draggable onDragStart={(e) => handleNewElementDragStart(e, 'shape')} onClick={() => handleAddElement('shape')} size="sm" variant="outline" className="h-8 border-blue-300 bg-blue-50 text-xs text-blue-800 dark:border-blue-900/60 dark:bg-blue-950/30 dark:text-blue-200">Forma</Button>
                     <label className="inline-flex h-8 cursor-pointer items-center rounded-md border border-border bg-background px-3 text-xs font-bold text-foreground hover:bg-muted">
                       Imagem / logo
                       <input type="file" accept="image/*" onChange={handleImageUpload} className="sr-only" />
@@ -480,6 +491,7 @@ export function CertificateFabricPrototype() {
                           <option value="badge">Badge</option>
                           <option value="line">Linha</option>
                           <option value="image">Imagem</option>
+                          <option value="shape">Forma</option>
                         </select>
                         <input
                           value={el.content}
@@ -540,12 +552,12 @@ export function CertificateFabricPrototype() {
               </div>
             </div>
 
-            <div className="lg:col-span-2 bg-muted/20 p-4 rounded-2xl border flex flex-col justify-center items-center">
+            <div className="flex min-h-[520px] flex-col items-center justify-center rounded-2xl border border-border/70 bg-[radial-gradient(circle_at_center,rgba(214,40,40,0.08),transparent_56%),linear-gradient(135deg,hsl(var(--muted)/0.62),hsl(var(--background)))] p-4 sm:p-6">
               <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between w-full max-w-[620px] px-1 font-mono">
-                <span>Prancheta A4 Interativa (Clique nos textos ou use arrastar)</span>
-                <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded font-bold">Modo Canva Ativo</span>
+                <span className="font-black uppercase tracking-[0.14em] text-foreground">Prancheta A4 interativa</span>
+                <span className="rounded-full border border-red-200 bg-red-50 px-2.5 py-1 font-bold text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">Arraste para editar</span>
               </div>
-              <div ref={artboardRef} onDragOver={(e) => e.preventDefault()} onDrop={handleNewElementDrop} className="relative aspect-[1.414/1] w-full max-w-[620px] select-none overflow-hidden rounded-xl border-2 border-red-300 bg-white p-8 text-center shadow-xl">
+                <div ref={artboardRef} onDragOver={(e) => e.preventDefault()} onDrop={handleNewElementDrop} className="relative aspect-[1.414/1] w-full max-w-[680px] select-none overflow-hidden rounded-[1.5rem] border-2 border-red-300/80 bg-white p-8 text-center shadow-[0_24px_70px_rgba(15,23,42,0.16)] ring-1 ring-black/5">
                 {showGrid && (
                   <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:24px_24px] opacity-80 z-10" />
                 )}
@@ -584,7 +596,9 @@ export function CertificateFabricPrototype() {
                   </h4>
                   <div className="flex items-center gap-1">
                     {extraElements.map(el => (
-                      el.type === 'image' && el.src ? (
+                      el.type === 'shape' ? (
+                        <span key={el.id} className="absolute cursor-move rounded-lg border-2 shadow-sm hover:ring-2 hover:ring-blue-500" style={{ left: `${el.x}%`, top: `${el.y}%`, zIndex: 30, width: `${el.width || 140}px`, height: `${el.height || 80}px`, transform: `translate(-50%, -50%) rotate(${el.rotation || 0}deg)`, backgroundColor: el.fill || el.color || '#dbeafe', borderColor: el.stroke || el.color || '#2563eb', borderWidth: `${el.strokeWidth || 1}px`, borderRadius: el.shape === 'circle' || el.shape === 'pill' ? '9999px' : el.shape === 'diamond' ? '0' : '10px', opacity: el.opacity ?? 1 }} draggable onDragEnd={(e) => handleElementDragEnd(el.id, e)} aria-label={el.content} />
+                      ) : el.type === 'image' && el.src ? (
                         <img
                           key={el.id}
                           src={el.src}

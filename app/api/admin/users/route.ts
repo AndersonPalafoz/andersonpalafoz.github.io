@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { deleteUserPermanently } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { desc, eq } from "drizzle-orm";
 import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
@@ -183,7 +184,9 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE /api/admin/users?id=123 - Exclusão lógica, preservando histórico e recuperação.
+// DELETE /api/admin/users?id=123           - Exclusão lógica, preservando histórico e recuperação.
+// DELETE /api/admin/users?id=123&permanent=true - Exclusão definitiva. Só é permitida se o
+// usuário já estiver na lixeira (exclusão lógica é sempre o primeiro passo).
 export async function DELETE(request: NextRequest) {
   try {
     const session = await requireSuperAdmin();
@@ -192,7 +195,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
     }
 
-    const userId = parseUserId(new URL(request.url).searchParams.get("id"));
+    const url = new URL(request.url);
+    const userId = parseUserId(url.searchParams.get("id"));
+    const permanent = url.searchParams.get("permanent") === "true";
 
     if (!userId) {
       return NextResponse.json({ error: "userId inválido." }, { status: 400 });
@@ -206,6 +211,32 @@ export async function DELETE(request: NextRequest) {
 
     if (targetUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
       return NextResponse.json({ error: "A conta principal não pode ser excluída." }, { status: 403 });
+    }
+
+    if (permanent) {
+      if (!targetUser.deletedAt) {
+        return NextResponse.json(
+          { error: "Exclua o usuário logicamente primeiro (ele precisa estar na lixeira) antes de excluir definitivamente." },
+          { status: 400 },
+        );
+      }
+
+      try {
+        await deleteUserPermanently(userId);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Não foi possível excluir o usuário definitivamente.";
+        return NextResponse.json({ error: message }, { status: 409 });
+      }
+
+      await logAdminActivity({
+        adminEmail: session.user?.email ?? SUPER_ADMIN_EMAIL,
+        action: ADMIN_AUDIT_ACTIONS.PERMANENT_DELETE,
+        targetName: targetUser.name,
+        targetEmail: targetUser.email,
+        details: "Conta e dados pessoais excluídos definitivamente pelo super-admin.",
+      });
+
+      return NextResponse.json({ message: "Usuário excluído definitivamente." });
     }
 
     const deletedUser = await db

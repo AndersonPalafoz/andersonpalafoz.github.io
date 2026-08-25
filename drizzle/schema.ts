@@ -103,7 +103,7 @@ export const courses = pgTable("courses", {
   id: serial("id").primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
-  level: varchar("level", { length: 10 }).notNull(), // A1, A2, B1, B2, C1, C2
+  level: varchar("level", { length: 50 }).notNull(), // CEFR curto ou rótulo descritivo, como Intermediário (B1)
   category: varchar("category", { length: 120 }),
   modules: integer("modules").default(0),
   instructor: varchar("instructor", { length: 255 }).default(
@@ -280,7 +280,7 @@ export const certificates = pgTable("certificates", {
   id: serial("id").primaryKey(),
   userId: serial("userId").notNull(),
   courseId: serial("courseId").notNull(),
-  level: varchar("level", { length: 10 }).notNull(),
+  level: varchar("level", { length: 50 }).notNull(),
   issuedAt: timestamp("issuedAt").defaultNow().notNull(),
   certificateUrl: varchar("certificateUrl", { length: 500 }),
   certificateCode: varchar("certificateCode", { length: 64 }),
@@ -693,6 +693,12 @@ export const lessonNotes = pgTable(
     note: text("note").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+    // Quando um administrador exclui a anotação de um aluno (em vez do
+    // próprio aluno), o texto original é preservado para fins de auditoria,
+    // mas o conteúdo não é mais exibido ao aluno — a interface mostra um
+    // aviso "Excluído por um administrador" no lugar.
+    deletedByAdminAt: timestamp("deletedByAdminAt"),
+    deletedByAdminEmail: text("deletedByAdminEmail"),
   },
   table => ({
     userLessonIdentity: uniqueIndex("lesson_notes_user_lesson_idx").on(

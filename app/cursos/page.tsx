@@ -47,24 +47,24 @@ export default async function CursosPage() {
                 <br />
                 <span className="text-red-600">Inglês Completos</span>
               </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-lg text-gray-600 dark:text-slate-300 leading-relaxed">
                 Cursos estruturados do Básico ao Avançado, com metodologia ESA (Engage, Study, Activate) e foco em comunicação prática.
               </p>
             </div>
 
             {/* Stats */}
             <div className="grid max-w-2xl grid-cols-3 gap-3 pt-8 sm:gap-6">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-5">
                 <p className="text-3xl font-black text-red-600">{cursos.length}</p>
-                <p className="text-gray-600 text-sm">Cursos Disponíveis</p>
+                <p className="text-gray-600 dark:text-slate-400 text-sm">Cursos Disponíveis</p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-5">
                 <p className="text-3xl font-black text-red-600">{totalModulos}</p>
-                <p className="text-gray-600 text-sm">Módulos ao Todo</p>
+                <p className="text-gray-600 dark:text-slate-400 text-sm">Módulos ao Todo</p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-5">
                 <p className="text-3xl font-black text-red-600">100%</p>
-                <p className="text-gray-600 text-sm">Prático</p>
+                <p className="text-gray-600 dark:text-slate-400 text-sm">Prático</p>
               </div>
             </div>
           </div>
@@ -81,7 +81,7 @@ export default async function CursosPage() {
           <CourseTypeLegend />
 
           {cursos.length === 0 ? (
-            <p className="text-center text-gray-600">
+            <p className="text-center text-gray-600 dark:text-slate-400">
               Nenhum curso publicado no momento. Volte em breve!
             </p>
           ) : (

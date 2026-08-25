@@ -281,7 +281,7 @@ export default function BlogPage() {
         <div className="bg-card text-card-foreground rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-6 border-b border-border flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground">Artigos Publicados</h2>
-            <span className="text-sm text-gray-500 font-medium">{posts.length} artigos no Knowledge Hub</span>
+            <span className="text-sm text-gray-500 dark:text-slate-400 font-medium">{posts.length} artigos no Knowledge Hub</span>
           </div>
 
           {loading ? (
@@ -293,7 +293,7 @@ export default function BlogPage() {
             <div className="p-12 text-center text-red-600 font-medium">{error}</div>
           ) : posts.length === 0 ? (
             <div className="p-12 text-center space-y-3">
-              <FileText size={48} className="mx-auto text-gray-300" />
+              <FileText size={48} className="mx-auto text-gray-300 dark:text-slate-600" />
               <p className="text-muted-foreground font-medium">Nenhum artigo publicado ainda.</p>
             </div>
           ) : (
@@ -305,19 +305,19 @@ export default function BlogPage() {
                       <span className="px-3 py-1 rounded-full text-xs font-bold uppercase bg-green-100 text-green-700">
                         {post.category || "Geral"}
                       </span>
-                      <span className="text-xs text-gray-500 font-semibold flex items-center gap-1">
+                      <span className="text-xs text-gray-500 dark:text-slate-400 font-semibold flex items-center gap-1">
                         <Clock size={14} /> {post.readingTime || 5} min de leitura
                       </span>
                     </div>
                     <h3 className="text-lg font-bold text-foreground">{post.title}</h3>
-                    <p className="text-sm text-gray-500 font-mono">/{post.slug}</p>
+                    <p className="text-sm text-gray-500 dark:text-slate-400 font-mono">/{post.slug}</p>
                   </div>
 
                   <div className="flex items-center gap-3">
                     <Link
                       href={`/blog/${post.slug}`}
                       target="_blank"
-                      className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-foreground font-semibold text-xs transition flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-foreground font-semibold text-xs transition flex items-center gap-1.5"
                     >
                       Ver Artigo
                     </Link>

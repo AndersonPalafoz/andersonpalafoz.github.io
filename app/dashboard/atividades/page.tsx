@@ -31,16 +31,16 @@ export default async function AtividadesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Atividades</h1>
-        <p className="text-gray-600">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Atividades</h1>
+        <p className="text-gray-600 dark:text-slate-400">
           Acompanhe suas atividades e tarefas
         </p>
       </div>
 
       {atividades.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-gray-200">
-          <CheckSquare className="mx-auto text-gray-400 mb-4" size={48} />
-          <p className="text-gray-600">
+        <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
+          <CheckSquare className="mx-auto text-gray-400 dark:text-slate-500 mb-4" size={48} />
+          <p className="text-gray-600 dark:text-slate-400">
             Nenhuma atividade atribuída no momento.
           </p>
         </div>
@@ -49,16 +49,16 @@ export default async function AtividadesPage() {
           {atividades.map((item) => (
             <div
               key={item.id}
-              className="p-4 rounded-xl border border-gray-200 bg-white hover:shadow-sm transition flex items-center justify-between gap-4"
+              className="p-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-sm transition flex items-center justify-between gap-4"
             >
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div>{getStatusIcon(item.status)}</div>
                 <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                     {item.activity?.title ?? "Atividade"}
                   </h3>
                   {item.activity?.dueDate && (
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-slate-400">
                       Prazo:{" "}
                       {new Date(item.activity.dueDate).toLocaleDateString("pt-BR")}
                     </p>
@@ -67,7 +67,7 @@ export default async function AtividadesPage() {
               </div>
 
               <div className="text-right flex-shrink-0">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {STATUS_LABEL[item.status] ?? item.status}
                 </p>
                 {item.status === "completed" && item.score != null && (

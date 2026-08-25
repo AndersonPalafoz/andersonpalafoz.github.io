@@ -514,8 +514,9 @@ export default function TeacherTasksPage() {
             </div>
 
             {/* Subtarefas / Checklists no Form */}
-            <div className="border-t pt-4 space-y-3">
-              <h3 className="font-bold text-sm">Subtarefas / Checklist Inicial</h3>
+            <details open className="border-t pt-4">
+              <summary className="cursor-pointer list-none font-bold text-sm">Subtarefas / Checklist Inicial <span className="ml-1 text-[10px] font-normal text-gray-500">Toque para recolher</span></summary>
+              <div className="mt-3 space-y-3">
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -536,11 +537,13 @@ export default function TeacherTasksPage() {
                   </span>
                 ))}
               </div>
-            </div>
+              </div>
+            </details>
 
             {/* Anexos no Form */}
-            <div className="border-t pt-4 space-y-3">
-              <h3 className="font-bold text-sm">Anexos e Links de Referência</h3>
+            <details open className="border-t pt-4">
+              <summary className="cursor-pointer list-none font-bold text-sm">Anexos e Links de Referência <span className="ml-1 text-[10px] font-normal text-gray-500">Toque para recolher</span></summary>
+              <div className="mt-3 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <input
                   type="text"
@@ -570,7 +573,8 @@ export default function TeacherTasksPage() {
                   </span>
                 ))}
               </div>
-            </div>
+              </div>
+            </details>
 
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="border-gray-300">
