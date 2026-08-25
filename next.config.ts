@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizePackageImports: ["@radix-ui/react-icons"],
+    // O Next 15.5 pode ativar o Segment Explorer no preview; o módulo é incompatível com o bundle gerenciado atual.
+    devtoolSegmentExplorer: false,
   },
   typescript: {
     tsconfigPath: "./tsconfig.json",
