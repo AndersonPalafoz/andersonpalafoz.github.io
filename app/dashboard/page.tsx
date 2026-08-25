@@ -102,9 +102,9 @@ export default async function DashboardPage() {
       {/* Banner de Notificações de Notas do Google Classroom */}
       <ClassroomGradesNotificationBanner />
 
-      <section aria-label="Resumo acadêmico" className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
+      <section aria-label="Resumo acadêmico" className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {metrics.map(({ label, value, icon: Icon, tone }) => (
-          <article key={label} className="metric-card interactive-card min-w-[14rem] snap-start md:min-w-0">
+          <article key={label} className="metric-card interactive-card min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${tone}`}><Icon size={21} /></div>
               <span className="text-3xl font-black tracking-tight text-foreground">{value}</span>
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
             <span className="muted-label">Seu próximo passo</span>
             <h2 className="mt-1 text-2xl font-black tracking-tight text-foreground">Continuar aprendendo</h2>
           </div>
-          <Link href="/aulas" className="text-sm font-bold text-primary transition hover:text-primary/80">Explorar catálogo <ArrowRight className="ml-1 inline" size={15} /></Link>
+          <Link href="/cursos" className="text-sm font-bold text-primary transition hover:text-primary/80">Explorar catálogo <ArrowRight className="ml-1 inline" size={15} /></Link>
         </div>
 
         {cursosAtivos.length === 0 ? (
@@ -137,7 +137,7 @@ export default async function DashboardPage() {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={24} /></div>
               <h3 className="mt-4 text-xl font-black tracking-tight text-foreground">Sua próxima conquista começa aqui</h3>
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">Você ainda não está inscrito em um curso. Escolha uma trilha adequada ao seu nível ou importe uma turma do Classroom para começar.</p>
-              <Button asChild className="mt-6"><Link href="/aulas">Explorar cursos <ArrowRight size={17} /></Link></Button>
+              <Button asChild className="mt-6"><Link href="/cursos">Explorar cursos <ArrowRight size={17} /></Link></Button>
             </div>
             {/* Ação para importar do Google Classroom em painéis vazios */}
             <ClassroomImportAction />

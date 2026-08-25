@@ -246,6 +246,8 @@ export default function AdminDashboardPage() {
           materialsCount={stats?.totalMaterials || 0}
           enrollmentsCount={stats?.totalEnrollments || 0}
           isLoading={loading}
+          contextLabel="Governança da plataforma"
+          contextDescription="Monitore o crescimento acadêmico e acesse rapidamente as operações que exigem atenção."
         />
 
         {/* Monitor de Vendas / Stripe & Matrículas */}
