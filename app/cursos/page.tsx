@@ -26,7 +26,7 @@ export default async function CursosPage() {
     user ? db.select({ courseId: enrollments.courseId }).from(enrollments).where(eq(enrollments.userId, user.id)) : Promise.resolve([]),
     user ? db.select({ courseId: wishlistItems.courseId }).from(wishlistItems).where(eq(wishlistItems.userId, user.id)) : Promise.resolve([]),
   ]);
-  const cursosDb = rawCursos.filter((c) => c.courseType !== 4);
+  const cursosDb = rawCursos.filter((c) => Number(c.courseType) !== 4 && c.category !== "Curso Externo / Avulso");
   const purchasedCourseIds = new Set(purchasedRows.map((row) => row.courseId));
   const enrolledCourseIds = new Set(enrollmentRows.map((row) => row.courseId));
   const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));

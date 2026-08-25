@@ -502,6 +502,9 @@ export const contactMessages = pgTable("contact_messages", {
   message: text("message").notNull(),
   isRead: boolean("is_read").default(false).notNull(),
   readAt: timestamp("readAt"),
+  adminReply: text("admin_reply"),
+  repliedAt: timestamp("replied_at"),
+  repliedBy: varchar("replied_by", { length: 320 }),
   deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
