@@ -2139,19 +2139,19 @@
 - [x] Diagnosticar o erro efetivo de build/deploy e incompatibilidades de configuração do projeto; não foi encontrado erro de build: o Vercel mostra deployments READY e o projeto está ligado ao repositório GitHub correto.
 - [x] Corrigir dependências, scripts, tipos e configurações necessárias sem remover funcionalidades existentes; `NEXT_DIST_DIR=.next-build` é compatível com o build local e o build isolado passou.
 - [x] Executar testes, build isolado e verificações das rotas críticas; testes administrativos passaram e o build de produção foi aprovado.
-- [ ] Criar checkpoint recuperável antes de orientar a publicação pelo botão Publish.
+- [x] Criar checkpoint recuperável antes de orientar a publicação pelo botão Publish.
 
 ## Sincronização GitHub/Vercel e auditoria de exclusões — 25/08/2026
 - [ ] Consultar foreign keys, tabelas dependentes, políticas e estado dos usuários sem executar exclusões reais.
-- [ ] Revisar o commit local, testes e build antes da sincronização.
-- [ ] Enviar o commit validado ao GitHub sem sobrescrever alterações remotas inesperadas.
-- [ ] Confirmar o estado do projeto Vercel e orientar a publicação pelo fluxo permitido.
+- [x] Revisar o commit local, testes e build antes da sincronização.
+- [x] Enviar o commit validado ao GitHub sem sobrescrever alterações remotas inesperadas.
+- [x] Confirmar o estado do projeto Vercel e orientar a publicação pelo fluxo permitido.
 
 ## Sincronização do deployment Vercel bckz9qhgs — 25/08/2026
-- [ ] Comparar o código local, o branch GitHub e o deployment Vercel de aproximadamente 10 horas atrás.
-- [ ] Remover artefatos gerados e corrigir testes que ainda esperam o fluxo antigo de e-mail.
-- [ ] Validar o banco PostgreSQL efetivo e as políticas de exclusão sem alterar registros reais.
-- [ ] Sincronizar a versão validada com o GitHub e encaminhar a publicação no deployment escolhido após criar checkpoint.
+- [x] Comparar o código local, o branch GitHub e o deployment Vercel de aproximadamente 10 horas atrás.
+- [x] Remover artefatos gerados e corrigir testes que ainda esperam o fluxo antigo de e-mail.
+- [x] Validar o banco PostgreSQL efetivo e as políticas de exclusão sem alterar registros reais.
+- [x] Sincronizar a versão validada com o GitHub e encaminhar a publicação no deployment escolhido após criar checkpoint.
 - [x] Executar a validação global solicitada: suíte Vitest completa e build de produção.
 - [x] Conferir integridade do repositório, arquivos rastreados e ausência de artefatos `.next-build` no commit.
 - [x] Criar o checkpoint final e sincronizar o código validado com o GitHub para disparar o build automático do Vercel.
@@ -2159,3 +2159,7 @@
 - [x] Revalidar testes, build e sincronização após ajustar o diretório de saída para produção.
 - [x] Auditar em produção e no código local `/admin/anotacoes` e `/admin/usuarios`, incluindo acesso, APIs, ações, responsividade e integridade dos dados.
 - [x] Corrigir a falha conjunta do envio em `/contato` e do carregamento da central em `/admin/mensagens`, validando API, banco, permissões e deployment.
+
+## Exclusão segura de anotações de aula — 25/08/2026
+- [x] Permitir que o aluno exclua apenas as próprias anotações e que administradores excluam anotações de quaisquer alunos, com confirmação e registro visual da autoria da exclusão.
+- [x] Adicionar testes de autorização, exclusão e regressão para as interfaces do aluno e do administrador.

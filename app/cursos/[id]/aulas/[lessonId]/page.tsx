@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2 } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2, ShieldAlert, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -50,7 +50,10 @@ export default function LessonPageClient() {
   const [activePreviewUrl, setActivePreviewUrl] = useState<string | null>(null);
   const [certificateCelebration, setCertificateCelebration] = useState<{ certificateUrl: string; certificateCode?: string | null } | null>(null);
   const [personalNote, setPersonalNote] = useState("");
+  const [noteDeletedByAdminAt, setNoteDeletedByAdminAt] = useState<string | null>(null);
+  const [noteDeletedByAdminEmail, setNoteDeletedByAdminEmail] = useState<string | null>(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [deletingNote, setDeletingNote] = useState(false);
   const [listeningCompleted, setListeningCompleted] = useState(false);
   const [savingListening, setSavingListening] = useState(false);
 
@@ -76,7 +79,13 @@ export default function LessonPageClient() {
         setMaterials(json.materials || []);
         setCompleted(json.completed);
         const noteRes = await fetch(`/api/notes?lessonId=${lessonId}`);
-        if (noteRes.ok) { const noteJson = await noteRes.json(); setPersonalNote(noteJson.note?.note || ""); }
+        if (noteRes.ok) {
+          const noteJson = await noteRes.json();
+          const savedNote = noteJson.note;
+          setPersonalNote(savedNote?.note || "");
+          setNoteDeletedByAdminAt(savedNote?.deletedByAdminAt || null);
+          setNoteDeletedByAdminEmail(savedNote?.deletedByAdminEmail || null);
+        }
 
         const listeningAct = json.activities?.find((a: any) => a.type === "listening");
         if (listeningAct) {
@@ -116,6 +125,22 @@ export default function LessonPageClient() {
       if (!response.ok) throw new Error("Não foi possível salvar sua anotação.");
       toast.success("Anotação salva para esta aula.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao salvar anotação."); } finally { setSavingNote(false); }
+  };
+
+  const deletePersonalNote = async () => {
+    if (deletingNote || !window.confirm("Excluir esta anotação definitivamente? Esta ação remove apenas sua anotação desta aula.")) return;
+    setDeletingNote(true);
+    try {
+      const response = await fetch(`/api/notes?lessonId=${Number(lessonId)}`, { method: "DELETE" });
+      const data = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(data?.error || "Não foi possível excluir sua anotação.");
+      setPersonalNote("");
+      toast.success("Anotação excluída.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível excluir sua anotação.");
+    } finally {
+      setDeletingNote(false);
+    }
   };
 
   const handleToggleComplete = async () => {
@@ -311,7 +336,14 @@ export default function LessonPageClient() {
             </p>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 space-y-4"><div className="flex items-center justify-between"><h3 className="font-bold text-base text-gray-900">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div><textarea value={personalNote} onChange={(event) => setPersonalNote(event.target.value)} placeholder="Registre vocabulário, dúvidas e observações importantes..." className="min-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 outline-none focus:border-red-500" /><Button onClick={savePersonalNote} disabled={savingNote} variant="outline" className="gap-2 rounded-xl border-gray-300 font-bold">{savingNote && <Loader2 className="animate-spin" size={16} />} Salvar anotação</Button></div>
+          <div className="border-t border-gray-100 pt-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-base text-gray-900">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div>
+            {noteDeletedByAdminAt ? (
+              <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"><ShieldAlert size={18} className="mt-0.5 shrink-0" /><p>Esta anotação foi excluída por um administrador{noteDeletedByAdminEmail ? ` (${noteDeletedByAdminEmail})` : ""} em {new Date(noteDeletedByAdminAt).toLocaleString("pt-BR")}. O conteúdo original não pode mais ser editado.</p></div>
+            ) : (
+              <><textarea value={personalNote} onChange={(event) => setPersonalNote(event.target.value)} placeholder="Registre vocabulário, dúvidas e observações importantes..." className="min-h-28 w-full rounded-2xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-800 outline-none focus:border-red-500" /><div className="flex flex-wrap gap-2"><Button onClick={savePersonalNote} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-gray-300 font-bold">{savingNote && <Loader2 className="animate-spin" size={16} />} Salvar anotação</Button>{personalNote.trim() && <Button onClick={deletePersonalNote} disabled={savingNote || deletingNote} variant="outline" className="gap-2 rounded-xl border-red-200 font-bold text-red-600 hover:bg-red-50">{deletingNote ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />} Excluir anotação</Button>}</div></>
+            )}
+          </div>
 
           <div className="border-t border-gray-100 pt-6 space-y-4">
             <div className="flex items-center justify-between">
