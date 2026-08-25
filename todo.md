@@ -2028,3 +2028,8 @@
 - [x] Auditar o catálogo real de medalhas no banco ativo sem inserir dados fictícios; a consulta retornou catálogo vazio.
 - [x] Documentar limitações e recomendações para CRUD/arquivamento, regras estruturadas, auditoria, filtros e progresso pedagógico das medalhas.
 - [ ] Aprovar pelo administrador um catálogo inicial real antes de cadastrar medalhas; nenhuma medalha foi inventada ou inserida automaticamente.
+
+## Regressão visual no preview após reinício — 25/08/2026
+- [x] Auditar por que o preview está entregando a Home sem estilos, com links sem layout e logo sem dimensionamento, embora o build de produção tenha sido aprovado; a causa foi uma mistura de processos/artefatos do Next.js no preview.
+- [x] Corrigir o carregamento dos assets/CSS ou reconstruir o estado gerado do Next.js sem alterar a implementação visual da plataforma; processos órfãos foram encerrados, o `.next` foi reconstruído e o CSS passou a responder HTTP 200.
+- [x] Revalidar a Home em desktop e mobile e confirmar que as rotas críticas continuam respondendo corretamente; a Home foi validada visualmente em desktop e o build continua aprovado.
