@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { and, eq, like } from "drizzle-orm";
+import { and, eq, inArray, like } from "drizzle-orm";
 import { getLessonById, getModuleById, getUserLessonProgress, updateLessonProgress, db } from "@/lib/db";
 import { issueCertificateIfEligible } from "@/lib/certificate-service";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { awardLessonCompletionXp, LESSON_COMPLETION_XP } from "@/lib/gamification";
-import { eventLogs } from "@/drizzle/schema";
+import { eventLogs, lessonProgress, lessons, modules } from "@/drizzle/schema";
+import { awardMedalIfEligible } from "@/lib/medal-awards";
 
 export async function POST(
   request: Request,
@@ -49,6 +50,29 @@ export async function POST(
       });
     }
 
+    let awardedMedals: string[] = [];
+    if (completed) {
+      const module = await getModuleById((await getLessonById(lessonId))?.moduleId ?? 0);
+      if (module) {
+        const courseModules = await db.select({ id: modules.id }).from(modules).where(eq(modules.courseId, module.courseId));
+        const courseModuleIds = courseModules.map((row) => row.id);
+        const courseLessons = courseModuleIds.length
+          ? await db.select({ id: lessons.id }).from(lessons).where(inArray(lessons.moduleId, courseModuleIds))
+          : [];
+        const completedLessons = await db.select({ id: lessonProgress.id })
+          .from(lessonProgress)
+          .where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.completed, 1), inArray(lessonProgress.lessonId, courseLessons.map((row) => row.id))));
+        if (completedLessons.length >= 1) {
+          const firstStep = await awardMedalIfEligible({ userId, medalCode: "primeiro-passo" });
+          if (firstStep.awarded) awardedMedals.push(firstStep.medal.medalCode);
+        }
+        if (courseLessons.length > 0 && completedLessons.length / courseLessons.length >= 0.25) {
+          const started = await awardMedalIfEligible({ userId, medalCode: "trilha-iniciada" });
+          if (started.awarded) awardedMedals.push(started.medal.medalCode);
+        }
+      }
+    }
+
     let certificate = null;
     if (completed) {
       const lesson = await getLessonById(lessonId);
@@ -58,7 +82,7 @@ export async function POST(
         certificate = result.certificate;
       }
     }
-    return NextResponse.json({ success: true, certificate, pointsAwarded });
+    return NextResponse.json({ success: true, certificate, pointsAwarded, awardedMedals });
   } catch (error) {
     console.error("Error updating lesson progress:", error);
     return NextResponse.json({ error: "Não foi possível atualizar o progresso da aula." }, { status: 500 });

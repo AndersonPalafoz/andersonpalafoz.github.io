@@ -51,8 +51,8 @@ export async function POST(request: Request) {
     const medalCode = typeof body.medalCode === "string" ? body.medalCode.trim() : "";
     const notes = typeof body.notes === "string" ? body.notes.trim() : "";
 
-    if (!Number.isInteger(adminId) || adminId <= 0 || !Number.isInteger(userId) || userId <= 0 || !medalCode) {
-      return NextResponse.json({ error: "Dados inválidos para concessão da medalha." }, { status: 400 });
+    if (!Number.isInteger(adminId) || adminId <= 0 || !Number.isInteger(userId) || userId <= 0 || !medalCode || !notes) {
+      return NextResponse.json({ error: "Selecione um aluno, uma medalha e informe uma justificativa para a concessão manual." }, { status: 400 });
     }
 
     const [targetUser, medalMeta, existingGrant] = await Promise.all([
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     await db.insert(notifications).values({
       userId,
       title: `Conquista desbloqueada: ${medalMeta.title}`,
-      message: notes ? `Você recebeu uma nova medalha. Justificativa: ${notes}` : "Você recebeu uma nova medalha por seu desempenho na plataforma.",
+      message: `Você recebeu uma nova medalha. Justificativa: ${notes}` ,
       type: "achievement",
       metadata: JSON.stringify({ medalCode, grantType: "manual" }),
       readAt: null,
