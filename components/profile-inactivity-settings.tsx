@@ -18,6 +18,7 @@ export function ProfileInactivitySettings() {
   const handleChangeMinutes = (val: number) => {
     setMinutes(val);
     localStorage.setItem("ap_inactivity_minutes", String(val));
+    window.dispatchEvent(new CustomEvent("ap:inactivity-changed"));
     toast.success(`Tempo limite de inatividade alterado para ${val} minutos.`);
   };
 
