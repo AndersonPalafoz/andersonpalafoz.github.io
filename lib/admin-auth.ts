@@ -61,9 +61,10 @@ export async function canManageCourse(session: AdminAuthSession, courseId: numbe
   // Se o curso tiver instructorId ou form de autoria, checamos. Caso contrário, se o professor for o criador ou responsável, permitimos.
   // Regra solicitada: professor só pode excluir/lixeira/recuperar itens que ele mesmo criou. 
   // Se course.instructor (ou instructorId) bater com o nome/email do professor, ou se ele for o criador.
-  if (course.instructor && dbUser.name && course.instructor.toLowerCase() !== dbUser.name.toLowerCase() && course.instructor.toLowerCase() !== dbUser.email.toLowerCase()) {
-    return false;
-  }
+  const instructorName = course.instructor?.toLowerCase();
+  const matchesName = Boolean(dbUser.name && instructorName === dbUser.name.toLowerCase());
+  const matchesEmail = Boolean(dbUser.email && instructorName === dbUser.email.toLowerCase());
+  if (instructorName && !matchesName && !matchesEmail) return false;
   return true;
 }
 
