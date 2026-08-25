@@ -20,7 +20,18 @@ export async function GET() {
   const draw = (text: string, options: { size?: number; bold?: boolean; color?: ReturnType<typeof rgb> } = {}) => { const size = options.size || 11; const selected = options.bold ? bold : font; const lines = text.match(/.{1,88}(?:\s|$)/g) || [text]; for (const line of lines) { if (y < 55) addPage(); page.drawText(line.trim(), { x: 50, y, size, font: selected, color: options.color || rgb(0.12, 0.12, 0.12) }); y -= size + 5; } };
   draw("Minhas anotações de estudo", { size: 20, bold: true, color: rgb(0.72, 0.05, 0.08) }); y -= 12;
   if (!notes.length) draw("Nenhuma anotação foi registrada.");
-  for (const note of notes) { if (y < 120) addPage(); draw(note.lesson?.title || `Aula #${note.lessonId}`, { size: 13, bold: true }); draw(`Atualizada em ${new Date(note.updatedAt).toLocaleString("pt-BR")}`, { size: 9, color: rgb(0.4, 0.4, 0.4) }); y -= 5; draw(note.note || "(anotação vazia)"); y -= 18; }
+  for (const note of notes) {
+    if (y < 120) addPage();
+    draw(note.lesson?.title || `Aula #${note.lessonId}`, { size: 13, bold: true });
+    draw(`Atualizada em ${new Date(note.updatedAt).toLocaleString("pt-BR")}`, { size: 9, color: rgb(0.4, 0.4, 0.4) });
+    y -= 5;
+    if (note.deletedByAdminAt) {
+      draw(`Excluída por um administrador em ${new Date(note.deletedByAdminAt).toLocaleString("pt-BR")}.`, { size: 10, color: rgb(0.65, 0.32, 0.02) });
+    } else {
+      draw(note.note || "(anotação vazia)");
+    }
+    y -= 18;
+  }
   const bytes = await pdf.save();
   return new NextResponse(Buffer.from(bytes), { headers: { "Content-Type": "application/pdf", "Content-Disposition": "attachment; filename= minhas-anotacoes.pdf" } });
 }

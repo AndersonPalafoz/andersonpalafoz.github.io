@@ -40,6 +40,9 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const session = await requireAdmin();
   if (!session) return NextResponse.json({ error: "Acesso restrito a administradores e professores." }, { status: 403 });
+  if (session.user.role !== "admin" && session.user.role !== "super_admin" && session.user.email?.toLowerCase() !== "palafozanderson@gmail.com") {
+    return NextResponse.json({ error: "Somente administradores podem excluir anotações de alunos." }, { status: 403 });
+  }
 
   const noteId = parseId(new URL(request.url).searchParams.get("id"));
   if (!noteId) return NextResponse.json({ error: "id inválido." }, { status: 400 });
