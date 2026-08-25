@@ -2087,3 +2087,5 @@
 - [x] Corrigir a exportação administrativa em lote: usar `includeSiteBranding` no contrato PDF e `Uint8Array` nos retornos PDF/ZIP; 3 arquivos e 8 testes focados passaram e o build foi aprovado.
 - [x] Corrigir a comparação impossível com `super_admin` na rota de download de certificados, alinhando a autorização aos papéis reais do schema; o typecheck reduziu de 55 para 54 erros.
 - [x] Validar a correção de autorização do download de certificados; 4 arquivos e 10 testes focados passaram e o build de produção foi aprovado.
+- [x] Corrigir a falha de exclusão de usuários criando/aplicando a tabela `direct_messages` definida no schema, mas ausente no banco conectado pela aplicação; validar a exclusão sem dados de teste.
+- [x] Validar a correção da exclusão de usuários com 11 testes regressivos aprovados e confirmar que direct_messages existe com zero registros artificiais.
