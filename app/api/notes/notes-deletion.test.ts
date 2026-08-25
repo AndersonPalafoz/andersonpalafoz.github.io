@@ -23,7 +23,9 @@ const lessonPage = readFileSync(join(process.cwd(), "app/cursos/[id]/aulas/[less
 
   it("connects the lesson page to student deletion and administrative-deletion feedback", () => {
     expect(lessonPage).toContain('method: "DELETE"');
-    expect(lessonPage).toContain("Excluir esta anotação definitivamente?");
+    expect(lessonPage).toContain("Excluir anotação desta aula?");
+    expect(lessonPage).toContain("ConfirmDialog");
+    expect(lessonPage).toContain("setConfirmDeleteNote(true)");
     expect(lessonPage).toContain("Esta anotação foi excluída por um administrador");
     expect(lessonPage).toContain("deletedByAdminAt");
   });

@@ -23,8 +23,21 @@ describe("security inactivity and dashboard avatar contracts", () => {
   it("uses the uploaded profile avatar before falling back to session image or initials", () => {
     const source = read("app/dashboard/dashboard-shell.tsx");
     expect(source).toContain("avatarUrl || session?.user?.image");
-    expect(source).toContain("onError={() => setAvatarLoadFailed(true)}");
+    expect(source).toContain("avatarLoading");
+    expect(source).toContain("animate-pulse bg-slate-200");
+    expect(source).toContain("onLoad={() => setAvatarLoading(false)}");
     expect(source).toContain("getInitials(session?.user?.name)");
+  });
+  it("uses the reusable confirmation dialog and success/error toasts for note deletion", () => {
+    const studentPage = read("app/dashboard/anotacoes/page.tsx");
+    const lessonPage = read("app/cursos/[id]/aulas/[lessonId]/page.tsx");
+    const adminPage = read("app/admin/anotacoes/page.tsx");
+    for (const source of [studentPage, lessonPage, adminPage]) {
+      expect(source).toContain("ConfirmDialog");
+      expect(source).toContain("toast.success");
+      expect(source).toContain("toast.error");
+      expect(source).not.toContain("window.confirm");
+    }
   });
 });
 
