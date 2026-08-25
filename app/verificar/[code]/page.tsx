@@ -3,7 +3,7 @@ import { certificates, courses, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { Award, CheckCircle2, Download, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Metadata } from "type-fest";
+import type { Metadata } from "next";
 
 interface Props {
   params: { code: string };

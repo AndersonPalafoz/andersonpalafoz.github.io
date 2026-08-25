@@ -2058,5 +2058,10 @@
 - [x] Validar build e preview em sequência sem provocar `ENOENT` de cache Webpack ou erro de Client Manifest; o build foi aprovado e a Home permaneceu estilizada após reinício.
 
 ## Limpeza dos diagnósticos TypeScript do watcher — 25/08/2026
-- [ ] Corrigir os erros de tipagem em `professor-courses-trash-manager`, `components/ui/select` e a dependência ausente do heartbeat, sem mascarar falhas reais do aplicativo.
+- [x] Corrigir os erros de tipagem em `professor-courses-trash-manager`, `components/ui/select` e a dependência ausente do heartbeat, sem mascarar falhas reais do aplicativo; também foi corrigido o import de `Metadata` na página de verificação.
 - [ ] Reexecutar `pnpm check`, testes e build após a limpeza dos diagnósticos.
+
+## Validação focada consolidada — 25/08/2026
+- [x] Reexecutar os testes de exclusão de anotações, catálogo de medalhas e estabilidade do preview após o checkpoint; 3 arquivos e 5 testes passaram.
+- [ ] Resolver os demais diagnósticos do `pnpm check`; após regenerar os tipos, ainda existem 58 erros distribuídos em 20 arquivos, sem impacto no build aprovado por causa da configuração atual de build.
+- [x] Confirmar o build de produção isolado em `.next-build`; a geração foi aprovada sem apagar ou substituir o bundle `.next` usado pelo preview.
