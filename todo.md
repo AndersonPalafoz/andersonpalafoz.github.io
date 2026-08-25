@@ -2133,7 +2133,7 @@
 ## Atualização local e preparação para publicação no Vercel — 25/08/2026
 - [x] Revisar mudanças locais e arquivos pendentes antes da publicação; o workspace está na branch `main` e o servidor local está respondendo.
 - [x] Executar testes relevantes e build isolado de produção; os testes administrativos passaram e o build Next.js isolado foi aprovado.
-- [ ] Salvar checkpoint recuperável antes de orientar o uso do Publish; tentativa em andamento.
+- [x] Salvar checkpoint recuperável antes de orientar o uso do Publish; tentativa em andamento.
 
 ## Preparação para deploy no Vercel — 25/08/2026
 - [x] Diagnosticar o erro efetivo de build/deploy e incompatibilidades de configuração do projeto; não foi encontrado erro de build: o Vercel mostra deployments READY e o projeto está ligado ao repositório GitHub correto.
@@ -2168,3 +2168,4 @@
 - [x] Fazer o limite de inatividade encerrar efetivamente a sessão e sincronizar a preferência entre páginas e recarregamentos.
 - [x] Exibir a foto de perfil do usuário no menu lateral, com fallback para iniciais e tratamento acessível de imagem ausente ou inválida.
 - [x] Adicionar testes de regressão e validar responsividade, autenticação e build de produção.
+- [x] Corrigir a inconsistência transitória do preview após build, evitando erros de tipos gerados ausentes em `.next/types` e falhas de runtime do dev server.
