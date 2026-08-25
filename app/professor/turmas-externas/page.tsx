@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
 import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 interface ExternalStudentItem {
@@ -31,8 +31,13 @@ interface ExternalClassGradeItem {
   id: number;
   studentId: number;
   assessmentTitle: string;
+  assessmentType?: string | null;
+  assessmentVersion?: string | null;
+  assessmentComponent?: string | null;
   score: string;
   maxScore: string;
+  rubricScores?: string | null;
+  assessmentDate?: string | null;
   feedback: string | null;
   createdAt: string;
 }
@@ -58,6 +63,7 @@ interface ExternalClassItem {
   courseName: string;
   academicTerm: string;
   description: string | null;
+  maxAbsencePercent?: number | null;
   instructorName: string | null;
   monitors: string | null;
   students: ExternalStudentItem[];
@@ -112,6 +118,23 @@ const normalizeWorkloadHours = (value: unknown) => {
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
 };
 
+const SIMAL_ASSESSMENTS = [
+  { value: "simal-units-1-2-4", label: "SIMAL — Units 1, 2 & 4", type: "written", version: "A", maxScore: "8.0" },
+  { value: "simal-units-1-2-4-b", label: "SIMAL — Units 1, 2 & 4 (Versão B)", type: "written", version: "B", maxScore: "8.0" },
+  { value: "simal-speaking", label: "SIMAL — Speaking (prova oral)", type: "oral", version: "A/B", maxScore: "1.5" },
+  { value: "simal-presentation", label: "SIMAL — Presentation", type: "presentation", version: "A/B", maxScore: "2.0" },
+] as const;
+
+const SIMAL_COMPONENTS = [
+  { value: "grammar", label: "Grammar", maxScore: "2.0" },
+  { value: "reading", label: "Reading", maxScore: "2.0" },
+  { value: "writing", label: "Writing", maxScore: "1.5" },
+  { value: "listening", label: "Listening", maxScore: "1.0" },
+  { value: "speaking", label: "Speaking — nota final", maxScore: "1.5" },
+  { value: "presentation", label: "Presentation", maxScore: "2.0" },
+  { value: "total", label: "Nota total da prova escrita", maxScore: "8.0" },
+] as const;
+
 export default function TurmasExternasPage() {
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -119,6 +142,8 @@ export default function TurmasExternasPage() {
   const [operationFeedback, setOperationFeedback] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sendingEmailId, setSendingEmailId] = useState<number | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<Date | null>(null);
+  const [isClassFormOpen, setIsClassFormOpen] = useState(false);
 
   const describeApiError = (status: number, fallback: string) => {
     if (status === 401) return { title: "Sessão necessária", message: "Sua sessão não está ativa. Entre novamente para acessar as turmas externas.", action: "Fazer login" };
@@ -249,6 +274,14 @@ export default function TurmasExternasPage() {
   // Tab view per class: 'students' | 'attendance' | 'grades' | 'materials'
   const [activeTabByClass, setActiveTabByClass] = useState<Record<number, string>>({});
 
+  const setClassWorkspaceTab = (classId: number, tab: string) => {
+    setActiveTabByClass((current) => ({ ...current, [classId]: tab }));
+    const url = new URL(window.location.href);
+    url.searchParams.set("classId", String(classId));
+    url.searchParams.set("tab", tab);
+    window.history.replaceState({}, "", `${url.pathname}?${url.searchParams.toString()}`);
+  };
+
   // Chamada state
   const [attendanceDate, setAttendanceDate] = useState<Record<number, string>>({});
   const [attendanceStatuses, setAttendanceStatuses] = useState<Record<number, Record<number, string>>>({});
@@ -258,6 +291,14 @@ export default function TurmasExternasPage() {
   const [gradeStudentId, setGradeStudentId] = useState<Record<number, number>>({});
   const [gradeScore, setGradeScore] = useState<Record<number, string>>({});
   const [gradeFeedback, setGradeFeedback] = useState<Record<number, string>>({});
+  const [gradeAssessmentPreset, setGradeAssessmentPreset] = useState<Record<number, string>>({});
+  const [gradeAssessmentComponent, setGradeAssessmentComponent] = useState<Record<number, string>>({});
+  const [gradeAssessmentDate, setGradeAssessmentDate] = useState<Record<number, string>>({});
+  const [gradeRubricScores, setGradeRubricScores] = useState<Record<number, { content: string; language: string; comprehensibility: string }>>({});
+  const [simalBatchPreset, setSimalBatchPreset] = useState<Record<number, string>>({});
+  const [simalBatchComponent, setSimalBatchComponent] = useState<Record<number, string>>({});
+  const [simalBatchScores, setSimalBatchScores] = useState<Record<number, Record<number, string>>>({});
+  const [simalBatchDate, setSimalBatchDate] = useState<Record<number, string>>({});
 
   // Materials state
   const [materialTitle, setMaterialTitle] = useState<Record<number, string>>({});
@@ -276,6 +317,7 @@ export default function TurmasExternasPage() {
         throw new Error(description.message);
       }
       setClasses(Array.isArray(data.classes) ? data.classes : []);
+      setLastUpdatedAt(new Date());
       setOperationFeedback(null);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro inesperado ao carregar turmas externas.";
@@ -340,6 +382,12 @@ export default function TurmasExternasPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const classId = Number(params.get("classId"));
+    const tab = params.get("tab");
+    if (Number.isInteger(classId) && classId > 0 && tab) {
+      setActiveTabByClass({ [classId]: tab });
+    }
     void loadClasses();
     void loadTrash();
   }, []);
@@ -356,6 +404,51 @@ export default function TurmasExternasPage() {
       summary[cls.institution].activeCount += cls.students.filter(s => s.status === "active").length;
     }
     return summary;
+  }, [classes]);
+
+  const operationalMetrics = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let upcomingLessons = 0;
+    let pendingAttendance = 0;
+    let lowAttendanceStudents = 0;
+    let pendingAssessments = 0;
+    let potentialCertificates = 0;
+
+    for (const cls of classes) {
+      const startDateValue = (cls as any).startDate ? new Date((cls as any).startDate) : null;
+      const endDateValue = (cls as any).endDate ? new Date((cls as any).endDate) : null;
+      const isActive = !endDateValue || endDateValue >= today;
+      if (isActive && startDateValue && startDateValue >= today) upcomingLessons += 1;
+      if (isActive && (cls.attendance?.length || 0) === 0 && cls.students.length > 0) pendingAttendance += 1;
+
+      const attendanceByStudent = new Map<number, { total: number; absent: number }>();
+      for (const attendance of cls.attendance || []) {
+        try {
+          const values = JSON.parse(attendance.attendanceData) as Record<string, string>;
+          for (const student of cls.students) {
+            const current = attendanceByStudent.get(student.id) || { total: 0, absent: 0 };
+            const status = values[String(student.id)];
+            if (status) {
+              current.total += 1;
+              if (status === "absent") current.absent += 1;
+            }
+            attendanceByStudent.set(student.id, current);
+          }
+        } catch {
+          // Dados legados inválidos não devem interromper o resumo operacional.
+        }
+      }
+      for (const student of cls.students) {
+        const attendance = attendanceByStudent.get(student.id);
+        if (attendance && attendance.total > 0 && (attendance.absent / attendance.total) * 100 >= (cls.maxAbsencePercent ?? 25) * 0.8) lowAttendanceStudents += 1;
+        const hasGrade = (cls.grades || []).some((grade) => grade.studentId === student.id);
+        if (isActive && student.status === "active" && !hasGrade) pendingAssessments += 1;
+        if (student.status === "active" && hasGrade && (!attendance || attendance.total === 0 || (attendance.absent / attendance.total) * 100 < (cls.maxAbsencePercent ?? 25))) potentialCertificates += 1;
+      }
+    }
+
+    return { activeClasses: classes.filter((cls) => !(cls as any).endDate || new Date((cls as any).endDate) >= today).length, upcomingLessons, pendingAttendance, lowAttendanceStudents, pendingAssessments, potentialCertificates };
   }, [classes]);
 
   const uniqueInstitutions = useMemo(() => {
@@ -485,6 +578,7 @@ export default function TurmasExternasPage() {
   };
 
   const startEditClass = (cls: ExternalClassItem) => {
+    setIsClassFormOpen(true);
     setEditingClassId(cls.id);
     const standardList = ["IsF", "PROFICI", "SIMAL", "Megaworks", "UFBA"];
     if (standardList.includes(cls.institution)) {
@@ -533,6 +627,22 @@ export default function TurmasExternasPage() {
     setClassroomLocation("");
     setLevel("Básico (A1-A2)");
     resetClassValidation();
+  };
+
+  const handleDuplicateClass = async (classItem: ExternalClassItem) => {
+    if (!window.confirm(`Duplicar a turma “${classItem.className}” sem copiar alunos, notas ou chamadas?`)) return;
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "duplicateClass", classId: classItem.id }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Não foi possível duplicar a turma.");
+      notifySuccess(`Turma duplicada como “${data.classItem?.className || "nova turma"}”. Revise as datas antes de usar.`);
+      void loadClasses();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Não foi possível duplicar a turma.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteClass = (classId: number) => {
@@ -676,13 +786,20 @@ export default function TurmasExternasPage() {
 
   const handleSaveGrade = async (classId: number) => {
     const sId = gradeStudentId[classId];
-    const title = gradeAssessmentTitle[classId];
+    const preset = SIMAL_ASSESSMENTS.find((item) => item.value === gradeAssessmentPreset[classId]);
+    const title = gradeAssessmentTitle[classId] || preset?.label || "";
+    const component = gradeAssessmentComponent[classId] || (preset?.type === "oral" ? "speaking" : preset?.type === "presentation" ? "presentation" : "total");
+    const componentPreset = SIMAL_COMPONENTS.find((item) => item.value === component);
     const scoreVal = gradeScore[classId];
-    const maxVal = "10.0";
+    const rubric = gradeRubricScores[classId];
+    const rubricValues = rubric ? [rubric.content, rubric.language, rubric.comprehensibility].map(Number) : [];
+    const computedRubricScore = rubricValues.length === 3 && rubricValues.every((value) => Number.isFinite(value)) ? rubricValues.reduce((sum, value) => sum + value, 0).toFixed(2) : "";
+    const effectiveScore = preset?.type === "oral" && computedRubricScore ? computedRubricScore : scoreVal;
+    const maxVal = componentPreset?.maxScore || preset?.maxScore || "10.0";
     const fb = gradeFeedback[classId] || "";
 
-    if (!sId || !title || !scoreVal) {
-      notifyError("Selecione o aluno, informe o título da avaliação e a nota.");
+    if (!sId || !title || !effectiveScore) {
+      notifyError("Selecione o aluno e informe a avaliação e a nota.");
       return;
     }
 
@@ -696,8 +813,13 @@ export default function TurmasExternasPage() {
           classId,
           studentId: sId,
           assessmentTitle: title,
-          score: scoreVal,
+          assessmentType: preset?.type || "custom",
+          assessmentVersion: preset?.version || null,
+          assessmentComponent: component,
+          score: effectiveScore,
           maxScore: maxVal,
+          rubricScores: rubric ? JSON.stringify(rubric) : null,
+          assessmentDate: gradeAssessmentDate[classId] || new Date().toISOString().slice(0, 10),
           feedback: fb,
         }),
       });
@@ -705,11 +827,41 @@ export default function TurmasExternasPage() {
       if (!res.ok) throw new Error(data.error || "Erro ao salvar nota.");
       notifySuccess("Nota lançada com sucesso!");
       setGradeAssessmentTitle(prev => ({ ...prev, [classId]: "" }));
+      setGradeAssessmentPreset(prev => ({ ...prev, [classId]: "" }));
+      setGradeAssessmentComponent(prev => ({ ...prev, [classId]: "" }));
+      setGradeAssessmentDate(prev => ({ ...prev, [classId]: "" }));
       setGradeScore(prev => ({ ...prev, [classId]: "" }));
       setGradeFeedback(prev => ({ ...prev, [classId]: "" }));
+      setGradeRubricScores(prev => ({ ...prev, [classId]: { content: "", language: "", comprehensibility: "" } }));
       void loadClasses();
     } catch (err) {
       notifyError(err instanceof Error ? err.message : "Erro ao salvar nota.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSaveSimalBatch = async (classItem: ExternalClassItem) => {
+    const classId = classItem.id;
+    const preset = SIMAL_ASSESSMENTS.find((item) => item.value === simalBatchPreset[classId]);
+    const component = simalBatchComponent[classId] || (preset?.type === "presentation" ? "presentation" : "total");
+    const componentPreset = SIMAL_COMPONENTS.find((item) => item.value === component);
+    const scores = simalBatchScores[classId] || {};
+    const gradesList = classItem.students.filter((student) => String(scores[student.id] || "").trim()).map((student) => ({ studentId: student.id, score: String(scores[student.id]).trim() }));
+    if (!preset || gradesList.length === 0) {
+      notifyError("Selecione uma avaliação SIMAL e informe ao menos uma nota.");
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component, maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || "2026-08-18", gradesList }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Não foi possível salvar as notas SIMAL.");
+      notifySuccess(`${data.processedCount || gradesList.length} nota(s) SIMAL registrada(s) com sucesso.`);
+      setSimalBatchScores((current) => ({ ...current, [classId]: {} }));
+      void loadClasses();
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Erro ao salvar notas SIMAL.");
     } finally {
       setSubmitting(false);
     }
@@ -928,6 +1080,18 @@ export default function TurmasExternasPage() {
     notifySuccess(`Pré-visualização PDF aberta com o filtro: ${academicReportFilterLabel(filter)}.`);
   };
 
+  const downloadStudentTemplate = () => {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ["Nome completo", "CPF", "E-mail", "Matrícula", "Categoria", "Universidade", "Componente", "Dias", "Horário", "CH", "Professor", "Status"],
+      ["Exemplo: Ana Silva", "", "ana@example.com", "", "Estudante", "UFBA", "Básico", "Quarta", "18:00 às 22:00", "16H", "", "active"],
+    ]);
+    worksheet["!cols"] = [18, 15, 28, 16, 22, 18, 16, 14, 18, 10, 24, 12].map((wch) => ({ wch }));
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Alunos");
+    XLSX.writeFile(workbook, "modelo-importacao-alunos-turma-externa.xlsx");
+    notifySuccess("Modelo de planilha baixado.");
+  };
+
   // Importação real de CSV/TSV/XLS/XLSX para os layouts IsF e PROFICI.
   const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1007,6 +1171,17 @@ export default function TurmasExternasPage() {
         throw new Error("Nenhum aluno válido encontrado. A coluna Nome completo é obrigatória.");
       }
 
+      const confirmed = window.confirm([
+        `Prévia da importação: ${csvData.length} registro(s) válido(s).`,
+        skippedRows > 0 ? `${skippedRows} linha(s) sem nome serão ignoradas.` : "Nenhuma linha sem nome foi encontrada.",
+        attendanceColumnsDetected > 0 ? `${attendanceColumnsDetected} coluna(s) de presença serão processadas.` : "Nenhuma coluna de presença foi detectada.",
+        "A API verificará duplicidades e informará quantos registros foram criados ou atualizados. Deseja confirmar?",
+      ].join("\\n"));
+      if (!confirmed) {
+        notifySuccess("Importação cancelada antes de alterar os dados da turma.");
+        return;
+      }
+
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1043,22 +1218,55 @@ export default function TurmasExternasPage() {
                 <ArrowLeft size={18} />
               </Link>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
-                <Building2 className="text-red-600" size={26} /> Gestão Completa de Cursos, Chamada, Notas e Materiais Externos
+                <Building2 className="text-red-600" size={26} /> Turmas externas
               </h1>
             </div>
             <p className="text-sm leading-relaxed text-gray-600 dark:text-slate-300 pl-13 max-w-3xl">
-              Controle total de turmas institucionais e customizadas (IsF, PROFICI, SIMAL, Megaworks, UFBA e outras), chamada diária, notas, feedbacks e repositório de materiais.
+              Organize alunos, aulas, frequência, avaliações e materiais em um só lugar.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 md:justify-end" aria-label="Resumo de sincronização">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-extrabold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" /> Dados sincronizados
+            <button
+              type="button"
+              onClick={() => { setIsClassFormOpen(true); window.scrollTo({ top: 420, behavior: "smooth" }); }}
+              className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-3.5 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+            >
+              <Plus size={15} aria-hidden="true" /> Nova turma
+            </button>
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-extrabold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" /> {lastUpdatedAt ? `Atualizado às ${lastUpdatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Atualizando dados"}
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] font-extrabold text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               <Building2 size={13} aria-hidden="true" /> {classes.length} {classes.length === 1 ? "turma cadastrada" : "turmas cadastradas"}
             </span>
           </div>
         </header>
+
+        <section aria-labelledby="operational-overview-title" className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-4 sm:p-5 lg:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Visão operacional</p>
+              <h2 id="operational-overview-title" className="text-lg sm:text-xl font-black text-gray-950 dark:text-white">O que precisa da sua atenção</h2>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Os indicadores são calculados a partir dos registros atuais das turmas.</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+            {[
+              { label: "Turmas ativas", value: operationalMetrics.activeClasses, icon: Building2, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
+              { label: "Próximas aulas", value: operationalMetrics.upcomingLessons, icon: Calendar, tone: "text-blue-600 bg-blue-50 dark:bg-blue-950/30" },
+              { label: "Chamadas pendentes", value: operationalMetrics.pendingAttendance, icon: ClipboardCheck, tone: "text-amber-600 bg-amber-50 dark:bg-amber-950/30" },
+              { label: "Baixa frequência", value: operationalMetrics.lowAttendanceStudents, icon: AlertTriangle, tone: "text-orange-600 bg-orange-50 dark:bg-orange-950/30" },
+              { label: "Avaliações pendentes", value: operationalMetrics.pendingAssessments, icon: BarChart3, tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/30" },
+              { label: "Potenciais certificados", value: operationalMetrics.potentialCertificates, icon: Award, tone: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30" },
+            ].map(({ label, value, icon: Icon, tone }) => (
+              <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/40 p-3.5">
+                <div className={`mb-3 inline-flex rounded-xl p-2 ${tone}`}><Icon size={16} aria-hidden="true" /></div>
+                <p className="text-2xl font-black text-gray-950 dark:text-white">{value}</p>
+                <p className="mt-1 text-[11px] font-bold leading-tight text-gray-500 dark:text-slate-400">{label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {loadError && (
           <section
@@ -1306,10 +1514,13 @@ export default function TurmasExternasPage() {
           <div className="space-y-6 lg:col-span-1">
             {/* Criar / Editar Turma */}
             <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
                   <BookOpen size={18} className="text-red-600" /> {editingClassId ? "Editar Turma Externa" : "Nova Turma Externa"}
                 </h2>
+                <button type="button" onClick={() => setIsClassFormOpen((current) => !current)} className="rounded-xl border border-gray-200 dark:border-slate-700 px-3 py-2 text-[11px] font-black text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800" aria-expanded={isClassFormOpen}>
+                  {isClassFormOpen ? "Recolher" : "Abrir formulário"}
+                </button>
                 {editingClassId && (
                   <button
                     type="button"
@@ -1321,7 +1532,7 @@ export default function TurmasExternasPage() {
                   </button>
                 )}
               </div>
-              <form onSubmit={handleSaveClass} className="space-y-4">
+              {isClassFormOpen && <form onSubmit={handleSaveClass} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Instituição / Programa</label>
                   <select
@@ -1572,7 +1783,7 @@ export default function TurmasExternasPage() {
                   {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   {editingClassId ? "Salvar Alterações da Turma" : "Criar Turma"}
                 </button>
-              </form>
+              </form>}
             </section>
 
             {/* Matricular ou Editar Aluno */}
@@ -1882,6 +2093,28 @@ export default function TurmasExternasPage() {
                                 type="button"
                                 onClick={() => {
                                   setActiveQuickActionsId(null);
+                                  downloadStudentTemplate();
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <FileSpreadsheet size={14} className="text-indigo-600" /> Baixar modelo de planilha
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  void handleDuplicateClass(cls);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <Sparkles size={14} className="text-purple-600" /> Duplicar estrutura
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
                                   startEditClass(cls);
                                 }}
                                 className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
@@ -1893,7 +2126,7 @@ export default function TurmasExternasPage() {
                                 type="button"
                                 onClick={() => {
                                   setActiveQuickActionsId(null);
-                                  setActiveTabByClass(c => ({ ...c, [cls.id]: "students" }));
+                                  setClassWorkspaceTab(cls.id, "students");
                                 }}
                                 className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
                               >
@@ -1943,7 +2176,6 @@ export default function TurmasExternasPage() {
                           className="hidden"
                           aria-hidden="true"
                         >
-                          onClick={() => handleDeleteClass(cls.id)}
                         </button>
                       </div>
                     </div>
@@ -1974,7 +2206,7 @@ export default function TurmasExternasPage() {
                     <div className="flex border-b border-gray-200 dark:border-slate-800 gap-2 overflow-x-auto">
                       <button
                         type="button"
-                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "students" })}
+                        onClick={() => setClassWorkspaceTab(cls.id, "students")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "students"
                             ? "border-red-600 text-red-600 dark:text-red-400"
@@ -1985,7 +2217,7 @@ export default function TurmasExternasPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "attendance" })}
+                        onClick={() => setClassWorkspaceTab(cls.id, "attendance")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "attendance"
                             ? "border-red-600 text-red-600 dark:text-red-400"
@@ -1996,7 +2228,7 @@ export default function TurmasExternasPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "grades" })}
+                        onClick={() => setClassWorkspaceTab(cls.id, "grades")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "grades"
                             ? "border-red-600 text-red-600 dark:text-red-400"
@@ -2007,7 +2239,7 @@ export default function TurmasExternasPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setActiveTabByClass({ ...activeTabByClass, [cls.id]: "materials" })}
+                        onClick={() => setClassWorkspaceTab(cls.id, "materials")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "materials"
                             ? "border-red-600 text-red-600 dark:text-red-400"
@@ -2305,60 +2537,79 @@ export default function TurmasExternasPage() {
                     {activeTab === "grades" && (
                       <div className="space-y-4">
                         <div className="bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3">
-                          <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Lançar Nova Nota ou Avaliação</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Lançar avaliação SIMAL</h4>
+                              <p className="mt-1 text-[11px] text-gray-500">Funciona para alunos já cadastrados e para novos alunos adicionados na aba Alunos.</p>
+                            </div>
+                            <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-black text-red-700 dark:bg-red-950/40 dark:text-red-300">Versão A aplicada</span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
                               <label className="block text-[10px] font-bold text-gray-500 mb-1">Aluno</label>
-                              <select
-                                value={gradeStudentId[cls.id] || ""}
-                                onChange={(e) => setGradeStudentId({ ...gradeStudentId, [cls.id]: Number(e.target.value) })}
-                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                              >
+                              <select value={gradeStudentId[cls.id] || ""} onChange={(e) => setGradeStudentId({ ...gradeStudentId, [cls.id]: Number(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white">
                                 <option value="">-- Aluno --</option>
-                                {cls.students.map((st) => (
-                                  <option key={st.id} value={st.id}>{st.name}</option>
-                                ))}
+                                {cls.students.map((st) => <option key={st.id} value={st.id}>{st.name}</option>)}
                               </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Título da Avaliação</label>
-                              <input
-                                type="text"
-                                placeholder="Ex: Prova 1, Quiz Oral..."
-                                value={gradeAssessmentTitle[cls.id] || ""}
-                                onChange={(e) => setGradeAssessmentTitle({ ...gradeAssessmentTitle, [cls.id]: e.target.value })}
-                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                              />
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Avaliação</label>
+                              <select value={gradeAssessmentPreset[cls.id] || ""} onChange={(e) => { const value = e.target.value; const preset = SIMAL_ASSESSMENTS.find((item) => item.value === value); setGradeAssessmentPreset({ ...gradeAssessmentPreset, [cls.id]: value }); setGradeAssessmentTitle({ ...gradeAssessmentTitle, [cls.id]: preset?.label || "" }); setGradeAssessmentComponent({ ...gradeAssessmentComponent, [cls.id]: preset?.type === "oral" ? "speaking" : preset?.type === "presentation" ? "presentation" : "total" }); }} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white">
+                                <option value="">Avaliação livre</option>
+                                {SIMAL_ASSESSMENTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+                              </select>
                             </div>
                             <div>
-                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Nota (ex: 9.5)</label>
-                              <input
-                                type="text"
-                                placeholder="9.5"
-                                value={gradeScore[cls.id] || ""}
-                                onChange={(e) => setGradeScore({ ...gradeScore, [cls.id]: e.target.value })}
-                                className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                              />
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Componente</label>
+                              <select value={gradeAssessmentComponent[cls.id] || "total"} onChange={(e) => setGradeAssessmentComponent({ ...gradeAssessmentComponent, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white">
+                                {SIMAL_COMPONENTS.map((item) => <option key={item.value} value={item.value}>{item.label} — máx. {item.maxScore}</option>)}
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Data da avaliação</label>
+                              <input type="date" value={gradeAssessmentDate[cls.id] || "2026-08-18"} onChange={(e) => setGradeAssessmentDate({ ...gradeAssessmentDate, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
                             </div>
                           </div>
-                          <div>
-                            <label className="block text-[10px] font-bold text-gray-500 mb-1">Feedback / Comentário (Opcional)</label>
-                            <input
-                              type="text"
-                              placeholder="Bom desempenho na leitura instrumental..."
-                              value={gradeFeedback[cls.id] || ""}
-                              onChange={(e) => setGradeFeedback({ ...gradeFeedback, [cls.id]: e.target.value })}
-                              className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
-                            />
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Título personalizado (opcional)</label>
+                              <input type="text" placeholder="Usado apenas para avaliação livre" value={gradeAssessmentTitle[cls.id] || ""} onChange={(e) => setGradeAssessmentTitle({ ...gradeAssessmentTitle, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-gray-500 mb-1">Nota obtida</label>
+                              <input type="text" placeholder="Ex.: 1.7" value={gradeScore[cls.id] || ""} onChange={(e) => setGradeScore({ ...gradeScore, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
+                            </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => void handleSaveGrade(cls.id)}
-                            disabled={submitting || cls.students.length === 0}
-                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
-                          >
-                            Salvar Nota
-                          </button>
+                          {gradeAssessmentPreset[cls.id] === "simal-speaking" && (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-900/50 dark:bg-amber-950/20">
+                              <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-amber-800 dark:text-amber-300">Rubrica Speaking — cada critério vale até 0,5</p>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                {([ ["content", "Content and topic fulfillment"], ["language", "Use of language"], ["comprehensibility", "Comprehensibility"] ] as const).map(([key, label]) => <label key={key} className="text-[10px] font-bold text-amber-900 dark:text-amber-200">{label}<input type="number" min="0" max="0.5" step="0.1" value={gradeRubricScores[cls.id]?.[key] || ""} onChange={(e) => setGradeRubricScores({ ...gradeRubricScores, [cls.id]: { content: gradeRubricScores[cls.id]?.content || "", language: gradeRubricScores[cls.id]?.language || "", comprehensibility: gradeRubricScores[cls.id]?.comprehensibility || "", [key]: e.target.value } })} className="mt-1 w-full rounded-lg border border-amber-200 bg-white p-2 text-xs text-gray-900 dark:border-amber-800 dark:bg-slate-900 dark:text-white" /></label>)}
+                              </div>
+                              <p className="mt-2 text-[11px] text-amber-800 dark:text-amber-300">A soma será calculada automaticamente e registrada como nota final de Speaking.</p>
+                            </div>
+                          )}
+                          <input type="text" placeholder="Feedback / comentário (opcional)" value={gradeFeedback[cls.id] || ""} onChange={(e) => setGradeFeedback({ ...gradeFeedback, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
+                          <button type="button" onClick={() => void handleSaveGrade(cls.id)} disabled={submitting || cls.students.length === 0} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">Salvar nota da avaliação</button>
+                        </div>
+
+                        <div className="space-y-3 rounded-2xl border border-red-100 bg-red-50/50 p-4 dark:border-red-950/50 dark:bg-red-950/10">
+                          <div className="flex flex-wrap items-start justify-between gap-3">
+                            <div>
+                              <h5 className="text-xs font-black uppercase tracking-wider text-red-800 dark:text-red-300">Lançamento SIMAL por aluno</h5>
+                              <p className="mt-1 text-[11px] text-red-700/80 dark:text-red-300/80">Preencha somente os alunos avaliados. As linhas vazias não serão gravadas.</p>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              <select value={simalBatchPreset[cls.id] || ""} onChange={(e) => { const value = e.target.value; const preset = SIMAL_ASSESSMENTS.find((item) => item.value === value); setSimalBatchPreset({ ...simalBatchPreset, [cls.id]: value }); setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: preset?.type === "presentation" ? "presentation" : "total" }); }} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white"><option value="">Escolher avaliação</option>{SIMAL_ASSESSMENTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
+                              <select value={simalBatchComponent[cls.id] || "total"} onChange={(e) => setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white">{SIMAL_COMPONENTS.map((item) => <option key={item.value} value={item.value}>{item.label} / {item.maxScore}</option>)}</select>
+                              <input type="date" value={simalBatchDate[cls.id] || "2026-08-18"} onChange={(e) => setSimalBatchDate({ ...simalBatchDate, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white" />
+                            </div>
+                          </div>
+                          <div className="max-h-72 overflow-y-auto rounded-xl border border-red-100 bg-white dark:border-red-950/50 dark:bg-slate-900">
+                            {cls.students.map((student) => <div key={student.id} className="grid grid-cols-[minmax(0,1fr)_96px] items-center gap-3 border-b border-gray-100 px-3 py-2 last:border-0 dark:border-slate-800"><div className="min-w-0"><p className="truncate text-xs font-bold text-gray-900 dark:text-white">{student.name}</p><p className="truncate text-[10px] text-gray-500">{student.email || student.studentIdNumber || "Sem e-mail/matrícula"}</p></div><input type="text" inputMode="decimal" placeholder="Nota" aria-label={`Nota de ${student.name}`} value={simalBatchScores[cls.id]?.[student.id] || ""} onChange={(e) => setSimalBatchScores({ ...simalBatchScores, [cls.id]: { ...(simalBatchScores[cls.id] || {}), [student.id]: e.target.value } })} className="w-full rounded-lg border border-gray-200 bg-gray-50 p-2 text-center text-xs font-bold text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" /></div>)}
+                            {cls.students.length === 0 && <p className="p-4 text-center text-xs text-gray-500">Cadastre alunos na aba Alunos antes de lançar as notas.</p>}
+                          </div>
+                          <button type="button" onClick={() => void handleSaveSimalBatch(cls)} disabled={submitting || cls.students.length === 0} className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50">Salvar notas preenchidas</button>
                         </div>
 
                         {/* Edição em Lote de Notas */}
@@ -2447,7 +2698,12 @@ export default function TurmasExternasPage() {
                                   <div key={g.id} className="py-3 flex items-center justify-between gap-3 text-xs">
                                     <div>
                                       <p className="font-bold text-gray-900 dark:text-white">
-                                        {st ? st.name : "Aluno ID " + g.studentId} — <span className="text-red-600">{g.assessmentTitle}</span>
+                                        {st ? st.name : "Aluno ID " + g.studentId} —                                         <span className="text-red-600">{g.assessmentTitle}</span>
+                                      </p>
+                                      <p className="mt-0.5 flex flex-wrap items-center gap-1 text-[10px] text-gray-500">
+                                        {g.assessmentVersion && <span className="rounded-full bg-red-50 px-1.5 py-0.5 font-bold text-red-700 dark:bg-red-950/40 dark:text-red-300">Versão {g.assessmentVersion}</span>}
+                                        {g.assessmentComponent && <span className="rounded-full bg-gray-100 px-1.5 py-0.5 font-bold text-gray-600 dark:bg-slate-800 dark:text-gray-300">{g.assessmentComponent}</span>}
+                                        {g.assessmentDate && <span>{g.assessmentDate}</span>}
                                       </p>
                                       <p className="text-gray-500 mt-0.5">Nota: <strong className="text-gray-900 dark:text-white">{g.score} / {g.maxScore}</strong> {g.feedback ? `• "${g.feedback}"` : ""}</p>
                                     </div>

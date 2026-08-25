@@ -9,6 +9,7 @@ import { StudentStyleDashboardStats } from "@/components/student-style-dashboard
 import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
 import { AdminActionCenter } from "@/components/admin-action-center";
 import { AdminModerationHub } from "@/components/admin-moderation-hub";
+import { AdminCapabilityMap } from "@/components/admin-capability-map";
 
 interface Stats {
   totalCourses: number;
@@ -161,7 +162,7 @@ export default function AdminDashboardPage() {
             </div>
             <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do Administrador</h1>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Visão geral, controle total do ecossistema acadêmico, gerenciamento de cursos, lixeira e auditoria de acessos.
+              Controle global do ecossistema acadêmico, incluindo as operações docentes, gestão de cursos, turmas, avaliações, certificados, lixeira e auditoria.
             </p>
           </div>
           <div className="admin-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
@@ -176,6 +177,18 @@ export default function AdminDashboardPage() {
               className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
               Conceder Medalhas
+            </Link>
+            <Link
+              href="/professor/turmas-externas"
+              className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 shadow-sm"
+            >
+              Turmas e avaliações
+            </Link>
+            <Link
+              href="/professor/tarefas"
+              className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-indigo-800 transition hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-300 shadow-sm"
+            >
+              Tarefas docentes
             </Link>
             <Link
               href="/admin/cms"
@@ -217,6 +230,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <AdminActionCenter />
+        <AdminCapabilityMap />
         <AdminModerationHub />
 
         {/* Cards de KPIs em estilo alinhado com a área do aluno */}

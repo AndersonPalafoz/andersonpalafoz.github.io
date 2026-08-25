@@ -2179,3 +2179,45 @@
 - [x] Exibir toast de sucesso e erro no fluxo de exclusão de anotações.
 - [x] Exibir skeleton enquanto a foto de perfil da sidebar estiver sendo carregada, incluindo fallback acessível para erro de imagem.
 - [x] Adicionar testes de regressão e validar suíte, build e responsividade dessas melhorias.
+
+## Avaliações e notas das turmas SIMAL — 25/08/2026
+- [x] Analisar as avaliações anexadas e definir provas, versões, componentes e escala de notas sem inventar critérios ausentes.
+- [x] Criar estrutura para cadastrar avaliações e lançar/editar notas de alunos existentes e novos nas duas turmas SIMAL.
+- [x] Integrar notas, médias, situação acadêmica e exportações dos relatórios das turmas externas.
+- [x] Adicionar testes, migração segura, validação de permissões e build de produção.
+
+## Central operacional de certificados — 25/08/2026
+- [x] Reorganizar a página administrativa para priorizar emissão, pendências, modelos e assinaturas, deixando o laboratório experimental em segundo plano.
+- [x] Implementar revisão final, confirmações contextuais, estados verificáveis e permissões por ação para operações sensíveis.
+- [x] Aprimorar o fluxo de templates DOCX parametrizados com detecção/mapeamento de campos, prévia e versionamento compatíveis com o modelo atual.
+- [x] Adicionar testes de acessibilidade, responsividade, segurança, regressão e validar o build.
+
+## Sincronização Manus → GitHub/Vercel — 25/08/2026
+- [ ] Comparar o estado atual do Manus com GitHub e Vercel e sincronizar a versão validada com `main` sem sobrescrever histórico indevidamente.
+- [ ] Enviar o HEAD local atual diretamente para a branch `main` do repositório conectado ao Vercel e confirmar o acionamento automático.
+
+## Auditoria de funções administrativas — 25/08/2026
+- [x] Revisar as novas funções administrativas, autorização, navegação, estados da interface, testes, build e Pull Request.
+
+## Sincronização GitHub — 25/08/2026
+- [ ] Abrir e mesclar o Pull Request de `manus/current-platform` para `master` no repositório GitHub selecionado.
+- [x] Criar branch baseada no `master`, incorporar a versão atual limpa e abrir PR compatível sem sobrescrever o histórico remoto.
+
+## Auditoria de poderes e evolução do painel administrativo — 25/08/2026
+- [x] Inventariar todas as operações atualmente disponíveis para professores e administradores.
+- [ ] Criar matriz de permissões professor versus administrador com escopo global e ações avançadas para administradores.
+- [x] Incorporar no painel administrativo as operações de turmas, alunos, tarefas, speaking, certificados e relatórios disponíveis ao professor.
+- [x] Atualizar sidebar, mobile navigation, dashboard e subáreas administrativas com organização orientada a tarefas.
+- [ ] Adicionar controles de escopo, auditoria e testes de autorização sem ampliar acesso de alunos ou visitantes.
+- [x] Validar layout responsivo, acessibilidade, regressão e build.
+
+## Evolução operacional de turmas externas — 25/08/2026
+- [ ] Sincronizar o checkpoint atual com o GitHub e preparar a publicação da mesma versão no Vercel.
+- [x] Reorganizar a visão principal de turmas externas com KPIs operacionais, próxima aula e pendências acionáveis.
+- [x] Simplificar o título e tornar a tela inicial orientada por tarefas, mantendo a identificação institucional nos cards.
+- [ ] Aprimorar o cadastro de turmas com validação de datas, resumo de calendário, campos de horário estruturados e cálculo de faltas permitidas.
+- [x] Adicionar duplicação de turma com confirmação e edição segura dos dados copiados.
+- [ ] Melhorar a importação de alunos com modelo de planilha, prévia, contagem de criados/atualizados/ignorados/rejeitados e validação de duplicidades.
+- [x] Organizar o espaço de trabalho da turma com abas e estado ativo persistido na URL sem quebrar rotas existentes.
+- [ ] Aprimorar frequência, notas, materiais, alertas e relatórios de turmas externas conforme o diagnóstico anexado.
+- [x] Validar responsividade, acessibilidade, testes e build da evolução de turmas externas.

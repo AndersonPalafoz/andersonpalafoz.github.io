@@ -28,6 +28,14 @@ function logExternalClassesError(operation: string, error: unknown) {
   });
 }
 
+function validateGrade(score: unknown, maxScore: unknown) {
+  const scoreNumber = Number(String(score ?? "").replace(",", "."));
+  const maxNumber = Number(String(maxScore ?? "10").replace(",", "."));
+  if (!Number.isFinite(scoreNumber) || !Number.isFinite(maxNumber) || maxNumber <= 0) return "A nota e o valor máximo devem ser numéricos.";
+  if (scoreNumber < 0 || scoreNumber > maxNumber) return `A nota deve estar entre 0 e ${maxNumber}.`;
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -166,8 +174,13 @@ export async function POST(request: NextRequest) {
       date,
       attendanceData,
       assessmentTitle,
+      assessmentType,
+      assessmentVersion,
+      assessmentComponent,
       score,
       maxScore,
+      rubricScores,
+      assessmentDate,
       feedback,
       gradeId,
       materialTitle,
@@ -179,6 +192,13 @@ export async function POST(request: NextRequest) {
     if (action === "createClass") {
       if (!institution || !className || !courseName || !academicTerm) {
         return NextResponse.json({ error: "Instituição, nome da turma, nome do curso e período são obrigatórios." }, { status: 400 });
+      }
+
+      if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+        return NextResponse.json({ error: "A data final não pode ser anterior à data inicial." }, { status: 400 });
+      }
+      if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
+        return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
       }
 
       const inserted = await db.insert(externalClasses).values({
@@ -216,6 +236,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Acesso negado para editar esta turma." }, { status: 403 });
       }
 
+      if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+        return NextResponse.json({ error: "A data final não pode ser anterior à data inicial." }, { status: 400 });
+      }
+      if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
+        return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
+      }
+
       const updated = await db.update(externalClasses)
         .set({
           institution: institution.trim(),
@@ -241,6 +268,35 @@ export async function POST(request: NextRequest) {
         .returning();
 
       return NextResponse.json({ success: true, classItem: updated[0] });
+    }
+
+    if (action === "duplicateClass") {
+      if (!classId) return NextResponse.json({ error: "ID da turma é obrigatório." }, { status: 400 });
+      const existing = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existing) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      if (!isGlobalAdmin && existing.teacherId !== teacher.id) return NextResponse.json({ error: "Acesso negado para duplicar esta turma." }, { status: 403 });
+
+      const [duplicated] = await db.insert(externalClasses).values({
+        teacherId: existing.teacherId,
+        institution: existing.institution,
+        className: `${existing.className} (cópia)`,
+        courseName: existing.courseName,
+        academicTerm: existing.academicTerm,
+        description: existing.description,
+        classDays: existing.classDays,
+        classTime: existing.classTime,
+        workloadHours: existing.workloadHours,
+        startDate: existing.startDate,
+        endDate: existing.endDate,
+        maxAbsencePercent: existing.maxAbsencePercent,
+        modality: existing.modality,
+        meetingLink: existing.meetingLink,
+        classroomLocation: existing.classroomLocation,
+        level: existing.level,
+        instructorName: existing.instructorName,
+        monitors: existing.monitors,
+      }).returning();
+      return NextResponse.json({ success: true, classItem: duplicated, copiedStudents: 0 });
     }
 
     if (action === "addStudent") {
@@ -643,13 +699,23 @@ export async function POST(request: NextRequest) {
         if (!scoreVal) {
           continue; // Pular notas vazias
         }
+        const gradeError = validateGrade(scoreVal, maxScore || "10.0");
+        if (gradeError) {
+          errors.push(`Aluno ID ${studentIdNum}: ${gradeError}`);
+          continue;
+        }
 
         await db.insert(externalClassGrades).values({
           externalClassId: Number(classId),
           studentId: studentIdNum,
           assessmentTitle: String(assessmentTitle).trim(),
+          assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
+          assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
+          assessmentComponent: assessmentComponent ? String(assessmentComponent).trim() : null,
           score: scoreVal,
           maxScore: maxScore ? String(maxScore).trim() : "10.0",
+          rubricScores: item.rubricScores ? JSON.stringify(item.rubricScores) : (rubricScores ? String(rubricScores) : null),
+          assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
           feedback: item.feedback ? String(item.feedback).trim() : null,
         });
 
@@ -689,13 +755,20 @@ export async function POST(request: NextRequest) {
       if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+      const gradeError = validateGrade(score, maxScore || "10.0");
+      if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
 
       const inserted = await db.insert(externalClassGrades).values({
         externalClassId: Number(classId),
         studentId: Number(studentId),
         assessmentTitle: String(assessmentTitle).trim(),
+        assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
+        assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
+        assessmentComponent: assessmentComponent ? String(assessmentComponent).trim() : null,
         score: String(score).trim(),
         maxScore: maxScore ? String(maxScore).trim() : "10.0",
+        rubricScores: rubricScores ? String(rubricScores) : null,
+        assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
         feedback: feedback ? String(feedback).trim() : null,
       }).returning();
 

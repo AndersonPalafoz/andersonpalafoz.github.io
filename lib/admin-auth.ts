@@ -76,15 +76,12 @@ export async function canManageExternalClass(session: AdminAuthSession, classId:
   const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
   if (!dbUser || dbUser.role !== "professor") return false;
 
-  const extClass = await db.query.externalClasses.findFirst({ where: eq(schemaExternalClassesId(classId), classId) });
+  const extClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, classId) });
   if (!extClass) return false;
 
   return extClass.teacherId === dbUser.id;
 }
 
-function schemaExternalClassesId(id: number) {
-  return eq(externalClasses.id, id);
-}
 
 export async function canManageMaterial(session: AdminAuthSession, materialId: number): Promise<boolean> {
   const email = session.user.email?.toLowerCase();
