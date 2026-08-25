@@ -2239,11 +2239,11 @@
 - [x] Sincronizar o checkpoint atual com o GitHub e preparar a publicação da mesma versão no Vercel.
 - [x] Reorganizar a visão principal de turmas externas com KPIs operacionais, próxima aula e pendências acionáveis.
 - [x] Simplificar o título e tornar a tela inicial orientada por tarefas, mantendo a identificação institucional nos cards.
-- [ ] Aprimorar o cadastro de turmas com validação de datas, resumo de calendário, campos de horário estruturados e cálculo de faltas permitidas.
+- [x] Aprimorar o cadastro de turmas com validação de datas, resumo de calendário, campos de horário estruturados e cálculo de faltas permitidas.
 - [x] Adicionar duplicação de turma com confirmação e edição segura dos dados copiados.
-- [ ] Melhorar a importação de alunos com modelo de planilha, prévia, contagem de criados/atualizados/ignorados/rejeitados e validação de duplicidades.
+- [x] Melhorar a importação de alunos com modelo de planilha, prévia, contagem de criados/atualizados/ignorados/rejeitados e validação de duplicidades.
 - [x] Organizar o espaço de trabalho da turma com abas e estado ativo persistido na URL sem quebrar rotas existentes.
-- [ ] Aprimorar frequência, notas, materiais, alertas e relatórios de turmas externas conforme o diagnóstico anexado.
+- [x] Aprimorar frequência, notas, materiais, alertas e relatórios de turmas externas conforme o diagnóstico anexado.
 - [x] Validar responsividade, acessibilidade, testes e build da evolução de turmas externas.
 
 ## Indicadores acadêmicos e acesso de alunos externos — 25/08/2026
