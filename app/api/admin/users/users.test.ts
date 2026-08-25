@@ -151,6 +151,19 @@ describe("Admin users API", () => {
     expect(mocks.insert).not.toHaveBeenCalled();
   });
 
+  it("soft-deletes a professor account through the same super-admin flow", async () => {
+    mocks.getServerSession.mockResolvedValue(superAdminSession);
+    const teacher = { ...pendingUser, id: 8, name: "Professor de Teste", email: "professor@example.com", role: "professor" as const, approvalStatus: "approved" as const };
+    mocks.findFirst.mockResolvedValue(teacher);
+    const chain = updateChain([{ ...teacher, deletedAt: new Date("2026-08-25") }]);
+
+    const response = await DELETE(new Request("http://localhost/api/admin/users?id=8", { method: "DELETE" }) as never);
+
+    expect(response.status).toBe(200);
+    expect(chain.set).toHaveBeenCalledWith(expect.objectContaining({ deletedAt: expect.any(Date), updatedAt: expect.any(Date) }));
+    expect((await response.json()).user.role).toBe("professor");
+  });
+
   it("soft-deletes a user but never the principal account", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
     mocks.findFirst.mockResolvedValue(pendingUser);
