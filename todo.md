@@ -2108,3 +2108,9 @@
 - [x] Criar preset PROFICI replicável com campos dinâmicos de aluno, curso, nível, período, carga horária, data, assinatura e código/QR de validação; camadas extraídas disponíveis no editor.
 - [x] Integrar o preset nas prévias, emissão administrativa/docente, área do aluno e PDF oficial sem alterar o arquivo original enviado.
 - [x] Validar fidelidade visual, exportação PDF, QR Code, responsividade e ausência de dados inventados; 9 testes focados e build de produção aprovados.
+
+## Auditoria de persistência do login — 25/08/2026
+- [x] Auditar cookies, callbacks, expiração e armazenamento da sessão no Vercel e no preview local; Vercel confirmou JWT persistente e o preview local possui as variáveis necessárias.
+- [x] Testar recarregamento e navegação entre áreas protegidas sem alterar contas reais; o Vercel permaneceu autenticado no dashboard e no admin, e `/api/auth/session` retornou sessão válida.
+- [ ] Corrigir diferenças de ambiente que impeçam a persistência ou o login local, se confirmadas.
+- [x] Criar/usar testes regressivos e documentar o status de segurança da sessão em `docs/auditoria-persistencia-login-2026-08-25.md`.
