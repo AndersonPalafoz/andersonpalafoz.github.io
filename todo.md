@@ -2042,3 +2042,17 @@
 ## Regressão runtime recorrente no preview — 25/08/2026
 - [x] Rastrear o erro `Cannot read properties of undefined (reading 'call')` reaparecido no preview após o checkpoint; os logs apontaram para o módulo `next-devtools`/Segment Explorer ausente no Client Manifest.
 - [x] Garantir que a correção não dependa apenas de uma limpeza manual temporária e validar reinicialização/recompilação repetida; `devIndicators: false` foi configurado, `.next` reconstruído e a Home validada novamente.
+
+## Correção definitiva do Segment Explorer — 25/08/2026
+- [x] Desativar explicitamente `experimental.devtoolSegmentExplorer` além de `devIndicators`, pois a primeira configuração isolada não impediu o módulo ausente no Client Manifest.
+- [x] Limpar o `.next`, reiniciar o servidor e confirmar visualmente a Home sem o erro `undefined.call` na compilação subsequente.
+- [x] Aprovar teste regressivo das flags e build de produção após a correção explícita.
+
+## Estabilização adicional do preview — 25/08/2026
+- [x] Confirmar nos arquivos do Next.js que `NEXT_DEVTOOL_SEGMENT_EXPLORER` é derivado de `experimental.devtoolSegmentExplorer`.
+- [x] Desativar explicitamente `devtoolSegmentExplorer: false`, além de `devIndicators: false`, para impedir a injeção do módulo `segment-explorer-node`.
+- [x] Limpar os artefatos gerados, reiniciar o preview, validar a Home visualmente e aprovar o build de produção e o teste de configuração.
+
+## Isolamento entre build de produção e preview — 25/08/2026
+- [x] Remover a limpeza destrutiva de `.next` do script `build`, pois ela apaga o cache/manifestações usados simultaneamente pelo preview gerenciado; o script agora executa apenas `NODE_ENV=production next build`.
+- [x] Validar build e preview em sequência sem provocar `ENOENT` de cache Webpack ou erro de Client Manifest; o build foi aprovado e a Home permaneceu estilizada após reinício.
