@@ -2114,3 +2114,8 @@
 - [x] Testar recarregamento e navegação entre áreas protegidas sem alterar contas reais; o Vercel permaneceu autenticado no dashboard e no admin, e `/api/auth/session` retornou sessão válida.
 - [ ] Corrigir diferenças de ambiente que impeçam a persistência ou o login local, se confirmadas.
 - [x] Criar/usar testes regressivos e documentar o status de segurança da sessão em `docs/auditoria-persistencia-login-2026-08-25.md`.
+
+## Layout da exclusão definitiva em /admin/usuarios — 25/08/2026
+- [x] Reorganizar a coluna de ações para que recuperar e excluir definitivamente fiquem visíveis sem corte horizontal; a tabela desktop agora tem seis colunas alinhadas, largura percentual e quebra controlada.
+- [x] Diferenciar visualmente a exclusão definitiva, mantendo texto acessível, confirmação por e-mail e hierarquia visual de ação destrutiva.
+- [x] Validar o layout em desktop e mobile, sem rolagem lateral desnecessária; 12 testes administrativos/regressivos passaram e o build de produção foi aprovado. A captura local autenticada ficou pendente porque o OAuth local não está conectado.
