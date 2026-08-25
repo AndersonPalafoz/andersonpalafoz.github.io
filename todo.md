@@ -2169,3 +2169,7 @@
 - [x] Exibir a foto de perfil do usuário no menu lateral, com fallback para iniciais e tratamento acessível de imagem ausente ou inválida.
 - [x] Adicionar testes de regressão e validar responsividade, autenticação e build de produção.
 - [x] Corrigir a inconsistência transitória do preview após build, evitando erros de tipos gerados ausentes em `.next/types` e falhas de runtime do dev server.
+
+## Preparação final para Vercel — 25/08/2026
+- [x] Revalidar a versão atual com testes, build de produção e verificação de artefatos.
+- [ ] Criar ou atualizar o checkpoint final e sincronizar o branch validado com o GitHub para disparar o build do Vercel.
