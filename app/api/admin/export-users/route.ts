@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
+import { requireSuperAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,9 @@ const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    const userEmail = session?.user?.email?.toLowerCase();
-    
-    if (!session || (session.user.role !== "admin" && userEmail !== SUPER_ADMIN_EMAIL)) {
-      return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+    const session = await requireSuperAdmin();
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
     }
 
     const allUsers = await db.select().from(users);

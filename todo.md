@@ -2157,3 +2157,4 @@
 - [x] Criar o checkpoint final e sincronizar o código validado com o GitHub para disparar o build automático do Vercel.
 - [x] Corrigir o erro Vercel `.next/routes-manifest.json` ausente causado pelo uso de `.next-build` como diretório de saída.
 - [x] Revalidar testes, build e sincronização após ajustar o diretório de saída para produção.
+- [x] Auditar em produção e no código local `/admin/anotacoes` e `/admin/usuarios`, incluindo acesso, APIs, ações, responsividade e integridade dos dados.
