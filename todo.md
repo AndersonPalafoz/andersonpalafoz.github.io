@@ -2091,3 +2091,7 @@
 - [x] Validar a correção da exclusão de usuários com 11 testes regressivos aprovados e confirmar que direct_messages existe com zero registros artificiais.
 - [x] Permitir exclusão administrativa de professores com exclusão lógica, recuperação, confirmação e bloqueio seguro quando houver dependências acadêmicas.
 - [x] Validar a exclusão de professores pelo super-admin; 10 testes da API/regressão passaram e o build de produção foi aprovado.
+- [x] Auditar em produção e no código as rotas admin/forum, admin/mensagens, admin/medalhas, professor/progresso-aulas, professor/tarefas, professor/turmas-externas, professor/alunos, professor/certificados, cursos e contato; relatório salvo em `docs/auditoria-rotas-2026-08-25.md`.
+- [x] Alterar o formulário de contato para persistir mensagens na área administrativa, sem depender de envio por e-mail; respostas internas são gravadas com data e responsável no painel.
+- [x] Auditar as rotas protegidas em produção usando a sessão autenticada do Vercel; nenhuma ação destrutiva ou concessão real foi executada.
+- [ ] Investigar a falha de login no ambiente local, comparando URL de callback, variáveis OAuth e configuração de desenvolvimento, sem alterar as credenciais de produção.

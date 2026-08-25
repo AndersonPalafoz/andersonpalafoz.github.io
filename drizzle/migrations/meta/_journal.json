@@ -442,6 +442,13 @@
       "when": 1787607620142,
       "tag": "0062_add_lesson_notes_admin_deletion",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1787652452124,
+      "tag": "0063_sticky_jimmy_woo",
+      "breakpoints": true
     }
   ]
 }

@@ -12,7 +12,9 @@ interface ContactMessageItem {
   subject: string;
   message: string;
   isRead: boolean;
-  readAt: string | null;
+  repliedAt: string | null;
+  repliedBy?: string | null;
+  adminReply?: string | null;
   createdAt: string;
 }
 
@@ -88,7 +90,7 @@ export default function AdminMessagesPage() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Resposta enviada com sucesso para ${selectedMessage.email}!`);
+          toast.success("Resposta registrada na central administrativa.");
         setMessages(messages.map(m => m.id === selectedMessage.id ? { ...m, isRead: true, readAt: new Date().toISOString() } : m));
         setReplyText("");
         setSelectedMessage(null);
@@ -255,15 +257,21 @@ export default function AdminMessagesPage() {
                   <span className="text-xs font-semibold text-muted-foreground block">Mensagem enviada em {new Date(selectedMessage.createdAt).toLocaleString("pt-BR")}:</span>
                   <p className="text-foreground whitespace-pre-wrap leading-relaxed text-sm">{selectedMessage.message}</p>
                 </div>
+                {selectedMessage.adminReply && (
+                  <div className="rounded-2xl border border-green-200 bg-green-50 p-6 dark:border-green-900/60 dark:bg-green-950/20">
+                    <span className="text-xs font-semibold text-green-800 dark:text-green-300 block">Resposta interna registrada{selectedMessage.repliedAt ? ` em ${new Date(selectedMessage.repliedAt).toLocaleString("pt-BR")}` : ""}:</span>
+                    <p className="mt-2 text-sm leading-relaxed text-green-950 whitespace-pre-wrap dark:text-green-100">{selectedMessage.adminReply}</p>
+                  </div>
+                )}
 
                 {/* Reply Form */}
                 <form onSubmit={handleSendReply} className="space-y-4 pt-4 border-t border-border">
-                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
-                    <Reply size={18} className="text-red-600" /> Responder por E-mail
+                    <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                    <Reply size={18} className="text-red-600" /> Registrar resposta interna
                   </h3>
                   <div>
                     <label htmlFor="reply-text" className="block text-xs font-semibold text-muted-foreground mb-1">
-                      Mensagem de resposta para {selectedMessage.email}
+                      Resposta para a mensagem de {selectedMessage.name} (visível no painel)
                     </label>
                     <textarea
                       id="reply-text"
@@ -288,7 +296,7 @@ export default function AdminMessagesPage() {
                       disabled={replying || !replyText.trim()}
                       className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-sm font-bold transition shadow-md shadow-red-600/20 disabled:opacity-50"
                     >
-                      {replying ? <><Loader2 size={16} className="animate-spin" /> Enviando resposta...</> : <><Reply size={16} /> Enviar Resposta</>}
+                      {replying ? <><Loader2 size={16} className="animate-spin" /> Registrando resposta...</> : <><Reply size={16} /> Registrar resposta</>}
                     </button>
                   </div>
                 </form>
@@ -297,7 +305,7 @@ export default function AdminMessagesPage() {
               <div className="py-20 text-center text-muted-foreground space-y-3">
                 <MessageSquare size={48} className="mx-auto text-muted-foreground/40" />
                 <h3 className="text-lg font-bold text-foreground">Nenhuma mensagem selecionada</h3>
-                <p className="text-sm max-w-sm mx-auto">Selecione uma mensagem na lista ao lado para ver o conteúdo completo e enviar uma resposta.</p>
+                <p className="text-sm max-w-sm mx-auto">Selecione uma mensagem na lista ao lado para ver o conteúdo completo e registrar uma resposta interna.</p>
               </div>
             )}
           </div>

@@ -2,11 +2,7 @@
 
 import React, { FormEvent, useState } from "react";
 import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
-import {
-  buildContactMailto,
-  CONTACT_EMAIL,
-  CONTACT_WHATSAPP_URL,
-} from "@/lib/contact";
+import { CONTACT_WHATSAPP_URL } from "@/lib/contact";
 
 const SUBJECT_OPTIONS = [
   "Dúvida sobre cursos",
@@ -62,8 +58,13 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
         window.setTimeout(resolve, SUBMIT_DELAY_MS);
       });
 
-      const mailto = buildContactMailto({ name, email, subject, message });
-      (onMailto ?? ((url: string) => { window.location.href = url; }))(mailto);
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível enviar a mensagem.");
       form.reset();
       setStatus("success");
     } catch {
@@ -81,7 +82,7 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
         </p>
         <h2 className="text-3xl font-bold text-[#1F1F1F] dark:text-slate-100">Envie uma mensagem</h2>
               <p className="mt-3 text-base leading-7 text-gray-600 dark:text-slate-300">
-          Preencha os campos abaixo. Seu aplicativo de email será aberto com a mensagem pronta para envio.
+          Preencha os campos abaixo. Sua mensagem será encaminhada com segurança para a central administrativa do site.
         </p>
               {courseContext && (
                 <p className="mt-4 rounded-xl bg-red-50 p-4 text-sm leading-6 text-red-800 dark:bg-red-950/40 dark:text-red-200" role="note">
@@ -178,7 +179,7 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
             ) : (
               <>
                 <Send size={18} aria-hidden="true" />
-                Enviar por email
+                Enviar mensagem
               </>
             )}
           </button>
@@ -195,13 +196,13 @@ export function ContactForm({ onMailto, courseContext }: ContactFormProps) {
         {isSubmitting && (
           <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-red-50 p-4 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">
             <Loader2 size={18} className="mt-0.5 shrink-0 animate-spin" aria-hidden="true" />
-            Preparando sua mensagem e abrindo o aplicativo de email...
+            Enviando sua mensagem para a central administrativa...
           </p>
         )}
         {!isSubmitting && status === "success" && (
           <p role="status" aria-live="polite" className="flex items-start gap-2 rounded-xl bg-green-50 p-4 text-sm text-green-800 dark:bg-green-950/40 dark:text-green-200">
             <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-            Mensagem preparada com sucesso. Se o aplicativo de email não abriu, escreva diretamente para {CONTACT_EMAIL}.
+            Mensagem enviada com sucesso. A equipe responderá pela central administrativa conforme a disponibilidade informada.
           </p>
         )}
         {!isSubmitting && status === "error" && (
