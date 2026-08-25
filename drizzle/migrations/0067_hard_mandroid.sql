@@ -1,0 +1,1 @@
+ALTER TABLE "external_class_grades" ADD COLUMN "unit_number" integer;

@@ -21,12 +21,12 @@ export async function GET() {
 
     const [lessons, activities] = await Promise.all([
       db.select({ updatedAt: lessonProgress.updatedAt }).from(lessonProgress).where(eq(lessonProgress.userId, user.id)),
-      db.select({ updatedAt: userActivityProgress.updatedAt }).from(userActivityProgress).where(eq(userActivityProgress.userId, user.id)),
+      db.select({ submittedAt: userActivityProgress.submittedAt }).from(userActivityProgress).where(eq(userActivityProgress.userId, user.id)),
     ]);
 
     const dates: Date[] = [
       ...lessons.map((l) => new Date(l.updatedAt)),
-      ...activities.map((a) => new Date(a.updatedAt)),
+      ...activities.map((a) => new Date(a.submittedAt || 0)),
     ].filter((d) => !isNaN(d.getTime()));
 
     const streakDays = calculateStreakDays(dates);

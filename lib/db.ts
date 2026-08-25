@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, asc, desc, eq, inArray, isNull, isNotNull, or } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, isNotNull, ne, or } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import {
   normalizeCourseType,
@@ -46,9 +46,11 @@ export const db = drizzle(client, { schema: { ...schema, ...relations } });
 export type Database = typeof db;
 
 // Query Helpers
-export async function getCourses() {
+export async function getCourses(instructorName?: string | null) {
   return await db.query.courses.findMany({
-    where: isNull(schema.courses.deletedAt),
+    where: instructorName
+      ? and(isNull(schema.courses.deletedAt), eq(schema.courses.instructor, instructorName))
+      : isNull(schema.courses.deletedAt),
   });
 }
 
@@ -443,9 +445,17 @@ export type CourseWriteData = {
   classDays?: string;
   classTime?: string;
   workloadHours?: number;
+  durationType?: "annual" | "semester" | "workload" | "custom";
+  durationValue?: number | null;
+  durationUnit?: string | null;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   maxAbsencePercent?: number;
+  hasUnits?: boolean;
+  unitCount?: number | null;
+  gradingScope?: "course" | "unit";
+  passingAverage?: number;
+  unitPassingAverages?: string | null;
   courseType?: number;
   externalRedirectUrl?: string | null;
   syncModality?: SyncModality;
@@ -487,9 +497,17 @@ export async function createCourse(data: CourseWriteData) {
       classDays: data.classDays,
       classTime: data.classTime,
       workloadHours: data.workloadHours,
+      durationType: data.durationType || "semester",
+      durationValue: data.durationValue ?? null,
+      durationUnit: data.durationUnit?.trim() || null,
       startDate: data.startDate ? new Date(data.startDate) : null,
       endDate: data.endDate ? new Date(data.endDate) : null,
       maxAbsencePercent: data.maxAbsencePercent,
+      hasUnits: data.hasUnits ?? false,
+      unitCount: data.hasUnits ? (data.unitCount ?? 1) : 1,
+      gradingScope: data.hasUnits && data.gradingScope === "unit" ? "unit" : "course",
+      passingAverage: String(data.passingAverage ?? 5),
+      unitPassingAverages: data.hasUnits && data.gradingScope === "unit" ? data.unitPassingAverages ?? null : null,
       courseType: normalizeCourseType(data.courseType),
       externalRedirectUrl: data.externalRedirectUrl?.trim() || null,
       syncModality: data.syncModality || "none",
@@ -507,6 +525,11 @@ export async function updateCourse(id: number, data: Partial<CourseWriteData>) {
     courseType,
     externalRedirectUrl,
     syncModality,
+    hasUnits,
+    unitCount,
+    gradingScope,
+    passingAverage,
+    unitPassingAverages,
     ...courseData
   } = data;
   return await db
@@ -535,6 +558,10 @@ export async function updateCourse(id: number, data: Partial<CourseWriteData>) {
       ...(syncModality !== undefined
         ? { syncModality: syncModality || "none" }
         : {}),
+      ...(hasUnits !== undefined ? { hasUnits, unitCount: hasUnits ? (unitCount ?? 1) : 1 } : {}),
+      ...(gradingScope !== undefined ? { gradingScope: hasUnits === false ? "course" : gradingScope } : {}),
+      ...(passingAverage !== undefined ? { passingAverage: String(passingAverage) } : {}),
+      ...(unitPassingAverages !== undefined ? { unitPassingAverages: gradingScope === "unit" ? unitPassingAverages : null } : {}),
       updatedAt: new Date(),
     })
     .where(eq(schema.courses.id, id))
@@ -759,11 +786,24 @@ export async function getAdminStats() {
 // Article Comments & Ratings helpers
 export async function getArticleComments(articleId: number) {
   try {
-    return await db
+    const comments = await db
       .select()
       .from(schema.articleComments)
-      .where(eq(schema.articleComments.articleId, articleId))
+      .where(and(eq(schema.articleComments.articleId, articleId), ne(schema.articleComments.moderationStatus, "hidden"), ne(schema.articleComments.moderationStatus, "deleted")))
       .orderBy(desc(schema.articleComments.createdAt));
+    const commentIds = comments.map((comment) => comment.id);
+    const replies = commentIds.length
+      ? await db
+          .select({ id: schema.articleCommentReplies.id, commentId: schema.articleCommentReplies.commentId, message: schema.articleCommentReplies.message, createdAt: schema.articleCommentReplies.createdAt, authorName: schema.users.name })
+          .from(schema.articleCommentReplies)
+          .leftJoin(schema.users, eq(schema.articleCommentReplies.authorId, schema.users.id))
+          .where(inArray(schema.articleCommentReplies.commentId, commentIds))
+          .orderBy(desc(schema.articleCommentReplies.createdAt))
+      : [];
+    return comments.map((comment) => ({
+      ...comment,
+      replies: replies.filter((reply) => reply.commentId === comment.id).map((reply) => ({ ...reply, authorName: reply.authorName || "Professor Anderson Palafoz" })),
+    }));
   } catch (err) {
     console.error("Error fetching article comments:", err);
     return [];

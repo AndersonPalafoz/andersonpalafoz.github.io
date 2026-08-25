@@ -93,7 +93,7 @@ export function isValidHttpUrl(value: string): boolean {
 }
 
 export function validateCourseTypeFields(input: {
-  courseType: unknown;
+  courseType?: unknown;
   externalRedirectUrl?: string | null;
   syncModality?: string | null;
 }): string | null {

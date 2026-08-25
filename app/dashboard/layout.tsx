@@ -9,6 +9,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (session.user.approvalStatus && session.user.approvalStatus !== "approved" && session.user.role !== "admin") {
     redirect("/acesso-pendente");
   }
+  if (session.user.mustChangePassword && session.user.role === "user") redirect("/primeiro-acesso");
 
   return <DashboardShell>{children}</DashboardShell>;
 }

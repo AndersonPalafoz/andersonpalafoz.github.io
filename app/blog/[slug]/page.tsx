@@ -3,8 +3,15 @@
 import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Calendar, Clock, Star, MessageSquare, Send, Loader2 } from "lucide-react";
+import { Calendar, Clock, Star, MessageSquare, Send, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+
+interface CommentReply {
+  id: number;
+  message: string;
+  authorName: string;
+  createdAt: string;
+}
 
 interface Comment {
   id: number;
@@ -13,6 +20,7 @@ interface Comment {
   rating: number;
   comment: string;
   createdAt: string;
+  replies?: CommentReply[];
 }
 
 export default function BlogArticlePage({
@@ -299,6 +307,20 @@ export default function BlogArticlePage({
                     </div>
                   </div>
                   <p className="text-gray-700 dark:text-slate-300 text-sm leading-relaxed">{c.comment}</p>
+                  {(c.replies || []).length > 0 && (
+                    <div className="mt-5 space-y-3 border-l-4 border-red-500 pl-4">
+                      {(c.replies || []).map((reply) => (
+                        <div key={reply.id} className="rounded-xl bg-red-50/70 p-4 dark:bg-red-950/20">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <strong className="text-sm text-red-700 dark:text-red-300">{reply.authorName}</strong>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white"><CheckCircle2 size={11} /> Resposta do Professor</span>
+                            <time className="text-xs text-gray-500 dark:text-slate-400">{new Date(reply.createdAt).toLocaleDateString("pt-BR")}</time>
+                          </div>
+                          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-gray-700 dark:text-slate-300">{reply.message}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

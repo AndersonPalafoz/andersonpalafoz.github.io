@@ -28,6 +28,7 @@ import {
   const navItems = [
   { href: "/dashboard", label: "Início", icon: BookOpen, exact: true },
   { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
+  { href: "/dashboard/aluno-externo", label: "Área externa", icon: GraduationCap },
   { href: "/dashboard/atividades", label: "Atividades", icon: CheckSquare },
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
   { href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
@@ -268,6 +269,12 @@ export default function DashboardLayout({
                       ⇄ Ir p/ Admin
                     </Link>
                   </div>
+                  <Link href="/professor/turmas-externas" onClick={() => setSidebarOpen(false)}>
+                    <div className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${isActive("/professor/turmas-externas") ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                      <GraduationCap size={16} />
+                      <span className="flex-1">Turmas e alunos externos</span>
+                    </div>
+                  </Link>
                 </>
               )}
             </div>

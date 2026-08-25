@@ -58,8 +58,11 @@ export const users = pgTable("users", {
   /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
+  socialName: varchar("socialName", { length: 160 }),
+  cpf: varchar("cpf", { length: 20 }),
   email: varchar("email", { length: 320 }),
   passwordHash: text("passwordHash"),
+  mustChangePassword: boolean("must_change_password").notNull().default(false),
   stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: roleEnum("role").notNull().default("user"), // user, professor, admin
@@ -124,7 +127,15 @@ export const courses = pgTable("courses", {
   workloadHours: integer("workload_hours").default(40),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
+  durationType: varchar("duration_type", { length: 32 }).default("semester"), // annual, semester, workload, custom
+  durationValue: integer("duration_value"),
+  durationUnit: varchar("duration_unit", { length: 24 }), // year, semester, hours, custom
   maxAbsencePercent: integer("max_absence_percent").default(25),
+  hasUnits: boolean("has_units").notNull().default(false),
+  unitCount: integer("unit_count").default(1),
+  gradingScope: varchar("grading_scope", { length: 16 }).notNull().default("course"), // course ou unit
+  passingAverage: varchar("passing_average", { length: 8 }).notNull().default("5"),
+  unitPassingAverages: text("unit_passing_averages"), // JSON: {"1":5,"2":6}
   courseType: integer("course_type").default(1).notNull(),
   externalRedirectUrl: varchar("external_redirect_url", { length: 1000 }),
   syncModality: varchar("sync_modality", { length: 64 }).default("none"),
@@ -626,8 +637,11 @@ export const articleComments = pgTable("article_comments", {
   userName: varchar("userName", { length: 160 }).notNull(),
   userEmail: varchar("userEmail", { length: 320 }),
   rating: integer("rating").notNull().default(5), // 1 a 5 estrelas
-  comment: text("comment").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
+    comment: text("comment").notNull(),
+    moderationStatus: varchar("moderation_status", { length: 20 }).notNull().default("visible"), // visible, hidden, deleted
+    moderatedAt: timestamp("moderated_at"),
+    moderatedBy: integer("moderated_by").references(() => users.id),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type ArticleComment = typeof articleComments.$inferSelect;
@@ -875,7 +889,15 @@ export const externalClasses = pgTable("external_classes", {
   workloadHours: integer("workload_hours").default(40),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
+  durationType: varchar("duration_type", { length: 32 }).default("semester"), // annual, semester, workload, custom
+  durationValue: integer("duration_value"),
+  durationUnit: varchar("duration_unit", { length: 24 }), // year, semester, hours, custom
   maxAbsencePercent: integer("max_absence_percent").default(25),
+  hasUnits: boolean("has_units").notNull().default(false),
+  unitCount: integer("unit_count").default(1),
+  gradingScope: varchar("grading_scope", { length: 16 }).notNull().default("course"),
+  passingAverage: varchar("passing_average", { length: 8 }).notNull().default("5"),
+  unitPassingAverages: text("unit_passing_averages"),
   modality: varchar("modality", { length: 32 }).default("Remota"),
   meetingLink: varchar("meeting_link", { length: 500 }),
   classroomLocation: varchar("classroom_location", { length: 255 }),
@@ -899,6 +921,7 @@ export const externalStudents = pgTable("external_students", {
   socialName: varchar("socialName", { length: 160 }),
   cpf: varchar("cpf", { length: 20 }),
   email: varchar("email", { length: 320 }),
+  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
   phone: varchar("phone", { length: 32 }), // celular
   studentIdNumber: varchar("studentIdNumber", { length: 64 }), // ex: Matrícula institucional
   category: varchar("category", { length: 100 }), // ex: Estudante de pós-graduação
@@ -960,6 +983,7 @@ export const externalClassGrades = pgTable("external_class_grades", {
   maxScore: varchar("maxScore", { length: 32 }).notNull().default("10.0"),
   rubricScores: text("rubricScores"), // JSON opcional para critérios de Speaking
   assessmentDate: varchar("assessmentDate", { length: 32 }),
+  unitNumber: integer("unit_number"),
   feedback: text("feedback"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

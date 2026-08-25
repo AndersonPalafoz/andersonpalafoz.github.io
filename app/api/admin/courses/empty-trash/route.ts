@@ -26,9 +26,9 @@ export async function POST(request: NextRequest) {
 
     try {
       await db.insert(adminActivityLogs).values({
-        userId: admin.id || null,
-        userEmail: admin.email || "palafozanderson@gmail.com",
-        userName: admin.name || "Administrador",
+        userId: admin.user.id || null,
+        userEmail: admin.user.email || "palafozanderson@gmail.com",
+        userName: admin.user.name || "Administrador",
         action: "empty_trash",
         targetType: "course",
         targetIds: ids.join(","),

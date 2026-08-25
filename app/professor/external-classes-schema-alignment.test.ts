@@ -12,6 +12,10 @@ describe("alinhamento do schema de turmas externas", () => {
     resolve(process.cwd(), "drizzle/migrations/0058_external_classes_production_alignment.sql"),
     "utf8",
   );
+  const simalMigration = readFileSync(
+    resolve(process.cwd(), "drizzle/migrations/0064_wild_leech.sql"),
+    "utf8",
+  );
 
   it("mantém as tabelas de suporte no schema Drizzle", () => {
     expect(schemaSource).toContain('pgTable("external_class_attendance"');
@@ -26,6 +30,12 @@ describe("alinhamento do schema de turmas externas", () => {
       "external_class_materials",
     ]) {
       expect(migrationSource).toContain(`CREATE TABLE IF NOT EXISTS \"${table}\"`);
+    }
+  });
+
+  it("mantém os campos SIMAL idempotentes e alinhados com a consulta da API", () => {
+    for (const column of ["assessmentType", "assessmentVersion", "assessmentComponent", "rubricScores", "assessmentDate"]) {
+      expect(simalMigration).toContain(`ADD COLUMN IF NOT EXISTS \"${column}\"`);
     }
   });
 

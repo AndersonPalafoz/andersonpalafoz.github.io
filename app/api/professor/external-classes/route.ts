@@ -11,7 +11,7 @@ import {
   users,
   notifications,
 } from "@/drizzle/schema";
-import { eq, desc, and, isNull, isNotNull } from "drizzle-orm";
+import { eq, desc, and, isNull, isNotNull, inArray } from "drizzle-orm";
 
 type ExternalClassesDbError = Error & {
   code?: string;
@@ -81,6 +81,10 @@ export async function GET(request: NextRequest) {
     const result = [];
     for (const cls of classes) {
       const students = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, cls.id));
+      const linkedUserIds = students.map((student) => student.userId).filter((id): id is number => Number.isInteger(id));
+      const linkedUsers = linkedUserIds.length ? await db.select({ id: users.id, lastSignedIn: users.lastSignedIn, mustChangePassword: users.mustChangePassword }).from(users).where(inArray(users.id, linkedUserIds)) : [];
+      const lastAccessByUserId = new Map(linkedUsers.map((user) => [user.id, user.mustChangePassword ? null : user.lastSignedIn]));
+      const studentsWithAccess = students.map((student) => ({ ...student, lastSignedIn: student.userId ? lastAccessByUserId.get(student.userId) || null : null }));
       const attendance = await db.select().from(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, cls.id)).orderBy(desc(externalClassAttendance.createdAt));
       const grades = await db.select().from(externalClassGrades).where(eq(externalClassGrades.externalClassId, cls.id)).orderBy(desc(externalClassGrades.createdAt));
       const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
@@ -91,7 +95,7 @@ export async function GET(request: NextRequest) {
 
       result.push({
         ...cls,
-        students,
+        students: studentsWithAccess,
         attendance,
         grades,
         materials,
@@ -148,9 +152,17 @@ export async function POST(request: NextRequest) {
       classDays,
       classTime,
       workloadHours,
+      durationType,
+      durationValue,
+      durationUnit,
       startDate,
       endDate,
       maxAbsencePercent,
+      hasUnits,
+      unitCount,
+      gradingScope,
+      passingAverage,
+      unitPassingAverages,
       modality,
       meetingLink,
       classroomLocation,
@@ -181,6 +193,7 @@ export async function POST(request: NextRequest) {
       maxScore,
       rubricScores,
       assessmentDate,
+      unitNumber,
       feedback,
       gradeId,
       materialTitle,
@@ -200,6 +213,14 @@ export async function POST(request: NextRequest) {
       if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
         return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
       }
+      const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
+      if (hasUnits && (!Number.isInteger(Number(unitCount)) || Number(unitCount) < 1 || Number(unitCount) > 100)) return NextResponse.json({ error: "A quantidade de unidades deve estar entre 1 e 100." }, { status: 400 });
+      if (gradingScope !== undefined && !["course", "unit"].includes(String(gradingScope))) return NextResponse.json({ error: "Escopo de média inválido." }, { status: 400 });
+      if (passingAverage !== undefined && (!Number.isFinite(Number(passingAverage)) || Number(passingAverage) < 0 || Number(passingAverage) > 10)) return NextResponse.json({ error: "A média mínima deve estar entre 0 e 10." }, { status: 400 });
+      const normalizedDurationType = allowedDurationTypes.includes(String(durationType || "semester")) ? String(durationType || "semester") : "semester";
+      if (durationValue !== undefined && durationValue !== null && (!Number.isFinite(Number(durationValue)) || Number(durationValue) <= 0)) {
+        return NextResponse.json({ error: "O valor da duração deve ser maior que zero." }, { status: 400 });
+      }
 
       const inserted = await db.insert(externalClasses).values({
         teacherId: teacher.id,
@@ -211,9 +232,17 @@ export async function POST(request: NextRequest) {
         classDays: classDays ? classDays.trim() : null,
         classTime: classTime ? classTime.trim() : null,
         workloadHours: workloadHours ? Number(workloadHours) : 40,
+        durationType: normalizedDurationType,
+        durationValue: durationValue ? Number(durationValue) : null,
+        durationUnit: durationUnit ? String(durationUnit).trim() : null,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         maxAbsencePercent: maxAbsencePercent ? Number(maxAbsencePercent) : 25,
+        hasUnits: Boolean(hasUnits),
+        unitCount: hasUnits ? Number(unitCount || 1) : 1,
+        gradingScope: hasUnits && gradingScope === "unit" ? "unit" : "course",
+        passingAverage: String(passingAverage ?? 5),
+        unitPassingAverages: hasUnits && gradingScope === "unit" ? (unitPassingAverages ? String(unitPassingAverages) : null) : null,
         modality: modality ? modality.trim() : "Remota",
         meetingLink: meetingLink ? meetingLink.trim() : null,
         classroomLocation: classroomLocation ? classroomLocation.trim() : null,
@@ -242,6 +271,13 @@ export async function POST(request: NextRequest) {
       if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
         return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
       }
+      const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
+      if (durationType !== undefined && !allowedDurationTypes.includes(String(durationType))) {
+        return NextResponse.json({ error: "Formato de duração inválido." }, { status: 400 });
+      }
+      if (durationValue !== undefined && durationValue !== null && (!Number.isFinite(Number(durationValue)) || Number(durationValue) <= 0)) {
+        return NextResponse.json({ error: "O valor da duração deve ser maior que zero." }, { status: 400 });
+      }
 
       const updated = await db.update(externalClasses)
         .set({
@@ -253,9 +289,17 @@ export async function POST(request: NextRequest) {
           classDays: classDays !== undefined ? (classDays ? classDays.trim() : null) : existing.classDays,
           classTime: classTime !== undefined ? (classTime ? classTime.trim() : null) : existing.classTime,
           workloadHours: workloadHours !== undefined ? Number(workloadHours) : existing.workloadHours,
+          durationType: durationType !== undefined ? String(durationType) : existing.durationType,
+          durationValue: durationValue !== undefined ? (durationValue === null ? null : Number(durationValue)) : existing.durationValue,
+          durationUnit: durationUnit !== undefined ? (durationUnit ? String(durationUnit).trim() : null) : existing.durationUnit,
           startDate: startDate ? new Date(startDate) : existing.startDate,
           endDate: endDate ? new Date(endDate) : existing.endDate,
           maxAbsencePercent: maxAbsencePercent !== undefined ? Number(maxAbsencePercent) : existing.maxAbsencePercent,
+          hasUnits: hasUnits !== undefined ? Boolean(hasUnits) : existing.hasUnits,
+          unitCount: hasUnits !== undefined ? (hasUnits ? Number(unitCount || 1) : 1) : existing.unitCount,
+          gradingScope: gradingScope !== undefined ? (hasUnits === false ? "course" : String(gradingScope)) : existing.gradingScope,
+          passingAverage: passingAverage !== undefined ? String(passingAverage) : existing.passingAverage,
+          unitPassingAverages: unitPassingAverages !== undefined ? (gradingScope === "unit" ? String(unitPassingAverages) : null) : existing.unitPassingAverages,
           modality: modality !== undefined ? (modality ? modality.trim() : "Remota") : existing.modality,
           meetingLink: meetingLink !== undefined ? (meetingLink ? meetingLink.trim() : null) : existing.meetingLink,
           classroomLocation: classroomLocation !== undefined ? (classroomLocation ? classroomLocation.trim() : null) : existing.classroomLocation,
@@ -286,9 +330,17 @@ export async function POST(request: NextRequest) {
         classDays: existing.classDays,
         classTime: existing.classTime,
         workloadHours: existing.workloadHours,
+        durationType: existing.durationType,
+        durationValue: existing.durationValue,
+        durationUnit: existing.durationUnit,
         startDate: existing.startDate,
         endDate: existing.endDate,
         maxAbsencePercent: existing.maxAbsencePercent,
+        hasUnits: existing.hasUnits,
+        unitCount: existing.unitCount,
+        gradingScope: existing.gradingScope,
+        passingAverage: existing.passingAverage,
+        unitPassingAverages: existing.unitPassingAverages,
         modality: existing.modality,
         meetingLink: existing.meetingLink,
         classroomLocation: existing.classroomLocation,
@@ -716,6 +768,7 @@ export async function POST(request: NextRequest) {
           maxScore: maxScore ? String(maxScore).trim() : "10.0",
           rubricScores: item.rubricScores ? JSON.stringify(item.rubricScores) : (rubricScores ? String(rubricScores) : null),
           assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
+          unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
           feedback: item.feedback ? String(item.feedback).trim() : null,
         });
 
@@ -769,6 +822,7 @@ export async function POST(request: NextRequest) {
         maxScore: maxScore ? String(maxScore).trim() : "10.0",
         rubricScores: rubricScores ? String(rubricScores) : null,
         assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
+        unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
         feedback: feedback ? String(feedback).trim() : null,
       }).returning();
 

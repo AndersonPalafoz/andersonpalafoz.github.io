@@ -8,8 +8,8 @@ export type AcademicReportEligibility = {
   attendancePercent: number | null;
 };
 
-export const hasFailedByGrade = ({ averageGrade }: AcademicReportEligibility) => (
-  averageGrade !== null && averageGrade < REPORT_MIN_GRADE
+export const hasFailedByGrade = ({ averageGrade }: AcademicReportEligibility, minimumGrade = REPORT_MIN_GRADE) => (
+  averageGrade !== null && averageGrade < minimumGrade
 );
 
 export const hasFailedByAttendance = ({ attendancePercent }: AcademicReportEligibility) => (
@@ -19,10 +19,11 @@ export const hasFailedByAttendance = ({ attendancePercent }: AcademicReportEligi
 export const filterAcademicReportRows = <T extends AcademicReportEligibility>(
   rows: T[],
   filter: AcademicReportFilter,
+  minimumGrade = REPORT_MIN_GRADE,
 ) => {
-  if (filter === "grade") return rows.filter(hasFailedByGrade);
+  if (filter === "grade") return rows.filter((row) => hasFailedByGrade(row, minimumGrade));
   if (filter === "attendance") return rows.filter(hasFailedByAttendance);
-  if (filter === "any") return rows.filter((row) => hasFailedByGrade(row) || hasFailedByAttendance(row));
+  if (filter === "any") return rows.filter((row) => hasFailedByGrade(row, minimumGrade) || hasFailedByAttendance(row));
   return rows;
 };
 
@@ -45,12 +46,12 @@ export type AcademicReportSummary = {
   failedByAttendance: number;
 };
 
-export const summarizeAcademicReportRows = <T extends AcademicReportEligibility>(rows: T[]): AcademicReportSummary => {
-  const failedByGrade = rows.filter(hasFailedByGrade).length;
+export const summarizeAcademicReportRows = <T extends AcademicReportEligibility>(rows: T[], minimumGrade = REPORT_MIN_GRADE): AcademicReportSummary => {
+  const failedByGrade = rows.filter((row) => hasFailedByGrade(row, minimumGrade)).length;
   const failedByAttendance = rows.filter(hasFailedByAttendance).length;
-  const failed = rows.filter((row) => hasFailedByGrade(row) || hasFailedByAttendance(row)).length;
+  const failed = rows.filter((row) => hasFailedByGrade(row, minimumGrade) || hasFailedByAttendance(row)).length;
   const insufficientData = rows.filter((row) => (
-    !hasFailedByGrade(row) &&
+    !hasFailedByGrade(row, minimumGrade) &&
     !hasFailedByAttendance(row) &&
     (row.averageGrade === null || row.attendancePercent === null)
   )).length;

@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
         user: true,
         activity: true,
       },
-      orderBy: desc(userActivityProgress.updatedAt),
+      orderBy: desc(userActivityProgress.submittedAt),
       limit: 50,
     });
 
     // Filtrar apenas os que possuem áudio de speaking gravado
     const speakingSubmissions = submissions
-      .filter((s) => s.audioUrl && s.audioUrl.trim().length > 0)
+      .filter((s) => s.audioResponseUrl && s.audioResponseUrl.trim().length > 0)
       .map((s) => ({
         id: s.id,
         userId: s.userId,
@@ -38,12 +38,12 @@ export async function GET(request: NextRequest) {
         studentEmail: s.user?.email || "",
         activityId: s.activityId,
         activityTitle: s.activity?.title || "Prática de Speaking",
-        audioUrl: s.audioUrl,
-        transcript: s.submissionText || "",
-        feedback: s.feedback || "",
+        audioUrl: s.audioResponseUrl,
+        transcript: "",
+        feedback: s.teacherFeedback || "",
         score: s.score || 0,
         status: s.status,
-        updatedAt: s.updatedAt,
+        updatedAt: s.submittedAt,
       }));
 
     return NextResponse.json({ submissions: speakingSubmissions });
@@ -80,10 +80,9 @@ export async function POST(request: Request) {
     if (existing) {
       const [updated] = await db.update(userActivityProgress)
         .set({
-          audioUrl,
-          submissionText,
-          status: "submitted",
-          updatedAt: new Date(),
+          audioResponseUrl: audioUrl,
+          status: "in_progress",
+          submittedAt: new Date(),
         })
         .where(eq(userActivityProgress.id, existing.id))
         .returning();
@@ -92,10 +91,10 @@ export async function POST(request: Request) {
       const [inserted] = await db.insert(userActivityProgress).values({
         userId: user.id,
         activityId,
-        audioUrl,
-        submissionText,
-        status: "submitted",
+        audioResponseUrl: audioUrl,
+        status: "in_progress",
         score: 0,
+        submittedAt: new Date(),
       }).returning();
       return NextResponse.json({ success: true, progress: inserted });
     }
@@ -123,10 +122,9 @@ export async function PATCH(request: Request) {
 
     const [updated] = await db.update(userActivityProgress)
       .set({
-        feedback,
+        teacherFeedback: feedback,
         score,
-        status: "graded",
-        updatedAt: new Date(),
+        status: "completed",
       })
       .where(eq(userActivityProgress.id, progressId))
       .returning();

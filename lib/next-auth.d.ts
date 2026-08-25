@@ -6,6 +6,7 @@ declare module "next-auth" {
       id?: string;
       role?: "user" | "professor" | "admin" | "super_admin";
       approvalStatus?: "pending" | "approved" | "rejected";
+      mustChangePassword?: boolean;
       deletedAt?: string | null;
       image?: string | null;
       avatarUrl?: string | null;
@@ -26,6 +27,7 @@ declare module "next-auth/jwt" {
     provider?: string;
     role?: "user" | "professor" | "admin" | "super_admin";
     approvalStatus?: "pending" | "approved" | "rejected";
+    mustChangePassword?: boolean;
     deletedAt?: string | null;
     picture?: string | null;
     avatarUrl?: string | null;

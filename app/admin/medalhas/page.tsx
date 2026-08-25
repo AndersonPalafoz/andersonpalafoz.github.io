@@ -46,6 +46,10 @@ export default function AdminMedalsPage() {
   const [selectedMedalCode, setSelectedMedalCode] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [newMedal, setNewMedal] = useState({ code: "", title: "", icon: "🏅", category: "manual", description: "", requirement: "" });
+  const [selectedBatchUserIds, setSelectedBatchUserIds] = useState<string[]>([]);
+  const [batchSubmitting, setBatchSubmitting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -101,6 +105,49 @@ export default function AdminMedalsPage() {
       toast.error("Erro ao registrar a concessão da medalha.");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleGrantBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBatchUserIds.length || !selectedMedalCode || !notes.trim()) {
+      toast.error("Selecione alunos, uma medalha e informe uma justificativa.");
+      return;
+    }
+    setBatchSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/medals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "grant-batch", userIds: selectedBatchUserIds.map(Number), medalCode: selectedMedalCode, notes }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível conceder as medalhas.");
+      toast.success(data.message || "Medalhas concedidas com sucesso.");
+      setSelectedBatchUserIds([]);
+      setNotes("");
+      await fetchData();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao conceder medalhas.");
+    } finally {
+      setBatchSubmitting(false);
+    }
+  };
+
+  const handleCreateMedal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      const res = await fetch("/api/admin/medals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create", ...newMedal }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Não foi possível criar a medalha.");
+      toast.success("Medalha criada e adicionada ao catálogo.");
+      setNewMedal({ code: "", title: "", icon: "🏅", category: "manual", description: "", requirement: "" });
+      await fetchData();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível criar a medalha.");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -208,6 +255,60 @@ export default function AdminMedalsPage() {
             </div>
           </form>
         </div>
+
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_280px] gap-6">
+          <form onSubmit={handleCreateMedal} className="bg-card border border-border/70 rounded-3xl p-6 sm:p-8 shadow-xl space-y-5">
+            <div>
+              <h2 className="text-xl font-black">Criar nova medalha</h2>
+              <p className="text-xs text-muted-foreground mt-1">Cadastre uma conquista reutilizável no catálogo. O código deve ser único e no formato palavra-palavra.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Código
+                <input required value={newMedal.code} onChange={(e) => setNewMedal((v) => ({ ...v, code: e.target.value.toLowerCase().replace(/\\s+/g, "-") }))} placeholder="ex: leitor-atento" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm normal-case font-semibold text-foreground" />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Título
+                <input required value={newMedal.title} onChange={(e) => setNewMedal((v) => ({ ...v, title: e.target.value }))} placeholder="Leitor Atento" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm normal-case font-semibold text-foreground" />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ícone
+                <input required maxLength={32} value={newMedal.icon} onChange={(e) => setNewMedal((v) => ({ ...v, icon: e.target.value }))} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-2xl text-foreground" />
+              </label>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Categoria
+                <select value={newMedal.category} onChange={(e) => setNewMedal((v) => ({ ...v, category: e.target.value }))} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground">
+                  <option value="manual">Manual</option><option value="academic">Acadêmica</option><option value="achievement">Conquista</option><option value="streak">Constância</option>
+                </select>
+              </label>
+            </div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Descrição
+              <textarea required value={newMedal.description} onChange={(e) => setNewMedal((v) => ({ ...v, description: e.target.value }))} rows={2} placeholder="Explique o que esta medalha reconhece." className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground" />
+            </label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Requisito
+              <textarea required value={newMedal.requirement} onChange={(e) => setNewMedal((v) => ({ ...v, requirement: e.target.value }))} rows={2} placeholder="Descreva quando a medalha deve ser concedida." className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground" />
+            </label>
+            <div className="flex justify-end"><Button type="submit" disabled={creating} className="bg-slate-900 text-white font-black rounded-xl">{creating ? <Loader className="animate-spin" size={16} /> : <PlusCircle size={16} />} Criar medalha</Button></div>
+          </form>
+          <div className="rounded-3xl border border-red-200 bg-gradient-to-br from-red-50 to-white p-6 shadow-sm dark:border-red-900/40 dark:from-red-950/30 dark:to-card">
+            <p className="text-[10px] font-black uppercase tracking-widest text-red-600">Pré-visualização</p>
+            <div className="mt-5 text-center"><div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-white text-5xl shadow-md dark:bg-slate-900">{newMedal.icon || "🏅"}</div><h3 className="mt-4 text-lg font-black">{newMedal.title || "Título da medalha"}</h3><p className="mt-2 text-xs leading-5 text-muted-foreground">{newMedal.description || "A descrição aparecerá aqui."}</p><span className="mt-4 inline-flex rounded-full bg-red-600/10 px-3 py-1 text-[10px] font-black uppercase text-red-700">{newMedal.category}</span></div>
+          </div>
+        </div>
+
+        <form onSubmit={handleGrantBatch} className="bg-card border border-border/70 rounded-3xl p-6 shadow-xl space-y-4">
+          <div><h2 className="text-xl font-black">Concessão em lote</h2><p className="text-sm text-muted-foreground">Selecione vários alunos para atribuir a mesma medalha. Alunos que já possuem a conquista são ignorados com segurança.</p></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Alunos
+              <select multiple value={selectedBatchUserIds} onChange={(e) => setSelectedBatchUserIds(Array.from(e.target.selectedOptions, (option) => option.value))} className="mt-2 h-36 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground">
+                {allUsers.map((item) => <option key={item.id} value={item.id}>{item.name || item.email || `Aluno #${item.id}`}</option>)}
+              </select>
+            </label>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Medalha
+              <select value={selectedMedalCode} onChange={(e) => setSelectedMedalCode(e.target.value)} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground"><option value="">Selecione</option>{catalog.map((item) => <option key={item.code} value={item.code}>{item.icon} {item.title}</option>)}</select>
+            </label>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Justificativa
+              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} placeholder="Ex: participação destacada" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground" />
+            </label>
+          </div>
+          <div className="flex justify-end"><Button type="submit" disabled={batchSubmitting} className="rounded-xl bg-red-600 font-black text-white">{batchSubmitting ? <Loader className="animate-spin" size={16} /> : <Sparkles size={16} />} Conceder aos selecionados</Button></div>
+        </form>
 
         {/* Catálogo de Medalhas Disponíveis */}
         <div className="space-y-4">

@@ -40,6 +40,7 @@ async function loadArticleReviews(articleId: number) {
 
   return comments.map((comment) => ({
     id: comment.id,
+    moderationStatus: comment.moderationStatus,
     rating: comment.rating ?? 5,
     comment: comment.comment,
     createdAt: comment.createdAt,
@@ -78,10 +79,11 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const articleId = parseId(String(body.articleId || ""));
     const reviewId = Number(body.reviewId);
+    const action = typeof body.action === "string" ? body.action : "reply";
     const message = typeof body.message === "string" ? body.message.trim() : "";
 
-    if (!articleId || !Number.isInteger(reviewId) || reviewId <= 0 || !message || message.length > 2000) {
-      return NextResponse.json({ error: "Informe artigo, comentário e resposta válida de até 2.000 caracteres." }, { status: 400 });
+    if (!articleId || !Number.isInteger(reviewId) || reviewId <= 0) {
+      return NextResponse.json({ error: "Informe um artigo e comentário válidos." }, { status: 400 });
     }
 
     const comment = await db.query.articleComments.findFirst({
@@ -95,6 +97,16 @@ export async function PATCH(request: Request) {
     const author = session.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
     if (!author) {
       return NextResponse.json({ error: "Administrador não encontrado no banco." }, { status: 403 });
+    }
+
+    if (["hide", "restore", "delete"].includes(action)) {
+      const moderationStatus = action === "hide" ? "hidden" : action === "delete" ? "deleted" : "visible";
+      const [updated] = await db.update(articleComments).set({ moderationStatus, moderatedAt: new Date(), moderatedBy: author.id }).where(and(eq(articleComments.id, reviewId), eq(articleComments.articleId, articleId))).returning();
+      return NextResponse.json({ comment: { id: updated.id, moderationStatus: updated.moderationStatus } });
+    }
+
+    if (action !== "reply" || !message || message.length > 2000) {
+      return NextResponse.json({ error: "Informe artigo, comentário e resposta válida de até 2.000 caracteres." }, { status: 400 });
     }
 
     const [reply] = await db.insert(articleCommentReplies).values({

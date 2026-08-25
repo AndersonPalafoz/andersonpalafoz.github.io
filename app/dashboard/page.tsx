@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { getUserEnrollments, getCertificates, getUserActivityProgress, getResumeLesson } from "@/lib/db";
+import { db } from "@/lib/db";
+import { externalClassGrades, externalClasses, externalStudents, users } from "@/drizzle/schema";
+import { eq, inArray } from "drizzle-orm";
+import { calculateCourseGrade } from "@/lib/course-grading";
 import { BookOpen, Award, CheckSquare, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeeklyGoalsWidget } from "./metas-semanais";
@@ -17,10 +22,12 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
   const userId = parseInt(session?.user?.id ?? "");
+  if (session?.user?.mustChangePassword && session.user.role === "user") redirect("/primeiro-acesso");
 
   let enrollments: Awaited<ReturnType<typeof getUserEnrollments>> = [];
   let certificates: Awaited<ReturnType<typeof getCertificates>> = [];
   let atividades: Awaited<ReturnType<typeof getUserActivityProgress>> = [];
+  let externalAcademic: Array<{ className: string; courseName: string; hasUnits: boolean; unitCount: number; gradingScope: string; passingAverage: number; units: Array<{ number: number; average: number | null; minimum: number; ratio: number }> }> = [];
 
   if (!isNaN(userId) && userId > 0) {
     [enrollments, certificates, atividades] = await Promise.all([
@@ -28,6 +35,21 @@ export default async function DashboardPage() {
       getCertificates(userId),
       getUserActivityProgress(userId),
     ]);
+    const account = session?.user?.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
+    if (account?.email) {
+      const externalRecords = await db.query.externalStudents.findMany({ where: eq(externalStudents.email, account.email) });
+      const classIds = [...new Set(externalRecords.map((student) => student.externalClassId))];
+      if (classIds.length > 0) {
+        const classes = await db.query.externalClasses.findMany({ where: inArray(externalClasses.id, classIds) });
+        const gradeRows = await db.query.externalClassGrades.findMany({ where: inArray(externalClassGrades.studentId, externalRecords.map((student) => student.id)) });
+        externalAcademic = classes.map((externalClass) => {
+          const records = externalRecords.filter((student) => student.externalClassId === externalClass.id);
+          const grades = gradeRows.filter((grade) => records.some((student) => student.id === grade.studentId));
+          const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, grades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
+          return { className: externalClass.className, courseName: externalClass.courseName, hasUnits: Boolean(externalClass.hasUnits), unitCount: result.units.length || 1, gradingScope: result.scope, passingAverage: result.passingAverage, units: result.units.map((unit) => ({ number: unit.unit, average: unit.average, minimum: unit.passingAverage, ratio: unit.average === null ? 0 : Math.min(100, (unit.average / 10) * 100) })) };
+        });
+      }
+    }
   }
 
   const cursosAtivos = await Promise.all(
@@ -91,6 +113,8 @@ export default async function DashboardPage() {
           </article>
         ))}
       </section>
+
+      {externalAcademic.length > 0 && <section aria-label="Médias acadêmicas por unidade" className="space-y-4"><div><span className="muted-label">Acompanhamento acadêmico</span><h2 className="mt-1 text-2xl font-black tracking-tight text-foreground">Médias por unidade</h2><p className="mt-1 text-sm text-muted-foreground">Veja sua média atual comparada ao mínimo exigido em cada unidade.</p></div><div className="grid gap-5 lg:grid-cols-2">{externalAcademic.map((course) => <article key={`${course.className}-${course.courseName}`} className="surface-card rounded-3xl p-5"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h3 className="truncate text-lg font-black text-foreground">{course.courseName}</h3><p className="mt-1 text-xs font-semibold text-muted-foreground">{course.className} · {course.gradingScope === "unit" ? "Aprovação por unidade" : "Média geral"}</p></div><span className="shrink-0 rounded-full bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-red-700 dark:bg-red-950/40 dark:text-red-300">Mínimo {course.passingAverage.toFixed(1)}</span></div><div className="mt-5 space-y-4">{course.units.map((unit) => { const passed = unit.average !== null && unit.average >= unit.minimum; const progress = unit.average === null ? 0 : Math.min(100, Math.max(0, (unit.average / 10) * 100)); return <div key={unit.number}><div className="mb-1.5 flex items-center justify-between gap-3 text-xs font-bold"><span className="text-foreground">Unidade {unit.number}</span><span className={passed ? "text-emerald-700 dark:text-emerald-300" : unit.average === null ? "text-muted-foreground" : "text-amber-700 dark:text-amber-300"}>{unit.average === null ? "Sem notas" : `${unit.average.toFixed(1)} / 10 · mínimo ${unit.minimum.toFixed(1)}`}</span></div><div className="h-3 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`Média da unidade ${unit.number}`} aria-valuemin={0} aria-valuemax={10} aria-valuenow={unit.average ?? 0}><div className={`h-full rounded-full transition-all ${passed ? "bg-emerald-500" : unit.average === null ? "bg-slate-300 dark:bg-slate-700" : "bg-amber-500"}`} style={{ width: `${progress}%` }} /></div></div>; })}</div></article>)}</div></section>}
 
       {/* Widget de Metas Semanais */}
       <WeeklyGoalsWidget />

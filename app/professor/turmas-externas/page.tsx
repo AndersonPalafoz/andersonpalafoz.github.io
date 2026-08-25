@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
 import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { calculateSimalComposite } from "@/lib/simal-grading";
+import { calculateCourseGrade } from "@/lib/course-grading";
 
 interface ExternalStudentItem {
   id: number;
@@ -18,6 +21,7 @@ interface ExternalStudentItem {
   component: string | null;
   status: string;
   notes: string | null;
+  lastSignedIn?: string | null;
 }
 
 interface ExternalClassAttendanceItem {
@@ -38,6 +42,7 @@ interface ExternalClassGradeItem {
   maxScore: string;
   rubricScores?: string | null;
   assessmentDate?: string | null;
+  unitNumber?: number | null;
   feedback: string | null;
   createdAt: string;
 }
@@ -63,7 +68,15 @@ interface ExternalClassItem {
   courseName: string;
   academicTerm: string;
   description: string | null;
+  durationType?: "annual" | "semester" | "workload" | "custom" | null;
+  durationValue?: number | null;
+  durationUnit?: string | null;
   maxAbsencePercent?: number | null;
+  hasUnits?: boolean | null;
+  unitCount?: number | null;
+  gradingScope?: string | null;
+  passingAverage?: string | number | null;
+  unitPassingAverages?: string | null;
   instructorName: string | null;
   monitors: string | null;
   students: ExternalStudentItem[];
@@ -118,6 +131,13 @@ const normalizeWorkloadHours = (value: unknown) => {
   return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
 };
 
+const formatDurationLabel = (item: Pick<ExternalClassItem, "durationType" | "durationValue" | "durationUnit">) => {
+  if (item.durationType === "annual") return "Anual";
+  if (item.durationType === "workload") return item.durationValue ? `${item.durationValue} ${item.durationUnit || "horas"}` : "Por carga horária";
+  if (item.durationType === "custom") return item.durationValue ? `${item.durationValue} ${item.durationUnit || "unidade(s)"}` : "Outro formato";
+  return item.durationValue && item.durationValue > 1 ? `${item.durationValue} semestres` : "Semestral";
+};
+
 const SIMAL_ASSESSMENTS = [
   { value: "simal-units-1-2-4", label: "SIMAL — Units 1, 2 & 4", type: "written", version: "A", maxScore: "8.0" },
   { value: "simal-units-1-2-4-b", label: "SIMAL — Units 1, 2 & 4 (Versão B)", type: "written", version: "B", maxScore: "8.0" },
@@ -136,6 +156,8 @@ const SIMAL_COMPONENTS = [
 ] as const;
 
 export default function TurmasExternasPage() {
+  const { data: session } = useSession();
+  const canManage = session?.user?.role === "admin";
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<{ status?: number; title: string; message: string; action?: string } | null>(null);
@@ -213,9 +235,17 @@ export default function TurmasExternasPage() {
   const [classDays, setClassDays] = useState("Segundas e Quartas");
   const [classTime, setClassTime] = useState("19:00 - 20:30");
   const [workloadHours, setWorkloadHours] = useState(40);
+  const [durationType, setDurationType] = useState<"annual" | "semester" | "workload" | "custom">("annual");
+  const [durationValue, setDurationValue] = useState(1);
+  const [durationUnit, setDurationUnit] = useState("year");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [maxAbsencePercent, setMaxAbsencePercent] = useState(25);
+  const [hasUnits, setHasUnits] = useState(false);
+  const [unitCount, setUnitCount] = useState(1);
+  const [gradingScope, setGradingScope] = useState<"course" | "unit">("course");
+  const [passingAverage, setPassingAverage] = useState(5);
+  const [unitPassingAverages, setUnitPassingAverages] = useState<Record<number, number>>({});
   const [modality, setModality] = useState("Remota");
   const [meetingLink, setMeetingLink] = useState("");
   const [classroomLocation, setClassroomLocation] = useState("");
@@ -225,6 +255,24 @@ export default function TurmasExternasPage() {
   const [touchedClassFields, setTouchedClassFields] = useState<Partial<Record<ClassFormField, boolean>>>({});
 
   const finalInstitutionValue = isCustomInstitution ? customInstitutionInput.trim() : institution.trim();
+
+  useEffect(() => {
+    if (editingClassId) return;
+    const normalizedInstitution = finalInstitutionValue.toLowerCase();
+    if (["simal", "megaworks"].includes(normalizedInstitution)) {
+      setDurationType("annual");
+      setDurationValue(1);
+      setDurationUnit("year");
+    } else if (["isf", "profici"].includes(normalizedInstitution)) {
+      setDurationType("workload");
+      setDurationValue(workloadHours || 1);
+      setDurationUnit("hours");
+    } else {
+      setDurationType("semester");
+      setDurationValue(1);
+      setDurationUnit("semester");
+    }
+  }, [finalInstitutionValue, editingClassId]);
 
   const validateClassForm = (): ClassFormErrors => {
     const errors: ClassFormErrors = {};
@@ -270,6 +318,7 @@ export default function TurmasExternasPage() {
   const [studentComponent, setStudentComponent] = useState("");
   const [studentStatus, setStudentStatus] = useState("active");
   const [studentNotes, setStudentNotes] = useState("");
+  const [provisioningAccess, setProvisioningAccess] = useState<number | null>(null);
 
   // Tab view per class: 'students' | 'attendance' | 'grades' | 'materials'
   const [activeTabByClass, setActiveTabByClass] = useState<Record<number, string>>({});
@@ -557,8 +606,8 @@ export default function TurmasExternasPage() {
       setSubmitting(true);
       const action = editingClassId ? "updateClass" : "createClass";
       const body = editingClassId
-        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation, level }
-        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, startDate, endDate, maxAbsencePercent, modality, meetingLink, classroomLocation, level };
+        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent, hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level }
+        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent, hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -597,9 +646,17 @@ export default function TurmasExternasPage() {
     setClassDays((cls as any).classDays || "Segundas e Quartas");
     setClassTime((cls as any).classTime || "19:00 - 20:30");
     setWorkloadHours((cls as any).workloadHours || 40);
+    setDurationType((cls.durationType as "annual" | "semester" | "workload" | "custom") || "semester");
+    setDurationValue((cls as any).durationValue || 1);
+    setDurationUnit((cls as any).durationUnit || "semester");
     setStartDate((cls as any).startDate ? new Date((cls as any).startDate).toISOString().split('T')[0] : "");
     setEndDate((cls as any).endDate ? new Date((cls as any).endDate).toISOString().split('T')[0] : "");
     setMaxAbsencePercent((cls as any).maxAbsencePercent || 25);
+    setHasUnits(Boolean((cls as any).hasUnits));
+    setUnitCount(Math.max(1, Number((cls as any).unitCount) || 1));
+    setGradingScope((cls as any).gradingScope === "unit" ? "unit" : "course");
+    setPassingAverage(Number((cls as any).passingAverage) || 5);
+    try { setUnitPassingAverages(JSON.parse((cls as any).unitPassingAverages || "{}")); } catch { setUnitPassingAverages({}); }
     setModality((cls as any).modality || "Remota");
     setMeetingLink((cls as any).meetingLink || "");
     setClassroomLocation((cls as any).classroomLocation || "");
@@ -619,9 +676,17 @@ export default function TurmasExternasPage() {
     setClassDays("Segundas e Quartas");
     setClassTime("19:00 - 20:30");
     setWorkloadHours(40);
+    setDurationType("annual");
+    setDurationValue(1);
+    setDurationUnit("year");
     setStartDate("");
     setEndDate("");
     setMaxAbsencePercent(25);
+    setHasUnits(false);
+    setUnitCount(1);
+    setGradingScope("course");
+    setPassingAverage(5);
+    setUnitPassingAverages({});
     setModality("Remota");
     setMeetingLink("");
     setClassroomLocation("");
@@ -724,6 +789,34 @@ export default function TurmasExternasPage() {
     setStudentStatus(student.status);
     setStudentNotes(student.notes || "");
     window.scrollTo({ top: 400, behavior: "smooth" });
+  };
+
+  const resendExternalStudentPassword = async (classId: number, studentId: number, studentName: string) => {
+    setSendingEmailId(studentId);
+    try {
+      const response = await fetch("/api/admin/external-students/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ classId, studentIds: [studentId], action: "resend" }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível reenviar a senha temporária.");
+      toast.success(`Nova senha temporária enviada para ${studentName}.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível reenviar a senha temporária.");
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
+
+  const provisionExternalAccess = async (classId: number) => {
+    setProvisioningAccess(classId);
+    try {
+      const response = await fetch("/api/admin/external-students/access", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ classId, action: "resend" }) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível provisionar os acessos.");
+      toast.success(`${data.emailed || 0} instrução(ões) de acesso enviada(s) pelo Resend.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível provisionar os acessos.");
+    } finally {
+      setProvisioningAccess(null);
+    }
   };
 
   const resetStudentForm = () => {
@@ -854,7 +947,7 @@ export default function TurmasExternasPage() {
     }
     try {
       setSubmitting(true);
-      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component, maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || "2026-08-18", gradesList }) });
+      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component,                                       maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || "2026-08-18", unitNumber: (document.getElementById(`simal_unit_${classId}`) as HTMLSelectElement)?.value || null, gradesList }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Não foi possível salvar as notas SIMAL.");
       notifySuccess(`${data.processedCount || gradesList.length} nota(s) SIMAL registrada(s) com sucesso.`);
@@ -971,17 +1064,19 @@ export default function TurmasExternasPage() {
     return cls.students.map((student) => {
       const attendance = attendanceByStudent.get(student.id) || { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
       const studentGrades = (cls.grades || []).filter((grade) => grade.studentId === student.id);
-      const averageGrade = studentGrades.length > 0
-        ? studentGrades.reduce((sum, grade) => sum + (Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : 0), 0) / studentGrades.length
-        : null;
+      const simalGrade = calculateSimalComposite(studentGrades);
+          const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
+      const averageGrade = simalGrade.isSimal ? simalGrade.finalScore : configuredGrade.average;
       const attendancePercent = attendance.total > 0 ? (attendance.present / attendance.total) * 100 : null;
-      const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent });
+      const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+      const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) || (configuredGrade.scope === "unit" && configuredGrade.passed === false);
       const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent });
       return {
         student,
         attendance,
         attendancePercent,
         grades: studentGrades,
+        simalGrade,
         averageGrade,
         failedByGrade,
         failedByAttendance,
@@ -990,7 +1085,8 @@ export default function TurmasExternasPage() {
   };
 
   const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
-    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter);
+    const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
     const csvRows = [
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
       ["Instituição", cls.institution],
@@ -1003,8 +1099,8 @@ export default function TurmasExternasPage() {
       ["Filtro aplicado", academicReportFilterLabel(filter)],
       ["Alunos incluídos", rows.length],
       [],
-      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Média (0–10)"],
-      ...rows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => [
+      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
+      ...rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade }) => [
         student.name,
         student.cpf || "",
         student.email || "",
@@ -1019,6 +1115,9 @@ export default function TurmasExternasPage() {
         attendance.total,
         attendancePercent === null ? "" : formatReportNumber(attendancePercent),
         grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; "),
+        simalGrade.isSimal ? formatReportNumber(simalGrade.proofScore) : "",
+        simalGrade.isSimal ? formatReportNumber(simalGrade.presentationScore) : "",
+        simalGrade.isSimal ? formatReportNumber(simalGrade.finalScore) : "",
         averageGrade === null ? "" : formatReportNumber(averageGrade),
       ]),
     ];
@@ -1036,10 +1135,13 @@ export default function TurmasExternasPage() {
   };
 
   const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
-    const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter);
-    const reportSummary = summarizeAcademicReportRows(reportRows);
+    const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+    const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
+    const reportSummary = minimumGrade === REPORT_MIN_GRADE
+      ? summarizeAcademicReportRows(reportRows)
+      : summarizeAcademicReportRows(reportRows, minimumGrade);
     const generatedAt = new Date().toLocaleString("pt-BR");
-    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, averageGrade }) => `
+    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade }) => `
       <tr>
         <td><strong>${escapeReportHtml(student.name)}</strong><br><small>${escapeReportHtml(student.email || "E-mail não informado")}</small></td>
         <td>${escapeReportHtml(student.cpf || "—")}</td>
@@ -1049,7 +1151,7 @@ export default function TurmasExternasPage() {
         <td>${attendance.excused}</td>
         <td>${attendance.total}</td>
         <td>${escapeReportHtml(formatReportNumber(attendancePercent))}</td>
-        <td>${escapeReportHtml(grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas")}</td>
+        <td>${escapeReportHtml(`${grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas"}${simalGrade.isSimal ? ` • SIMAL: prova ${formatReportNumber(simalGrade.proofScore)}/8 + apresentação ${formatReportNumber(simalGrade.presentationScore)}/2 = ${formatReportNumber(simalGrade.finalScore)}/10` : ""}`)}</td>
         <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
       </tr>`).join("");
     const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
@@ -1072,7 +1174,7 @@ export default function TurmasExternasPage() {
       ${reportSummaryHtml}
       <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter))}</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
       <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Média</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="10">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
-      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${REPORT_MIN_GRADE.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
+      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${minimumGrade.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
       </body></html>`);
     printWindow.document.close();
     printWindow.focus();
@@ -1698,6 +1800,30 @@ export default function TurmasExternasPage() {
                     </div>
                   )}
 
+                  <div className="rounded-2xl border border-red-100 dark:border-red-900/40 bg-red-50/60 dark:bg-red-950/20 p-4">
+                    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <label htmlFor="external-duration-type" className="block text-xs font-bold text-gray-800 dark:text-gray-200">Formato de duração</label>
+                        <p className="mt-1 text-[11px] text-gray-600 dark:text-gray-400">SIMAL e Megaworks costumam ser anuais; IsF/PROFICI podem ser controlados por carga horária.</p>
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-red-700 dark:text-red-300">Regra acadêmica</span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <select id="external-duration-type" value={durationType} onChange={(e) => {
+                        const next = e.target.value as "annual" | "semester" | "workload" | "custom";
+                        setDurationType(next);
+                        setDurationUnit(next === "annual" ? "year" : next === "semester" ? "semester" : next === "workload" ? "hours" : "custom");
+                      }} className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white">
+                        <option value="annual">Anual</option>
+                        <option value="semester">Semestral</option>
+                        <option value="workload">Por carga horária</option>
+                        <option value="custom">Outro formato</option>
+                      </select>
+                      <input aria-label="Valor da duração" type="number" min={1} max={9999} value={durationValue} onChange={(e) => setDurationValue(Number(e.target.value) || 1)} className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
+                      <input aria-label="Unidade da duração" type="text" value={durationUnit} onChange={(e) => setDurationUnit(e.target.value)} placeholder="year, semester, hours..." className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
+                    </div>
+                    <p className="mt-2 text-[11px] font-semibold text-red-800 dark:text-red-200">{durationType === "annual" ? "Duração: 1 ano letivo." : durationType === "semester" ? "Duração: semestre letivo." : durationType === "workload" ? `Duração definida por ${durationValue} hora(s).` : "Use o campo de unidade para descrever o formato."}</p>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Horário</label>
@@ -1730,6 +1856,32 @@ export default function TurmasExternasPage() {
                         onChange={(e) => setMaxAbsencePercent(parseInt(e.target.value) || 25)}
                         className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
                       />
+                    </div>
+                    <div className="sm:col-span-2 rounded-xl border border-red-200 bg-red-50/60 p-3 dark:border-red-900/50 dark:bg-red-950/20">
+                      <label className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200">
+                        <input type="checkbox" checked={hasUnits} onChange={(e) => { setHasUnits(e.target.checked); if (!e.target.checked) setGradingScope("course"); }} />
+                        Dividir o curso em unidades
+                      </label>
+                      {hasUnits && <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Quantidade de unidades
+                          <input type="number" min={1} max={100} value={unitCount} onChange={(e) => setUnitCount(Math.max(1, Math.min(100, Number(e.target.value) || 1)))} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
+                        </label>
+                        <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Critério de aprovação
+                          <select value={gradingScope} onChange={(e) => setGradingScope(e.target.value as "course" | "unit")} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white">
+                            <option value="course">Média do curso todo</option>
+                            <option value="unit">Média mínima em cada unidade</option>
+                          </select>
+                        </label>
+                        <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Média mínima geral
+                          <select value={passingAverage} onChange={(e) => setPassingAverage(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white">
+                            <option value={5}>5,0</option><option value={6}>6,0</option><option value={7}>7,0</option>
+                          </select>
+                        </label>
+                        {gradingScope === "unit" && <div className="sm:col-span-3 grid grid-cols-2 gap-2 md:grid-cols-4">{Array.from({ length: unitCount }, (_, index) => index + 1).map((unit) => <label key={unit} className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Unidade {unit}
+                          <select value={unitPassingAverages[unit] ?? passingAverage} onChange={(e) => setUnitPassingAverages((current) => ({ ...current, [unit]: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white"><option value={5}>5,0</option><option value={6}>6,0</option><option value={7}>7,0</option></select>
+                        </label>)}</div>}
+                      </div>}
+                      <p className="mt-2 text-[10px] text-red-800 dark:text-red-200">A regra fica registrada na turma e poderá ser usada nos relatórios acadêmicos. Notas já lançadas não são alteradas.</p>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Início</label>
@@ -2016,6 +2168,7 @@ export default function TurmasExternasPage() {
                             {(cls as any).modality || "Remota"}
                           </span>
                           <span className="text-xs font-bold text-gray-500">Período: {cls.academicTerm}</span>
+                          <span className="text-xs font-bold text-red-700 dark:text-red-300">Duração: {formatDurationLabel(cls)}</span>
                         </div>
                         <h3 className="text-xl sm:text-2xl font-black tracking-tight text-gray-950 dark:text-white">{cls.className}</h3>
                         <p className="text-xs font-semibold text-red-600 dark:text-red-400">{cls.courseName}</p>
@@ -2215,6 +2368,7 @@ export default function TurmasExternasPage() {
                       >
                         <Users size={14} /> Alunos ({cls.students.length})
                       </button>
+                      {canManage && <button type="button" onClick={() => provisionExternalAccess(cls.id)} disabled={provisioningAccess === cls.id || cls.students.length === 0} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">{provisioningAccess === cls.id ? "Enviando..." : "Reenviar senha temporária"}</button>}
                       <button
                         type="button"
                         onClick={() => setClassWorkspaceTab(cls.id, "attendance")}
@@ -2322,6 +2476,7 @@ export default function TurmasExternasPage() {
                                   <p className="text-xs text-gray-500 mt-0.5">
                                     {st.email || "Sem e-mail"} {st.studentIdNumber ? `• Matrícula: ${st.studentIdNumber}` : ""} {st.cpf ? `• CPF: ${st.cpf}` : ""}
                                   </p>
+                                  <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Último acesso: <span className="font-semibold text-gray-700 dark:text-gray-200">{st.lastSignedIn ? new Date(st.lastSignedIn).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "Ainda não acessou"}</span></p>
                                   {(st.category || st.university || st.component) && (
                                     <div className="flex items-center gap-2 mt-1 flex-wrap">
                                       {st.category && <span className="text-[10px] px-2 py-0.5 rounded bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-gray-300 font-semibold">{st.category}</span>}
@@ -2332,16 +2487,16 @@ export default function TurmasExternasPage() {
                                   {st.notes && <p className="text-xs text-gray-400 italic mt-1">Obs: {st.notes}</p>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
-                                  {st.email && (
+                                  {canManage && st.email && (
                                     <button
                                       type="button"
                                       disabled={sendingEmailId === st.id}
-                                      onClick={() => void handleSendWelcomeEmail(st.id, st.name)}
-                                      className="px-2.5 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1"
-                                      title="Enviar e-mail de boas-vindas para o aluno"
+                                      onClick={() => void resendExternalStudentPassword(cls.id, st.id, st.name)}
+                                      className="px-2.5 py-1.5 rounded-lg border border-emerald-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-xs font-bold hover:bg-red-100 transition text-red-700 dark:text-red-300 flex items-center gap-1"
+                                      title="Reenviar senha temporária para o aluno"
                                     >
                                       {sendingEmailId === st.id ? <Loader2 size={12} className="animate-spin" /> : <Mail size={12} />}
-                                      Boas-vindas
+                                      Reenviar Boas-vindas
                                     </button>
                                   )}
                                   <button
@@ -2603,6 +2758,7 @@ export default function TurmasExternasPage() {
                               <select value={simalBatchPreset[cls.id] || ""} onChange={(e) => { const value = e.target.value; const preset = SIMAL_ASSESSMENTS.find((item) => item.value === value); setSimalBatchPreset({ ...simalBatchPreset, [cls.id]: value }); setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: preset?.type === "presentation" ? "presentation" : "total" }); }} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white"><option value="">Escolher avaliação</option>{SIMAL_ASSESSMENTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
                               <select value={simalBatchComponent[cls.id] || "total"} onChange={(e) => setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white">{SIMAL_COMPONENTS.map((item) => <option key={item.value} value={item.value}>{item.label} / {item.maxScore}</option>)}</select>
                               <input type="date" value={simalBatchDate[cls.id] || "2026-08-18"} onChange={(e) => setSimalBatchDate({ ...simalBatchDate, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white" />
+                              {cls.hasUnits && <select id={`simal_unit_${cls.id}`} defaultValue="1" className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white"><option value="">Sem unidade</option>{Array.from({ length: Math.max(1, cls.unitCount || 1) }, (_, index) => <option key={index + 1} value={index + 1}>Unidade {index + 1}</option>)}</select>}
                             </div>
                           </div>
                           <div className="max-h-72 overflow-y-auto rounded-xl border border-red-100 bg-white dark:border-red-950/50 dark:bg-slate-900">
@@ -2641,6 +2797,7 @@ export default function TurmasExternasPage() {
                             onClick={async () => {
                               const titleInput = document.getElementById(`batch_title_${cls.id}`) as HTMLInputElement;
                               const scoreInput = document.getElementById(`batch_score_${cls.id}`) as HTMLInputElement;
+                              const unitInput = document.getElementById(`simal_unit_${cls.id}`) as HTMLSelectElement;
                               const title = titleInput?.value?.trim();
                               const score = scoreInput?.value?.trim();
                               if (!title || !score) {
@@ -2664,6 +2821,7 @@ export default function TurmasExternasPage() {
                                       assessmentTitle: title,
                                       score,
                                       maxScore: "10.0",
+                                      unitNumber: unitInput?.value || null,
                                       feedback: "Lançamento em lote automatizado",
                                     }),
                                   });

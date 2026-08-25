@@ -2180,6 +2180,23 @@
 - [x] Exibir skeleton enquanto a foto de perfil da sidebar estiver sendo carregada, incluindo fallback acessível para erro de imagem.
 - [x] Adicionar testes de regressão e validar suíte, build e responsividade dessas melhorias.
 
+## Unidades e regras de média por curso — 25/08/2026
+- [x] Permitir definir se o curso é dividido em unidades e quantas unidades possui.
+- [x] Permitir média global ou média mínima por unidade, com valores configuráveis como 5, 6 ou 7.
+- [x] Integrar regras de aprovação às notas SIMAL, relatórios, situação acadêmica e certificados sem alterar lançamentos existentes automaticamente.
+- [x] Adicionar testes, migração segura e validação de build.
+
+## Periodicidade de cursos e turmas externas — 25/08/2026
+- [x] Adicionar ao modelo de dados os tipos de duração anual, semestral, por carga horária e personalizado.
+- [x] Atualizar cursos e turmas existentes apenas quando a instituição/programa permitiu classificação segura.
+- [x] Integrar periodicidade ao cadastro, edição, cards e APIs de cursos e turmas externas.
+- [x] Validar migração, backfill, testes focados e build de produção.
+
+## Regra de composição das notas SIMAL — 25/08/2026
+- [x] Separar a nota da prova, limitada a 8 pontos, da apresentação de junho, limitada a 2 pontos.
+- [x] Calcular nota final de até 10 pontos, atualizar médias, situação acadêmica e relatórios sem alterar lançamentos históricos automaticamente.
+- [x] Adicionar testes e validar compatibilidade com avaliações SIMAL já cadastradas.
+
 ## Avaliações e notas das turmas SIMAL — 25/08/2026
 - [x] Analisar as avaliações anexadas e definir provas, versões, componentes e escala de notas sem inventar critérios ausentes.
 - [x] Criar estrutura para cadastrar avaliações e lançar/editar notas de alunos existentes e novos nas duas turmas SIMAL.
@@ -2191,6 +2208,13 @@
 - [x] Implementar revisão final, confirmações contextuais, estados verificáveis e permissões por ação para operações sensíveis.
 - [x] Aprimorar o fluxo de templates DOCX parametrizados com detecção/mapeamento de campos, prévia e versionamento compatíveis com o modelo atual.
 - [x] Adicionar testes de acessibilidade, responsividade, segurança, regressão e validar o build.
+
+## Resolução de divergência GitHub/checkpoint — 25/08/2026
+- [ ] Integrar `user_github/main`, resolver conflitos e salvar checkpoint sincronizado preservando a correção do HTTP 500.
+
+## Correção do HTTP 500 em Production — 25/08/2026
+- [x] Identificar o deployment, rota e causa raiz do HTTP 500 persistente no Vercel.
+- [x] Corrigir o erro, adicionar teste de regressão e confirmar novo deployment Production.
 
 ## Sincronização Manus → GitHub/Vercel — 25/08/2026
 - [ ] Comparar o estado atual do Manus com GitHub e Vercel e sincronizar a versão validada com `main` sem sobrescrever histórico indevidamente.
@@ -2221,3 +2245,47 @@
 - [x] Organizar o espaço de trabalho da turma com abas e estado ativo persistido na URL sem quebrar rotas existentes.
 - [ ] Aprimorar frequência, notas, materiais, alertas e relatórios de turmas externas conforme o diagnóstico anexado.
 - [x] Validar responsividade, acessibilidade, testes e build da evolução de turmas externas.
+
+## Indicadores acadêmicos e acesso de alunos externos — 25/08/2026
+- [x] Exibir no painel do aluno a média atual em relação ao mínimo exigido por unidade, com barras/cores acessíveis.
+- [x] Permitir acesso de alunos externos com e-mail cadastrado, vinculado à turma externa e sem duplicar contas.
+- [x] Gerar senha temporária, exigir senha forte no primeiro acesso e impedir uso continuado da senha temporária.
+- [x] Enviar instruções de acesso por e-mail sem expor a senha em logs ou respostas administrativas.
+- [x] Adicionar provisionamento administrativo, permissões, testes, migração segura e validação de build.
+
+## Refinamentos de acesso externo — 25/08/2026
+- [x] Adicionar reenvio administrativo da senha temporária com invalidação da senha anterior.
+- [x] Criar perfil do aluno externo para editar dados pessoais e atualizar foto.
+- [x] Melhorar a tela de primeiro acesso com dicas visuais em tempo real para os requisitos da senha.
+- [x] Validar permissões, testes focados, responsividade e checkpoint desta etapa.
+
+## Recuperação e auditoria administrativa — 25/08/2026
+- [x] Adicionar fluxo de esqueci minha senha para alunos externos que já trocaram a senha temporária.
+- [x] Confirmar com toast as atualizações de perfil e o reenvio de e-mail.
+- [x] Exibir a data do último acesso de cada aluno externo no painel administrativo.
+- [x] Auditar e atualizar o painel administrativo, com testes, segurança, responsividade e checkpoint.
+
+## Moderação de comentários do blog — 25/08/2026
+- [x] Auditar comentários públicos, schema, APIs e painel administrativo existente.
+- [x] Implementar responder, ocultar, excluir com confirmação e interagir com comentários no painel admin.
+- [x] Integrar respostas oficiais e estados moderados à página pública do blog.
+- [ ] Validar permissões, testes, responsividade, estados de erro e build; salvar checkpoint.
+
+## Novas medalhas e criação manual — 25/08/2026
+- [x] Auditar catálogo, schema, APIs e telas atuais de medalhas.
+- [x] Adicionar novas medalhas pedagógicas sem duplicar catálogo ou concessões existentes.
+- [x] Facilitar a criação manual de medalhas com formulário, pré-visualização e validação.
+- [x] Permitir concessão individual com prevenção de duplicidade e feedback.
+- [x] Permitir concessão em lote com prevenção de duplicidade e feedback.
+- [x] Validar permissões, banco, testes, responsividade e build; salvar checkpoint.
+
+## Validação técnica e alinhamento Neon — 25/08/2026
+- [x] Corrigir referências obsoletas e reduzir os erros TypeScript globais a zero.
+- [x] Aplicar no Neon principal as migrações aditivas pendentes de `courses` e `users.must_change_password`.
+- [x] Confirmar 161 arquivos de teste e 484 testes aprovados após a sincronização do banco.
+- [x] Confirmar build de produção Next.js concluído com sucesso.
+- [ ] Sincronizar checkpoint validado com GitHub e preparar publicação no Vercel.
+
+## Auditoria final de permissões — 25/08/2026
+- [x] Restringir `requireAdmin` a admin, super_admin e super-administrador, mantendo professores em `requireTeacherOrAdmin`.
+- [x] Revalidar TypeScript após a regeneração dos tipos `.next` e repetir os testes de autorização.
