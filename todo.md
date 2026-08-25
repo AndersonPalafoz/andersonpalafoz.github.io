@@ -2119,3 +2119,13 @@
 - [x] Reorganizar a coluna de ações para que recuperar e excluir definitivamente fiquem visíveis sem corte horizontal; a tabela desktop agora tem seis colunas alinhadas, largura percentual e quebra controlada.
 - [x] Diferenciar visualmente a exclusão definitiva, mantendo texto acessível, confirmação por e-mail e hierarquia visual de ação destrutiva.
 - [x] Validar o layout em desktop e mobile, sem rolagem lateral desnecessária; 12 testes administrativos/regressivos passaram e o build de produção foi aprovado. A captura local autenticada ficou pendente porque o OAuth local não está conectado.
+
+## Auditoria de usuários external.placeholder — 25/08/2026
+- [ ] Identificar a origem de criação dos usuários exibidos com e-mails `external.placeholder` e consultar seus vínculos reais sem alterar registros.
+- [x] Mapear por que a exclusão definitiva está bloqueada para cada registro e exibir a causa no painel administrativo; os quatro registros estão ativos (`deletedAt: null`), portanto precisam primeiro de exclusão lógica. Dependências adicionais são verificadas apenas na etapa definitiva.
+- [x] Validar que a exclusão lógica, recuperação e proteção contra exclusão indevida permanecem intactas; nenhum registro real foi alterado e os testes administrativos/regressivos passaram.
+
+## Usuários técnicos de certificados externos — 25/08/2026
+- [x] Identificar e documentar a origem das contas `manual_external`/`external.placeholder` observadas em produção, sem alterar seus registros; quatro registros reais (IDs 10–13) foram confirmados via API do Vercel e documentados.
+- [x] Tornar explícita no painel a diferença entre conta cadastrada e usuário técnico criado para certificado sem cadastro, com selo `Certificado externo` e indicação de que não possui login no site.
+- [x] Exibir a ação de exclusão lógica e o caminho de exclusão definitiva para esses usuários sem ocultação por corte visual, preservando confirmação, proteção da conta principal e verificações de integridade; 12 testes passaram.
