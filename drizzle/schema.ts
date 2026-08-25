@@ -952,9 +952,14 @@ export const externalClassGrades = pgTable("external_class_grades", {
   studentId: integer("studentId")
     .notNull()
     .references(() => externalStudents.id, { onDelete: "cascade" }),
-  assessmentTitle: varchar("assessmentTitle", { length: 180 }).notNull(), // ex: "Avaliação 1", "Quiz Oral"
+  assessmentTitle: varchar("assessmentTitle", { length: 180 }).notNull(), // ex: "SIMAL Units 1, 2 & 4"
+  assessmentType: varchar("assessmentType", { length: 32 }).notNull().default("custom"), // written, oral, presentation, custom
+  assessmentVersion: varchar("assessmentVersion", { length: 16 }), // A, B ou outra versão
+  assessmentComponent: varchar("assessmentComponent", { length: 64 }), // grammar, reading, writing, listening, speaking, presentation, total
   score: varchar("score", { length: 32 }).notNull(), // ex: "9.5"
   maxScore: varchar("maxScore", { length: 32 }).notNull().default("10.0"),
+  rubricScores: text("rubricScores"), // JSON opcional para critérios de Speaking
+  assessmentDate: varchar("assessmentDate", { length: 32 }),
   feedback: text("feedback"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

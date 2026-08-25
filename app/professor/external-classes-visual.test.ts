@@ -15,8 +15,19 @@ describe("contrato visual da página de cursos externos", () => {
   it("preserva superfícies, estados e cards com suporte ao modo escuro", () => {
     expect(source).toContain("bg-white/95 dark:bg-slate-900");
     expect(source).toContain("dark:border-slate-800");
-    expect(source).toContain("Dados sincronizados");
+    expect(source).toContain("Atualizado às");
+    expect(source).toContain("Atualizando dados");
     expect(source).toContain("hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]");
+  });
+
+  it("expõe uma visão operacional com indicadores acionáveis", () => {
+    expect(source).toContain("Visão operacional");
+    expect(source).toContain("Turmas ativas");
+    expect(source).toContain("Chamadas pendentes");
+    expect(source).toContain("Avaliações pendentes");
+    expect(source).toContain("Nova turma");
+    expect(source).toContain("Prévia da importação");
+    expect(source).toContain("Deseja confirmar?");
   });
 
   it("mantém foco visível e identificação acessível das ações rápidas", () => {

@@ -7,8 +7,8 @@ import { AdminCertificateWorkflow } from "@/components/admin-certificate-workflo
 import { CertificateWorkspaceProvider } from "@/components/certificate-workspace-context";
 
 export const metadata = {
-  title: "Assinatura e Laboratório de Certificados | Administração",
-  description: "Configure uma composição única e use a mesma prévia na emissão, assinatura e exportação dos certificados.",
+  title: "Certificados | Administração",
+  description: "Emita, revise, assine e gerencie modelos de certificados em um fluxo operacional seguro.",
 };
 
 export default async function AdminCertificatesPage() {
@@ -30,10 +30,10 @@ export default async function AdminCertificatesPage() {
               <ShieldCheck size={16} /> Governança de Certificados
             </div>
             <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">
-              <FileSignature className="text-red-600" /> Assinaturas & Laboratório 4-em-1
+              <FileSignature className="text-red-600" /> Certificados
             </h1>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Gerencie assinaturas (manuais ou via gov.br), crie templates institucionais e teste as 4 arquiteturas de edição visual (Gerador Padrão, Fabric.js, Konva.js e GrapesJS/HTML).
+              Emita certificados, revise pendências, gerencie modelos parametrizados e encaminhe documentos para assinatura. Os editores técnicos ficam disponíveis no laboratório experimental.
             </p>
           </div>
           <Link
@@ -50,7 +50,7 @@ export default async function AdminCertificatesPage() {
               <Sparkles className="text-red-600" size={20} />
               <h2 className="text-xl font-black text-foreground">Fluxo de produção do certificado</h2>
             </div>
-            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">3 etapas</span>
+            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">3 etapas de trabalho · 4 opções de editor</span>
           </div>
           <AdminCertificateWorkflow />
         </section>
