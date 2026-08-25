@@ -2056,3 +2056,7 @@
 ## Isolamento entre build de produção e preview — 25/08/2026
 - [x] Remover a limpeza destrutiva de `.next` do script `build`, pois ela apaga o cache/manifestações usados simultaneamente pelo preview gerenciado; o script agora executa apenas `NODE_ENV=production next build`.
 - [x] Validar build e preview em sequência sem provocar `ENOENT` de cache Webpack ou erro de Client Manifest; o build foi aprovado e a Home permaneceu estilizada após reinício.
+
+## Limpeza dos diagnósticos TypeScript do watcher — 25/08/2026
+- [ ] Corrigir os erros de tipagem em `professor-courses-trash-manager`, `components/ui/select` e a dependência ausente do heartbeat, sem mascarar falhas reais do aplicativo.
+- [ ] Reexecutar `pnpm check`, testes e build após a limpeza dos diagnósticos.
