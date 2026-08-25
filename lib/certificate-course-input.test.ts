@@ -19,7 +19,7 @@ describe("buildCertificateCourseInput", () => {
       instructor: "Anderson Palafoz",
       modality: "individual",
       isFree: false,
-      price: 0,
+      price: "0.00",
       workloadHours: 40,
       maxAbsencePercent: 25,
       courseType: 1,

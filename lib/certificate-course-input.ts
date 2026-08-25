@@ -7,7 +7,7 @@ export type CertificateCourseInput = {
   instructor: string;
   modality: "individual" | "group" | "hybrid";
   isFree: boolean;
-  price: number;
+  price: string;
   workloadHours: number;
   maxAbsencePercent: number;
   courseType: number;
@@ -29,7 +29,7 @@ export function buildCertificateCourseInput(input: {
     instructor: "Anderson Palafoz",
     modality: "individual",
     isFree: false,
-    price: 0,
+    price: "0.00",
     workloadHours: input.workloadHours && input.workloadHours > 0 ? input.workloadHours : 40,
     maxAbsencePercent: 25,
     courseType: 1,

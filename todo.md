@@ -2079,3 +2079,6 @@
 - [x] Integrar concessão manual com justificativa obrigatória, responsável e data para auditoria; a API administrativa rejeita concessões sem justificativa.
 - [x] Validar a apresentação das medalhas na área do aluno e no painel administrativo sem inventar concessões; o painel preserva o estado vazio quando não há concessões.
 - [x] Executar testes focados, suíte relevante e build antes de salvar checkpoint; 4 arquivos e 9 testes passaram e o build de produção foi aprovado.
+- [x] Corrigir o tipo `price` do curso auxiliar para o formato numeric string do PostgreSQL; o teste de payload foi atualizado e aprovado.
+- [x] Reexecutar testes focados após a integração dos pilotos; 5 arquivos e 11 testes passaram.
+- [x] Reexecutar o build de produção após a integração dos pilotos e da correção de tipagem; build aprovado.
