@@ -2298,3 +2298,7 @@
 - [x] Melhorar a navegação mobile e os cabeçalhos dos painéis de aluno, professor e administrador.
 - [x] Adicionar estados de carregamento, erro, atualização e atalhos de ação com feedback consistente nos três painéis.
 - [x] Validar rotas protegidas, acessibilidade, responsividade, testes e build após a atualização dos painéis.
+
+## Resiliência do dashboard publicado — 25/08/2026
+- [x] Impedir que uma consulta secundária com falha derrube toda a área do aluno e exibir estado parcial seguro com retry.
+- [x] Adicionar teste de regressão para falha isolada de consulta no carregamento do dashboard.
