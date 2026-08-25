@@ -2,7 +2,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "@/drizzle/schema";
 import * as relations from "@/drizzle/relations";
-import { and, asc, desc, eq, inArray, isNull, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, isNotNull, or } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import {
   normalizeCourseType,
@@ -457,7 +457,11 @@ function validateCourseWriteData(
     "courseType" | "externalRedirectUrl" | "syncModality"
   >
 ) {
-  const error = validateCourseTypeFields(data);
+  const error = validateCourseTypeFields({
+    courseType: data.courseType ?? 1,
+    externalRedirectUrl: data.externalRedirectUrl,
+    syncModality: data.syncModality,
+  });
   if (error) throw new Error(error);
 }
 
@@ -943,6 +947,14 @@ export async function restoreUser(id: number) {
 }
 
 export async function deleteUserPermanently(id: number) {
+  await db
+    .delete(schema.directMessages)
+    .where(
+      or(
+        eq(schema.directMessages.senderId, id),
+        eq(schema.directMessages.receiverId, id)
+      )
+    );
   await db.delete(schema.enrollments).where(eq(schema.enrollments.userId, id));
   await db
     .delete(schema.certificates)

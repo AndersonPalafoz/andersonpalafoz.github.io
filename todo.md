@@ -1990,3 +1990,23 @@
 - [x] Atualizar `CertificateCompositionPreview` para renderizar molduras, fundos, tipografias e selos específicos de cada variação.
 - [x] Conectar os seletores visuais na página administrativa e garantir suporte na emissão e no PDF.
 - [x] Executar suíte de testes e validar o build de produção; 137 arquivos e 420 testes aprovados, build Next.js concluído e diff sem erros de whitespace.
+
+## Correção da Exclusão de Usuários e Mensagens Diretas — 22/08/2026
+
+- [x] Auditar a rota administrativa de usuários, a tabela `direct_messages` e a consulta que remove mensagens por remetente/destinatário; a implementação já remove por senderId e receiverId antes das demais dependências.
+- [x] Corrigir a operação para respeitar o schema ativo e manter a exclusão lógica de usuários sem remoção indevida de dados; a exclusão permanente mantém apenas as mensagens dependentes como remoção necessária antes do usuário.
+- [x] Adicionar teste regressivo para exclusão de usuário com mensagens diretas e validar o contrato de ordem segura; o teste focado foi aprovado.
+- [x] Executar testes e build de produção antes de salvar checkpoint; os testes focados e o build de produção foram aprovados.
+
+- [x] Corrigir os dois erros de TypeScript revelados pela validação atual; `characterSpacing` não está mais presente no renderer atual e o payload de curso passou a fornecer `courseType` obrigatório com teste dedicado.
+- [x] Reexecutar a validação de tipos e build após corrigir os bloqueios; build Next.js aprovado e o servidor reiniciado sem erros de TypeScript no estado final.
+
+## Alinhamento de Modelos DOCX e Regressões Administrativas — 25/08/2026
+- [x] Confirmar a existência e o schema efetivo de `certificate_templates` no banco Neon ativo.
+- [x] Publicar os três arquivos DOCX institucionais no armazenamento persistente do projeto, com nomes ASCII quando necessário.
+- [x] Registrar/atualizar os três modelos DOCX no banco com categoria, instituição, regra de logo e mapeamento dinâmico de campos.
+- [x] Adaptar o carregamento de modelos para aceitar os arquivos persistentes publicados além do bucket privado.
+- [x] Centralizar o payload completo do curso auxiliar criado durante a emissão de certificados e cobrir a regra com testes unitários.
+- [ ] Confirmar em ambiente autenticado a prévia e a emissão usando cada um dos três modelos DOCX; os registros e arquivos foram confirmados no banco, faltando apenas o teste com sessão administrativa.
+- [x] Executar a suíte completa, validar o build de produção e revisar os erros de TypeScript preexistentes antes do checkpoint final; 139 arquivos e 423 testes passaram, build concluído.
+- [ ] Auditar e cobrir com teste integrado a exclusão permanente de usuário que possui mensagens diretas, mantendo a ordem segura de remoção.
