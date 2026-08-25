@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // O indicador/devtools de segmentos do Next 15.5 pode gerar um Client Manifest inconsistente no preview gerenciado.
+  devIndicators: false,
   images: {
     remotePatterns: [
       {

@@ -2038,3 +2038,7 @@
 - [x] Corrigir a inconsistência de sinalização no widget do perfil e na exportação PDF para nunca revelar o texto de uma anotação excluída por administrador.
 - [x] Melhorar o estado vazio de `/admin/medalhas`, deixando explícito que o catálogo real está vazio e que nenhuma medalha fictícia será criada.
 - [x] Validar os contratos focados das APIs de anotações e medalhas: 2 arquivos e 4 testes aprovados.
+
+## Regressão runtime recorrente no preview — 25/08/2026
+- [x] Rastrear o erro `Cannot read properties of undefined (reading 'call')` reaparecido no preview após o checkpoint; os logs apontaram para o módulo `next-devtools`/Segment Explorer ausente no Client Manifest.
+- [x] Garantir que a correção não dependa apenas de uma limpeza manual temporária e validar reinicialização/recompilação repetida; `devIndicators: false` foi configurado, `.next` reconstruído e a Home validada novamente.
