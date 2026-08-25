@@ -7,6 +7,7 @@ import { createSpeakingAttempt, db, getSpeakingAttempts } from "@/lib/db";
 import { activities, eventLogs, userActivityProgress, users } from "@/drizzle/schema";
 import { uploadLearningAudio } from "@/lib/learning-storage";
 import { ACTIVITY_COMPLETION_XP, awardCompletionXp } from "@/lib/gamification";
+import { awardMedalIfEligible } from "@/lib/medal-awards";
 
 export async function GET(request: NextRequest) {
   try {
@@ -99,9 +100,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const medalResult = await awardMedalIfEligible({ userId: user.id, medalCode: "voz-em-pratica" });
+
     return NextResponse.json({
       success: true,
       pointsAwarded,
+      awardedMedals: medalResult.awarded ? [medalResult.medal.medalCode] : [],
       attempt,
       comparison: previous ? { previousScore: previous.aiScore, improvement: analysis.score - (previous.aiScore || 0) } : null,
     });

@@ -2065,3 +2065,17 @@
 - [x] Reexecutar os testes de exclusão de anotações, catálogo de medalhas e estabilidade do preview após o checkpoint; 3 arquivos e 5 testes passaram.
 - [ ] Resolver os demais diagnósticos do `pnpm check`; após regenerar os tipos, ainda existem 58 erros distribuídos em 20 arquivos, sem impacto no build aprovado por causa da configuração atual de build.
 - [x] Confirmar o build de produção isolado em `.next-build`; a geração foi aprovada sem apagar ou substituir o bundle `.next` usado pelo preview.
+- [x] Confirmar nos logs pós-build isolado que `/` e `/api/auth/session` continuam respondendo HTTP 200 e que não houve nova ocorrência do erro `undefined.call` desde a reconstrução do preview.
+
+## Proposta de catálogo de medalhas — 25/08/2026
+- [x] Elaborar uma proposta de catálogo pedagógico de medalhas alinhada às metas de aprendizagem, participação, progresso e colaboração da plataforma; a proposta foi salva em `docs/proposta-catalogo-medalhas-2026-08-25.md`.
+- [x] Mapear cada medalha a critérios objetivos, evidências verificáveis, níveis de raridade e regras anti-abuso; a proposta recomenda 16 medalhas conceituais e quatro pilotos, sem exigir migração imediata.
+- [x] Documentar recomendações de UX, governança, acessibilidade e evolução do catálogo para aprovação do administrador.
+- [x] Não inserir medalhas no banco até o administrador aprovar a proposta; nenhuma medalha foi cadastrada automaticamente.
+
+## Implementação dos pilotos de medalhas autorizada — 25/08/2026
+- [x] Implementar os quatro pilotos aprovados: `primeiro-passo`, `trilha-iniciada`, `voz-em-pratica` e `participacao-destacada`; catálogo tipado e seed idempotente criados.
+- [x] Garantir regras idempotentes, critérios objetivos e bloqueio de duplicidades nas concessões automáticas; helper compartilhado consulta concessões existentes e trata corrida concorrente.
+- [x] Integrar concessão manual com justificativa obrigatória, responsável e data para auditoria; a API administrativa rejeita concessões sem justificativa.
+- [x] Validar a apresentação das medalhas na área do aluno e no painel administrativo sem inventar concessões; o painel preserva o estado vazio quando não há concessões.
+- [x] Executar testes focados, suíte relevante e build antes de salvar checkpoint; 4 arquivos e 9 testes passaram e o build de produção foi aprovado.
