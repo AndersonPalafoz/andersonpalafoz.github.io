@@ -35,9 +35,9 @@ export default function AdminNotesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch("/api/admin/users")
+    fetch("/api/admin/notes/students")
       .then(async (r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((data) => setStudents((data.users || []).filter((u: StudentOption) => u.role === "user" && !u.deletedAt)))
+      .then((data) => setStudents(data.students || []))
       .catch(() => toast.error("Não foi possível carregar a lista de alunos."))
       .finally(() => setLoadingStudents(false));
   }, []);
