@@ -11,6 +11,7 @@ import {
   uploadCertificatePdf,
 } from "@/lib/learning-storage";
 import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
+import { buildCertificateCourseInput } from "@/lib/certificate-course-input";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
@@ -165,13 +166,14 @@ export async function POST(request: NextRequest) {
       } else {
         const newCourses = await db
           .insert(courses)
-          .values({
-            title: customCourseTitle,
-            level: customCourseLevel || "Geral",
-            workloadHours: customWorkloadHours || 40,
-            category: customInstitution || "Curso Externo / Avulso",
-            isFree: false,
-          })
+          .values(
+            buildCertificateCourseInput({
+              title: customCourseTitle,
+              level: customCourseLevel,
+              institution: customInstitution,
+              workloadHours: customWorkloadHours,
+            })
+          )
           .returning({ id: courses.id });
         const newCourse = newCourses[0];
         courseId = newCourse.id;

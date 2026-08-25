@@ -112,7 +112,6 @@ function drawVariantShell(
     size: 10,
     font: bold,
     color: accentDark,
-    characterSpacing: 1.1,
   });
   page.drawText(variant.shortLabel.toUpperCase(), {
     x: 718,

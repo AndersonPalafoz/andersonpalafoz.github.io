@@ -222,6 +222,17 @@ export async function uploadCertificateTemplate(adminId: number, file: File) {
 }
 
 export async function downloadCertificateTemplate(objectPath: string) {
+  if (objectPath.startsWith("/manus-storage/") || /^https?:\/\//i.test(objectPath)) {
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const url = objectPath.startsWith("http") ? objectPath : `${baseUrl}${objectPath}`;
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`Não foi possível carregar o modelo de certificado (${response.status}).`);
+    }
+    return new Uint8Array(await response.arrayBuffer());
+  }
   const supabase = await ensureBucket(CERTIFICATE_TEMPLATE_BUCKET, {
     public: false,
     mimeTypes: CERTIFICATE_TEMPLATE_MIME_TYPES,
