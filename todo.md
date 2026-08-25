@@ -2134,3 +2134,24 @@
 - [x] Revisar mudanças locais e arquivos pendentes antes da publicação; o workspace está na branch `main` e o servidor local está respondendo.
 - [x] Executar testes relevantes e build isolado de produção; os testes administrativos passaram e o build Next.js isolado foi aprovado.
 - [ ] Salvar checkpoint recuperável antes de orientar o uso do Publish; tentativa em andamento.
+
+## Preparação para deploy no Vercel — 25/08/2026
+- [x] Diagnosticar o erro efetivo de build/deploy e incompatibilidades de configuração do projeto; não foi encontrado erro de build: o Vercel mostra deployments READY e o projeto está ligado ao repositório GitHub correto.
+- [x] Corrigir dependências, scripts, tipos e configurações necessárias sem remover funcionalidades existentes; `NEXT_DIST_DIR=.next-build` é compatível com o build local e o build isolado passou.
+- [x] Executar testes, build isolado e verificações das rotas críticas; testes administrativos passaram e o build de produção foi aprovado.
+- [ ] Criar checkpoint recuperável antes de orientar a publicação pelo botão Publish.
+
+## Sincronização GitHub/Vercel e auditoria de exclusões — 25/08/2026
+- [ ] Consultar foreign keys, tabelas dependentes, políticas e estado dos usuários sem executar exclusões reais.
+- [ ] Revisar o commit local, testes e build antes da sincronização.
+- [ ] Enviar o commit validado ao GitHub sem sobrescrever alterações remotas inesperadas.
+- [ ] Confirmar o estado do projeto Vercel e orientar a publicação pelo fluxo permitido.
+
+## Sincronização do deployment Vercel bckz9qhgs — 25/08/2026
+- [ ] Comparar o código local, o branch GitHub e o deployment Vercel de aproximadamente 10 horas atrás.
+- [ ] Remover artefatos gerados e corrigir testes que ainda esperam o fluxo antigo de e-mail.
+- [ ] Validar o banco PostgreSQL efetivo e as políticas de exclusão sem alterar registros reais.
+- [ ] Sincronizar a versão validada com o GitHub e encaminhar a publicação no deployment escolhido após criar checkpoint.
+- [x] Executar a validação global solicitada: suíte Vitest completa e build de produção.
+- [x] Conferir integridade do repositório, arquivos rastreados e ausência de artefatos `.next-build` no commit.
+- [ ] Criar o checkpoint final e sincronizar o código validado com o GitHub para disparar o build automático do Vercel.

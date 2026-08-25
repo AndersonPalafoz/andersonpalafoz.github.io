@@ -56,7 +56,7 @@ describe("contact page contract", () => {
   it("keeps success and error feedback connected to the form state", () => {
     expect(formSource).toContain('role="status"');
     expect(formSource).toContain('role="alert"');
-    expect(formSource).toContain("buildContactMailto");
+    expect(formSource).toContain('fetch("/api/contact"');
     expect(formSource).toContain('type="submit"');
   });
 });

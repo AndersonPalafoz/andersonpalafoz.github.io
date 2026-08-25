@@ -82,7 +82,9 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     certificateCode: right(740, 55, 10, 190),
   },
   profici: {
+    institutionName: left(86, 526, 12, 660, { weight: "bold" }),
     studentName: left(86, 366, 13, 660, { weight: "bold" }),
+    studentCpf: left(86, 348, 10, 300),
     courseTitle: left(86, 333, 13, 660, { weight: "bold" }),
     level: left(86, 300, 11, 660),
     workloadHours: left(86, 240, 11, 180),
