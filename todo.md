@@ -2348,3 +2348,7 @@
 ## Confirmação Stripe Live — 26/08/2026
 - [x] Registrar a confirmação do usuário de que as credenciais Stripe Live no Vercel pertencem à conta palafozanderson@gmail.com, sem expor valores secretos.
 - [x] Validar a consistência entre Checkout Live, URLs de retorno e endpoint de webhook sem executar cobrança real; o código usa `mode: payment`, URLs de retorno parametrizadas pelo domínio da requisição e validação de assinatura pelo corpo bruto, com 6 testes contratuais aprovados. A validação não substitui um checkout live real.
+
+## Priorização após confirmação Stripe — 26/08/2026
+- [x] Registrar que a pendência de validação real do Checkout Stripe foi ignorada por decisão do usuário e não bloqueará a próxima etapa.
+- [x] Auditar o job Heartbeat `nightly-trash-cleanup`, sua rota, autenticação e evidências de execução sem realizar exclusões reais; o job está ativo, aponta para `/api/scheduled/cleanup-trash`, mas a última execução em 26/08/2026 falhou com HTTP 403 e `permission error for cron cookie`, enquanto 24/08/2026 falhou com 404. Nenhuma exclusão foi executada.
