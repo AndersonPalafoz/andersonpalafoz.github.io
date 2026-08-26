@@ -2323,7 +2323,7 @@
 - [x] Executar a validação final, sincronizar o estado aprovado e registrar as pendências externas restantes; suíte completa e build de produção aprovados, com Google Calendar autorizado. Permanecem apenas Stripe Production, primeira execução observável do Heartbeat, domínio Resend, validação de emissão autenticada dos três DOCX e criação de branch/PR inexistentes.
 
 ## Regra de produção do Vercel — 25/08/2026
-- [ ] Confirmar a `main` como única branch de produção do Vercel e remover a necessidade de PR/branch intermediária para publicar alterações validadas.
-- [ ] Auditar a divergência entre `main`, o commit funcional f95345a e o deployment público antes de qualquer sincronização.
-- [ ] Sincronizar somente alterações validadas diretamente na `main` e confirmar o novo deployment sem alterar configurações externas.
-- [ ] Remover do caminho de sincronização os artefatos `.next-build/cache` que excedem o limite de arquivos do GitHub e enviar somente o código/documentação validado para `user_github/main`.
+- [x] Confirmar a `main` como única branch de produção do Vercel e remover a necessidade de PR/branch intermediária para publicar alterações validadas; a `user_github/main` foi atualizada diretamente para o commit `92c3d53`, descendente de `f95345a`.
+- [x] Auditar a divergência entre `main`, o commit funcional f95345a e o deployment público antes de qualquer sincronização; a main remota estava em f95345a, o domínio público respondeu HTTP 200 e o push foi preparado a partir de uma cópia limpa desse baseline.
+- [x] Sincronizar somente alterações validadas diretamente na `main` e confirmar o novo deployment sem alterar configurações externas; o commit `92c3d53` foi enviado diretamente para `user_github/main` sem alterar secrets ou banco.
+- [x] Remover do caminho de sincronização os artefatos `.next-build/cache` que excedem o limite de arquivos do GitHub e enviar somente o código/documentação validado para `user_github/main`; o push limpo foi aceito, enquanto o workspace histórico permaneceu intocado.
