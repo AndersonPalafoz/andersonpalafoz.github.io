@@ -32,10 +32,12 @@ describe("emissão de certificados com níveis descritivos", () => {
     expect(routeSource).toContain("issuedAt,");
   });
 
-  it("usa o registro retornado pelo insert no fluxo manual", () => {
-    expect(routeSource).toContain("const insertedUser = insertedUsers[0]");
-    expect(routeSource).toContain("userId = insertedUser.id");
-    expect(routeSource).toContain("student = {");
+  it("usa a identidade local do certificado no fluxo manual", () => {
+    expect(routeSource).toContain("let externalRecipient");
+    expect(routeSource).toContain("student = { name: directStudentName");
+    expect(routeSource).toContain("recipientName: externalRecipient?.name");
+    expect(routeSource).not.toContain("const insertedUser = insertedUsers[0]");
+    expect(routeSource).not.toContain("loginMethod: \"manual_external\"");
     expect(routeSource).toContain("const newCourse = newCourses[0]");
     expect(routeSource).toContain("course = newCourse");
   });

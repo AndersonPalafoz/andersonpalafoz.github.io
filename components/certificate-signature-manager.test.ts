@@ -55,7 +55,8 @@ describe("gerenciador administrativo de certificados", () => {
     expect(source).toContain("isManualEntry");
     expect(routeSource).toContain("export async function DELETE");
     expect(routeSource).toContain("inArray(certificates.id, existingIds)");
-    expect(routeSource).toContain("@external.placeholder");
-    expect(routeSource).toContain("studentEmail: getDisplayEmail(certificate.user)");
+    expect(routeSource).toContain("recipientName");
+    expect(routeSource).toContain("studentEmail: certificate.recipientEmail || getDisplayEmail(certificate.user)");
+    expect(routeSource).toContain("isManualExternalUser");
   });
 });

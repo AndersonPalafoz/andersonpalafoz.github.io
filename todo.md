@@ -2391,3 +2391,9 @@
 ## Limpeza histórica de placeholders — 26/08/2026
 - [x] Confirmar no banco correspondente à produção publicada se os placeholders dos certificados de teste ainda existem antes de qualquer exclusão; a consulta somente leitura do banco conectado retornou zero registros técnicos, portanto nenhuma exclusão foi executada.
 - [ ] Excluir somente placeholders de teste identificados e validar que certificados reais, alunos externos legítimos e modelos não sejam afetados.
+
+## Auditoria final do fluxo de certificados — 26/08/2026
+- [x] Mapear todos os pontos de entrada, rotas, componentes, modelos, engines experimentais, atribuições, assinaturas, exports e exclusões; fluxo oficial e laboratório experimental estão separados, e rotas Admin/Professor/Aluno foram identificadas.
+- [x] Executar testes, TypeScript, build e inspeção de logs/runtime, registrando erros concretos sem inventar dados; 18 arquivos/52 testes de certificados passaram, TypeScript passou, build passou e somente erros históricos de 10:01/11:46 aparecem no log, sem erro novo de certificados.
+- [x] Corrigir regressões encontradas e remover somente sobras sem referências ou dados de teste comprovados; contratos antigos foram alinhados à arquitetura sem placeholders e os quatro scripts temporários já haviam sido removidos.
+- [ ] Revalidar o fluxo completo e sincronizar a versão auditada com a main.
