@@ -583,6 +583,11 @@ body {
   backdrop-filter: blur(18px);
 }
 
+.dashboard-panel-topbar {
+  background: color-mix(in srgb, hsl(var(--card)) 92%, transparent);
+  backdrop-filter: blur(18px);
+}
+
 .dashboard-content {
   background:
     radial-gradient(circle at 90% 2%, rgba(214, 40, 40, 0.06), transparent 24rem),
@@ -640,6 +645,13 @@ body {
 .admin-action-grid a,
 .teacher-action-grid a {
   min-height: 2.75rem;
+}
+
+@media (max-width: 420px) {
+  .admin-action-grid,
+  .teacher-action-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .data-table tbody tr {

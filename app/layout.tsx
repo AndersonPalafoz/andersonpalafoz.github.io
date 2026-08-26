@@ -1,10 +1,9 @@
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SessionProviderWrapper } from "@/components/session-provider";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import { ToastProvider } from "@/components/toast-provider";
 import { InactivityMonitor } from "@/components/inactivity-monitor";
+import { SiteFrame } from "@/components/site-frame";
 import type { Metadata } from "next";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 
@@ -82,9 +81,7 @@ export default function RootLayout({
       <body className="site-shell font-sans text-slate-900 antialiased">
         <SessionProviderWrapper>
           <ThemeProvider>
-            <Navbar />
-            <main className="min-h-screen pt-[4.5rem]">{children}</main>
-            <Footer />
+            <SiteFrame>{children}</SiteFrame>
             <ToastProvider />
             <InactivityMonitor />
           </ThemeProvider>
