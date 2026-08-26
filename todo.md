@@ -2486,3 +2486,8 @@
 - [x] Diagnosticar a falha de consulta em `/professor/certificados` sem alterar certificados existentes.
 - [x] Alinhar o schema de certificados no Neon de produção às colunas já utilizadas pela API.
 - [x] Validar o painel docente e os acessos administrativos com testes, TypeScript e build.
+
+## Correção de Relatórios Acadêmicos — 26/08/2026
+- [x] Diagnosticar a indisponibilidade em `/admin/relatorios-academicos` sem criar ou alterar dados reais.
+- [x] Corrigir a consulta de relatórios e isolar eventuais falhas da integração com Classroom.
+- [x] Validar dados administrativos, permissões, testes, TypeScript e build.
