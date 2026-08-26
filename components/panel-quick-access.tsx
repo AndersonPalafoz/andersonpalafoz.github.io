@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { BarChart3, BookOpen, BriefcaseBusiness, FileSignature, GraduationCap, LayoutDashboard, Settings2, Users, WalletCards } from "lucide-react";
-import { canAccessAdminPortal, canAccessProfessorPortal, isSuperadmin } from "@/lib/role-capabilities";
+import { RolePreviewToolbar, useRolePreview } from "@/components/role-preview";
 
 type QuickAccessItem = { href: string; label: string; icon: typeof LayoutDashboard; superadminOnly?: boolean };
 
@@ -22,11 +21,10 @@ const baseItems: QuickAccessItem[] = [
 
 export function PanelQuickAccess() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const input = { email: session?.user?.email, role: session?.user?.role };
-  const admin = canAccessAdminPortal(input);
-  const professor = canAccessProfessorPortal(input);
-  const superadmin = isSuperadmin(input);
+  const { visibleRole } = useRolePreview();
+  const admin = visibleRole === "admin" || visibleRole === "superadmin";
+  const professor = visibleRole === "professor" || admin;
+  const superadmin = visibleRole === "superadmin";
 
   const items = baseItems.filter((item) => {
     if (item.superadminOnly) return superadmin;
@@ -39,6 +37,7 @@ export function PanelQuickAccess() {
   return (
     <nav className="site-shell border-b border-border/70 bg-card/80" aria-label="Atalhos entre áreas autorizadas">
       <div className="page-container flex gap-2 overflow-x-auto py-2.5 [scrollbar-width:none]">
+        <RolePreviewToolbar />
         {items.map((item) => {
           const Icon = item.icon;
           const active = pathname === item.href || (item.href !== "/admin" && item.href !== "/professor" && pathname.startsWith(`${item.href}/`));
