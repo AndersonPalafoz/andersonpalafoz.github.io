@@ -1413,7 +1413,7 @@
 - [x] Confirmado no ambiente local que `STRIPE_SECRET_KEY` está em modo de teste, `STRIPE_WEBHOOK_SECRET` está presente e `VITE_STRIPE_PUBLISHABLE_KEY` está em modo de teste
 - [x] Criados códigos seguros `STRIPE_NOT_CONFIGURED`, `STRIPE_INVALID_KEY` e `STRIPE_CHECKOUT_FAILED`, sem exposição de segredos
 - [x] Testes específicos de configuração e checkout aprovados (6 testes)
-- [ ] Confirmar no ambiente Vercel Production que as chaves correspondentes estão presentes e pertencem ao mesmo modo Stripe
+- [x] Confirmar no ambiente Vercel Production que as chaves correspondentes estão presentes e pertencem ao mesmo modo Stripe; confirmação explícita do usuário em 26/08/2026 de que são chaves Live da conta palafozanderson@gmail.com.
 
 ## Conclusão da Correção Stripe — 20/08/2026
 - [x] Checkout agora classifica configuração ausente, chave inválida e falha temporária sem expor segredos
@@ -1875,7 +1875,7 @@
 - [x] Eliminar rolagem lateral (side scrolling) em dispositivos móveis com regras CSS globais estritas
 - [x] Adicionar busca avançada (Nome, CPF, E-mail, Curso), paginação e pré-visualização em tempo real de certificados no painel administrativo
 - [x] Corrigir estabilidade de build de produção, resolvendo a tabela de respostas de comentários e validando 407 testes Vitest
-- [ ] Configuração do ambiente de produção da Stripe no painel Vercel (Requer ação do usuário na dashboard da Stripe para reclamar o sandbox/live e injetar variáveis)
+- [x] Configuração do ambiente de produção da Stripe no painel Vercel; usuário confirmou em 26/08/2026 que as chaves Live corretas estão conectadas à conta palafozanderson@gmail.com.
 - [x] Autorização OAuth da API do Google Calendar em produção; conta Google conectada e leitura real validada.
 
 - [x] Desenvolver protótipo isolado com Fabric.js e pdf-lib para edição visual avançada e exportação de certificados em PDF
@@ -2344,3 +2344,7 @@
 - [x] Preparar uma cópia limpa sobre a `user_github/main`, preservando o histórico remoto e excluindo artefatos `.next`/`.next-build`.
 - [x] Incluir o relatório da auditoria do `todo.md`, o checklist atualizado e somente alterações técnicas validadas.
 - [x] Executar testes/build, enviar diretamente para `user_github/main` e confirmar o deployment do Vercel.
+
+## Confirmação Stripe Live — 26/08/2026
+- [x] Registrar a confirmação do usuário de que as credenciais Stripe Live no Vercel pertencem à conta palafozanderson@gmail.com, sem expor valores secretos.
+- [x] Validar a consistência entre Checkout Live, URLs de retorno e endpoint de webhook sem executar cobrança real; o código usa `mode: payment`, URLs de retorno parametrizadas pelo domínio da requisição e validação de assinatura pelo corpo bruto, com 6 testes contratuais aprovados. A validação não substitui um checkout live real.
