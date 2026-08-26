@@ -1,11 +1,12 @@
 // Middleware de proteção de rotas (admin e dashboard) usando NextAuth JWT
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthSecret } from "@/lib/auth-secret";
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({
     req: request,
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: getAuthSecret(),
   });
 
   const pathname = request.nextUrl.pathname;

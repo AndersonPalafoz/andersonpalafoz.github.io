@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square, Eye, AlertTriangle } from "lucide-react";
+import { ShieldCheck, Sparkles, Download, CheckCircle2, Loader2, Award, Trash2, CheckSquare, Square, Eye, AlertTriangle, Search, Filter, ChevronLeft, ChevronRight, RotateCcw, ExternalLink } from "lucide-react";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 import { CertificateCompositionPreview } from "@/components/certificate-composition-preview";
 import { parseCertificateComposition, type CertificateVisualVariant } from "@/lib/certificate-composition";
@@ -39,16 +39,24 @@ export function CertificateStandardManager() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "signed" | "pending">("all");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest" | "student">("newest");
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   const fetchCertificates = async () => {
+    setIsLoadingList(true);
+    setListError(null);
     try {
-      const res = await fetch("/api/admin/certificates/issue");
+      const res = await fetch("/api/admin/certificates/issue", { cache: "no-store" });
       const data = await res.json();
-      if (res.ok && data.certificates) {
-        setIssuedCertificates(data.certificates);
-      }
+      if (!res.ok) throw new Error(data.error || "Não foi possível carregar os certificados.");
+      setIssuedCertificates(Array.isArray(data.certificates) ? data.certificates : []);
     } catch (e) {
       console.error("Erro ao carregar certificados", e);
+      setListError(e instanceof Error ? e.message : "Não foi possível carregar os certificados.");
     } finally {
       setIsLoadingList(false);
     }
@@ -131,18 +139,40 @@ export function CertificateStandardManager() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === issuedCertificates.length) {
-      setSelectedIds([]);
-    } else {
-      setSelectedIds(issuedCertificates.map(c => c.id));
-    }
+    const visibleIds = visibleCertificates.map(c => c.id);
+    const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.includes(id));
+    setSelectedIds(prev => allVisibleSelected ? prev.filter(id => !visibleIds.includes(id)) : Array.from(new Set([...prev, ...visibleIds])));
   };
 
   const toggleSelectOne = (id: number) => {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, statusFilter, sortOrder]);
+
   const activeTemplate = templates.find((t: any) => String(t.id) === selectedTemplateId);
+  const normalizedSearch = searchTerm.trim().toLocaleLowerCase("pt-BR");
+  const filteredCertificates = issuedCertificates
+    .filter(cert => {
+      const searchable = `${cert.studentName ?? ""} ${cert.courseTitle ?? ""} ${cert.verificationCode ?? ""}`.toLocaleLowerCase("pt-BR");
+      const matchesSearch = !normalizedSearch || searchable.includes(normalizedSearch);
+      const matchesStatus = statusFilter === "all" || (statusFilter === "signed" ? Boolean(cert.signed) : !cert.signed);
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortOrder === "student") return String(a.studentName ?? "").localeCompare(String(b.studentName ?? ""), "pt-BR");
+      const first = new Date(a.issueDate ?? 0).getTime();
+      const second = new Date(b.issueDate ?? 0).getTime();
+      return sortOrder === "newest" ? second - first : first - second;
+    });
+  const totalPages = Math.max(1, Math.ceil(filteredCertificates.length / pageSize));
+  const visibleCertificates = filteredCertificates.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
 
   const handleGenerateOfficial = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -441,7 +471,7 @@ export function CertificateStandardManager() {
               <Award className="w-5 h-5 text-red-600" /> Certificados Emitidos (Banco de Dados)
             </CardTitle>
             <CardDescription>
-              Selecione múltiplos certificados para exclusão em massa ou download conjunto em PDF.
+              Consulte, filtre, selecione e gerencie certificados emitidos sem perder o contexto do fluxo oficial.
             </CardDescription>
           </div>
           {selectedIds.length > 0 && (
@@ -456,13 +486,55 @@ export function CertificateStandardManager() {
           )}
         </CardHeader>
         <CardContent className="p-4 sm:p-6">
-          <div className="overflow-x-auto">
+          <div className="mb-5 grid gap-3 rounded-2xl border border-border/70 bg-muted/20 p-3 sm:grid-cols-[minmax(0,1fr)_180px_180px_auto] sm:items-center">
+            <label className="relative block">
+              <Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchTerm}
+                onChange={event => setSearchTerm(event.target.value)}
+                placeholder="Buscar por aluno, curso ou código..."
+                aria-label="Buscar certificados"
+                className="h-10 bg-background pl-9"
+              />
+            </label>
+            <label className="relative block">
+              <Filter size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <select
+                value={statusFilter}
+                onChange={event => setStatusFilter(event.target.value as typeof statusFilter)}
+                aria-label="Filtrar por status"
+                className="h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-red-500/30"
+              >
+                <option value="all">Todos os status</option>
+                <option value="signed">Emitidos / S3</option>
+                <option value="pending">Pendentes</option>
+              </select>
+            </label>
+            <select
+              value={sortOrder}
+              onChange={event => setSortOrder(event.target.value as typeof sortOrder)}
+              aria-label="Ordenar certificados"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-red-500/30"
+            >
+              <option value="newest">Mais recentes</option>
+              <option value="oldest">Mais antigos</option>
+              <option value="student">Nome do aluno</option>
+            </select>
+            <Button type="button" variant="outline" onClick={() => { setSearchTerm(""); setStatusFilter("all"); setSortOrder("newest"); setPage(1); }} className="h-10 gap-2 bg-background text-xs">
+              <RotateCcw size={14} /> Limpar
+            </Button>
+          </div>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span><strong className="text-foreground">{filteredCertificates.length}</strong> certificado(s) encontrado(s)</span>
+            {filteredCertificates.length > 0 && <span>Página {page} de {totalPages}</span>}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/50 uppercase text-[10px] text-muted-foreground font-semibold border-b">
                 <tr>
                   <th className="p-3 w-10 text-center">
                     <button onClick={toggleSelectAll} className="flex items-center justify-center">
-                      {issuedCertificates.length > 0 && selectedIds.length === issuedCertificates.length ? (
+                      {visibleCertificates.length > 0 && visibleCertificates.every(cert => selectedIds.includes(cert.id)) ? (
                         <CheckSquare size={16} className="text-red-600" />
                       ) : (
                         <Square size={16} className="text-muted-foreground" />
@@ -482,12 +554,22 @@ export function CertificateStandardManager() {
                   <tr>
                     <td colSpan={7} className="text-center py-8 text-muted-foreground">Carregando certificados...</td>
                   </tr>
-                ) : issuedCertificates.length === 0 ? (
+                ) : listError ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum certificado emitido encontrado no banco.</td>
+                    <td colSpan={7} className="py-8 text-center">
+                      <p className="text-sm font-semibold text-red-700 dark:text-red-300">{listError}</p>
+                      <Button type="button" variant="outline" onClick={fetchCertificates} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
+                    </td>
+                  </tr>
+                ) : filteredCertificates.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-8 text-center">
+                      <p className="text-sm font-semibold text-foreground">Nenhum certificado encontrado</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Ajuste a busca ou os filtros para continuar.</p>
+                    </td>
                   </tr>
                 ) : (
-                  issuedCertificates.map((cert) => {
+                  visibleCertificates.map((cert) => {
                     const isSelected = selectedIds.includes(cert.id);
                     return (
                       <tr key={cert.id} className={`hover:bg-muted/30 transition-colors ${isSelected ? 'bg-red-50/50' : ''}`}>
@@ -529,6 +611,51 @@ export function CertificateStandardManager() {
               </tbody>
             </table>
           </div>
+
+          <div className="grid gap-3 md:hidden">
+            {isLoadingList ? (
+              Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-36 animate-pulse rounded-2xl border border-border/70 bg-muted/40" />)
+            ) : listError ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-center dark:border-red-900/60 dark:bg-red-950/20">
+                <p className="text-sm font-semibold text-red-700 dark:text-red-300">{listError}</p>
+                <Button type="button" variant="outline" onClick={fetchCertificates} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
+              </div>
+            ) : visibleCertificates.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum certificado encontrado com esses filtros.</div>
+            ) : visibleCertificates.map(cert => {
+              const isSelected = selectedIds.includes(cert.id);
+              return (
+                <article key={cert.id} className={`rounded-2xl border p-4 shadow-sm ${isSelected ? "border-red-300 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20" : "border-border/70 bg-card"}`}>
+                  <div className="flex items-start justify-between gap-3">
+                    <button type="button" onClick={() => toggleSelectOne(cert.id)} className="mt-0.5 shrink-0" aria-label={`${isSelected ? "Desmarcar" : "Selecionar"} certificado de ${cert.studentName}`}>
+                      {isSelected ? <CheckSquare size={18} className="text-red-600" /> : <Square size={18} className="text-muted-foreground" />}
+                    </button>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="truncate text-sm font-black text-foreground">{cert.studentName}</h4>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{cert.courseTitle}</p>
+                    </div>
+                    {cert.signed ? <span className="shrink-0 rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-800">Emitido</span> : <span className="shrink-0 rounded-full bg-amber-100 px-2 py-1 text-[10px] font-bold text-amber-800">Pendente</span>}
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
+                    <span><strong className="block text-[10px] uppercase tracking-wide">Código</strong><code className="break-all">{cert.verificationCode}</code></span>
+                    <span><strong className="block text-[10px] uppercase tracking-wide">Emissão</strong>{cert.issueDate}</span>
+                  </div>
+                  <div className="mt-4 flex gap-2">
+                    <a href={cert.certificateUrl} target="_blank" rel="noopener noreferrer" className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground"><ExternalLink size={13} /> Abrir PDF</a>
+                    <Button type="button" variant="outline" onClick={() => handleDeleteCertificate(cert.id)} className="gap-1 bg-red-600 px-3 py-2 text-xs font-bold text-white hover:bg-red-700"><Trash2 size={13} /> Excluir</Button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {filteredCertificates.length > pageSize && (
+            <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/70 pt-4">
+              <Button type="button" variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(current => Math.max(1, current - 1))} className="gap-1 text-xs"><ChevronLeft size={14} /> Anterior</Button>
+              <span className="text-xs font-semibold text-muted-foreground">{page} / {totalPages}</span>
+              <Button type="button" variant="outline" size="sm" disabled={page === totalPages} onClick={() => setPage(current => Math.min(totalPages, current + 1))} className="gap-1 text-xs">Próxima <ChevronRight size={14} /></Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

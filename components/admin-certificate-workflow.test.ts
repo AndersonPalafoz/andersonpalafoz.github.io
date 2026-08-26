@@ -22,6 +22,16 @@ describe("admin certificate workflow", () => {
     expect(page).toContain("3 etapas de trabalho · 4 opções de editor");
     expect(page).toContain("Os editores técnicos ficam disponíveis no laboratório experimental.");
   });
+
+  it("keeps the issued certificate list searchable, filterable and mobile-friendly", () => {
+    const manager = read("components/certificate-standard-manager.tsx");
+    expect(manager).toContain('placeholder="Buscar por aluno, curso ou código..."');
+    expect(manager).toContain('aria-label="Filtrar por status"');
+    expect(manager).toContain('aria-label="Ordenar certificados"');
+    expect(manager).toContain("const totalPages");
+    expect(manager).toContain("md:hidden");
+    expect(manager).toContain("Tentar novamente");
+  });
 });
 
 export {};
