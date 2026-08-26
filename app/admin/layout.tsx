@@ -3,6 +3,9 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { AdminMobileNav } from "@/components/admin-mobile-nav";
+import { PanelRoleContext } from "@/components/panel-role-context";
+import { PanelQuickAccess } from "@/components/panel-quick-access";
+import { canAccessAdminPortal } from "@/lib/role-capabilities";
 
 export const metadata: Metadata = {
   title: "Admin Panel | Anderson Palafoz",
@@ -17,7 +20,7 @@ export default async function AdminLayout({
   const session = await getServerSession(authOptions);
   const role = session?.user?.role;
   const email = session?.user?.email?.toLowerCase();
-  const isAuthorized = email === "palafozanderson@gmail.com" || role === "admin" || role === "super_admin" || role === "professor";
+  const isAuthorized = canAccessAdminPortal({ email, role });
 
   if (!session?.user || !isAuthorized) {
     redirect("/login?callbackUrl=/admin");
@@ -25,6 +28,8 @@ export default async function AdminLayout({
 
   return (
     <div className="site-shell min-h-screen pb-24 text-foreground md:pb-0">
+      <PanelRoleContext panel="admin" email={email} role={role} />
+      <PanelQuickAccess />
       {children}
       <AdminMobileNav />
     </div>

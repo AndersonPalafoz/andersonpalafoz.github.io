@@ -2,6 +2,7 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSecret } from "@/lib/auth-secret";
+import { canAccessAdminPortal, canAccessProfessorPortal } from "@/lib/role-capabilities";
 
 export async function middleware(request: NextRequest) {
   const token = await getToken({
@@ -27,14 +28,14 @@ export async function middleware(request: NextRequest) {
 
   // O painel é reservado ao papel admin e ao acesso aprovado.
   if (isAdminRoute) {
-    if (token.role !== "admin" || !isApproved || !isActive) {
+    if (!canAccessAdminPortal({ email: token.email, role: token.role }) || !isApproved || !isActive) {
       return NextResponse.redirect(new URL("/", request.url));
     }
   }
 
   // O painel do professor é reservado a professores e administradores aprovados.
   if (isProfessorRoute) {
-    const canAccessTeacherPanel = token.role === "professor" || token.role === "admin";
+    const canAccessTeacherPanel = canAccessProfessorPortal({ email: token.email, role: token.role });
     if (!canAccessTeacherPanel || !isActive || !isApproved) {
       const destination = token.approvalStatus === "rejected" || !isActive
         ? "/acesso-negado?reason=blocked"

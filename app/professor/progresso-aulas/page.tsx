@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare, Search, Users, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -17,6 +17,7 @@ export default function ProfessorProgressSpeakingPage() {
   const [feedbackAudio, setFeedbackAudio] = useState<File | null>(null);
   const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
+  const [studentQuery, setStudentQuery] = useState("");
 
   async function loadData() {
     try {
@@ -111,6 +112,10 @@ export default function ProfessorProgressSpeakingPage() {
   const activityProgress = data?.activityProgress || [];
   const speakingSubmissions = activityProgress.filter(ap => ap.activity?.type === "speaking" || ap.audioResponseUrl);
   const speakingAttempts = data?.speakingAttempts || [];
+  const filteredStudents = students.filter((student) => `${student.name || ""} ${student.email || ""}`.toLowerCase().includes(studentQuery.trim().toLowerCase()));
+  const completedLessons = lessonProgress.filter((item) => item.completed === 1).length;
+  const lessonCoverage = students.length > 0 ? Math.round((completedLessons / Math.max(lessonProgress.length, 1)) * 100) : 0;
+  const pendingFeedbackCount = speakingSubmissions.filter((submission) => !submission.teacherFeedback && !submission.teacherAudioFeedbackUrl).length;
 
   const filteredSpeakingSubmissions = [...speakingSubmissions]
     .filter((sub) => {
@@ -141,19 +146,30 @@ export default function ProfessorProgressSpeakingPage() {
           </div>
         </header>
 
+        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumo do progresso">
+          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Users size={15} className="text-red-600" /> Alunos acompanhados</div><p className="mt-2 text-2xl font-black text-foreground">{students.length}</p></div>
+          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><CheckCircle2 size={15} className="text-emerald-600" /> Aulas concluídas</div><p className="mt-2 text-2xl font-black text-foreground">{completedLessons}</p></div>
+          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><MessageSquare size={15} className="text-amber-600" /> Feedbacks pendentes</div><p className="mt-2 text-2xl font-black text-foreground">{pendingFeedbackCount}</p></div>
+          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Activity size={15} className="text-blue-600" /> Cobertura registrada</div><p className="mt-2 text-2xl font-black text-foreground">{lessonCoverage}%</p></div>
+        </section>
+
         {/* Seção 1: Progresso de Aulas por Aluno */}
         <div className="surface-card space-y-6 p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
-            <CheckCircle2 className="text-red-600" size={24} />
-            Progresso Geral de Aulas dos Alunos
-          </h2>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <h2 className="flex items-center gap-2 text-xl font-black text-foreground"><CheckCircle2 className="text-red-600" size={24} /> Progresso Geral de Aulas dos Alunos</h2>
+            <div className="relative w-full md:max-w-xs"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><input value={studentQuery} onChange={(event) => setStudentQuery(event.target.value)} placeholder="Filtrar aluno..." className="field-control w-full pl-9 text-sm" aria-label="Filtrar alunos por nome ou e-mail" /></div>
+          </div>
 
           {students.length === 0 ? (
             <p className="py-4 text-sm text-muted-foreground">Nenhum aluno vinculado no momento.</p>
+          ) : filteredStudents.length === 0 ? (
+            <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhum aluno corresponde ao filtro atual.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {students.map((student) => {
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {filteredStudents.map((student) => {
                 const studentLessons = lessonProgress.filter(lp => lp.userId === student.id && lp.completed === 1);
+                const studentTotalLessons = lessonProgress.filter(lp => lp.userId === student.id).length;
+                const studentProgress = studentTotalLessons > 0 ? Math.round((studentLessons.length / studentTotalLessons) * 100) : 0;
                 return (
                   <div key={student.id} className="rounded-2xl border border-border/70 bg-muted/50 p-5 space-y-3">
                     <div className="flex items-center gap-3">
@@ -165,11 +181,10 @@ export default function ProfessorProgressSpeakingPage() {
                         <p className="text-xs text-muted-foreground">{student.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between border-t border-border/70 pt-3 text-sm">
-                      <span className="font-medium text-muted-foreground">Aulas Concluídas:</span>
-                      <span className="font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full">
-                        {studentLessons.length} aulas
-                      </span>
+                    <div className="space-y-2 border-t border-border/70 pt-3 text-sm">
+                      <div className="flex items-center justify-between"><span className="font-medium text-muted-foreground">Aulas concluídas</span><span className="font-bold text-red-600">{studentLessons.length}/{studentTotalLessons || "—"}</span></div>
+                      <div className="h-2 overflow-hidden rounded-full bg-border"><div className="h-full rounded-full bg-red-600 transition-all" style={{ width: `${studentProgress}%` }} /></div>
+                      <p className="text-right text-[11px] font-bold text-muted-foreground">{studentProgress}% de progresso registrado</p>
                     </div>
                   </div>
                 );

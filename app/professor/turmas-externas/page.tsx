@@ -5,10 +5,11 @@ import { useSession } from "next-auth/react";
 import * as XLSX from "xlsx";
 import Link from "next/link";
 import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
-import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { calculateSimalComposite } from "@/lib/simal-grading";
 import { calculateCourseGrade } from "@/lib/course-grading";
+import { canAccessAdminPortal } from "@/lib/role-capabilities";
 
 interface ExternalStudentItem {
   id: number;
@@ -61,6 +62,19 @@ interface ExternalClassStats {
   completed: number;
 }
 
+interface AssignedTeacher {
+  externalClassId: number;
+  teacherId: number;
+  teacherName: string | null;
+  teacherEmail: string | null;
+}
+
+interface TeacherOption {
+  id: number;
+  name: string | null;
+  email: string | null;
+}
+
 interface ExternalClassItem {
   id: number;
   institution: string;
@@ -84,6 +98,7 @@ interface ExternalClassItem {
   grades?: ExternalClassGradeItem[];
   materials?: ExternalClassMaterialItem[];
   stats?: ExternalClassStats;
+  assignedTeachers?: AssignedTeacher[];
 }
 
 type ClassFormField = "institution" | "className" | "courseName" | "academicTerm" | "description";
@@ -157,8 +172,11 @@ const SIMAL_COMPONENTS = [
 
 export default function TurmasExternasPage() {
   const { data: session } = useSession();
-  const canManage = session?.user?.role === "admin";
+  const canManage = canAccessAdminPortal({ email: session?.user?.email, role: session?.user?.role });
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
+  const [availableTeachers, setAvailableTeachers] = useState<TeacherOption[]>([]);
+  const [assignmentDrafts, setAssignmentDrafts] = useState<Record<number, number[]>>({});
+  const [savingAssignmentId, setSavingAssignmentId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<{ status?: number; title: string; message: string; action?: string } | null>(null);
   const [operationFeedback, setOperationFeedback] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
@@ -366,6 +384,7 @@ export default function TurmasExternasPage() {
         throw new Error(description.message);
       }
       setClasses(Array.isArray(data.classes) ? data.classes : []);
+      setAvailableTeachers(Array.isArray(data.availableTeachers) ? data.availableTeachers : []);
       setLastUpdatedAt(new Date());
       setOperationFeedback(null);
     } catch (err) {
@@ -380,6 +399,39 @@ export default function TurmasExternasPage() {
   const [activeTab, setActiveTab] = useState<"classes" | "trash">("classes");
   const [trashClasses, setTrashClasses] = useState<ExternalClassItem[]>([]);
   const [loadingTrash, setLoadingTrash] = useState(false);
+
+  const assignmentIdsForClass = (cls: ExternalClassItem) => assignmentDrafts[cls.id] ?? (cls.assignedTeachers ?? []).map((assignment) => assignment.teacherId);
+
+  const toggleTeacherAssignment = (classId: number, teacherId: number, checked: boolean, fallback: number[]) => {
+    setAssignmentDrafts((current) => {
+      const selected = current[classId] ?? fallback;
+      const next = checked ? Array.from(new Set([...selected, teacherId])) : selected.filter((id) => id !== teacherId);
+      return { ...current, [classId]: next };
+    });
+  };
+
+  const saveTeacherAssignments = async (cls: ExternalClassItem) => {
+    try {
+      setSavingAssignmentId(cls.id);
+      const response = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setTeacherAssignments", classId: cls.id, teacherIds: assignmentIdsForClass(cls) }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível atualizar os professores atribuídos.");
+      notifySuccess(data.message || "Professores atribuídos à turma.");
+      setAssignmentDrafts((current) => {
+        const { [cls.id]: ignored, ...rest } = current;
+        return rest;
+      });
+      await loadClasses();
+    } catch (error) {
+      notifyError(error instanceof Error ? error.message : "Não foi possível atualizar os professores atribuídos.");
+    } finally {
+      setSavingAssignmentId(null);
+    }
+  };
 
   const loadTrash = async () => {
     try {
@@ -1306,7 +1358,7 @@ export default function TurmasExternasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 text-gray-900 dark:text-white p-4 sm:p-6 lg:p-10 font-sans">
+    <div className="min-h-screen bg-[#f8fafc] pb-32 text-gray-900 dark:bg-slate-950 dark:text-white p-4 sm:p-6 lg:p-10 font-sans">
       <div className="max-w-[1500px] mx-auto space-y-6 sm:space-y-8">
         {/* Cabeçalho */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 px-5 py-5 md:px-7 md:py-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)] dark:shadow-none backdrop-blur">
@@ -1319,7 +1371,7 @@ export default function TurmasExternasPage() {
               >
                 <ArrowLeft size={18} />
               </Link>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
+              <h1 className="text-xl leading-tight sm:text-3xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
                 <Building2 className="text-red-600" size={26} /> Turmas externas
               </h1>
             </div>
@@ -1335,8 +1387,8 @@ export default function TurmasExternasPage() {
             >
               <Plus size={15} aria-hidden="true" /> Nova turma
             </button>
-              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-extrabold text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" aria-hidden="true" /> {lastUpdatedAt ? `Atualizado às ${lastUpdatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Atualizando dados"}
+              <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-extrabold ${loadError ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"}`}>
+              <span className={`h-2 w-2 rounded-full ${loadError ? "bg-red-500" : "bg-emerald-500"}`} aria-hidden="true" /> {loadError ? "Falha na atualização" : lastUpdatedAt ? `Atualizado às ${lastUpdatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Atualizando dados"}
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] font-extrabold text-gray-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
               <Building2 size={13} aria-hidden="true" /> {classes.length} {classes.length === 1 ? "turma cadastrada" : "turmas cadastradas"}
@@ -1363,7 +1415,7 @@ export default function TurmasExternasPage() {
             ].map(({ label, value, icon: Icon, tone }) => (
               <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/40 p-3.5">
                 <div className={`mb-3 inline-flex rounded-xl p-2 ${tone}`}><Icon size={16} aria-hidden="true" /></div>
-                <p className="text-2xl font-black text-gray-950 dark:text-white">{value}</p>
+                <p className={`text-2xl font-black ${loadError ? "text-gray-400 dark:text-slate-500" : "text-gray-950 dark:text-white"}`}>{loadError ? "—" : value}</p>
                 <p className="mt-1 text-[11px] font-bold leading-tight text-gray-500 dark:text-slate-400">{label}</p>
               </div>
             ))}
@@ -1374,7 +1426,7 @@ export default function TurmasExternasPage() {
           <section
             role="alert"
             aria-live="assertive"
-            className="rounded-2xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-3"
+            className="rounded-2xl border border-red-200 bg-red-50 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-start gap-3 dark:border-red-900/60 dark:bg-red-950/30"
           >
             <div className="shrink-0 rounded-xl bg-red-100 dark:bg-red-950/70 p-2 text-red-700 dark:text-red-300">
               <AlertCircle size={20} aria-hidden="true" />
@@ -2071,9 +2123,11 @@ export default function TurmasExternasPage() {
           {/* Listagem de Turmas, Abas e Gerenciamento */}
           <div className="lg:col-span-2 space-y-6">
             {loading ? (
-              <div className="space-y-6 animate-pulse" aria-label="Carregando turmas...">
-                {[1, 2].map((i) => (
-                  <div key={i} className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
+              <div role="status" aria-live="polite" className="space-y-4" aria-label="Carregando turmas externas">
+                <div className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-700 dark:text-blue-200"><Loader2 size={15} className="animate-spin" aria-hidden="true" /> Carregando turmas, alunos e indicadores…</div>
+                <div className="space-y-6 animate-pulse">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
                       <div className="space-y-2 w-3/4">
                         <div className="flex gap-2">
@@ -2094,20 +2148,23 @@ export default function TurmasExternasPage() {
                         <div key={box} className="h-10 bg-gray-200 dark:bg-slate-800 rounded-xl" />
                       ))}
                     </div>
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : loadError ? (
-              <div className="rounded-[28px] border border-red-200 dark:border-red-900/60 bg-red-50/70 dark:bg-red-950/20 p-8 sm:p-10 text-center shadow-[0_10px_30px_rgba(220,38,38,0.06)] space-y-3">
-                <AlertCircle size={28} className="mx-auto text-red-500" />
-                <h3 className="text-sm font-bold text-red-900 dark:text-red-200">Não foi possível carregar as turmas</h3>
-                <p className="text-xs text-red-700 dark:text-red-300 max-w-sm mx-auto">{loadError.message}</p>
+              <div role="alert" aria-live="assertive" className="rounded-[28px] border border-red-200 bg-red-50/70 p-6 text-center shadow-[0_10px_30px_rgba(220,38,38,0.06)] space-y-3 dark:border-red-900/60 dark:bg-red-950/20 sm:p-10">
+                <AlertCircle size={28} className="mx-auto text-red-500" aria-hidden="true" />
+                <h3 className="text-sm font-bold text-red-900 dark:text-red-200">Não conseguimos carregar suas turmas</h3>
+                <p className="mx-auto max-w-sm text-xs leading-relaxed text-red-700 dark:text-red-300">{loadError.status && loadError.status >= 500 ? "O servidor está temporariamente indisponível. Seus dados não foram alterados; tente novamente em alguns instantes." : loadError.message}</p>
+                {loadError.status && <p className="text-[11px] font-semibold text-red-700/80 dark:text-red-300/80">Código de resposta: {loadError.status}</p>}
                 <button
                   type="button"
                   onClick={() => void loadClasses()}
-                  className="mt-2 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-red-700 transition"
+                  disabled={loading}
+                  className="mt-2 inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:cursor-wait disabled:opacity-60"
                 >
-                  Tentar novamente
+                  <RefreshCw size={14} className={loading ? "animate-spin" : ""} aria-hidden="true" /> {loading ? "Tentando…" : "Tentar novamente"}
                 </button>
               </div>
             ) : filteredClasses.length === 0 ? (
@@ -2178,6 +2235,41 @@ export default function TurmasExternasPage() {
                           {(cls as any).workloadHours && <span>⏱ Carga Horária: <strong className="text-gray-700 dark:text-gray-300">{(cls as any).workloadHours}h</strong></span>}
                         </div>
                         {cls.description && <p className="text-xs text-gray-500 pt-1">{cls.description}</p>}
+                        {canManage && (
+                          <details className="mt-3 rounded-2xl border border-violet-200 bg-violet-50/70 p-3 text-xs text-violet-950 dark:border-violet-900/50 dark:bg-violet-950/20 dark:text-violet-100">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 font-black">
+                              <span className="inline-flex items-center gap-1.5"><Users size={14} aria-hidden="true" /> Professores atribuídos</span>
+                              <span className="rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-extrabold text-violet-700 dark:bg-slate-900/70 dark:text-violet-200">{(cls.assignedTeachers ?? []).length} ativo(s)</span>
+                            </summary>
+                            <p className="mt-2 leading-relaxed text-violet-800 dark:text-violet-200">O professor criador mantém a responsabilidade principal. Selecione professores adicionais para dar acesso operacional a esta turma.</p>
+                            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                              {availableTeachers.map((teacher) => {
+                                const selected = assignmentIdsForClass(cls).includes(teacher.id);
+                                return (
+                                  <label key={teacher.id} className="flex cursor-pointer items-start gap-2 rounded-xl border border-violet-200/80 bg-white/80 p-2.5 dark:border-violet-900/50 dark:bg-slate-900/70">
+                                    <input
+                                      type="checkbox"
+                                      checked={selected}
+                                      onChange={(event) => toggleTeacherAssignment(cls.id, teacher.id, event.target.checked, (cls.assignedTeachers ?? []).map((assignment) => assignment.teacherId))}
+                                      className="mt-0.5 h-4 w-4 accent-violet-600"
+                                    />
+                                    <span className="min-w-0"><span className="block truncate font-bold">{teacher.name || "Professor sem nome"}</span><span className="block truncate text-[10px] text-violet-700/80 dark:text-violet-300/80">{teacher.email || "E-mail não informado"}</span></span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                            {availableTeachers.length === 0 && <p className="mt-3 rounded-xl bg-white/70 p-2.5 font-semibold text-violet-800 dark:bg-slate-900/70 dark:text-violet-200">Não há professores ativos disponíveis para atribuição.</p>}
+                            <button
+                              type="button"
+                              onClick={() => void saveTeacherAssignments(cls)}
+                              disabled={savingAssignmentId === cls.id}
+                              className="mt-3 inline-flex min-h-10 items-center gap-2 rounded-xl bg-violet-700 px-3 py-2 font-black text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {savingAssignmentId === cls.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                              Salvar atribuições
+                            </button>
+                          </details>
+                        )}
                       </div>
                       <div className="relative flex items-center gap-2">
                         <div className="hidden sm:flex items-center gap-2 flex-wrap">

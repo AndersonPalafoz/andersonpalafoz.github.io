@@ -12,14 +12,45 @@ export const dynamic = "force-dynamic";
 
 export default async function ExternalStudentArea() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) redirect("/login?callbackUrl=/dashboard/aluno-externo");
+  if (!session?.user?.email) redirect("/login?callbackUrl=/dashboard/aluno-externo");
   if (session.user.mustChangePassword && session.user.role === "user") redirect("/primeiro-acesso");
 
-  const account = session.user.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
-  const records = account?.email ? await db.query.externalStudents.findMany({ where: eq(externalStudents.email, account.email) }) : [];
-  const classIds = [...new Set(records.map((student) => student.externalClassId))];
-  const classes = classIds.length ? await db.query.externalClasses.findMany({ where: inArray(externalClasses.id, classIds) }) : [];
-  const grades = records.length ? await db.query.externalClassGrades.findMany({ where: inArray(externalClassGrades.studentId, records.map((student) => student.id)) }) : [];
+  let account = null;
+  let records: typeof externalStudents.$inferSelect[] = [];
+  let classes: typeof externalClasses.$inferSelect[] = [];
+  let grades: typeof externalClassGrades.$inferSelect[] = [];
+
+  try {
+    account = await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) || null;
+    if (account?.email) {
+      records = await db.query.externalStudents.findMany({ where: eq(externalStudents.email, account.email) });
+      const classIds = [...new Set(records.map((student) => student.externalClassId))];
+      if (classIds.length > 0) {
+        classes = await db.query.externalClasses.findMany({ where: inArray(externalClasses.id, classIds) });
+        grades = await db.query.externalClassGrades.findMany({ where: inArray(externalClassGrades.studentId, records.map((student) => student.id)) });
+      }
+    }
+  } catch (error) {
+    console.error("[ExternalStudentArea] Erro ao carregar dados:", error);
+    // Em caso de falha na consulta, renderizamos um estado vazio amigável em vez de quebrar a página inteira
+    return (
+      <div className="space-y-8 pb-16">
+        <header className="dashboard-hero rounded-3xl p-6 sm:p-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <span className="eyebrow">Área do aluno externo</span>
+              <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground">Sua jornada acadêmica</h1>
+            </div>
+          </div>
+        </header>
+        <section className="empty-state rounded-3xl p-8 text-center">
+          <BookOpen className="mx-auto text-muted-foreground" size={30} />
+          <h2 className="mt-4 text-xl font-black text-foreground">Não foi possível carregar suas turmas</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Ocorreu um erro temporário ao buscar seus dados. Tente atualizar a página em alguns instantes.</p>
+        </section>
+      </div>
+    );
+  }
 
   return <div className="space-y-8 pb-16"><header className="dashboard-hero rounded-3xl p-6 sm:p-8"><div className="flex flex-wrap items-start justify-between gap-4"><div><span className="eyebrow">Área do aluno externo</span><h1 className="mt-3 text-3xl font-black tracking-tight text-foreground">Sua jornada acadêmica</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Acompanhe suas turmas, avaliações, médias por unidade e os critérios necessários para aprovação.</p></div><Link href="/dashboard/aluno-externo/perfil" className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-black text-foreground shadow-sm transition hover:bg-muted">Editar meu perfil</Link></div></header>{classes.length === 0 ? <section className="empty-state rounded-3xl p-8 text-center"><BookOpen className="mx-auto text-muted-foreground" size={30} /><h2 className="mt-4 text-xl font-black text-foreground">Nenhuma turma externa vinculada</h2><p className="mt-2 text-sm text-muted-foreground">Seu cadastro precisa ter o mesmo e-mail usado no acesso. Procure o professor ou administrador se você esperava encontrar uma turma aqui.</p></section> : <div className="grid gap-5 lg:grid-cols-2">{classes.map((externalClass) => { const studentIds = records.filter((student) => student.externalClassId === externalClass.id).map((student) => student.id); const classGrades = grades.filter((grade) => studentIds.includes(grade.studentId)); const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, classGrades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? Number(grade.score) / Number(grade.maxScore) * 10 : null, unit: grade.unitNumber }))); return <article key={externalClass.id} className="surface-card rounded-3xl p-5 sm:p-6"><div className="flex items-start gap-3"><div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={21} /></div><div className="min-w-0"><h2 className="text-lg font-black text-foreground">{externalClass.courseName}</h2><p className="mt-1 text-xs font-semibold text-muted-foreground">{externalClass.className} · mínimo geral {result.passingAverage.toFixed(1)}</p></div></div><div className="mt-6 space-y-4">{result.units.map((unit) => { const average = unit.average; const ratio = average === null ? 0 : Math.min(100, Math.max(0, average / 10 * 100)); const passed = average !== null && average >= unit.passingAverage; return <div key={unit.unit}><div className="mb-1.5 flex justify-between gap-3 text-xs font-bold"><span className="text-foreground">Unidade {unit.unit}</span><span className={passed ? "text-emerald-700 dark:text-emerald-300" : average === null ? "text-muted-foreground" : "text-amber-700 dark:text-amber-300"}>{average === null ? "Aguardando notas" : `${average.toFixed(1)} / 10 · mínimo ${unit.passingAverage.toFixed(1)}`}</span></div><div className="h-3 overflow-hidden rounded-full bg-muted"><div className={`h-full rounded-full transition-all ${passed ? "bg-emerald-500" : average === null ? "bg-slate-300 dark:bg-slate-700" : "bg-amber-500"}`} style={{ width: `${ratio}%` }} /></div><p className="mt-1.5 text-[11px] text-muted-foreground">{passed ? <><CheckCircle2 className="mr-1 inline text-emerald-600" size={13} />Média mínima atingida</> : average === null ? <><LockKeyhole className="mr-1 inline" size={13} />Ainda sem avaliações lançadas</> : "Continue acompanhando suas avaliações"}</p></div>; })}</div></article>; })}</div>}</div>;
 }

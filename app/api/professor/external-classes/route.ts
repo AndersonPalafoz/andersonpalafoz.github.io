@@ -8,10 +8,11 @@ import {
   externalClassAttendance,
   externalClassGrades,
   externalClassMaterials,
+  externalClassTeacherAssignments,
   users,
   notifications,
 } from "@/drizzle/schema";
-import { eq, desc, and, isNull, isNotNull, inArray } from "drizzle-orm";
+import { eq, desc, and, or, isNull, isNotNull, inArray } from "drizzle-orm";
 
 type ExternalClassesDbError = Error & {
   code?: string;
@@ -50,33 +51,48 @@ export async function GET(request: NextRequest) {
     const email = userEmail;
     if (!email) return NextResponse.json({ error: "E-mail não encontrado na sessão." }, { status: 400 });
 
-    let teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
-    if (!teacher) {
-      const inserted = await db.insert(users).values({
-        openId: `admin_${Date.now()}`,
-        name: session.user.name || "Anderson Palafoz",
-        email: email,
-        role: "admin",
-        approvalStatus: "approved",
-      }).returning();
-      teacher = inserted[0];
-    }
-
     const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
+    const teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (!teacher && !isGlobalAdmin) return NextResponse.json({ error: "Professor não encontrado na plataforma." }, { status: 404 });
     const mode = searchParams.get("mode");
 
-    let classesQuery;
-    if (mode === "trash") {
-      classesQuery = isGlobalAdmin
-        ? db.select().from(externalClasses).where(isNotNull(externalClasses.deletedAt)).orderBy(desc(externalClasses.deletedAt))
-        : db.select().from(externalClasses).where(and(eq(externalClasses.teacherId, teacher.id), isNotNull(externalClasses.deletedAt))).orderBy(desc(externalClasses.deletedAt));
-    } else {
-      classesQuery = isGlobalAdmin
-        ? db.select().from(externalClasses).where(isNull(externalClasses.deletedAt)).orderBy(desc(externalClasses.createdAt))
-        : db.select().from(externalClasses).where(and(eq(externalClasses.teacherId, teacher.id), isNull(externalClasses.deletedAt))).orderBy(desc(externalClasses.createdAt));
-    }
+    const delegatedRows = !isGlobalAdmin
+      ? await db.select({ externalClassId: externalClassTeacherAssignments.externalClassId })
+        .from(externalClassTeacherAssignments)
+        .where(eq(externalClassTeacherAssignments.teacherId, teacher!.id))
+      : [];
+    const delegatedClassIds = delegatedRows.map((row) => row.externalClassId);
+    const visibilityFilter = delegatedClassIds.length
+      ? or(eq(externalClasses.teacherId, teacher!.id), inArray(externalClasses.id, delegatedClassIds))
+      : eq(externalClasses.teacherId, teacher!.id);
+    const lifecycleFilter = mode === "trash" ? isNotNull(externalClasses.deletedAt) : isNull(externalClasses.deletedAt);
+    const classes = isGlobalAdmin
+      ? await db.select().from(externalClasses).where(lifecycleFilter).orderBy(mode === "trash" ? desc(externalClasses.deletedAt) : desc(externalClasses.createdAt))
+      : await db.select().from(externalClasses).where(and(visibilityFilter, lifecycleFilter)).orderBy(mode === "trash" ? desc(externalClasses.deletedAt) : desc(externalClasses.createdAt));
 
-    const classes = await classesQuery;
+    const classIds = classes.map((item) => item.id);
+    const assignmentRows = classIds.length
+      ? await db.select({
+        externalClassId: externalClassTeacherAssignments.externalClassId,
+        teacherId: users.id,
+        teacherName: users.name,
+        teacherEmail: users.email,
+      }).from(externalClassTeacherAssignments)
+        .innerJoin(users, eq(externalClassTeacherAssignments.teacherId, users.id))
+        .where(inArray(externalClassTeacherAssignments.externalClassId, classIds))
+      : [];
+    const assignmentsByClass = new Map<number, typeof assignmentRows>();
+    for (const assignment of assignmentRows) {
+      const current = assignmentsByClass.get(assignment.externalClassId) ?? [];
+      current.push(assignment);
+      assignmentsByClass.set(assignment.externalClassId, current);
+    }
+    const availableTeachers = isGlobalAdmin
+      ? await db.select({ id: users.id, name: users.name, email: users.email })
+        .from(users)
+        .where(and(eq(users.role, "professor"), isNull(users.deletedAt)))
+        .orderBy(users.name)
+      : [];
     
     const result = [];
     for (const cls of classes) {
@@ -96,6 +112,7 @@ export async function GET(request: NextRequest) {
       result.push({
         ...cls,
         students: studentsWithAccess,
+        assignedTeachers: assignmentsByClass.get(cls.id) ?? [],
         attendance,
         grades,
         materials,
@@ -107,7 +124,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: true, classes: result });
+    return NextResponse.json({ success: true, classes: result, availableTeachers, access: { isGlobalAdmin } });
   } catch (error) {
     logExternalClassesError("GET /api/professor/external-classes", error);
     return NextResponse.json({ error: "Erro interno ao buscar turmas externas." }, { status: 500 });
@@ -127,19 +144,16 @@ export async function POST(request: NextRequest) {
     const email = userEmail;
     if (!email) return NextResponse.json({ error: "E-mail não encontrado na sessão." }, { status: 400 });
 
-    let teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
-    if (!teacher) {
-      const inserted = await db.insert(users).values({
-        openId: `admin_${Date.now()}`,
-        name: session.user.name || "Anderson Palafoz",
-        email: email,
-        role: "admin",
-        approvalStatus: "approved",
-      }).returning();
-      teacher = inserted[0];
-    }
-
-    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userRole === "professor" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
+    const isGlobalAdmin = userRole === "admin" || userRole === "super_admin" || userEmail === "palafozanderson@gmail.com" || email === "palafozanderson@gmail.com";
+    const teacher = await db.query.users.findFirst({ where: eq(users.email, email) });
+    if (!teacher) return NextResponse.json({ error: "Sua conta administrativa/profissional ainda não está registrada na plataforma." }, { status: 404 });
+    const delegatedRows = !isGlobalAdmin
+      ? await db.select({ externalClassId: externalClassTeacherAssignments.externalClassId })
+        .from(externalClassTeacherAssignments)
+        .where(eq(externalClassTeacherAssignments.teacherId, teacher.id))
+      : [];
+    const delegatedClassIds = new Set(delegatedRows.map((row) => row.externalClassId));
+    const canManageClass = (classId: number, ownerId: number) => isGlobalAdmin || ownerId === teacher.id || delegatedClassIds.has(classId);
 
     const body = await request.json();
       const {
@@ -200,7 +214,29 @@ export async function POST(request: NextRequest) {
       fileUrl,
       materialDescription,
       materialId,
+      teacherIds,
     } = body;
+
+    if (action === "setTeacherAssignments") {
+      if (!isGlobalAdmin) return NextResponse.json({ error: "Somente administradores podem atribuir professores a uma turma." }, { status: 403 });
+      if (!classId || !Array.isArray(teacherIds)) return NextResponse.json({ error: "Informe a turma e a lista de professores." }, { status: 400 });
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
+      if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+      const normalizedTeacherIds = Array.from(new Set(teacherIds.map(Number).filter(Number.isInteger)));
+      const selectedTeachers = normalizedTeacherIds.length
+        ? await db.select({ id: users.id }).from(users).where(and(inArray(users.id, normalizedTeacherIds), eq(users.role, "professor"), isNull(users.deletedAt)))
+        : [];
+      if (selectedTeachers.length !== normalizedTeacherIds.length) return NextResponse.json({ error: "Selecione somente professores ativos cadastrados na plataforma." }, { status: 400 });
+      await db.delete(externalClassTeacherAssignments).where(eq(externalClassTeacherAssignments.externalClassId, Number(classId)));
+      if (selectedTeachers.length) {
+        await db.insert(externalClassTeacherAssignments).values(selectedTeachers.map((selected) => ({
+          externalClassId: Number(classId),
+          teacherId: selected.id,
+          assignedBy: teacher.id,
+        })));
+      }
+      return NextResponse.json({ success: true, message: "Professores atribuídos à turma com sucesso." });
+    }
 
     if (action === "createClass") {
       if (!institution || !className || !courseName || !academicTerm) {
@@ -261,7 +297,7 @@ export async function POST(request: NextRequest) {
 
       const existing = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existing) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existing.teacherId !== teacher.id) {
+      if (!canManageClass(existing.id, existing.teacherId)) {
         return NextResponse.json({ error: "Acesso negado para editar esta turma." }, { status: 403 });
       }
 
@@ -318,7 +354,7 @@ export async function POST(request: NextRequest) {
       if (!classId) return NextResponse.json({ error: "ID da turma é obrigatório." }, { status: 400 });
       const existing = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existing) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existing.teacherId !== teacher.id) return NextResponse.json({ error: "Acesso negado para duplicar esta turma." }, { status: 403 });
+      if (!canManageClass(existing.id, existing.teacherId)) return NextResponse.json({ error: "Acesso negado para duplicar esta turma." }, { status: 403 });
 
       const [duplicated] = await db.insert(externalClasses).values({
         teacherId: existing.teacherId,
@@ -358,7 +394,7 @@ export async function POST(request: NextRequest) {
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado para gerenciar alunos desta turma." }, { status: 403 });
       }
 
@@ -411,7 +447,7 @@ export async function POST(request: NextRequest) {
       if (!student) return NextResponse.json({ error: "Aluno não encontrado." }, { status: 404 });
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
-      if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -442,7 +478,7 @@ export async function POST(request: NextRequest) {
       const externalClassId = Number(classId);
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, externalClassId) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -569,7 +605,7 @@ export async function POST(request: NextRequest) {
       const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
       if (student) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
-        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalStudents).where(eq(externalStudents.id, Number(studentId)));
@@ -594,7 +630,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Turma associada não encontrada." }, { status: 404 });
       }
 
-      if (!isGlobalAdmin && session.user.role !== "super_admin" && userEmail !== "palafozanderson@gmail.com" && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -636,7 +672,7 @@ export async function POST(request: NextRequest) {
       if (!existingClass) {
         return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
       }
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -652,7 +688,7 @@ export async function POST(request: NextRequest) {
       if (!existingClass) {
         return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
       }
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -675,7 +711,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Turma externa não encontrada." }, { status: 404 });
       }
 
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -695,7 +731,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -731,7 +767,7 @@ export async function POST(request: NextRequest) {
 
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -805,7 +841,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
       const gradeError = validateGrade(score, maxScore || "10.0");
@@ -851,7 +887,7 @@ export async function POST(request: NextRequest) {
       const grade = await db.query.externalClassGrades.findFirst({ where: eq(externalClassGrades.id, Number(gradeId)) });
       if (grade) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, grade.externalClassId) });
-        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalClassGrades).where(eq(externalClassGrades.id, Number(gradeId)));
@@ -866,7 +902,7 @@ export async function POST(request: NextRequest) {
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
-      if (!isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
 
@@ -903,7 +939,7 @@ export async function POST(request: NextRequest) {
       const mat = await db.query.externalClassMaterials.findFirst({ where: eq(externalClassMaterials.id, Number(materialId)) });
       if (mat) {
         const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, mat.externalClassId) });
-        if (existingClass && !isGlobalAdmin && existingClass.teacherId !== teacher.id) {
+        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
           return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
         }
         await db.delete(externalClassMaterials).where(eq(externalClassMaterials.id, Number(materialId)));
