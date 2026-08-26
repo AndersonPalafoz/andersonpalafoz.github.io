@@ -11,6 +11,7 @@ import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin
 import { AdminActionCenter } from "@/components/admin-action-center";
 import { AdminModerationHub } from "@/components/admin-moderation-hub";
 import { AdminCapabilityMap } from "@/components/admin-capability-map";
+import { useRolePreview } from "@/components/role-preview";
 
 interface Stats {
   totalCourses: number;
@@ -98,6 +99,7 @@ function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
 
 export default function AdminDashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { previewRole, visibleRole } = useRolePreview();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +154,29 @@ export default function AdminDashboardPage() {
   }
 
   const effectiveRole = getEffectiveRole({ email: user?.email, role: user?.role });
-  const superadmin = isSuperadmin({ email: user?.email, role: user?.role });
+  const superadmin = visibleRole === "superadmin";
+
+  if (previewRole === "professor") {
+    return (
+      <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+        <div className="page-container max-w-4xl space-y-6">
+          <section className="surface-card overflow-hidden rounded-3xl border border-sky-200 p-6 shadow-sm dark:border-sky-900/60 sm:p-8">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-sky-700 dark:text-sky-300">Visualização segura · professor</p>
+            <h1 className="mt-2 text-3xl font-black text-foreground">A área docente em foco</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">Nesta simulação, apenas os atalhos e a hierarquia visível de um professor são exibidos. Nenhuma permissão real foi alterada e ações administrativas continuam bloqueadas no servidor.</p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                ["/professor", "Visão geral docente"],
+                ["/professor/turmas-externas", "Turmas e alunos"],
+                ["/professor/tarefas", "Tarefas e correções"],
+                ["/professor/progresso-aulas", "Progresso e speaking"],
+              ].map(([href, label]) => <Link key={href} href={href} className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4 text-sm font-black text-sky-900 transition hover:bg-sky-100 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-100 dark:hover:bg-sky-950/50">{label}</Link>)}
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
@@ -164,7 +188,7 @@ export default function AdminDashboardPage() {
               <ShieldCheck size={16} />
               {superadmin ? "Superadministração Global" : "Governança Administrativa"}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do {roleLabel(effectiveRole)}</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do {roleLabel(visibleRole)}</h1>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {superadmin ? "Controle global de identidade, CMS, integração financeira e todas as operações acadêmicas." : "Gestão ampla de pessoas, cursos, turmas, avaliações, certificados, moderação e auditoria."}
             </p>
@@ -218,12 +242,12 @@ export default function AdminDashboardPage() {
             >
               Assinar Certificados
             </Link>
-            <Link
+            {superadmin && <Link
               href="/admin/cupons"
               className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
             >
               Cupons
-            </Link>
+            </Link>}
             <Link
               href="/admin/anotacoes"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
