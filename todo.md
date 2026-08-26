@@ -2362,3 +2362,9 @@
 
 ## Garantia de exclusão dos certificados de teste — 26/08/2026
 - [x] Auditar e garantir que certificados de teste, assinados ou não assinados, possam ser excluídos pelo administrador com confirmação, feedback e limpeza do arquivo associado quando aplicável; a API agora valida registros existentes, exclui qualquer status pela mesma rota, retorna `deletedIds` e responde 404 quando nada existe. A interface mantém confirmação, toast de sucesso/erro e exclusão em lote; 8 testes direcionados passaram. A remoção do registro revoga o acesso ao download, embora arquivos S3 históricos possam exigir limpeza operacional separada.
+
+## Auditoria e simplificação do fluxo de certificados — 26/08/2026
+- [x] Mapear geração, atribuição, prévia, emissão, assinatura, download e exclusão nos painéis Admin, Professor e Aluno; o gerador oficial é compartilhado pelo Admin, a gestão de assinatura pelo Professor/Admin e a galeria/download pelo Aluno.
+- [x] Identificar e remover somente sobras comprovadamente obsoletas, protótipos não utilizados e dados de teste explicitamente identificados; quatro scripts `.tmp` de templates/DOCX sem uso no runtime foram removidos. Fabric, Konva e GrapesJS foram preservados por ainda estarem acessíveis no laboratório experimental.
+- [x] Simplificar a interface para deixar o Gerador Oficial como fluxo principal e separar claramente laboratório experimental, modelos e assinaturas; a página agora explicita “3 etapas oficiais · laboratório experimental separado” e informa que as engines não participam da emissão oficial.
+- [ ] Validar testes, estados vazios, navegação e sincronização da limpeza com a main.

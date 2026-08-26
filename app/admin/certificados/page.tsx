@@ -33,7 +33,7 @@ export default async function AdminCertificatesPage() {
               <FileSignature className="text-red-600" /> Certificados
             </h1>
             <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Emita certificados, revise pendências, gerencie modelos parametrizados e encaminhe documentos para assinatura. Os editores técnicos ficam disponíveis no laboratório experimental.
+              Emita certificados pelo gerador oficial, revise pendências, gerencie modelos parametrizados e encaminhe documentos para assinatura. O laboratório com Fabric, Konva e GrapesJS permanece separado para experimentação e não participa da emissão oficial.
             </p>
           </div>
           <Link
@@ -50,7 +50,7 @@ export default async function AdminCertificatesPage() {
               <Sparkles className="text-red-600" size={20} />
               <h2 className="text-xl font-black text-foreground">Fluxo de produção do certificado</h2>
             </div>
-            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">3 etapas de trabalho · 4 opções de editor</span>
+            <span className="w-fit rounded-full border border-border/70 bg-card px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">3 etapas oficiais · laboratório experimental separado</span>
           </div>
           <AdminCertificateWorkflow />
         </section>
