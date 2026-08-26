@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { AdminMobileNav } from "@/components/admin-mobile-nav";
-import { PanelRoleContext } from "@/components/panel-role-context";
-import { PanelQuickAccess } from "@/components/panel-quick-access";
 import { RolePreviewProvider } from "@/components/role-preview";
+import DashboardShell from "@/app/dashboard/dashboard-shell";
 import { getEffectiveRole, isSuperadmin } from "@/lib/role-capabilities";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
 
@@ -31,13 +29,6 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="site-shell min-h-screen pb-24 text-foreground md:pb-0">
-      <RolePreviewProvider actualRole={actualRole} enabled={canPreviewRoles}>
-        <PanelRoleContext panel="admin" email={email} role={role} />
-        <PanelQuickAccess />
-        {children}
-        <AdminMobileNav />
-      </RolePreviewProvider>
-    </div>
+    <RolePreviewProvider actualRole={actualRole} enabled={canPreviewRoles}><DashboardShell>{children}</DashboardShell></RolePreviewProvider>
   );
 }

@@ -23,9 +23,26 @@ import {
   Shield,
   Sparkles,
   HelpCircle,
+  BarChart3,
+  ClipboardCheck,
+  FileSignature,
+  FolderKanban,
+  MessageSquare,
+  Settings,
+  WalletCards,
+  Users,
 } from "lucide-react";
+import { getEffectiveRole, roleLabel } from "@/lib/role-capabilities";
+import { RolePreviewToolbar, useRolePreview } from "@/components/role-preview";
 
-  const navItems = [
+type NavigationItem = {
+  href: string;
+  label: string;
+  icon: typeof BookOpen;
+  exact?: boolean;
+};
+
+const studentNavItems: NavigationItem[] = [
   { href: "/dashboard", label: "Início", icon: BookOpen, exact: true },
   { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
   { href: "/dashboard/aluno-externo", label: "Área externa", icon: GraduationCap },
@@ -37,6 +54,33 @@ import {
   { href: "/dashboard/certificados", label: "Certificados", icon: Award },
   { href: "/dashboard/historico", label: "Histórico", icon: FileText },
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
+];
+
+const teacherNavItems: NavigationItem[] = [
+  { href: "/professor", label: "Visão docente", icon: GraduationCap, exact: true },
+  { href: "/professor/turmas-externas", label: "Turmas externas", icon: FolderKanban },
+  { href: "/professor/alunos", label: "Alunos", icon: Users },
+  { href: "/professor/tarefas", label: "Tarefas", icon: ClipboardCheck },
+  { href: "/professor/progresso-aulas", label: "Progresso de aulas", icon: BarChart3 },
+  { href: "/professor/certificados", label: "Certificados", icon: Award },
+];
+
+const adminNavItems: NavigationItem[] = [
+  { href: "/admin", label: "Visão administrativa", icon: Shield, exact: true },
+  { href: "/admin/usuarios", label: "Pessoas e acessos", icon: Users },
+  { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
+  { href: "/admin/materiais", label: "Materiais", icon: Library },
+  { href: "/admin/atividades", label: "Atividades", icon: CheckSquare },
+  { href: "/admin/blog", label: "Conteúdo e blog", icon: FileText },
+  { href: "/admin/mensagens", label: "Mensagens", icon: MessageSquare },
+  { href: "/admin/certificados", label: "Certificados", icon: FileSignature },
+  { href: "/admin/relatorios-academicos", label: "Relatórios", icon: BarChart3 },
+];
+
+const superadminNavItems: NavigationItem[] = [
+  { href: "/admin/cms", label: "CMS e marca", icon: Settings },
+  { href: "/admin/cupons", label: "Stripe e cupons", icon: WalletCards },
+  { href: "/admin/auditoria", label: "Auditoria", icon: Shield },
 ];
 
 function getInitials(name?: string | null) {
@@ -62,6 +106,7 @@ export default function DashboardLayout({
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { visibleRole } = useRolePreview();
 
   useEffect(() => {
     let mounted = true;
@@ -145,10 +190,23 @@ export default function DashboardLayout({
       ? pathname === href
       : pathname === href || Boolean(pathname?.startsWith(href + "/"));
 
-  const activeTitle = navItems.find(item => isActive(item.href, item.exact))?.label || "Minha Área";
-  const userRole = session?.user?.role || "user";
-  const roleLabel = userRole === "admin" ? "Administrador" : userRole === "professor" ? "Professor(a)" : "Estudante";
-  const roleBadgeColor = userRole === "admin" ? "bg-red-600 text-white" : userRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
+  const actualRole = getEffectiveRole({ email: session?.user?.email, role: session?.user?.role });
+  const canTeach = visibleRole === "professor" || visibleRole === "admin" || visibleRole === "superadmin";
+  const canAdminister = visibleRole === "admin" || visibleRole === "superadmin";
+  const sections = [
+    { label: "Minha aprendizagem", items: studentNavItems },
+    ...(canTeach ? [{ label: "Docência", items: teacherNavItems }] : []),
+    ...(canAdminister ? [{ label: "Administração", items: adminNavItems }] : []),
+    ...(visibleRole === "superadmin" ? [{ label: "Superadministração", items: superadminNavItems }] : []),
+  ];
+  const allNavItems = sections.flatMap((section) => section.items);
+  const activeTitle = allNavItems.find(item => isActive(item.href, item.exact))?.label || "Minha Área";
+  const roleBadgeColor = visibleRole === "superadmin" ? "bg-violet-600 text-white" : visibleRole === "admin" ? "bg-red-600 text-white" : visibleRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
+  const mobileNavItems = visibleRole === "superadmin" || visibleRole === "admin"
+    ? [adminNavItems[0], adminNavItems[1], adminNavItems[2], adminNavItems[7], adminNavItems[8]]
+    : visibleRole === "professor"
+      ? [teacherNavItems[0], teacherNavItems[1], teacherNavItems[2], teacherNavItems[3], teacherNavItems[5]]
+      : [studentNavItems[0], studentNavItems[1], studentNavItems[3], studentNavItems[7], studentNavItems[10]];
   const displayedAvatarUrl = !avatarLoadFailed ? (avatarUrl || session?.user?.image || null) : null;
 
   return (
@@ -167,7 +225,7 @@ export default function DashboardLayout({
               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Para manter o menu superior limpo e focado, os painéis exclusivos de <strong className="text-foreground">Professor</strong> e <strong className="text-foreground">Admin</strong> agora ficam centralizados no final deste menu lateral à esquerda. Você também pode alternar entre eles rapidamente usando os novos atalhos.
+              A navegação agora usa uma única barra lateral. As seções de aprendizado, docência, administração e superadmin aparecem somente quando o seu papel possui acesso autorizado.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -194,7 +252,7 @@ export default function DashboardLayout({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-0.5">
               <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${roleBadgeColor}`}>
-                {roleLabel}
+                {roleLabel(visibleRole)}
               </span>
             </div>
             <p className="font-semibold text-foreground text-sm truncate">{session?.user?.name || "Aluno"}</p>
@@ -202,83 +260,31 @@ export default function DashboardLayout({
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1.5 overflow-y-auto p-4">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href, item.exact);
-            const showWishlistBadge = item.href === "/dashboard/desejos" && wishlistCount > 0;
-            return (
-              <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}>
-                <div
-                  className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
-                    active ? "bg-red-50 text-red-700 shadow-sm shadow-red-900/5 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  <Icon size={19} className={item.href === "/dashboard/desejos" && wishlistPulse ? "animate-pulse" : undefined} />
-                  <span className="flex-1">{item.label}</span>
-                  {showWishlistBadge && (
-                    <span
-                      aria-label={`${wishlistCount} curso(s) salvo(s)`}
-                      className={`min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-[11px] font-black inline-flex items-center justify-center ${wishlistPulse ? "animate-bounce" : ""}`}
-                    >
-                      {wishlistCount > 99 ? "99+" : wishlistCount}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
+        {actualRole === "superadmin" && <div className="border-b border-border/70 px-4 py-3"><RolePreviewToolbar /></div>}
 
-          {/* Seção Exclusiva de Gestão Acadêmica com Atalhos Rápidos */}
-          {(session?.user?.role === "admin" || session?.user?.role === "professor") && (
-            <div className="pt-4 mt-4 border-t border-border/70 space-y-2">
-              <div className="flex items-center justify-between px-4">
-                <p className="text-[11px] font-black uppercase tracking-wider text-muted-foreground">Gestão Acadêmica</p>
-                <button
-                  type="button"
-                  onClick={() => setShowTour(true)}
-                  className="text-muted-foreground hover:text-foreground transition"
-                  title="Ver orientações dos painéis"
-                >
-                  <HelpCircle size={14} />
-                </button>
+        <nav className="flex-1 space-y-4 overflow-y-auto p-4">
+          {sections.map((section) => (
+            <section key={section.label} className="space-y-1.5" aria-label={section.label}>
+              <div className="flex items-center justify-between px-3">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">{section.label}</p>
+                {section.label === "Docência" && <button type="button" onClick={() => setShowTour(true)} className="text-muted-foreground transition hover:text-foreground" title="Ver orientação da navegação"><HelpCircle size={14} /></button>}
               </div>
-
-              <Link href="/professor" onClick={() => setSidebarOpen(false)}>
-                <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/professor") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                  <GraduationCap size={19} />
-                  <span className="flex-1">Painel do Professor</span>
-                </div>
-              </Link>
-
-              {session?.user?.role === "admin" && (
-                <>
-                  <Link href="/admin" onClick={() => setSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${isActive("/admin") ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                      <Shield size={19} />
-                      <span className="flex-1">Painel Admin</span>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href, item.exact);
+                const showWishlistBadge = item.href === "/dashboard/desejos" && wishlistCount > 0;
+                return (
+                  <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}>
+                    <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${active ? "bg-red-50 text-red-700 shadow-sm shadow-red-900/5 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                      <Icon size={19} className={item.href === "/dashboard/desejos" && wishlistPulse ? "animate-pulse" : undefined} />
+                      <span className="flex-1">{item.label}</span>
+                      {showWishlistBadge && <span aria-label={`${wishlistCount} curso(s) salvo(s)`} className={`min-w-5 h-5 px-1.5 rounded-full bg-red-600 text-white text-[11px] font-black inline-flex items-center justify-center ${wishlistPulse ? "animate-bounce" : ""}`}>{wishlistCount > 99 ? "99+" : wishlistCount}</span>}
                     </div>
                   </Link>
-
-                  {/* Atalhos Rápidos de Alternância */}
-                  <div className="grid grid-cols-2 gap-2 pt-1 px-1">
-                    <Link href="/professor" onClick={() => setSidebarOpen(false)} className="bg-muted/60 hover:bg-muted text-foreground text-[11px] font-bold py-1.5 px-2 rounded-lg text-center transition border border-border/60">
-                      ⇄ Ir p/ Professor
-                    </Link>
-                    <Link href="/admin" onClick={() => setSidebarOpen(false)} className="bg-muted/60 hover:bg-muted text-foreground text-[11px] font-bold py-1.5 px-2 rounded-lg text-center transition border border-border/60">
-                      ⇄ Ir p/ Admin
-                    </Link>
-                  </div>
-                  <Link href="/professor/turmas-externas" onClick={() => setSidebarOpen(false)}>
-                    <div className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-xs font-bold transition-all ${isActive("/professor/turmas-externas") ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
-                      <GraduationCap size={16} />
-                      <span className="flex-1">Turmas e alunos externos</span>
-                    </div>
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
+                );
+              })}
+            </section>
+          ))}
         </nav>
 
         <div className="border-t border-border/70 p-4">
@@ -306,13 +312,7 @@ export default function DashboardLayout({
       </div>
 
       <nav className="dashboard-bottom-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_16px_45px_rgba(15,23,42,0.16)] backdrop-blur-xl md:hidden" aria-label="Navegação principal mobile">
-        {[
-          { href: "/dashboard", label: "Início", icon: Home, exact: true },
-          { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
-          { href: "/dashboard/atividades", label: "Atividades", icon: CheckSquare },
-          { href: "/dashboard/certificados", label: "Certificados", icon: Award },
-          { href: "/dashboard/perfil", label: "Perfil", icon: User },
-        ].map(item => {
+        {mobileNavItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
           return (

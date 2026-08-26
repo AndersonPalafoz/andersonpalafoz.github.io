@@ -2463,3 +2463,9 @@
 - [x] Melhorar a ergonomia das páginas de CMS e Stripe para o superadmin, com hierarquia visual, orientações e estados claros.
 - [x] Criar o recurso seguro “Visualizar como” para simular admin ou professor apenas na interface e navegação, sem alterar permissões reais.
 - [x] Adicionar testes de segurança/UX e validar TypeScript, build e responsividade.
+
+## Navegação lateral unificada por papel — 26/08/2026
+- [x] Mapear e unificar os layouts de `/dashboard`, `/professor` e `/admin` em um mesmo shell de navegação lateral.
+- [x] Exibir e ocultar grupos e itens do menu conforme aluno, professor, admin e superadmin.
+- [x] Aplicar o shell às subpáginas docentes e administrativas, mantendo as proteções de rota existentes.
+- [x] Adicionar testes de navegação e permissões, validar mobile, TypeScript e build.
