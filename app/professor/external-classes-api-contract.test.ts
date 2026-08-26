@@ -15,4 +15,11 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("catch (error)");
     expect(routeContent).toContain("status: 500");
   });
+
+  it("mantém a mesma rota disponível aos três níveis de operação autorizados", () => {
+    expect(routeContent).toContain('userRole === "professor"');
+    expect(routeContent).toContain('userRole === "admin"');
+    expect(routeContent).toContain('userRole === "super_admin"');
+    expect(routeContent).toContain("const isGlobalAdmin");
+  });
 });

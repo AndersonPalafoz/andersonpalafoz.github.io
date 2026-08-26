@@ -2475,3 +2475,9 @@
 - [x] Criar cabeçalhos e áreas iniciais mais claras para os painéis administrativo e docente.
 - [x] Ajustar grid, espaçamento, navegação e cartões para telas desktop, tablet e mobile sem rolagem lateral.
 - [x] Adicionar testes de contrato visual, validar TypeScript, build e rotas protegidas.
+
+## Correção de Turmas Externas — 26/08/2026
+- [x] Diagnosticar a falha 500 em `/professor/turmas-externas?tab=students` sem alterar dados existentes.
+- [x] Corrigir a consulta de alunos e preservar o escopo de acesso de professor, admin e superadmin.
+- [x] Confirmar a listagem das turmas e alunos já cadastrados do SIMAL com testes, TypeScript e build.
+- [x] Reproduzir e corrigir a falha transversal para professor, admin e superadmin na mesma consulta de Turmas Externas.
