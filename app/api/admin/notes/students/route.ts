@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { asc, eq, isNull } from "drizzle-orm";
+import { and, asc, eq, ilike, isNull, ne, not, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -13,7 +13,14 @@ export async function GET() {
 
   try {
     const students = await db.query.users.findMany({
-      where: (user, { and }) => and(eq(user.role, "user"), isNull(user.deletedAt)),
+      where: (user) => and(
+        eq(user.role, "user"),
+        isNull(user.deletedAt),
+        or(isNull(user.loginMethod), ne(user.loginMethod, "manual_external")),
+        // Certificados para destinatários não cadastrados usam identidades técnicas.
+        // Elas nunca podem aparecer como alunos com anotações.
+        or(isNull(user.email), not(ilike(user.email, "%@external.placeholder"))),
+      ),
       columns: { id: true, name: true, email: true, role: true, deletedAt: true },
       orderBy: [asc(users.name), asc(users.email)],
     });

@@ -68,14 +68,14 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       certificates: (items || []).map(certificate => {
-        const isManualEntry = isManualExternalUser(certificate.user);
+        const isManualEntry = !certificate.user || isManualExternalUser(certificate.user);
         return {
           id: certificate.id,
-          userId: certificate.userId,
+          userId: certificate.userId ?? null,
           studentName:
-            certificate.user?.name?.trim() || certificate.user?.fullName?.trim() || "Pessoa sem cadastro",
-          studentEmail: getDisplayEmail(certificate.user),
-          studentCpf: certificate.studentCpf || certificate.user?.cpf || "",
+            certificate.recipientName?.trim() || certificate.user?.name?.trim() || certificate.user?.fullName?.trim() || "Pessoa sem cadastro",
+          studentEmail: certificate.recipientEmail || getDisplayEmail(certificate.user),
+          studentCpf: certificate.recipientCpf || certificate.studentCpf || certificate.user?.cpf || "",
           isManualEntry,
           courseId: certificate.courseId,
           courseTitle: certificate.course?.title || "Curso",
