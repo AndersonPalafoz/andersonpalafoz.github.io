@@ -352,11 +352,25 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    await db.delete(certificates).where(inArray(certificates.id, idsToDelete));
+    const existingCertificates = await db
+      .select({ id: certificates.id })
+      .from(certificates)
+      .where(inArray(certificates.id, idsToDelete));
+
+    if (existingCertificates.length === 0) {
+      return NextResponse.json(
+        { error: "Nenhum dos certificados selecionados foi encontrado." },
+        { status: 404 }
+      );
+    }
+
+    const existingIds = existingCertificates.map(certificate => certificate.id);
+    await db.delete(certificates).where(inArray(certificates.id, existingIds));
 
     return NextResponse.json({
       success: true,
-      message: `${idsToDelete.length} certificado(s) excluído(s) com sucesso.`,
+      deletedIds: existingIds,
+      message: `${existingIds.length} certificado(s) excluído(s) com sucesso.`,
     });
   } catch (error: any) {
     console.error("API Error deleting certificate(s):", error);

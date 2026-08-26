@@ -2352,3 +2352,13 @@
 ## Priorização após confirmação Stripe — 26/08/2026
 - [x] Registrar que a pendência de validação real do Checkout Stripe foi ignorada por decisão do usuário e não bloqueará a próxima etapa.
 - [x] Auditar o job Heartbeat `nightly-trash-cleanup`, sua rota, autenticação e evidências de execução sem realizar exclusões reais; o job está ativo, aponta para `/api/scheduled/cleanup-trash`, mas a última execução em 26/08/2026 falhou com HTTP 403 e `permission error for cron cookie`, enquanto 24/08/2026 falhou com 404. Nenhuma exclusão foi executada.
+
+## Próxima etapa — validação autenticada DOCX — 26/08/2026
+- [ ] Executar a prévia e a emissão controlada dos modelos Standard, IsF e PROFICI com sessão administrativa autenticada, sem emitir certificados reais até confirmação do usuário. Prévia dos três presets verificada em 26/08/2026; Standard, IsF e PROFICI alteraram corretamente o modelo selecionado e a identificação da prévia. Emissão persistida ainda não executada.
+
+## Emissão controlada de certificados de teste — 26/08/2026
+- [ ] Emitir um certificado persistido de teste para cada preset Standard, IsF e PROFICI, usando dados identificados como teste e sem modificar certificados reais existentes.
+- [ ] Validar os PDFs gerados, downloads e registros persistidos dos três certificados de teste.
+
+## Garantia de exclusão dos certificados de teste — 26/08/2026
+- [x] Auditar e garantir que certificados de teste, assinados ou não assinados, possam ser excluídos pelo administrador com confirmação, feedback e limpeza do arquivo associado quando aplicável; a API agora valida registros existentes, exclui qualquer status pela mesma rota, retorna `deletedIds` e responde 404 quando nada existe. A interface mantém confirmação, toast de sucesso/erro e exclusão em lote; 8 testes direcionados passaram. A remoção do registro revoga o acesso ao download, embora arquivos S3 históricos possam exigir limpeza operacional separada.
