@@ -2401,3 +2401,4 @@
 ## Regressão runtime no preview — 26/08/2026
 - [x] Diagnosticar e corrigir `Cannot read properties of undefined (reading 'call')` no preview, identificando o módulo/import que quebra o carregamento sem mascarar o erro; o erro estava restrito ao cache/HMR corrompido do watcher local, não a um módulo do fluxo de certificados. O servidor foi reiniciado e voltou a compilar.
 - [x] Revalidar a página, testes e build após a correção e sincronizar o estado corrigido na main; home carregou sem erro, admin redirecionou corretamente para login sem sessão, 52 testes, TypeScript e build passaram, e a main já contém o código auditado.
+- [x] Limpar `.next`, caches de bundler e instâncias duplicadas do servidor, reiniciar o preview e confirmar que o erro `undefined.call` e os arquivos ausentes de `.next/types` não retornam; após a reconstrução, o TypeScript reportou 0 erros e a home renderizou normalmente. As ocorrências anteriores permanecem apenas como histórico no log.
