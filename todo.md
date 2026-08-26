@@ -2371,3 +2371,23 @@
 
 ## Correção de emissão IsF/PROFICI — 26/08/2026
 - [x] Impedir que templates DOCX ou formatos não raster sejam enviados ao parser JPEG/PNG do PDF, usando fallback seguro para a composição oficial e testes de regressão; a composição agora detecta PDF/PNG/JPEG por assinatura, ignora ZIP/DOCX e gera o PDF oficial sem `SOI not found in JPEG`. 9 testes direcionados passaram.
+
+## Auditoria de entidades em certificados — 26/08/2026
+- [x] Verificar se emissão de certificado, cadastro de modelo ou certificados de teste criam registros na tabela de usuários/alunos indevidamente; modelos nunca inserem users, e a emissão foi corrigida para persistir destinatários não cadastrados diretamente em certificates.
+- [x] Rastrear usuários placeholder/external e distinguir alunos reais de identidades técnicas usadas para certificados sem cadastro; a causa foi confirmada no bloco legado de emissão e os placeholders foram diferenciados por `manual_external`/`@external.placeholder`.
+- [x] Corrigir a separação de entidades caso seja encontrada criação indevida e validar o fluxo sem apagar dados reais; a emissão agora não insere users, a identidade fica no certificado e os testes passam.
+
+## Separação de certificados não cadastrados — 26/08/2026
+- [x] Impedir que a emissão de certificado para pessoa não cadastrada crie usuário-placeholder visível nas buscas de alunos, anotações, usuários ou área do aluno; a emissão agora persiste a identidade diretamente no certificado e os endpoints filtram placeholders legados.
+- [x] Preservar os dados do destinatário no próprio certificado e permitir emissão/validação sem conta de acesso; migração TiDB aplicada com userId opcional e campos de destinatário.
+- [ ] Remover com segurança apenas os placeholders dos certificados de teste identificados, sem excluir usuários reais ou alunos externos legítimos.
+- [x] Adicionar testes para garantir que consultas de alunos excluam placeholders `@external.placeholder` e que a emissão não crie novas contas indevidas; 5 testes direcionados passaram.
+
+## Destinatário externo sem conta — 26/08/2026
+- [x] Projetar e implementar a emissão de certificados para destinatários não cadastrados usando identidade própria do certificado, sem inserir linha em `users`; `certificates.userId` tornou-se opcional e foram adicionados `recipientName`, `recipientEmail` e `recipientCpf`.
+- [x] Preservar compatibilidade com certificados existentes, assinaturas, downloads, validação pública e atribuição a usuários cadastrados; certificados internos continuam usando userId e exportações aceitam userId nulo para destinatários externos.
+- [ ] Migrar/ocultar placeholders históricos de teste com segurança e adicionar testes de regressão para impedir novas contas técnicas; novos placeholders estão impedidos e os filtros ocultam os antigos, mas a consulta do banco conectado nesta sessão não retornou registros técnicos para uma remoção histórica segura.
+
+## Limpeza histórica de placeholders — 26/08/2026
+- [x] Confirmar no banco correspondente à produção publicada se os placeholders dos certificados de teste ainda existem antes de qualquer exclusão; a consulta somente leitura do banco conectado retornou zero registros técnicos, portanto nenhuma exclusão foi executada.
+- [ ] Excluir somente placeholders de teste identificados e validar que certificados reais, alunos externos legítimos e modelos não sejam afetados.
