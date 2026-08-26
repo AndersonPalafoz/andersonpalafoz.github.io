@@ -1,8 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, courses, externalClasses, materials } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { users, courses, externalClasses, externalClassTeacherAssignments, materials } from "@/drizzle/schema";
+import { and, eq } from "drizzle-orm";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -79,7 +79,14 @@ export async function canManageExternalClass(session: AdminAuthSession, classId:
   const extClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, classId) });
   if (!extClass) return false;
 
-  return extClass.teacherId === dbUser.id;
+  if (extClass.teacherId === dbUser.id) return true;
+  const assignment = await db.query.externalClassTeacherAssignments.findFirst({
+    where: and(
+      eq(externalClassTeacherAssignments.externalClassId, classId),
+      eq(externalClassTeacherAssignments.teacherId, dbUser.id)
+    ),
+  });
+  return Boolean(assignment);
 }
 
 
@@ -99,4 +106,3 @@ export async function canManageMaterial(session: AdminAuthSession, materialId: n
   }
   return true;
 }
-

@@ -11,7 +11,7 @@ const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 async function requireAdmin() {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email?.toLowerCase();
-  if (!email || (email !== SUPER_ADMIN_EMAIL && session?.user?.role !== "admin")) return null;
+  if (email !== SUPER_ADMIN_EMAIL) return null;
   return db.query.users.findFirst({ where: eq(users.email, email) });
 }
 

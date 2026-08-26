@@ -51,11 +51,30 @@ describe("private report visual consistency", () => {
     expect(source).toContain("bg-muted/50");
   });
 
+  it("keeps real report failures localized and avoids false zero metrics", () => {
+    const source = read("app/admin/relatorios-academicos/page.tsx");
+    expect(source).toContain("Não foi possível carregar os relatórios reais");
+    expect(source).toContain("Consulta indisponível");
+    expect(source).toContain("data ? data.summary.totalStudents : \"—\"");
+    expect(source).toContain("pb-28");
+    expect(source).toContain("Consultando os dados acadêmicos reais");
+    expect(source).toContain("Verifique sua conexão e tente novamente");
+  });
+
   it("tracks detailed report loading and exposes accessible report tabs", () => {
     const source = read("app/admin/relatorios/page.tsx");
     expect(source).toContain("detailsLoading");
     expect(source).toContain("aria-pressed");
     expect(source).toContain("data-table");
     expect(source).toContain("Carregando relatórios administrativos");
+  });
+
+  it("keeps external class failure status distinct from successful synchronization", () => {
+    const source = read("app/professor/turmas-externas/page.tsx");
+    expect(source).toContain("Falha na atualização");
+    expect(source).toContain("loadError ? \"—\" : value");
+    expect(source).toContain("pb-32");
+    expect(source).toContain("Carregando turmas, alunos e indicadores");
+    expect(source).toContain("Não conseguimos carregar suas turmas");
   });
 });

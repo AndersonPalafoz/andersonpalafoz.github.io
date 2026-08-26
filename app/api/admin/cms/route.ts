@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { requireSuperAdmin } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
 import { siteContentBlocks, siteContentRevisions } from "@/drizzle/schema";
 import { eq, desc } from "drizzle-orm";
@@ -9,8 +8,8 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireSuperAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 
@@ -35,8 +34,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireSuperAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 
@@ -144,8 +143,8 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireSuperAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso não autorizado." }, { status: 403 });
     }
 

@@ -505,6 +505,13 @@
       "when": 1787745866695,
       "tag": "0071_boring_angel",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1787760110862,
+      "tag": "0072_external_class_teacher_assignments",
+      "breakpoints": true
     }
   ]
 }

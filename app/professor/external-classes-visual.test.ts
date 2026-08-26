@@ -7,7 +7,7 @@ describe("contrato visual da página de cursos externos", () => {
 
   it("mantém uma hierarquia visual responsiva para o cabeçalho e o conteúdo", () => {
     expect(source).toContain("max-w-[1500px]");
-    expect(source).toContain("text-2xl sm:text-3xl");
+    expect(source).toContain("text-xl leading-tight sm:text-3xl");
     expect(source).toContain("grid-cols-1 lg:grid-cols-3");
     expect(source).toContain("p-4 sm:p-6 lg:p-10");
   });

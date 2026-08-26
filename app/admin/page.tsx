@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BarChart3, BookOpen, FileText, Users, Loader, Award, ShieldCheck, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { canAccessAdminPortal, getEffectiveRole, isSuperadmin, roleLabel } from "@/lib/role-capabilities";
 import { AdminSearchWidget } from "@/components/admin-search-widget";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { AdminCommerceMonitor, type AdminCommerceData } from "@/components/admin-commerce-monitor";
@@ -105,7 +106,7 @@ export default function AdminDashboardPage() {
     if (authLoading) return;
     const email = user?.email?.toLowerCase();
     const role = user?.role;
-    const isAuthorized = email === "palafozanderson@gmail.com" || role === "admin" || role === "super_admin" || role === "professor";
+    const isAuthorized = canAccessAdminPortal({ email, role });
 
     if (!user || !isAuthorized) {
       window.location.href = "/login?callbackUrl=/admin";
@@ -150,6 +151,9 @@ export default function AdminDashboardPage() {
     );
   }
 
+  const effectiveRole = getEffectiveRole({ email: user?.email, role: user?.role });
+  const superadmin = isSuperadmin({ email: user?.email, role: user?.role });
+
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
@@ -158,11 +162,11 @@ export default function AdminDashboardPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <ShieldCheck size={16} />
-              Governança Global & Administração
+              {superadmin ? "Superadministração Global" : "Governança Administrativa"}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do Administrador</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do {roleLabel(effectiveRole)}</h1>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-              Controle global do ecossistema acadêmico, incluindo as operações docentes, gestão de cursos, turmas, avaliações, certificados, lixeira e auditoria.
+              {superadmin ? "Controle global de identidade, CMS, integração financeira e todas as operações acadêmicas." : "Gestão ampla de pessoas, cursos, turmas, avaliações, certificados, moderação e auditoria."}
             </p>
           </div>
           <div className="admin-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
@@ -196,12 +200,12 @@ export default function AdminDashboardPage() {
             >
               Acessos externos
             </Link>
-            <Link
+            {superadmin && <Link
               href="/admin/cms"
               className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
             >
               CMS & Logo
-            </Link>
+            </Link>}
             <Link
               href="/admin/auditoria"
               className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"

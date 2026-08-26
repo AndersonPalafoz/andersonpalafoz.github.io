@@ -54,6 +54,7 @@ export default function TeacherTasksPage() {
   const [activitiesList, setActivitiesList] = useState<Activity[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -92,13 +93,11 @@ export default function TeacherTasksPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const coursesRes = await fetch("/api/professor/courses");
+      setLoadError(null);
+      const [coursesRes, actRes] = await Promise.all([fetch("/api/professor/courses"), fetch("/api/admin/atividades")]);
       const coursesJson = await coursesRes.json();
-      if (coursesRes.ok) {
-        setCourses(coursesJson);
-      }
-
-      const actRes = await fetch("/api/admin/atividades");
+      if (!coursesRes.ok) throw new Error(coursesJson.error || "Não foi possível carregar os cursos.");
+      setCourses(Array.isArray(coursesJson) ? coursesJson : coursesJson.courses || []);
       if (actRes.ok) {
         const actJson = await actRes.json();
         const list = (actJson.activities || actJson || []).map((a: any) => ({
@@ -112,9 +111,15 @@ export default function TeacherTasksPage() {
         const initialExpanded: Record<number, boolean> = {};
         list.forEach((a: Activity) => { initialExpanded[a.id] = true; });
         setExpandedCards(initialExpanded);
+      } else {
+        const errorJson = await actRes.json().catch(() => ({}));
+        throw new Error(errorJson.error || "Não foi possível carregar as tarefas.");
       }
     } catch (err) {
       console.error(err);
+      const message = err instanceof Error ? err.message : "Não foi possível carregar as tarefas.";
+      setLoadError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -406,8 +411,9 @@ export default function TeacherTasksPage() {
               Gerenciamento de Tarefas, Checklists e Anexos
             </h1>
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-              Barra de progresso por card, subtarefas recolhíveis, busca destacada, etiquetas e exportação CSV/PDF.
+              Organize prazos, checklists e materiais de apoio em um único fluxo de acompanhamento.
             </p>
+            <p className={`mt-3 text-xs font-semibold ${darkMode ? "text-gray-500" : "text-gray-400"}`}>{filteredActivities.length} resultado(s) visível(is) de {totalCount} tarefa(s)</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <button
@@ -640,7 +646,11 @@ export default function TeacherTasksPage() {
         {/* Lista de Tarefas (Cards com Arrastar e Soltar, Progresso, Recolhíveis) */}
         <div className="space-y-4">
           {loading ? (
-            <div className="text-center py-12 text-gray-400">Carregando tarefas...</div>
+            <div className="grid gap-4" aria-busy="true" aria-label="Carregando tarefas"><div className="h-44 animate-pulse rounded-2xl bg-gray-200 dark:bg-gray-800" /><div className="h-44 animate-pulse rounded-2xl bg-gray-200 dark:bg-gray-800" /></div>
+          ) : loadError ? (
+            <div className={`rounded-2xl border p-8 text-center ${darkMode ? "border-red-900 bg-red-950/20" : "border-red-200 bg-red-50"}`}>
+              <AlertTriangle className="mx-auto mb-3 text-red-600" size={28} /><p className="font-bold">Não foi possível carregar as tarefas</p><p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{loadError}</p><Button onClick={() => void fetchData()} className="mt-4 bg-red-600 text-white hover:bg-red-700">Tentar novamente</Button>
+            </div>
           ) : filteredActivities.length === 0 ? (
             <div className={`p-12 text-center rounded-2xl border ${darkMode ? "bg-gray-800 border-gray-700 text-gray-400" : "bg-white border-gray-200 text-gray-500"}`}>
               Nenhuma tarefa encontrada.

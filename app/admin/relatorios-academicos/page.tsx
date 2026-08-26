@@ -83,13 +83,19 @@ export default function AcademicReportsPage() {
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
 
-      const res = await fetch(`/api/admin/academic-reports?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch real reports");
-      const json = await res.json();
+      const res = await fetch(`/api/admin/academic-reports?${params.toString()}`, { cache: "no-store" });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || `Não foi possível carregar os relatórios reais (HTTP ${res.status}).`);
+      if (!json || !json.summary || !Array.isArray(json.reports)) throw new Error("A resposta dos relatórios está incompleta.");
       setData(json);
     } catch (err) {
       console.error("Error loading real academic reports:", err);
-      setErrorMessage(err instanceof Error ? err.message : "Não foi possível carregar os relatórios acadêmicos reais.");
+      setData(null);
+      const rawMessage = err instanceof Error ? err.message : "";
+      const friendlyMessage = rawMessage.includes("Failed to fetch") || rawMessage.includes("fetch")
+        ? "Não foi possível conectar ao serviço de relatórios agora. Verifique sua conexão e tente novamente."
+        : rawMessage || "Não foi possível carregar os relatórios acadêmicos reais. Tente novamente em alguns instantes.";
+      setErrorMessage(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -181,8 +187,9 @@ export default function AcademicReportsPage() {
   }
 
   return (
-    <div className="site-shell">
-      {errorMessage && <div role="alert" aria-live="polite" className="mx-auto mt-4 flex max-w-7xl flex-wrap items-center justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700 dark:text-red-200"><span>{errorMessage}</span><button type="button" onClick={() => void fetchReports()} className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs font-bold hover:bg-red-500/10">Tentar novamente</button></div>}
+      <div className="site-shell pb-28" aria-busy={loading}>
+      {loading && <div role="status" aria-live="polite" className="mx-4 mt-4 flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-700 sm:mx-auto dark:text-blue-200"><Loader2 size={15} className="animate-spin" aria-hidden="true" /> Consultando os dados acadêmicos reais…</div>}
+      {errorMessage && <div role="alert" aria-live="polite" className="mx-4 mt-4 flex max-w-7xl flex-col items-start justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700 sm:mx-auto sm:flex-row sm:items-center dark:text-red-200"><span>{errorMessage}</span><button type="button" onClick={() => void fetchReports()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 px-3 py-2 text-xs font-bold hover:bg-red-500/10 disabled:cursor-wait disabled:opacity-60"><Loader2 size={14} className={loading ? "animate-spin" : "hidden"} aria-hidden="true" /> {loading ? "Tentando…" : "Tentar novamente"}</button></div>}
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
@@ -263,8 +270,8 @@ export default function AcademicReportsPage() {
             <Link href="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-red-200 hover:text-white mb-2 transition">
               <ArrowLeft size={14} /> Voltar ao Painel Admin
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold">Relatórios Acadêmicos Reais & Classroom</h1>
-            <p className="text-red-100 text-xs sm:text-sm mt-1">
+            <h1 className="max-w-2xl text-2xl font-black leading-tight text-white sm:text-3xl">Relatórios Acadêmicos Reais & Classroom</h1>
+            <p className="mt-2 max-w-2xl text-xs text-white/85 sm:text-sm">
               Dados 100% reais persistidos no Neon PostgreSQL e sincronizados via Google Classroom API.
             </p>
           </div>
@@ -298,10 +305,10 @@ export default function AcademicReportsPage() {
         <div className="surface-card p-6 border-l-4 border-l-red-600 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <h2 className="text-base font-black text-foreground flex items-center gap-2">
-              <ShieldCheck className="text-red-600" size={20} /> Auditoria de Integridade: Dados 100% Reais
+              <ShieldCheck className="text-red-600" size={20} /> Auditoria de Integridade
             </h2>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-              <CheckCircle2 size={14} /> {data?.classroomSyncStatus.sourceBadge || "Conectando..."}
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${errorMessage ? "border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300" : loading ? "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300" : "border-emerald-500/20 bg-emerald-500/10 text-emerald-600"}`}>
+              <CheckCircle2 size={14} /> {errorMessage ? "Consulta indisponível" : loading ? "Consultando dados..." : data?.classroomSyncStatus.sourceBadge || "Dados verificados"}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
@@ -313,7 +320,7 @@ export default function AcademicReportsPage() {
         {loading && !data ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="surface-card p-5 space-y-3 animate-pulse">
+              <div key={i} role="presentation" className="surface-card p-5 space-y-3 animate-pulse">
                 <div className="h-3 bg-muted rounded w-24" />
                 <div className="h-8 bg-muted rounded w-16" />
                 <div className="h-3 bg-muted rounded w-32" />
@@ -324,22 +331,22 @@ export default function AcademicReportsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="surface-card p-5">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Total de Alunos Reais</p>
-              <p className="text-3xl font-black text-foreground mt-2">{data?.summary.totalStudents || 0}</p>
+              <p className="mt-2 text-3xl font-black text-foreground">{data ? data.summary.totalStudents : "—"}</p>
               <p className="text-xs text-muted-foreground mt-1">Contas ativas na base Neon</p>
             </div>
             <div className="surface-card p-5">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Importados do Classroom</p>
-              <p className="text-3xl font-black text-red-600 mt-2">{data?.summary.classroomImportedCount || 0}</p>
+              <p className="mt-2 text-3xl font-black text-red-600">{data ? data.summary.classroomImportedCount : "—"}</p>
               <p className="text-xs text-red-600 font-semibold mt-1">Sincronizados via API</p>
             </div>
             <div className="surface-card p-5">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Criados Internamente</p>
-              <p className="text-3xl font-black text-blue-600 mt-2">{data?.summary.localCreatedCount || 0}</p>
+              <p className="mt-2 text-3xl font-black text-blue-600">{data ? data.summary.localCreatedCount : "—"}</p>
               <p className="text-xs text-blue-600 font-semibold mt-1">Registrados no site</p>
             </div>
             <div className="surface-card p-5">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Real Consolidada</p>
-              <p className="text-3xl font-black text-emerald-600 mt-2">{data?.summary.averagePlatformGrade || "0.0"}</p>
+              <p className="mt-2 text-3xl font-black text-emerald-600">{data ? data.summary.averagePlatformGrade : "—"}</p>
               <p className="text-xs text-emerald-600 font-semibold mt-1">Baseada em notas do sistema</p>
             </div>
           </div>
@@ -355,6 +362,8 @@ export default function AcademicReportsPage() {
               <div className="h-20 bg-muted rounded-xl" />
               <div className="h-20 bg-muted rounded-xl" />
             </div>
+          ) : errorMessage ? (
+            <div className="rounded-xl border border-dashed border-red-300 bg-red-500/5 p-5 text-sm text-red-700 dark:border-red-900/50 dark:text-red-300">O gráfico ficará disponível assim que a consulta real for concluída com sucesso.</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div className="p-4 rounded-xl bg-muted/40 border border-border/60 space-y-2">

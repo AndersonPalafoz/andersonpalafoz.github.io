@@ -20,7 +20,11 @@ describe("external student access", () => {
   });
 
   it("exposes the external area, profile and unit progress to students", () => {
-    expect(read("app/dashboard/aluno-externo/page.tsx")).toContain("Média mínima atingida");
+    const externalPage = read("app/dashboard/aluno-externo/page.tsx");
+    expect(externalPage).toContain("redirect(\"/login?callbackUrl=/dashboard/aluno-externo\")");
+    expect(externalPage).toContain("Não foi possível carregar suas turmas");
+    expect(externalPage).toContain("Nenhuma turma externa vinculada");
+    expect(externalPage).toContain("Média mínima atingida");
     expect(read("app/dashboard/aluno-externo/page.tsx")).toContain("Editar meu perfil");
     expect(read("app/dashboard/aluno-externo/perfil/page.tsx")).toContain("/api/user/profile");
     expect(read("app/dashboard/dashboard-shell.tsx")).toContain('href: "/dashboard/aluno-externo"');

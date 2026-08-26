@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { isSuperadmin } from "@/lib/role-capabilities";
 
 interface CmsBlock {
   id: number;
@@ -94,14 +95,15 @@ export default function AdminCmsPage() {
 
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canUseCms = isSuperadmin({ email: session?.user?.email, role: session?.user?.role });
 
   useEffect(() => {
     if (authStatus !== "loading") {
-      if (!session?.user || session.user.role !== "admin") {
+      if (!session?.user || !canUseCms) {
         router.replace("/");
       }
     }
-  }, [authStatus, session, router]);
+  }, [authStatus, session?.user, router, canUseCms]);
 
   const fetchBlocks = async () => {
     try {
@@ -118,10 +120,10 @@ export default function AdminCmsPage() {
   };
 
   useEffect(() => {
-    if (session?.user?.role === "admin") {
+    if (canUseCms) {
       void fetchBlocks();
     }
-  }, [session]);
+  }, [canUseCms]);
 
   const recordHistory = (newContent: string) => {
     const updated = history.slice(0, historyIndex + 1);
@@ -354,13 +356,12 @@ export default function AdminCmsPage() {
             <Link href="/admin" className="text-xs font-bold text-red-600 hover:underline flex items-center gap-1.5 mb-2">
               <ArrowLeft size={15} /> Voltar ao Painel Administrativo
             </Link>
-            <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400"><span>Admin</span><span>/</span><span>CMS</span><span>/</span><span className="text-red-600">{activeTab === "content" ? "Conteúdo" : activeTab === "media" ? "Biblioteca de mídia" : "Engajamento"}</span></div>
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-400"><span>Superadmin</span><span>/</span><span>CMS</span><span>/</span><span className="text-red-600">{activeTab === "content" ? "Conteúdo" : activeTab === "media" ? "Biblioteca de mídia" : "Engajamento"}</span></div>
             <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3">
               <Globe className="text-red-600" size={30} /> CMS Global & Biblioteca de Conteúdo
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Gerenciamento universal de conteúdo com histórico de revisões, editor visual rico, status, tags e duplicação em tempo real.
-            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Gerenciamento universal de conteúdo com histórico de revisões, editor visual rico, status, tags e duplicação em tempo real.</p>
+            <p className="mt-2 inline-flex rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-200">Controle exclusivo de superadmin</p>
           </div>
           <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2.5 rounded-2xl">
             <Layers className="text-red-600" size={18} />

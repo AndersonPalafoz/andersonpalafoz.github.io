@@ -11,8 +11,10 @@ async function getTeacherUser(userEmail?: string) {
 
 function courseBelongsToTeacher(course: CourseRow, teacher: TeacherUser | null) {
   if (!teacher || teacher.role !== "professor") return true;
-  const teacherName = teacher.name?.trim();
-  return course.instructor === "Anderson Palafoz" || (Boolean(teacherName) && course.instructor === teacherName);
+  const instructor = course.instructor?.trim().toLowerCase();
+  const teacherName = teacher.name?.trim().toLowerCase();
+  const teacherEmail = teacher.email?.trim().toLowerCase();
+  return Boolean(instructor && (instructor === teacherName || instructor === teacherEmail));
 }
 
 export async function getTeacherDashboardData(userEmail?: string) {

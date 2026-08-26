@@ -24,7 +24,7 @@ interface DetailedReports {
 }
 
 export default function AdminRelatoriosPage() {
-  const { user, isLoading: authLoading } = useAuth(true);
+  const { user, isLoading: authLoading, canAccessAdmin } = useAuth(true);
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [detailedReports, setDetailedReports] = useState<DetailedReports | null>(null);
@@ -34,10 +34,10 @@ export default function AdminRelatoriosPage() {
   const [detailsLoading, setDetailsLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && user && user.role !== "admin") {
+    if (!authLoading && user && !canAccessAdmin) {
       router.replace("/");
     }
-  }, [authLoading, router, user]);
+  }, [authLoading, router, user, canAccessAdmin]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -53,13 +53,13 @@ export default function AdminRelatoriosPage() {
         setLoading(false);
       }
     };
-    if (!authLoading && user?.role === "admin") {
+    if (!authLoading && canAccessAdmin) {
       void fetchStats();
     }
-  }, [authLoading, user]);
+  }, [authLoading, canAccessAdmin]);
 
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") {
+    if (!authLoading && canAccessAdmin) {
       const params = new URLSearchParams();
       if (search.trim()) params.set("search", search.trim());
       void fetch(`/api/admin/reports?${params.toString()}`, { cache: "no-store" }).then(async (res) => {
@@ -67,7 +67,7 @@ export default function AdminRelatoriosPage() {
         setDetailedReports(await res.json());
       }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios.")).finally(() => setDetailsLoading(false));
     }
-  }, [authLoading, user, search]);
+  }, [authLoading, canAccessAdmin, search]);
 
   const exportDetailedCSV = () => {
     if (!detailedReports) return;

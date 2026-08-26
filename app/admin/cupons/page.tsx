@@ -22,7 +22,7 @@ interface CouponRecord {
 }
 
 export default function AdminCouponsPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, isSuperadmin } = useAuth();
   const [coupons, setCoupons] = useState<CouponRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -56,12 +56,12 @@ export default function AdminCouponsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || user.role !== "admin") {
+    if (!user || !isSuperadmin) {
       window.location.href = "/";
       return;
     }
     void loadCoupons();
-  }, [authLoading, user, page, search, status]);
+  }, [authLoading, user, isSuperadmin, page, search, status]);
 
   const resetForm = () => {
     setCode("");
@@ -112,7 +112,7 @@ export default function AdminCouponsPage() {
   if (authLoading || loading) {
     return <div className="site-shell flex min-h-screen items-center justify-center"><Loader2 className="animate-spin text-red-600" size={34} /></div>;
   }
-  if (!user || user.role !== "admin") return null;
+  if (!user || !isSuperadmin) return null;
 
   return (
     <div className="site-shell min-h-screen bg-background pb-16 text-foreground">
@@ -120,7 +120,7 @@ export default function AdminCouponsPage() {
         <div className="page-container py-8">
           <Link href="/admin" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-red-600"><ArrowLeft size={16} /> Painel administrativo</Link>
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div><p className="text-xs font-black uppercase tracking-[0.2em] text-red-600">Stripe · descontos reais</p><h1 className="mt-2 text-3xl font-black tracking-tight">Cupons e descontos</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Crie códigos promocionais no Stripe e mantenha o estado administrativo persistido no Neon. Nenhum cupom de demonstração é criado automaticamente.</p></div>
+            <div><p className="text-xs font-black uppercase tracking-[0.2em] text-violet-700 dark:text-violet-300">Superadmin · Stripe e governança financeira</p><h1 className="mt-2 text-3xl font-black tracking-tight">Cupons e descontos</h1><p className="mt-2 max-w-2xl text-sm text-muted-foreground">Crie códigos promocionais no Stripe e mantenha o estado administrativo persistido no Neon. Nenhum cupom de demonstração é criado automaticamente.</p><span className="mt-3 inline-flex rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-200">Acesso financeiro exclusivo</span></div>
             <Button variant="outline" onClick={() => void loadCoupons()} className="gap-2"><RefreshCw size={15} /> Atualizar</Button>
           </div>
         </div>

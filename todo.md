@@ -2414,3 +2414,46 @@
 - [x] Consultar os IDs e nomes dos certificados explicitamente marcados `TESTE DOCX Standard`, `TESTE DOCX IsF` e `TESTE DOCX PROFICI` no ambiente publicado antes da remoção; a consulta somente leitura retornou zero certificados e zero usuários com `TESTE DOCX`/`@external.placeholder` no banco conectado. A coluna `isActive` não existe nesse ambiente e não foi usada na consulta final.
 - [x] Remover somente esses certificados de teste e seus placeholders técnicos associados, preservando alunos, certificados reais e modelos institucionais; encerrado como no-op seguro porque a consulta no banco conectado retornou zero registros candidatos, portanto nenhuma exclusão foi executada.
 - [x] Confirmar após a limpeza que as listas de alunos/anotações não exibem mais placeholders e que o fluxo oficial continua íntegro; não havia linhas para remover no banco conectado, e os endpoints de alunos/usuários filtram placeholders legados enquanto o fluxo oficial passou nos testes.
+
+## Auditoria da Área Externa — 26/08/2026
+- [x] Verificar a origem da mensagem `Não foi possível carregar seus dados` na Área Externa, incluindo sessão, vínculo do aluno externo, consulta e resposta da API; o fluxo usa sessão NextAuth, vínculo por e-mail e consulta das turmas/notas dentro de try/catch.
+- [x] Diferenciar estado vazio legítimo de erro de autenticação/servidor e melhorar a mensagem/ação exibida ao usuário; login, falha de consulta e ausência de turma agora têm respostas distintas.
+- [x] Corrigir a causa encontrada, adicionar testes e validar a tela em mobile, sem inventar progresso ou alterar dados acadêmicos; contratos externos e docentes passaram e TypeScript ficou sem erros.
+
+## Melhorias em anotações, progresso e tarefas — 26/08/2026
+- [x] Auditar e melhorar `/admin/anotacoes`, `/professor/progresso-aulas` e `/professor/tarefas`, preservando RBAC e dados persistidos.
+- [x] Refinar hierarquia visual, busca/filtros, estados de carregamento/erro/vazio, feedback das ações e responsividade mobile nas três páginas.
+- [x] Adicionar/atualizar testes direcionados e validar TypeScript, build e fluxos sem mutações acidentais.
+
+## Correção de relatórios e turmas externas — 26/08/2026
+- [x] Diagnosticar e corrigir o erro `Failed to fetch real reports`/HTTP 500 nas páginas de relatórios e turmas externas, preservando dados reais e permissões.
+- [x] Corrigir estados contraditórios de carregamento, erro e métricas zeradas, além de melhorar contraste, espaço inferior e navegação mobile.
+- [x] Adicionar testes direcionados e validar TypeScript, build e visual responsivo após a correção.
+
+## Feedback de carregamento e erro — 26/08/2026
+- [x] Adicionar feedback visual de carregamento mais claro em Relatórios Acadêmicos e Turmas Externas.
+- [x] Revisar mensagens de erro para linguagem amigável, ação de retry e estados acessíveis sem zeros enganosos.
+- [x] Atualizar testes e validar TypeScript, build e visual responsivo.
+
+## Acesso e atribuição de Turmas Externas — 26/08/2026
+- [x] Corrigir a falha de consulta em `/professor/turmas-externas` e tornar o estado de erro coerente no mobile.
+- [x] Criar vínculo persistente de atribuição de turmas externas a um ou mais professores, migrado e verificado no banco principal Neon.
+- [x] Garantir que professores vejam e operem somente turmas próprias ou atribuídas, enquanto administradores mantêm acesso total.
+- [x] Adicionar controles administrativos para atribuir e remover professores de uma turma externa, com testes de autorização e build.
+
+## Hierarquia de Governança nas Subpáginas — 26/08/2026
+- [x] Mapear e centralizar permissões de superadmin, admin, professor e aluno nas rotas e APIs existentes.
+- [x] Diferenciar as capacidades exclusivas de superadmin, a gestão ampla de admin, o escopo vinculado do professor e o acesso individual do aluno.
+- [x] Atualizar navegação, ações e mensagens das subpáginas para exibir somente controles compatíveis com cada papel.
+- [x] Adicionar testes de isolamento de permissões, validar build e revisar a responsividade do painel administrativo.
+
+## Reestruturação contínua dos painéis — 26/08/2026
+- [x] Auditar as subpáginas administrativas e docentes prioritárias para identificar hierarquia visual, navegação e ações incoerentes com o papel.
+- [x] Criar componentes reutilizáveis de contexto, navegação e estado por papel para admin, superadmin e professor.
+- [x] Reestruturar as páginas prioritárias com interface mais clara, responsiva e orientada à ação.
+- [x] Reforçar a autorização das rotas e ações revisadas, com testes, TypeScript, build e validação visual.
+
+## Atalhos diretos por área — 26/08/2026
+- [x] Auditar a navegação atual de superadmin, administrador e professor em desktop e mobile.
+- [x] Criar atalhos persistentes e contextuais entre as áreas permitidas para cada papel.
+- [x] Validar permissões, responsividade, testes, TypeScript e build dos novos atalhos.

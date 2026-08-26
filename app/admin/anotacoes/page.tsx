@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, FileText, Loader, Search, ShieldAlert, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Loader, Search, ShieldAlert, Trash2, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
@@ -28,19 +28,21 @@ interface NoteRecord {
 export default function AdminNotesPage() {
   const [students, setStudents] = useState<StudentOption[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
+  const [studentsError, setStudentsError] = useState(false);
   const [query, setQuery] = useState("");
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
   const [studentLabel, setStudentLabel] = useState<string>("");
   const [notes, setNotes] = useState<NoteRecord[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(false);
+  const [notesError, setNotesError] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<NoteRecord | null>(null);
 
   useEffect(() => {
     fetch("/api/admin/notes/students")
       .then(async (r) => { if (!r.ok) throw new Error(); return r.json(); })
-      .then((data) => setStudents(data.students || []))
-      .catch(() => toast.error("Não foi possível carregar a lista de alunos."))
+      .then((data) => { setStudents(data.students || []); setStudentsError(false); })
+      .catch(() => { setStudentsError(true); toast.error("Não foi possível carregar a lista de alunos."); })
       .finally(() => setLoadingStudents(false));
   }, []);
 
@@ -56,6 +58,7 @@ export default function AdminNotesPage() {
     setSelectedStudentId(studentId);
     setStudentLabel(label);
     setQuery("");
+    setNotesError(false);
     setLoadingNotes(true);
     try {
       const res = await fetch(`/api/admin/notes?studentId=${studentId}`);
@@ -63,6 +66,7 @@ export default function AdminNotesPage() {
       const data = await res.json();
       setNotes(data.notes || []);
     } catch {
+      setNotesError(true);
       toast.error("Não foi possível carregar as anotações desse aluno.");
     } finally {
       setLoadingNotes(false);
@@ -88,18 +92,29 @@ export default function AdminNotesPage() {
   return (
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8 pb-16">
-        <div>
-          <Link href="/admin" className="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400">
+                  <div>
+            <Link href="/admin" className="inline-flex items-center gap-1 text-xs font-bold text-red-600 hover:text-red-700 dark:text-red-400">
             <ArrowLeft size={14} /> Voltar ao Painel Admin
           </Link>
           <h1 className="mt-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Anotações dos Alunos</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            Busque um aluno para ver as anotações de aula dele. Excluir uma anotação por aqui preserva o texto original
-            para fins de auditoria, mas o aluno passa a ver um aviso de que ela foi removida por um administrador.
-          </p>
-        </div>
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground sm:text-base">
+              Busque um aluno para consultar as anotações de aula. A remoção administrativa é registrada como soft delete:
+              o aluno vê o aviso, enquanto o conteúdo original permanece restrito à auditoria.
+            </p>
+          </div>
 
-        <div className="surface-card space-y-4 rounded-3xl p-6 sm:p-8">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="surface-card flex items-center gap-3 rounded-2xl p-4">
+              <span className="rounded-xl bg-red-50 p-2.5 text-red-600 dark:bg-red-950/30 dark:text-red-400"><Users size={18} /></span>
+              <div><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Alunos disponíveis</p><p className="text-xl font-black text-foreground">{students.length}</p></div>
+            </div>
+            <div className="surface-card flex items-center gap-3 rounded-2xl p-4">
+              <span className="rounded-xl bg-amber-50 p-2.5 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"><ShieldAlert size={18} /></span>
+              <div><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Área de auditoria</p><p className="text-sm font-bold text-foreground">Exclusões preservadas</p></div>
+            </div>
+          </div>
+
+          <div className="surface-card space-y-4 rounded-3xl p-6 sm:p-8">
           <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Buscar aluno</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
@@ -111,6 +126,12 @@ export default function AdminNotesPage() {
               className="w-full rounded-2xl border border-border bg-background px-10 py-3 text-sm outline-none focus:border-red-500"
             />
           </div>
+          {studentsError && (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">Não foi possível consultar os alunos agora. Atualize a página e tente novamente.</div>
+          )}
+          {!loadingStudents && !studentsError && query.trim() && filteredStudents.length === 0 && (
+            <p className="rounded-2xl border border-dashed border-border p-4 text-sm text-muted-foreground">Nenhum aluno encontrado para “{query}”.</p>
+          )}
           {filteredStudents.length > 0 && (
             <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
               {filteredStudents.map((s) => (
@@ -129,11 +150,14 @@ export default function AdminNotesPage() {
 
         {selectedStudentId && (
           <div className="space-y-4">
-            <h2 className="text-lg font-black text-foreground">Anotações de {studentLabel}</h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div><p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Aluno selecionado</p><h2 className="text-lg font-black text-foreground">Anotações de {studentLabel}</h2></div>
+              <button type="button" onClick={() => { setSelectedStudentId(null); setNotes([]); setStudentLabel(""); }} className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted"><X size={14} /> Limpar seleção</button>
+            </div>
             {loadingNotes ? (
-              <div className="flex justify-center rounded-2xl border border-border bg-card p-12">
-                <Loader className="animate-spin text-red-600" />
-              </div>
+              <div className="grid gap-3 sm:grid-cols-2"><div className="h-36 animate-pulse rounded-2xl bg-muted" /><div className="h-36 animate-pulse rounded-2xl bg-muted" /></div>
+            ) : notesError ? (
+              <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">Não foi possível carregar as anotações. Selecione o aluno novamente ou atualize a página.</div>
             ) : notes.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-sm text-muted-foreground">
                 <FileText className="mx-auto mb-3 text-muted-foreground" />

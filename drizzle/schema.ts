@@ -917,6 +917,37 @@ export const externalClasses = pgTable("external_classes", {
 export type ExternalClass = typeof externalClasses.$inferSelect;
 export type InsertExternalClass = typeof externalClasses.$inferInsert;
 
+/**
+ * Professores com acesso delegado a uma turma externa. O professor criador
+ * continua registrado em externalClasses.teacherId; esta tabela permite que
+ * administradores compartilhem a operação da turma com outros professores.
+ */
+export const externalClassTeacherAssignments = pgTable(
+  "external_class_teacher_assignments",
+  {
+    id: serial("id").primaryKey(),
+    externalClassId: integer("externalClassId")
+      .notNull()
+      .references(() => externalClasses.id, { onDelete: "cascade" }),
+    teacherId: integer("teacherId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    assignedBy: integer("assignedBy").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalClassTeacherUnique: uniqueIndex("external_class_teacher_assignments_unique").on(
+      table.externalClassId,
+      table.teacherId
+    ),
+  })
+);
+
+export type ExternalClassTeacherAssignment = typeof externalClassTeacherAssignments.$inferSelect;
+export type InsertExternalClassTeacherAssignment = typeof externalClassTeacherAssignments.$inferInsert;
+
 export const externalStudents = pgTable("external_students", {
   id: serial("id").primaryKey(),
   externalClassId: integer("externalClassId")
