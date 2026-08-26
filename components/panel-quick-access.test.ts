@@ -10,9 +10,9 @@ const adminMobileNav = readFileSync(resolve(root, "components/admin-mobile-nav.t
 
 describe("atalhos diretos entre áreas", () => {
   it("filtra atalhos administrativos, docentes e exclusivos de superadmin pela capacidade efetiva", () => {
-    expect(quickAccess).toContain("canAccessAdminPortal");
-    expect(quickAccess).toContain("canAccessProfessorPortal");
-    expect(quickAccess).toContain("isSuperadmin");
+    expect(quickAccess).toContain("useRolePreview");
+    expect(quickAccess).toContain("visibleRole");
+    expect(quickAccess).toContain("superadminOnly");
     expect(quickAccess).toContain('href: "/admin/cms"');
     expect(quickAccess).toContain('href: "/professor"');
   });
