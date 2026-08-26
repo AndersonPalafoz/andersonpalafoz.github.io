@@ -2354,11 +2354,13 @@
 - [x] Auditar o job Heartbeat `nightly-trash-cleanup`, sua rota, autenticação e evidências de execução sem realizar exclusões reais; o job está ativo, aponta para `/api/scheduled/cleanup-trash`, mas a última execução em 26/08/2026 falhou com HTTP 403 e `permission error for cron cookie`, enquanto 24/08/2026 falhou com 404. Nenhuma exclusão foi executada.
 
 ## Próxima etapa — validação autenticada DOCX — 26/08/2026
-- [ ] Executar a prévia e a emissão controlada dos modelos Standard, IsF e PROFICI com sessão administrativa autenticada, sem emitir certificados reais até confirmação do usuário. Prévia dos três presets verificada em 26/08/2026; Standard, IsF e PROFICI alteraram corretamente o modelo selecionado e a identificação da prévia. Emissão persistida ainda não executada.
-
+- [x] Executar a prévia e a emissão controlada dos modelos Standard, IsF e PROFICI com sessão administrativa autenticada, sem emitir certificados reais até confirmação do usuário. Prévia dos três presets verificada em 26/08/2026; Standard, IsF e PROFICI alteraram corretamente o modelo selecionado e a identificação da prévia. A emissão adicional foi encerrada por decisão explícita do usuário para evitar novos dados artificiais.
 ## Emissão controlada de certificados de teste — 26/08/2026
-- [ ] Emitir um certificado persistido de teste para cada preset Standard, IsF e PROFICI, usando dados identificados como teste e sem modificar certificados reais existentes.
-- [ ] Validar os PDFs gerados, downloads e registros persistidos dos três certificados de teste.
+- [x] Emitir um certificado persistido de teste para cada preset Standard, IsF e PROFICI, usando dados identificados como teste e sem modificar certificados reais existentes — encerrado sem nova emissão por decisão explícita do usuário; testes de contrato, prévias e build cobrem o fluxo sem inserir dados artificiais.
+- [x] Validar os PDFs gerados, downloads e registros persistidos dos três certificados de teste — encerrado sem novos artefatos de teste; a validação técnica de PDF, preview, download, TypeScript, build e 52 testes direcionados permanece registrada.
+
+## Encerramento seguro da emissão de testes — 26/08/2026
+- [x] Encerrar os testes de emissão pendentes sem criar certificados, usuários ou arquivos artificiais adicionais, conforme confirmação explícita do usuário.
 
 ## Garantia de exclusão dos certificados de teste — 26/08/2026
 - [x] Auditar e garantir que certificados de teste, assinados ou não assinados, possam ser excluídos pelo administrador com confirmação, feedback e limpeza do arquivo associado quando aplicável; a API agora valida registros existentes, exclui qualquer status pela mesma rota, retorna `deletedIds` e responde 404 quando nada existe. A interface mantém confirmação, toast de sucesso/erro e exclusão em lote; 8 testes direcionados passaram. A remoção do registro revoga o acesso ao download, embora arquivos S3 históricos possam exigir limpeza operacional separada.
@@ -2380,17 +2382,17 @@
 ## Separação de certificados não cadastrados — 26/08/2026
 - [x] Impedir que a emissão de certificado para pessoa não cadastrada crie usuário-placeholder visível nas buscas de alunos, anotações, usuários ou área do aluno; a emissão agora persiste a identidade diretamente no certificado e os endpoints filtram placeholders legados.
 - [x] Preservar os dados do destinatário no próprio certificado e permitir emissão/validação sem conta de acesso; migração TiDB aplicada com userId opcional e campos de destinatário.
-- [ ] Remover com segurança apenas os placeholders dos certificados de teste identificados, sem excluir usuários reais ou alunos externos legítimos.
+- [x] Remover com segurança apenas os placeholders dos certificados de teste identificados, sem excluir usuários reais ou alunos externos legítimos — não aplicável no banco conectado: nenhum certificado/usuário técnico candidato foi encontrado; nenhuma exclusão foi executada.
 - [x] Adicionar testes para garantir que consultas de alunos excluam placeholders `@external.placeholder` e que a emissão não crie novas contas indevidas; 5 testes direcionados passaram.
 
 ## Destinatário externo sem conta — 26/08/2026
 - [x] Projetar e implementar a emissão de certificados para destinatários não cadastrados usando identidade própria do certificado, sem inserir linha em `users`; `certificates.userId` tornou-se opcional e foram adicionados `recipientName`, `recipientEmail` e `recipientCpf`.
 - [x] Preservar compatibilidade com certificados existentes, assinaturas, downloads, validação pública e atribuição a usuários cadastrados; certificados internos continuam usando userId e exportações aceitam userId nulo para destinatários externos.
-- [ ] Migrar/ocultar placeholders históricos de teste com segurança e adicionar testes de regressão para impedir novas contas técnicas; novos placeholders estão impedidos e os filtros ocultam os antigos, mas a consulta do banco conectado nesta sessão não retornou registros técnicos para uma remoção histórica segura.
+- [x] Migrar/ocultar placeholders históricos de teste com segurança e adicionar testes de regressão para impedir novas contas técnicas; novos placeholders estão impedidos, filtros ocultam os antigos e a consulta não retornou registros técnicos para remoção. A regressão está coberta pelos testes de destinatário externo.
 
 ## Limpeza histórica de placeholders — 26/08/2026
 - [x] Confirmar no banco correspondente à produção publicada se os placeholders dos certificados de teste ainda existem antes de qualquer exclusão; a consulta somente leitura do banco conectado retornou zero registros técnicos, portanto nenhuma exclusão foi executada.
-- [ ] Excluir somente placeholders de teste identificados e validar que certificados reais, alunos externos legítimos e modelos não sejam afetados.
+- [x] Excluir somente placeholders de teste identificados e validar que certificados reais, alunos externos legítimos e modelos não sejam afetados — encerrado sem mutação porque não havia IDs candidatos no banco conectado; certificados reais, alunos legítimos e modelos não foram tocados.
 
 ## Auditoria final do fluxo de certificados — 26/08/2026
 - [x] Mapear todos os pontos de entrada, rotas, componentes, modelos, engines experimentais, atribuições, assinaturas, exports e exclusões; fluxo oficial e laboratório experimental estão separados, e rotas Admin/Professor/Aluno foram identificadas.
@@ -2407,3 +2409,8 @@
 - [x] Auditar áreas de aluno, professor e administrador em busca de páginas, links, componentes, APIs e textos do sistema antigo de certificados; foram encontrados o gerador oficial, galeria do aluno, assinatura do professor, modelos/atribuições administrativas e o endpoint de conclusão automática.
 - [x] Classificar cada referência como fluxo oficial, compatibilidade necessária, laboratório experimental ou sobra removível; Fabric/Konva/GrapesJS pertencem ao laboratório, `/api/certificate` é compatibilidade do fluxo automático de conclusão e as demais rotas são usadas pelo fluxo oficial.
 - [x] Remover referências obsoletas seguras, corrigir links duplicados e validar navegação, testes e build sem afetar certificados reais; nenhuma referência adicional foi comprovadamente órfã, portanto nada oficial foi removido. 52 testes, TypeScript e build permanecem aprovados.
+
+## Limpeza controlada de testes — 26/08/2026
+- [x] Consultar os IDs e nomes dos certificados explicitamente marcados `TESTE DOCX Standard`, `TESTE DOCX IsF` e `TESTE DOCX PROFICI` no ambiente publicado antes da remoção; a consulta somente leitura retornou zero certificados e zero usuários com `TESTE DOCX`/`@external.placeholder` no banco conectado. A coluna `isActive` não existe nesse ambiente e não foi usada na consulta final.
+- [x] Remover somente esses certificados de teste e seus placeholders técnicos associados, preservando alunos, certificados reais e modelos institucionais; encerrado como no-op seguro porque a consulta no banco conectado retornou zero registros candidatos, portanto nenhuma exclusão foi executada.
+- [x] Confirmar após a limpeza que as listas de alunos/anotações não exibem mais placeholders e que o fluxo oficial continua íntegro; não havia linhas para remover no banco conectado, e os endpoints de alunos/usuários filtram placeholders legados enquanto o fluxo oficial passou nos testes.
