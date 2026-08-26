@@ -33,6 +33,7 @@ export function StudentCertificatesGallery() {
   const [levelFilter, setLevelFilter] = useState("all");
   const [modelFilter, setModelFilter] = useState("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const [batchDownloading, setBatchDownloading] = useState(false);
 
   useEffect(() => {
     async function fetchCertificates() {
@@ -76,6 +77,35 @@ export function StudentCertificatesGallery() {
       return sortOrder === "newest" ? -difference : difference;
     });
   }, [certificates, searchQuery, levelFilter, modelFilter, sortOrder]);
+
+  const handleDownloadAll = async () => {
+    if (certificates.length === 0 || batchDownloading) return;
+    setBatchDownloading(true);
+    try {
+      const response = await fetch("/api/user/certificates/batch-download", {
+        method: "GET",
+        cache: "no-store",
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || "Não foi possível preparar o download.");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `meus-certificados-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Todos os seus certificados foram reunidos em um ZIP.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível baixar os certificados.");
+    } finally {
+      setBatchDownloading(false);
+    }
+  };
 
   const handleExportHistoryPdf = () => {
     const printWindow = window.open("", "_blank");
@@ -166,7 +196,7 @@ export function StudentCertificatesGallery() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
+      <div className="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-black text-foreground">
             Histórico de Conquistas & Certificados
@@ -176,13 +206,23 @@ export function StudentCertificatesGallery() {
             de conclusão.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={handleExportHistoryPdf}
-          className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-700 shadow-sm"
-        >
-          <FileText size={15} /> Exportar Histórico em PDF
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleDownloadAll}
+            disabled={batchDownloading || certificates.length === 0}
+            className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+          >
+            <Download size={15} /> {batchDownloading ? "Preparando ZIP..." : "Baixar todos em ZIP"}
+          </button>
+          <button
+            type="button"
+            onClick={handleExportHistoryPdf}
+            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-700 shadow-sm"
+          >
+            <FileText size={15} /> Exportar Histórico em PDF
+          </button>
+        </div>
       </div>
 
       <div className="grid gap-4 surface-card p-4 border border-border/70 rounded-2xl sm:grid-cols-2 lg:grid-cols-4">
