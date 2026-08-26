@@ -5,6 +5,7 @@ import { verifyPassword } from "./password";
 import { db } from "./db";
 import { eventLogs, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { getAuthSecret } from "./auth-secret";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -170,7 +171,7 @@ export const authOptions: NextAuthOptions = {
     updateAge: 12 * 60 * 60,
   },
   jwt: {
-    secret: process.env.NEXTAUTH_SECRET || "fallback-secret-for-development",
+    secret: getAuthSecret(),
     maxAge: 7 * 24 * 60 * 60,
   },
   cookies: {

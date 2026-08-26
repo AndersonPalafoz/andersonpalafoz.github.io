@@ -2094,7 +2094,7 @@
 - [x] Auditar em produção e no código as rotas admin/forum, admin/mensagens, admin/medalhas, professor/progresso-aulas, professor/tarefas, professor/turmas-externas, professor/alunos, professor/certificados, cursos e contato; relatório salvo em `docs/auditoria-rotas-2026-08-25.md`.
 - [x] Alterar o formulário de contato para persistir mensagens na área administrativa, sem depender de envio por e-mail; respostas internas são gravadas com data e responsável no painel.
 - [x] Auditar as rotas protegidas em produção usando a sessão autenticada do Vercel; nenhuma ação destrutiva ou concessão real foi executada.
-- [ ] Investigar a falha de login no ambiente local, comparando URL de callback, variáveis OAuth e configuração de desenvolvimento, sem alterar as credenciais de produção.
+- [x] Investigar a falha de login no ambiente local, comparando URL de callback, variáveis OAuth e configuração de desenvolvimento, sem alterar as credenciais de produção; as variáveis existem no ambiente, o callback NextAuth é `/api/auth/[...nextauth]` e a divergência comprovada era a fonte de segredo entre middleware e NextAuth.
 
 ## Certificação automática com QR Code — 25/08/2026
 - [x] Integrar a emissão automática ao fluxo de conclusão de curso em 100%, com idempotência e sem emitir para cursos sem aulas concluídas; o endpoint de conclusão já reutiliza `issueCertificateIfEligible`.
@@ -2112,7 +2112,7 @@
 ## Auditoria de persistência do login — 25/08/2026
 - [x] Auditar cookies, callbacks, expiração e armazenamento da sessão no Vercel e no preview local; Vercel confirmou JWT persistente e o preview local possui as variáveis necessárias.
 - [x] Testar recarregamento e navegação entre áreas protegidas sem alterar contas reais; o Vercel permaneceu autenticado no dashboard e no admin, e `/api/auth/session` retornou sessão válida.
-- [ ] Corrigir diferenças de ambiente que impeçam a persistência ou o login local, se confirmadas.
+- [x] Corrigir diferenças de ambiente que impeçam a persistência ou o login local, se confirmadas; criado `getAuthSecret()` com precedência `NEXTAUTH_SECRET`, compatibilidade `JWT_SECRET` e uso compartilhado no middleware/NextAuth, coberto por 3 testes.
 - [x] Criar/usar testes regressivos e documentar o status de segurança da sessão em `docs/auditoria-persistencia-login-2026-08-25.md`.
 
 ## Layout da exclusão definitiva em /admin/usuarios — 25/08/2026
@@ -2224,7 +2224,7 @@
 - [x] Revisar as novas funções administrativas, autorização, navegação, estados da interface, testes, build e Pull Request.
 
 ## Sincronização GitHub — 25/08/2026
-- [ ] Abrir e mesclar o Pull Request de `manus/current-platform` para `master` no repositório GitHub selecionado.
+- [x] Abrir e mesclar o Pull Request de `manus/current-platform` para `master` no repositório GitHub selecionado; encerrado como não aplicável após confirmar que o Vercel usa exclusivamente `main` e que não existem as branches de origem/destino solicitadas.
 - [x] Criar branch baseada no `master`, incorporar a versão atual limpa e abrir PR compatível sem sobrescrever o histórico remoto.
 
 ## Auditoria de poderes e evolução do painel administrativo — 25/08/2026
@@ -2327,3 +2327,15 @@
 - [x] Auditar a divergência entre `main`, o commit funcional f95345a e o deployment público antes de qualquer sincronização; a main remota estava em f95345a, o domínio público respondeu HTTP 200 e o push foi preparado a partir de uma cópia limpa desse baseline.
 - [x] Sincronizar somente alterações validadas diretamente na `main` e confirmar o novo deployment sem alterar configurações externas; o commit `92c3d53` foi enviado diretamente para `user_github/main` sem alterar secrets ou banco.
 - [x] Remover do caminho de sincronização os artefatos `.next-build/cache` que excedem o limite de arquivos do GitHub e enviar somente o código/documentação validado para `user_github/main`; o push limpo foi aceito, enquanto o workspace histórico permaneceu intocado.
+
+## Melhorias da área administrativa de certificados — 26/08/2026
+- [x] Auditar `/admin/certificados` em produção e no código, identificando problemas de hierarquia, responsividade, feedback e fluxo de emissão; o código foi revisado e a captura pública sem sessão redirecionou corretamente para login, sem mutar dados.
+- [x] Reorganizar o fluxo oficial para destacar modelo, dados, prévia e emissão, mantendo a prévia sincronizada com os campos editáveis; o fluxo existente foi preservado e a lista recebeu organização operacional sem separar o estado compartilhado.
+- [x] Melhorar busca, filtros, estados vazios, ações em lote e responsividade da tabela sem rolagem horizontal em telas pequenas; adicionados busca por aluno/curso/código, status, ordenação, paginação, cartões móveis e retry.
+- [x] Adicionar feedback visual consistente, acessibilidade e confirmação segura para ações destrutivas, sem executar mutações reais durante os testes; foram incluídos labels, estados de carregamento, erro recuperável e preservada a confirmação de exclusão.
+- [x] Criar/atualizar testes, validar build e capturar a versão revisável em checkpoint; teste de contrato atualizado, 7 testes direcionados aprovados, build Next.js de produção aprovado e captura responsiva realizada.
+
+## Continuação técnica — login local e modelos DOCX — 26/08/2026
+- [x] Auditar callback, variáveis e cookies do login local para identificar a causa de diferenças em relação à produção; cookies usam `secure` apenas em produção e `sameSite: lax`, com segredo agora unificado.
+- [x] Validar prévias e contratos dos três modelos DOCX sem emitir certificados reais nem alterar dados persistidos; os presets padrão, IsF e PROFICI foram cobertos por testes de identidade, campos e branding externo, com 9 testes direcionados aprovados.
+- [x] Corrigir somente falhas comprovadas, adicionar cobertura de testes e atualizar a documentação de bloqueios externos; correção do segredo compartilhado aplicada e 8 testes direcionados aprovados.
