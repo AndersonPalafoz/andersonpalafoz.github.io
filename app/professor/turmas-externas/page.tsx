@@ -177,6 +177,7 @@ export default function TurmasExternasPage() {
   const [availableTeachers, setAvailableTeachers] = useState<TeacherOption[]>([]);
   const [assignmentDrafts, setAssignmentDrafts] = useState<Record<number, number[]>>({});
   const [savingAssignmentId, setSavingAssignmentId] = useState<number | null>(null);
+  const [assignmentFeedback, setAssignmentFeedback] = useState<Record<number, { type: "info" | "success" | "error"; message: string }>>({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<{ status?: number; title: string; message: string; action?: string } | null>(null);
   const [operationFeedback, setOperationFeedback] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
@@ -408,11 +409,13 @@ export default function TurmasExternasPage() {
       const next = checked ? Array.from(new Set([...selected, teacherId])) : selected.filter((id) => id !== teacherId);
       return { ...current, [classId]: next };
     });
+    setAssignmentFeedback((current) => ({ ...current, [classId]: { type: "info", message: "Alterações pendentes. Salve para atualizar o acesso dos professores." } }));
   };
 
   const saveTeacherAssignments = async (cls: ExternalClassItem) => {
     try {
       setSavingAssignmentId(cls.id);
+      setAssignmentFeedback((current) => ({ ...current, [cls.id]: { type: "info", message: "Atualizando os acessos dos professores…" } }));
       const response = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -421,13 +424,16 @@ export default function TurmasExternasPage() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível atualizar os professores atribuídos.");
       notifySuccess(data.message || "Professores atribuídos à turma.");
+      setAssignmentFeedback((current) => ({ ...current, [cls.id]: { type: "success", message: data.message || "Atribuições salvas com sucesso. Os novos acessos já estão ativos." } }));
       setAssignmentDrafts((current) => {
         const { [cls.id]: ignored, ...rest } = current;
         return rest;
       });
       await loadClasses();
     } catch (error) {
-      notifyError(error instanceof Error ? error.message : "Não foi possível atualizar os professores atribuídos.");
+      const message = error instanceof Error ? error.message : "Não foi possível atualizar os professores atribuídos.";
+      notifyError(message);
+      setAssignmentFeedback((current) => ({ ...current, [cls.id]: { type: "error", message } }));
     } finally {
       setSavingAssignmentId(null);
     }
@@ -2203,6 +2209,7 @@ export default function TurmasExternasPage() {
                 const activeTab = activeTabByClass[cls.id] || "students";
                 const classDate = attendanceDate[cls.id] || new Date().toISOString().split("T")[0];
                 const currentStatuses = attendanceStatuses[cls.id] || {};
+                const assignmentState = assignmentFeedback[cls.id];
 
                 return (
                   <div key={cls.id} className="group rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] dark:shadow-none space-y-6 transition duration-200 hover:border-red-200 dark:hover:border-red-900/60 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
@@ -2259,6 +2266,15 @@ export default function TurmasExternasPage() {
                               })}
                             </div>
                             {availableTeachers.length === 0 && <p className="mt-3 rounded-xl bg-white/70 p-2.5 font-semibold text-violet-800 dark:bg-slate-900/70 dark:text-violet-200">Não há professores ativos disponíveis para atribuição.</p>}
+                            {(savingAssignmentId === cls.id || assignmentState) && (
+                              <p
+                                role={assignmentState?.type === "error" ? "alert" : "status"}
+                                aria-live="polite"
+                                className={`mt-3 rounded-xl border px-3 py-2 text-[11px] font-bold ${savingAssignmentId === cls.id || assignmentState?.type === "info" ? "border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200" : assignmentState?.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200" : "border-red-200 bg-red-50 text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"}`}
+                              >
+                                {savingAssignmentId === cls.id ? "Atualizando os acessos dos professores…" : assignmentState?.message}
+                              </p>
+                            )}
                             <button
                               type="button"
                               onClick={() => void saveTeacherAssignments(cls)}
