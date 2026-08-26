@@ -112,7 +112,7 @@ export async function uploadLearningAudio(
 }
 
 export async function uploadCertificatePdf(
-  userId: number,
+  userId: number | null,
   courseId: number,
   bytes: Uint8Array
 ) {
@@ -121,7 +121,8 @@ export async function uploadCertificatePdf(
     mimeTypes: ["application/pdf"],
     fileSizeLimit: 5 * 1024 * 1024,
   });
-  const objectPath = `users/${userId}/courses/${courseId}/${crypto.randomUUID()}.pdf`;
+  const ownerPath = userId == null ? `external/${crypto.randomUUID()}` : `users/${userId}`;
+  const objectPath = `${ownerPath}/courses/${courseId}/${crypto.randomUUID()}.pdf`;
   const { error } = await supabase.storage
     .from(CERTIFICATE_BUCKET)
     .upload(objectPath, bytes, {

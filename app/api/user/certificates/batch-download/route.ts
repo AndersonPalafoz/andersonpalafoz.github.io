@@ -17,13 +17,16 @@ type BatchRequest = { certificateIds?: unknown };
 
 type CertificateRow = {
   id: number;
-  userId: number;
+  userId: number | null;
   level: string | null;
   certificateCode: string | null;
   issuedAt: Date | null;
   signedPdfUrl: string | null;
   certificateUrl: string | null;
   studentName: string | null;
+  recipientName: string | null;
+  recipientEmail: string | null;
+  recipientCpf: string | null;
   courseTitle: string | null;
   workloadHours: number | null;
   courseId: number;
@@ -57,6 +60,9 @@ async function readCertificates(ids: number[]): Promise<CertificateRow[]> {
       signedPdfUrl: certificates.signedPdfUrl,
       certificateUrl: certificates.certificateUrl,
       studentName: users.name,
+      recipientName: certificates.recipientName,
+      recipientEmail: certificates.recipientEmail,
+      recipientCpf: certificates.recipientCpf,
       courseTitle: courses.title,
       workloadHours: courses.workloadHours,
       courseId: certificates.courseId,
@@ -89,6 +95,7 @@ async function buildZip(rows: CertificateRow[], fallbackStudentName: string) {
 
   for (const row of rows) {
     const title = row.courseTitle || "Curso";
+    const studentName = row.studentName || row.recipientName || fallbackStudentName;
     const baseName = `Certificado_${title.replace(/[^a-zA-Z0-9À-ÿ]+/g, "_").replace(/^_+|_+$/g, "") || "Curso"}`;
     let fileName = `${baseName}_${row.id}.pdf`;
     let suffix = 2;
@@ -103,7 +110,7 @@ async function buildZip(rows: CertificateRow[], fallbackStudentName: string) {
       pdfBytes = new Uint8Array(await response.arrayBuffer());
     } else {
       pdfBytes = await buildCertificatePdf({
-        studentName: row.studentName || fallbackStudentName || "Aluno",
+        studentName: studentName || "Aluno",
         courseTitle: title,
         level: row.level || "Geral",
         issuedAt: row.issuedAt || new Date(),

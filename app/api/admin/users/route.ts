@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { deleteUserPermanently } from "@/lib/db";
 import { users } from "@/drizzle/schema";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, ne, not, or } from "drizzle-orm";
 import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -59,6 +59,10 @@ export async function GET() {
     }
 
     const allUsers = await db.query.users.findMany({
+      where: and(
+        or(isNull(users.loginMethod), ne(users.loginMethod, "manual_external")),
+        or(isNull(users.email), not(ilike(users.email, "%@external.placeholder"))),
+      ),
       orderBy: [desc(users.createdAt)],
     });
 

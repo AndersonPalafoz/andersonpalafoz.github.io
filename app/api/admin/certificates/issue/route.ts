@@ -91,6 +91,7 @@ export async function POST(request: NextRequest) {
     let userId = body.userId ? Number(body.userId) : null;
     const directStudentName = typeof body.studentName === "string" ? body.studentName.trim() : "";
     const directStudentEmail = typeof body.studentEmail === "string" ? body.studentEmail.trim() : "";
+    const directStudentCpf = typeof body.studentCpf === "string" ? body.studentCpf.trim() : "";
     
     const customCourseTitle = typeof body.customCourseTitle === "string" ? body.customCourseTitle.trim() : "";
     const customCourseLevel = typeof body.customCourseLevel === "string" ? body.customCourseLevel.trim() : "Geral";
@@ -125,38 +126,20 @@ export async function POST(request: NextRequest) {
     const requestedBranding = parseOptionalBoolean(body.includeSiteBranding);
 
     let student: any = null;
+    let externalRecipient: { name: string; email: string | null; cpf: string | null } | null = null;
     if (userId) {
       student = await db.query.users.findFirst({ where: eq(users.id, userId) });
-    } else if (directStudentName) {
-      const placeholderEmail = directStudentEmail || `nao-cadastrado-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@external.placeholder`;
-      const existingPlaceholder = await db.query.users.findFirst({
-        where: eq(users.email, placeholderEmail),
-      });
-      if (existingPlaceholder) {
-        student = existingPlaceholder;
-        userId = student.id;
-      } else {
-        const placeholderOpenId = `manual-ext-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const insertedUsers = await db
-          .insert(users)
-          .values({
-            openId: placeholderOpenId,
-            name: directStudentName,
-            email: placeholderEmail,
-            role: "user",
-            loginMethod: "manual_external",
-            approvalStatus: "approved",
-          })
-          .returning({ id: users.id });
-        const insertedUser = insertedUsers[0];
-        userId = insertedUser.id;
-        student = {
-          id: insertedUser.id,
-          name: directStudentName,
-          email: placeholderEmail,
-          cpf: null,
-        };
+      if (!student) {
+        return NextResponse.json({ error: "Aluno cadastrado não encontrado." }, { status: 404 });
       }
+    } else if (directStudentName) {
+      // Destinatários sem cadastro são persistidos no certificado, não em users.
+      externalRecipient = {
+        name: directStudentName,
+        email: directStudentEmail || null,
+        cpf: directStudentCpf || null,
+      };
+      student = { name: directStudentName, email: directStudentEmail || null, cpf: directStudentCpf || null };
     }
 
     let course: any = null;
@@ -201,7 +184,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!userId || !courseId || !course) {
+    if (courseId == null || !courseId || !course) {
       return NextResponse.json(
         { error: "Aluno ou curso não encontrado para a emissão." },
         { status: 404 }
@@ -247,7 +230,7 @@ export async function POST(request: NextRequest) {
     const issuedAt = new Date();
     const pdfBytes = await buildCertificatePdf({
       studentName: student.name || directStudentName,
-      studentCpf: (student as { cpf?: string | null }).cpf || undefined,
+      studentCpf: (student as { cpf?: string | null }).cpf || externalRecipient?.cpf || undefined,
       courseTitle: course?.title || customCourseTitle,
       level: course?.level || "Não informado",
       workloadHours: course?.workloadHours || customWorkloadHours,
@@ -265,12 +248,11 @@ export async function POST(request: NextRequest) {
     const uploaded = await uploadCertificatePdf(userId, courseId, pdfBytes);
     const certificateUrl = uploaded.url;
 
-    const existing = await db.query.certificates.findFirst({
-      where: and(
-        eq(certificates.userId, userId),
-        eq(certificates.courseId, courseId)
-      ),
-    });
+    const existing = userId
+      ? await db.query.certificates.findFirst({
+          where: and(eq(certificates.userId, userId), eq(certificates.courseId, courseId)),
+        })
+      : null;
 
     let certificateRecord: any = null;
     if (existing) {
@@ -283,6 +265,9 @@ export async function POST(request: NextRequest) {
           issuedAt: new Date(),
           certificateTemplateId: templateId,
           includeSiteBranding,
+          recipientName: externalRecipient?.name ?? null,
+          recipientEmail: externalRecipient?.email ?? null,
+          recipientCpf: externalRecipient?.cpf ?? null,
         })
         .where(eq(certificates.id, existing.id))
         .returning();
@@ -293,6 +278,9 @@ export async function POST(request: NextRequest) {
         .values({
           userId,
           courseId,
+          recipientName: externalRecipient?.name ?? null,
+          recipientEmail: externalRecipient?.email ?? null,
+          recipientCpf: externalRecipient?.cpf ?? null,
           level: course?.level || customCourseLevel || "Geral",
           certificateUrl,
           certificateCode: verificationCode,

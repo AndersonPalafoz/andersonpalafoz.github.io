@@ -289,8 +289,13 @@ export type InsertArticle = typeof articles.$inferInsert;
  */
 export const certificates = pgTable("certificates", {
   id: serial("id").primaryKey(),
-  userId: serial("userId").notNull(),
-  courseId: serial("courseId").notNull(),
+  /** Nulo para destinatários externos sem conta na plataforma. */
+  userId: integer("userId").references(() => users.id),
+  courseId: integer("courseId").notNull(),
+  /** Identidade independente do destinatário quando userId é nulo. */
+  recipientName: varchar("recipientName", { length: 255 }),
+  recipientEmail: varchar("recipientEmail", { length: 320 }),
+  recipientCpf: varchar("recipientCpf", { length: 20 }),
   level: varchar("level", { length: 50 }).notNull(),
   issuedAt: timestamp("issuedAt").defaultNow().notNull(),
   certificateUrl: varchar("certificateUrl", { length: 500 }),
