@@ -19,8 +19,8 @@ describe("admin certificate workflow", () => {
   it("uses operational metadata and explains the stage/editor distinction", () => {
     const page = read("app/admin/certificados/page.tsx");
     expect(page).toContain('title: "Certificados | Administração"');
-    expect(page).toContain("3 etapas de trabalho · 4 opções de editor");
-    expect(page).toContain("Os editores técnicos ficam disponíveis no laboratório experimental.");
+    expect(page).toContain("3 etapas oficiais · laboratório experimental separado");
+    expect(page).toContain("O laboratório com Fabric, Konva e GrapesJS permanece separado para experimentação e não participa da emissão oficial.");
   });
 
   it("keeps the issued certificate list searchable, filterable and mobile-friendly", () => {
