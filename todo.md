@@ -2457,3 +2457,9 @@
 - [x] Auditar a navegação atual de superadmin, administrador e professor em desktop e mobile.
 - [x] Criar atalhos persistentes e contextuais entre as áreas permitidas para cada papel.
 - [x] Validar permissões, responsividade, testes, TypeScript e build dos novos atalhos.
+
+## Feedback, superadmin e visualização por papel — 26/08/2026
+- [x] Adicionar feedback visual acessível de sucesso, erro e processamento na atribuição de professores a turmas externas.
+- [x] Melhorar a ergonomia das páginas de CMS e Stripe para o superadmin, com hierarquia visual, orientações e estados claros.
+- [x] Criar o recurso seguro “Visualizar como” para simular admin ou professor apenas na interface e navegação, sem alterar permissões reais.
+- [x] Adicionar testes de segurança/UX e validar TypeScript, build e responsividade.
