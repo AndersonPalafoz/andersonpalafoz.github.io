@@ -126,7 +126,13 @@ export default function AdminCouponsPage() {
         </div>
       </header>
 
-      <main className="page-container grid gap-6 py-8 lg:grid-cols-[360px_1fr]">
+      <main className="page-container py-8">
+        <section className="mb-6 grid gap-3 rounded-3xl border border-violet-200 bg-violet-50/70 p-4 dark:border-violet-900/60 dark:bg-violet-950/20 sm:grid-cols-3 sm:p-5" aria-label="Fluxo seguro de cupons">
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">1 · Configurar</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Escolha um desconto percentual ou fixo; os dois não podem coexistir.</p></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">2 · Limitar</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Defina resgates e validade quando a campanha exigir controle.</p></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">3 · Acompanhar</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Desative cupons quando necessário; a operação é sincronizada com Stripe.</p></div>
+        </section>
+        <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <section className="rounded-3xl border border-border bg-card p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-3"><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600"><Plus size={20} /></div><div><h2 className="font-black">Novo cupom</h2><p className="text-xs text-muted-foreground">Sincronizado no Stripe</p></div></div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,6 +155,7 @@ export default function AdminCouponsPage() {
           {coupons.length === 0 ? <div className="rounded-2xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground">Nenhum cupom persistido corresponde aos filtros atuais.</div> : <div className="space-y-3">{coupons.map((coupon) => <article key={coupon.id} className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><code className="rounded-lg bg-slate-900 px-2.5 py-1 text-sm font-black tracking-wide text-white">{coupon.code}</code><span className={`rounded-full px-2.5 py-1 text-[10px] font-black uppercase ${coupon.active ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{coupon.active ? "Ativo" : "Inativo"}</span></div><p className="mt-2 text-sm font-semibold">{coupon.percentOff ? `${coupon.percentOff}% de desconto` : `${(Number(coupon.amountOff || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} de desconto`}</p><div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground"><span className="inline-flex items-center gap-1"><CalendarClock size={13} /> Criado em {new Date(coupon.createdAt).toLocaleDateString("pt-BR")}</span>{coupon.maxRedemptions && <span>Limite: {coupon.maxRedemptions}</span>}{coupon.redeemBy && <span>Expira: {new Date(coupon.redeemBy).toLocaleString("pt-BR")}</span>}</div></div>{coupon.active && <Button variant="outline" onClick={() => void handleDeactivate(coupon)} disabled={deactivatingId === coupon.id} className="gap-2 border-red-200 text-red-700 hover:bg-red-50">{deactivatingId === coupon.id ? <Loader2 className="animate-spin" size={15} /> : <Power size={15} />} Desativar</Button>}</article>)}          </div>}
           <div className="mt-5 flex items-center justify-between border-t border-border pt-4"><span className="text-xs text-muted-foreground">Página {page} · {coupons.length} registro(s) carregado(s)</span><div className="flex gap-2"><Button type="button" variant="outline" onClick={() => setPage((current) => Math.max(1, current - 1))} disabled={page === 1 || loading} aria-label="Página anterior"><ChevronLeft size={15} /></Button><Button type="button" variant="outline" onClick={() => setPage((current) => current + 1)} disabled={!hasMore || loading} aria-label="Próxima página"><ChevronRight size={15} /></Button></div></div>
         </section>
+        </div>
       </main>
     </div>
   );
