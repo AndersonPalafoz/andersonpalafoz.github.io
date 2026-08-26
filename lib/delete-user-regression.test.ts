@@ -16,4 +16,19 @@ describe("exclusive permanente de usuário", () => {
       functionSource.indexOf(".delete(schema.users)")
     );
   });
+
+  it("mantém a exclusão atômica e bloqueia referências institucionais antes de limpar dados pessoais", () => {
+    const source = readFileSync(join(process.cwd(), "lib/db.ts"), "utf8");
+    const functionStart = source.indexOf("export async function deleteUserPermanently");
+    const functionSource = source.slice(functionStart, source.indexOf("\n}\n", functionStart) + 3);
+
+    expect(functionSource).toContain("return await db.transaction(async (tx) =>");
+    expect(functionSource).toContain("const blockingChecks");
+    expect(functionSource.indexOf("const blockingChecks")).toBeLessThan(
+      functionSource.indexOf(".delete(schema.directMessages)")
+    );
+    expect(functionSource.indexOf(".delete(schema.directMessages)")).toBeLessThan(
+      functionSource.indexOf("return await tx.delete(schema.users)")
+    );
+  });
 });

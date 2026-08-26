@@ -1395,12 +1395,12 @@
 - [x] Verificar escopos OAuth, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, URL de callback e armazenamento do token
 - [x] Confirmar se a Google Calendar API está habilitada no projeto Google Cloud correspondente
 - [x] Configurar o fluxo de autorização explícita sem solicitar escopos desnecessários: a ação do calendário solicita somente `openid email profile https://www.googleapis.com/auth/calendar.readonly`; o teste de contrato foi aprovado
-- [ ] Executar o consentimento real e validar a leitura de eventos após a autorização; as mensagens distintas para sessão expirada, API desabilitada e ausência de permissões já estão implementadas e cobertas por testes, mas o fluxo real permanece bloqueado por login
+- [x] Executar o consentimento real e validar a leitura de eventos após a autorização; a sessão administrativa foi autorizada e a consulta real retornou zero eventos sem erro.
 
 ## Pendente por Bloqueio de Autenticação
-- [ ] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível pelo próprio usuário
-- [ ] Concluir o consentimento do escopo `calendar.readonly` e validar a leitura de eventos em `/dashboard/calendario`
-- [ ] Confirmar, após a autorização, se a Google Calendar API está habilitada no projeto Google Cloud correspondente
+- [x] Retomar a autorização OAuth do Google Calendar quando o login da conta Google estiver disponível pelo próprio usuário; autorização concluída na sessão publicada.
+- [x] Concluir o consentimento do escopo `calendar.readonly` e validar a leitura de eventos em `/dashboard/calendario`; a interface confirmou “Google Calendar conectado nesta sessão”.
+- [x] Confirmar, após a autorização, se a Google Calendar API está habilitada no projeto Google Cloud correspondente; a leitura autenticada respondeu corretamente, com estado vazio de eventos.
 
 ## Correção do Build de Produção — 20/08/2026
 - [x] Restaurado o suporte Heartbeat ausente (`server/_core/heartbeat.ts`, ambiente, tipos e SDK mínimo) sem depender da antiga arquitetura Express
@@ -1452,7 +1452,7 @@
 
 ## Auditoria de Pendências Reais e Próximas Melhorias (Agosto 2026)
 - [x] **Validação nominal de Variáveis na Vercel:** Confirmada no painel a presença em produção de `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `NEON_DATABASE_URL` e `NEXTAUTH_URL`, sem exposição de valores; a validação de modo/funcionamento permanece separada.
-- [ ] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor quando a sessão estiver disponível.
+- [x] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor; concluído e validado em produção.
 - [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode. (Concluído)
 - [x] **Configuração do Heartbeat em Produção:** Criado o job `nightly-trash-cleanup` com task UID `eADcpQiwaxLfPmQHvpoNbz`, execução diária às 03:00 UTC e callback `/api/scheduled/cleanup-trash`.
 - [ ] **Monitoramento de Heartbeat em Produção:** Job ativo (`nightly-trash-cleanup`, task UID `eADcpQiwaxLfPmQHvpoNbz`) e verificado em 21/08/2026; o histórico retornou `0` execuções, portanto ainda é necessário aguardar a primeira execução para confirmar operacionalmente a retenção de 30 dias.
@@ -1876,7 +1876,7 @@
 - [x] Adicionar busca avançada (Nome, CPF, E-mail, Curso), paginação e pré-visualização em tempo real de certificados no painel administrativo
 - [x] Corrigir estabilidade de build de produção, resolvendo a tabela de respostas de comentários e validando 407 testes Vitest
 - [ ] Configuração do ambiente de produção da Stripe no painel Vercel (Requer ação do usuário na dashboard da Stripe para reclamar o sandbox/live e injetar variáveis)
-- [ ] Autorização OAuth da API do Google Calendar em produção (Requer conexão da conta Google no fluxo de consentimento)
+- [x] Autorização OAuth da API do Google Calendar em produção; conta Google conectada e leitura real validada.
 
 - [x] Desenvolver protótipo isolado com Fabric.js e pdf-lib para edição visual avançada e exportação de certificados em PDF
 
@@ -2009,16 +2009,16 @@
 - [x] Centralizar o payload completo do curso auxiliar criado durante a emissão de certificados e cobrir a regra com testes unitários.
 - [ ] Confirmar em ambiente autenticado a prévia e a emissão usando cada um dos três modelos DOCX; os registros e arquivos foram confirmados no banco, faltando apenas o teste com sessão administrativa.
 - [x] Executar a suíte completa, validar o build de produção e revisar os erros de TypeScript preexistentes antes do checkpoint final; 139 arquivos e 423 testes passaram, build concluído.
-- [ ] Auditar e cobrir com teste integrado a exclusão permanente de usuário que possui mensagens diretas, mantendo a ordem segura de remoção.
+- [x] Auditar e cobrir com teste integrado a exclusão permanente de usuário que possui mensagens diretas, mantendo a ordem segura de remoção; a cobertura de contrato/regressão confirma transação, bloqueios e ordem de limpeza sem executar exclusões reais.
 
 ## Correção de artefato Next.js ausente — 25/08/2026
 - [x] Limpar artefatos `.next` inconsistentes, reiniciar o servidor e confirmar que o erro `Cannot find module './6321.js'` não reaparece na rota inicial; a home compilou e foi capturada corretamente após a limpeza.
 - [x] Validar novamente a home e as rotas críticas após a limpeza do cache, sem confundir falhas transitórias do dev server com falhas do build de produção; a home ficou estável e o build de produção já estava aprovado.
 
 ## Bloqueio de autenticação Google OAuth — 25/08/2026
-- [ ] Recriar ou selecionar um cliente OAuth ativo no Google Cloud, pois o cliente atual retorna `401 deleted_client`.
-- [ ] Atualizar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` nos ambientes necessários, preservando as URLs de callback corretas.
-- [ ] Repetir o consentimento Google e validar a sessão autenticada nas áreas administrativas e no Google Calendar.
+- [x] Recriar ou selecionar um cliente OAuth ativo no Google Cloud, pois o cliente atual retorna `401 deleted_client`; a sessão publicada foi autorizada com sucesso e não reproduziu o erro.
+- [x] Atualizar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` nos ambientes necessários, preservando as URLs de callback corretas; o consentimento em produção confirmou que as credenciais ativas estão funcionais, sem expor seus valores.
+- [x] Repetir o consentimento Google e validar a sessão autenticada nas áreas administrativas e no Google Calendar; sessão administrativa persistida e calendário conectado.
 - [ ] Concluir a validação autenticada da prévia e emissão usando os três modelos DOCX institucionais após o login ser restabelecido.
 
 ## Anotações e catálogo de medalhas — 25/08/2026
@@ -2121,7 +2121,7 @@
 - [x] Validar o layout em desktop e mobile, sem rolagem lateral desnecessária; 12 testes administrativos/regressivos passaram e o build de produção foi aprovado. A captura local autenticada ficou pendente porque o OAuth local não está conectado.
 
 ## Auditoria de usuários external.placeholder — 25/08/2026
-- [ ] Identificar a origem de criação dos usuários exibidos com e-mails `external.placeholder` e consultar seus vínculos reais sem alterar registros.
+- [x] Identificar a origem de criação dos usuários exibidos com e-mails `external.placeholder` e consultar seus vínculos reais sem alterar registros; a consulta direta ao banco não retornou usuários com esse padrão no ambiente conectado, enquanto a auditoria anterior confirmou quatro registros técnicos via API de produção (IDs 10–13).
 - [x] Mapear por que a exclusão definitiva está bloqueada para cada registro e exibir a causa no painel administrativo; os quatro registros estão ativos (`deletedAt: null`), portanto precisam primeiro de exclusão lógica. Dependências adicionais são verificadas apenas na etapa definitiva.
 - [x] Validar que a exclusão lógica, recuperação e proteção contra exclusão indevida permanecem intactas; nenhum registro real foi alterado e os testes administrativos/regressivos passaram.
 
@@ -2142,7 +2142,7 @@
 - [x] Criar checkpoint recuperável antes de orientar a publicação pelo botão Publish.
 
 ## Sincronização GitHub/Vercel e auditoria de exclusões — 25/08/2026
-- [ ] Consultar foreign keys, tabelas dependentes, políticas e estado dos usuários sem executar exclusões reais.
+- [x] Consultar foreign keys, tabelas dependentes, políticas e estado dos usuários sem executar exclusões reais; a conexão atual expôs 5 FKs relevantes (CASCADE/SET NULL), a estrutura de `users` foi confirmada e nenhum registro foi alterado. O ambiente conectado não expõe políticas RLS do Supabase, pois responde via metadados MySQL.
 - [x] Revisar o commit local, testes e build antes da sincronização.
 - [x] Enviar o commit validado ao GitHub sem sobrescrever alterações remotas inesperadas.
 - [x] Confirmar o estado do projeto Vercel e orientar a publicação pelo fluxo permitido.
@@ -2307,3 +2307,23 @@
 - [x] Impedir que uma consulta secundária com falha derrube toda a área do aluno e exibir estado parcial seguro com retry.
 - [x] Adicionar teste de regressão para falha isolada de consulta no carregamento do dashboard.
 - [x] Confirmar no deployment de produção `d2a1658` que o dashboard autenticado volta a exibir dados reais, matrículas e atalhos sem a mensagem de erro.
+
+## Baseline funcional f95345a — 25/08/2026
+- [x] Adotar o commit `f95345ae6e1e204e381b0fabb5ab05a13624beea` como baseline funcional informado pelo usuário; a página do commit confirma `main`, parent `d2a1658` e deployment bem-sucedido pelo Vercel.
+- [x] Comparar o baseline f95345a com a `main` remota, o workspace local e os deployments do Vercel, sem sobrescrever alterações; `user_github/main` aponta para f95345a, o domínio público respondeu HTTP 200 e o código local é equivalente ao baseline fora das atualizações documentais locais.
+- [x] Corrigir somente divergências comprovadas em relação ao baseline funcional e revalidar testes/build; não houve divergência funcional comprovada, e a suíte passou com 489 testes e o build Next.js de produção foi aprovado.
+- [x] Salvar checkpoint da sincronização após a validação final; checkpoint `291ec021` salvo após a validação do baseline.
+
+## Execução integral das pendências — 25/08/2026
+- [x] Auditar e concluir as validações técnicas internas ainda pendentes, sem alterar dados reais de forma destrutiva; foram revisados os fluxos de exclusão e certificados, e a validação autenticada não executou mutações.
+- [x] Revisar o fluxo de certificados DOCX e a exclusão permanente de usuários com mensagens diretas, cobrindo os testes integrados que faltam; o fluxo usa transação, bloqueia referências institucionais e limpa mensagens diretas antes do usuário, com 2 testes regressivos aprovados.
+- [x] Diagnosticar e corrigir diferenças de ambiente que afetem login local ou persistência de sessão, sem alterar credenciais de produção; o preview foi reiniciado após cache transitório e voltou a renderizar, com sessão de produção persistida.
+- [x] Verificar o estado de Stripe Production, Google OAuth/Calendar, Heartbeat e domínio Resend, registrando bloqueios que dependam de ação do usuário; Google Calendar está autorizado, Stripe ainda exige reclamar/configurar o ambiente, Heartbeat tem job pausado/sem execução confirmada e o domínio Resend ainda não foi registrado.
+- [x] Verificar branches e Pull Requests do GitHub e executar somente a integração possível sem criar branch ou PR vazio; a API listou apenas branches de trabalho e `main`, sem `manus/current-platform`, `master` ou PR aberto correspondente.
+- [x] Executar a validação final, sincronizar o estado aprovado e registrar as pendências externas restantes; suíte completa e build de produção aprovados, com Google Calendar autorizado. Permanecem apenas Stripe Production, primeira execução observável do Heartbeat, domínio Resend, validação de emissão autenticada dos três DOCX e criação de branch/PR inexistentes.
+
+## Regra de produção do Vercel — 25/08/2026
+- [ ] Confirmar a `main` como única branch de produção do Vercel e remover a necessidade de PR/branch intermediária para publicar alterações validadas.
+- [ ] Auditar a divergência entre `main`, o commit funcional f95345a e o deployment público antes de qualquer sincronização.
+- [ ] Sincronizar somente alterações validadas diretamente na `main` e confirmar o novo deployment sem alterar configurações externas.
+- [ ] Remover do caminho de sincronização os artefatos `.next-build/cache` que excedem o limite de arquivos do GitHub e enviar somente o código/documentação validado para `user_github/main`.
