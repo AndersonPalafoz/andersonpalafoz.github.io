@@ -9,6 +9,10 @@ const routeSource = readFileSync(
   new URL("../app/api/admin/certificates/route.ts", import.meta.url),
   "utf8"
 );
+const certificateCompatibilityMigration = readFileSync(
+  new URL("../drizzle/migrations/0075_certificate_external_recipient_compatibility.sql", import.meta.url),
+  "utf8"
+);
 
 describe("gerenciador administrativo de certificados", () => {
   it("exibe badges claros para certificados com e sem a marca do site", () => {
@@ -58,5 +62,12 @@ describe("gerenciador administrativo de certificados", () => {
     expect(routeSource).toContain("recipientName");
     expect(routeSource).toContain("studentEmail: certificate.recipientEmail || getDisplayEmail(certificate.user)");
     expect(routeSource).toContain("isManualExternalUser");
+  });
+
+  it("preserva a migração de compatibilidade para destinatários externos", () => {
+    expect(certificateCompatibilityMigration).toContain('"recipientName"');
+    expect(certificateCompatibilityMigration).toContain('"recipientEmail"');
+    expect(certificateCompatibilityMigration).toContain('"recipientCpf"');
+    expect(certificateCompatibilityMigration).toContain('ALTER COLUMN "userId" DROP NOT NULL');
   });
 });
