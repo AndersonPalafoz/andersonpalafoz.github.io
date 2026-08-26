@@ -2367,4 +2367,7 @@
 - [x] Mapear geração, atribuição, prévia, emissão, assinatura, download e exclusão nos painéis Admin, Professor e Aluno; o gerador oficial é compartilhado pelo Admin, a gestão de assinatura pelo Professor/Admin e a galeria/download pelo Aluno.
 - [x] Identificar e remover somente sobras comprovadamente obsoletas, protótipos não utilizados e dados de teste explicitamente identificados; quatro scripts `.tmp` de templates/DOCX sem uso no runtime foram removidos. Fabric, Konva e GrapesJS foram preservados por ainda estarem acessíveis no laboratório experimental.
 - [x] Simplificar a interface para deixar o Gerador Oficial como fluxo principal e separar claramente laboratório experimental, modelos e assinaturas; a página agora explicita “3 etapas oficiais · laboratório experimental separado” e informa que as engines não participam da emissão oficial.
-- [ ] Validar testes, estados vazios, navegação e sincronização da limpeza com a main.
+- [x] Validar testes, estados vazios, navegação e sincronização da limpeza com a main; estados vazios e navegação foram verificados no painel publicado, 16 testes do fluxo passaram e a limpeza foi sincronizada na main no commit 0183ea0.
+
+## Correção de emissão IsF/PROFICI — 26/08/2026
+- [x] Impedir que templates DOCX ou formatos não raster sejam enviados ao parser JPEG/PNG do PDF, usando fallback seguro para a composição oficial e testes de regressão; a composição agora detecta PDF/PNG/JPEG por assinatura, ignora ZIP/DOCX e gera o PDF oficial sem `SOI not found in JPEG`. 9 testes direcionados passaram.

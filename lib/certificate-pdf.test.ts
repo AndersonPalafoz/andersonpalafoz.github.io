@@ -27,6 +27,15 @@ describe("certificado PDF", () => {
     expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
   });
 
+  it("ignora bytes DOCX no fundo e gera uma composição PDF segura", async () => {
+    const bytes = await buildCertificatePdf({
+      ...baseInput,
+      templateBackgroundBytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
+    });
+    expect(bytes.length).toBeGreaterThan(500);
+    expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
+  });
+
   it("preserva um template PDF de terceiros e aplica os campos configurados", async () => {
     const template = await PDFDocument.create();
     template.addPage([842, 595]);

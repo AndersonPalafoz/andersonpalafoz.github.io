@@ -63,6 +63,22 @@ export interface CertificatePdfInput {
   >;
 }
 
+function hasSignature(bytes: Uint8Array, signature: number[]) {
+  return signature.every((byte, index) => bytes[index] === byte);
+}
+
+function isPdf(bytes: Uint8Array) {
+  return hasSignature(bytes, [0x25, 0x50, 0x44, 0x46]);
+}
+
+function isPng(bytes: Uint8Array) {
+  return hasSignature(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+}
+
+function isJpeg(bytes: Uint8Array) {
+  return hasSignature(bytes, [0xff, 0xd8, 0xff]);
+}
+
 function drawTextAt(
   page: PDFPage,
   font: PDFFont,
@@ -87,22 +103,24 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   const hasTemplate = Boolean(input.templateBackgroundBytes?.length);
   const composition = input.composition ? parseCertificateComposition(input.composition) : null;
 
-  if (hasTemplate) {
+  if (hasTemplate && isPdf(input.templateBackgroundBytes!)) {
     try {
-      const templatePdf = await PDFDocument.load(
-        input.templateBackgroundBytes!
-      );
+      const templatePdf = await PDFDocument.load(input.templateBackgroundBytes!);
       const [templatePage] = await pdf.copyPages(templatePdf, [0]);
       pdf.addPage(templatePage);
-    } catch {
-      const page = pdf.addPage([842, 595]);
-      try {
-        const image = await pdf.embedPng(input.templateBackgroundBytes!);
-        page.drawImage(image, { x: 0, y: 0, width: 842, height: 595 });
-      } catch {
-        const image = await pdf.embedJpg(input.templateBackgroundBytes!);
-        page.drawImage(image, { x: 0, y: 0, width: 842, height: 595 });
-      }
+    } catch (error) {
+      console.warn("Certificate PDF template could not be loaded; using generated composition", error);
+      pdf.addPage([842, 595]);
+    }
+  } else if (hasTemplate && (isPng(input.templateBackgroundBytes!) || isJpeg(input.templateBackgroundBytes!))) {
+    const page = pdf.addPage([842, 595]);
+    try {
+      const image = isPng(input.templateBackgroundBytes!)
+        ? await pdf.embedPng(input.templateBackgroundBytes!)
+        : await pdf.embedJpg(input.templateBackgroundBytes!);
+      page.drawImage(image, { x: 0, y: 0, width: 842, height: 595 });
+    } catch (error) {
+      console.warn("Certificate raster template could not be embedded; using generated composition", error);
     }
   } else {
     pdf.addPage([842, 595]);
