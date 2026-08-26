@@ -2481,3 +2481,8 @@
 - [x] Corrigir a consulta de alunos e preservar o escopo de acesso de professor, admin e superadmin.
 - [x] Confirmar a listagem das turmas e alunos já cadastrados do SIMAL com testes, TypeScript e build.
 - [x] Reproduzir e corrigir a falha transversal para professor, admin e superadmin na mesma consulta de Turmas Externas.
+
+## Correção de Certificados Docentes — 26/08/2026
+- [x] Diagnosticar a falha de consulta em `/professor/certificados` sem alterar certificados existentes.
+- [x] Alinhar o schema de certificados no Neon de produção às colunas já utilizadas pela API.
+- [x] Validar o painel docente e os acessos administrativos com testes, TypeScript e build.
