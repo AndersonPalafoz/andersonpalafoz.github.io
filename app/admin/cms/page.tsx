@@ -404,6 +404,14 @@ export default function AdminCmsPage() {
         </div>
       </div>
 
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 mt-4" aria-label="Fluxo recomendado para publicação">
+        <div className="grid gap-3 rounded-3xl border border-violet-200 bg-violet-50/70 p-4 dark:border-violet-900/60 dark:bg-violet-950/20 sm:grid-cols-3 sm:p-5">
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">1 · Preparar</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Defina página, seção, título e status do bloco.</p></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">2 · Conferir</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Use a pré-visualização responsiva antes de publicar.</p></div>
+          <div><p className="text-[10px] font-black uppercase tracking-[0.14em] text-violet-700 dark:text-violet-300">3 · Rastrear</p><p className="mt-1 text-xs font-semibold text-violet-950 dark:text-violet-100">Revise o histórico para desfazer mudanças com segurança.</p></div>
+        </div>
+      </section>
+
       {activeTab === "media" ? (
         <div className="max-w-7xl mx-auto px-4 sm:px-8 mt-8">
           <MediaAssetLibrary />
