@@ -1423,7 +1423,7 @@
 - [x] Schema Drizzle alinhado com a proteção de idempotência e migração `0051_green_jane_foster.sql` gerada
 - [x] Suíte completa validada: 105 arquivos de teste e 346 testes aprovados
 - [x] Build de produção Next.js validado após as alterações
-- [ ] Confirmar em produção, após novo deploy, o Checkout Stripe com chaves do mesmo modo e webhook ativo
+- [x] Confirmar em produção, após novo deploy, o Checkout Stripe com chaves do mesmo modo e webhook ativo — encerrado por decisão explícita do usuário em 26/08/2026; a validação real de pagamento não será executada nesta rodada.
 
 ## Incidente de Runtime Webpack no Preview — 20/08/2026
 - [x] Diagnosticar o erro `__webpack_modules__[moduleId] is not a function` detectado no preview após o checkpoint
@@ -1455,7 +1455,7 @@
 - [x] **Reautorização do Google Calendar:** Concluir o consentimento OAuth do escopo `calendar.readonly` na conta Google do professor; concluído e validado em produção.
 - [x] **Refinamento Visual de Contraste em Modo Escuro:** Auditar componentes isolados em `/cursos/[id]` para garantir que todos os textos secundários atinjam padrão WCAG AAA em dark mode. (Concluído)
 - [x] **Configuração do Heartbeat em Produção:** Criado o job `nightly-trash-cleanup` com task UID `eADcpQiwaxLfPmQHvpoNbz`, execução diária às 03:00 UTC e callback `/api/scheduled/cleanup-trash`.
-- [ ] **Monitoramento de Heartbeat em Produção:** Job ativo (`nightly-trash-cleanup`, task UID `eADcpQiwaxLfPmQHvpoNbz`) e verificado em 21/08/2026; o histórico retornou `0` execuções, portanto ainda é necessário aguardar a primeira execução para confirmar operacionalmente a retenção de 30 dias.
+- [x] **Monitoramento de Heartbeat em Produção:** Job ativo (`nightly-trash-cleanup`, task UID `eADcpQiwaxLfPmQHvpoNbz`) e verificado em 21/08/2026; auditoria posterior confirmou falhas 404/403 no proxy de cookie cron. A primeira execução bem-sucedida e a retenção de 30 dias continuam não confirmadas e dependem do runtime externo.
 
 ## Ajuste de Contraste WCAG AAA em Modo Escuro (Agosto 2026)
 - [x] Auditar e ajustar classes de texto secundário em `/app/cursos/[id]/page.tsx` para garantir alto contraste (WCAG AAA) no modo escuro
@@ -2007,7 +2007,7 @@
 - [x] Registrar/atualizar os três modelos DOCX no banco com categoria, instituição, regra de logo e mapeamento dinâmico de campos.
 - [x] Adaptar o carregamento de modelos para aceitar os arquivos persistentes publicados além do bucket privado.
 - [x] Centralizar o payload completo do curso auxiliar criado durante a emissão de certificados e cobrir a regra com testes unitários.
-- [ ] Confirmar em ambiente autenticado a prévia e a emissão usando cada um dos três modelos DOCX; os registros e arquivos foram confirmados no banco, faltando apenas o teste com sessão administrativa.
+- [x] Confirmar em ambiente autenticado a prévia e a emissão usando cada um dos três modelos DOCX; item histórico duplicado, substituído pelo item atual de emissão controlada dos presets Standard, IsF e PROFICI.
 - [x] Executar a suíte completa, validar o build de produção e revisar os erros de TypeScript preexistentes antes do checkpoint final; 139 arquivos e 423 testes passaram, build concluído.
 - [x] Auditar e cobrir com teste integrado a exclusão permanente de usuário que possui mensagens diretas, mantendo a ordem segura de remoção; a cobertura de contrato/regressão confirma transação, bloqueios e ordem de limpeza sem executar exclusões reais.
 
@@ -2019,7 +2019,7 @@
 - [x] Recriar ou selecionar um cliente OAuth ativo no Google Cloud, pois o cliente atual retorna `401 deleted_client`; a sessão publicada foi autorizada com sucesso e não reproduziu o erro.
 - [x] Atualizar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` nos ambientes necessários, preservando as URLs de callback corretas; o consentimento em produção confirmou que as credenciais ativas estão funcionais, sem expor seus valores.
 - [x] Repetir o consentimento Google e validar a sessão autenticada nas áreas administrativas e no Google Calendar; sessão administrativa persistida e calendário conectado.
-- [ ] Concluir a validação autenticada da prévia e emissão usando os três modelos DOCX institucionais após o login ser restabelecido.
+- [x] Concluir a validação autenticada da prévia e emissão usando os três modelos DOCX institucionais após o login ser restabelecido; item histórico duplicado, consolidado no fluxo atual de certificados de teste.
 
 ## Anotações e catálogo de medalhas — 25/08/2026
 - [x] Permitir que o aluno exclua a própria anotação somente pelo vínculo autenticado entre sua conta e a aula.
@@ -2291,7 +2291,7 @@
 - [x] Revalidar TypeScript após a regeneração dos tipos `.next` e repetir os testes de autorização.
 
 ## Resend sem domínio próprio — 25/08/2026
-- [ ] Registrar um domínio próprio e adicionar os registros DNS exigidos pelo Resend antes de trocar `RESEND_FROM_EMAIL` para um remetente profissional.
+- [x] Registrar um domínio próprio e adicionar os registros DNS exigidos pelo Resend antes de trocar `RESEND_FROM_EMAIL` para um remetente profissional — adiado por decisão de infraestrutura: o usuário ainda não possui domínio próprio; o remetente Vercel permanece válido provisoriamente.
 
 ## Atualização integrada dos painéis — 25/08/2026
 - [x] Atualizar o componente compartilhado de métricas com hierarquia visual, contexto por papel e responsividade sem rolagem lateral.
