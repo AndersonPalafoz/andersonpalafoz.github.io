@@ -9,6 +9,18 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
+function isTechnicalCertificatePlaceholder(user: {
+  loginMethod?: string | null;
+  email?: string | null;
+}) {
+  const email = user.email?.trim().toLowerCase() || "";
+  return (
+    user.loginMethod === "manual_external" ||
+    email.endsWith("@external.placeholder") ||
+    email.startsWith("nao-cadastrado-")
+  );
+}
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -40,14 +52,25 @@ export async function GET(request: Request) {
       classroomConnected = false;
     }
 
-    const [allUsers, allEnrollments, allProgress, allGrades] = await Promise.all([
+    const [allUsers, allEnrollments, allProgress] = await Promise.all([
       db.query.users.findMany({ where: isNull(users.deletedAt), orderBy: desc(users.lastSignedIn) }),
       db.select().from(enrollments),
       db.select().from(progress),
-      db.select().from(externalClassGrades),
     ]);
 
-    let students = allUsers.filter((u: any) => u.role === "user" || u.role === "student" || u.role === "aluno");
+    let gradesAvailable = true;
+    let allGrades: Array<typeof externalClassGrades.$inferSelect> = [];
+    try {
+      allGrades = await db.select().from(externalClassGrades);
+    } catch (gradesError) {
+      gradesAvailable = false;
+      console.error("Falha ao consultar notas externas nos relatórios:", gradesError);
+    }
+
+    let students = allUsers.filter((u: any) =>
+      (u.role === "user" || u.role === "student" || u.role === "aluno") &&
+      !isTechnicalCertificatePlaceholder(u)
+    );
 
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
     students = students.filter((s: any) => {
@@ -73,19 +96,23 @@ export async function GET(request: Request) {
       });
     }
 
+    if (sourceFilter !== "all") {
+      students = students.filter((student: any) => {
+        const isClassroomImported = classroomConnected && allEnrollments.some((enrollment: any) => enrollment.userId === student.id);
+        return sourceFilter === "classroom" ? isClassroomImported : !isClassroomImported;
+      });
+    }
+
     const totalStudents = students.length;
     const paginatedStudents = students.slice(offset, offset + pageSize);
 
-    const reports = await Promise.all(paginatedStudents.map(async (student: any) => {
+    const reports = paginatedStudents.map((student: any) => {
       const studentEnrollments = allEnrollments.filter((e: any) => e.userId === student.id);
       const studentProgress = allProgress.filter((p: any) => p.userId === student.id);
       const studentGrades = allGrades.filter((g: any) => g.studentId === student.id);
 
       const isClassroomImported = classroomConnected && studentEnrollments.length > 0;
       const dataSource = isClassroomImported ? "Google Classroom" : "Plataforma Local";
-
-      if (sourceFilter === "classroom" && !isClassroomImported) return null;
-      if (sourceFilter === "local" && isClassroomImported) return null;
 
       const numericGrades = studentGrades.map((g: any) => Number(g.score)).filter((n: number) => !isNaN(n));
       const avgGradeNum = numericGrades.length ? numericGrades.reduce((a, b) => a + b, 0) / numericGrades.length : null;
@@ -103,11 +130,10 @@ export async function GET(request: Request) {
           : "Persistido diretamente na base interna (Neon)",
         lastActivity: student.lastSignedIn || new Date().toISOString(),
       };
-    }));
+    });
 
-    const validReports = reports.filter(Boolean);
-    const classroomImportedCount = validReports.filter((r: any) => r?.dataSource === "Google Classroom").length;
-    const localCreatedCount = validReports.filter((r: any) => r?.dataSource === "Plataforma Local").length;
+    const classroomImportedCount = reports.filter((r: any) => r.dataSource === "Google Classroom").length;
+    const localCreatedCount = reports.filter((r: any) => r.dataSource === "Plataforma Local").length;
 
     const allNumericGrades = allGrades.map((g: any) => Number(g.score)).filter((n: number) => !isNaN(n));
     const averagePlatformGrade = allNumericGrades.length ? (allNumericGrades.reduce((a, b) => a + b, 0) / allNumericGrades.length).toFixed(1) : "0.0";
@@ -120,13 +146,16 @@ export async function GET(request: Request) {
         totalSyncedCourses: syncedCoursesCount,
         totalSyncedAssignments: allGrades.length,
       },
+      academicDataStatus: {
+        gradesAvailable,
+      },
       summary: {
         totalStudents,
         classroomImportedCount,
         localCreatedCount,
         averagePlatformGrade,
       },
-      reports: validReports,
+      reports,
       pagination: {
         page,
         pageSize,

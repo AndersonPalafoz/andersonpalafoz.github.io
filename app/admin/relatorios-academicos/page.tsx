@@ -26,6 +26,9 @@ interface ReportData {
     totalSyncedCourses: number;
     totalSyncedAssignments: number;
   };
+  academicDataStatus: {
+    gradesAvailable: boolean;
+  };
   summary: {
     totalStudents: number;
     classroomImportedCount: number;
@@ -190,6 +193,7 @@ export default function AcademicReportsPage() {
       <div className="site-shell pb-28" aria-busy={loading}>
       {loading && <div role="status" aria-live="polite" className="mx-4 mt-4 flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-700 sm:mx-auto dark:text-blue-200"><Loader2 size={15} className="animate-spin" aria-hidden="true" /> Consultando os dados acadêmicos reais…</div>}
       {errorMessage && <div role="alert" aria-live="polite" className="mx-4 mt-4 flex max-w-7xl flex-col items-start justify-between gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-700 sm:mx-auto sm:flex-row sm:items-center dark:text-red-200"><span>{errorMessage}</span><button type="button" onClick={() => void fetchReports()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 px-3 py-2 text-xs font-bold hover:bg-red-500/10 disabled:cursor-wait disabled:opacity-60"><Loader2 size={14} className={loading ? "animate-spin" : "hidden"} aria-hidden="true" /> {loading ? "Tentando…" : "Tentar novamente"}</button></div>}
+      {data && !data.academicDataStatus.gradesAvailable && <div role="status" aria-live="polite" className="mx-4 mt-4 max-w-7xl rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-800 sm:mx-auto dark:text-amber-100">Os alunos e as matrículas foram carregados. As notas externas estão temporariamente indisponíveis, por isso a média será exibida quando a consulta for restabelecida.</div>}
       {/* Toast Notification Banner */}
       {toastMessage && (
         <div className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-2xl shadow-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300 ${
@@ -346,8 +350,8 @@ export default function AcademicReportsPage() {
             </div>
             <div className="surface-card p-5">
               <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Média Real Consolidada</p>
-              <p className="mt-2 text-3xl font-black text-emerald-600">{data ? data.summary.averagePlatformGrade : "—"}</p>
-              <p className="text-xs text-emerald-600 font-semibold mt-1">Baseada em notas do sistema</p>
+              <p className="mt-2 text-3xl font-black text-emerald-600">{data?.academicDataStatus.gradesAvailable ? data.summary.averagePlatformGrade : "—"}</p>
+              <p className="text-xs text-emerald-600 font-semibold mt-1">{data?.academicDataStatus.gradesAvailable ? "Baseada em notas do sistema" : "Notas temporariamente indisponíveis"}</p>
             </div>
           </div>
         )}
