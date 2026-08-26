@@ -2396,4 +2396,8 @@
 - [x] Mapear todos os pontos de entrada, rotas, componentes, modelos, engines experimentais, atribuições, assinaturas, exports e exclusões; fluxo oficial e laboratório experimental estão separados, e rotas Admin/Professor/Aluno foram identificadas.
 - [x] Executar testes, TypeScript, build e inspeção de logs/runtime, registrando erros concretos sem inventar dados; 18 arquivos/52 testes de certificados passaram, TypeScript passou, build passou e somente erros históricos de 10:01/11:46 aparecem no log, sem erro novo de certificados.
 - [x] Corrigir regressões encontradas e remover somente sobras sem referências ou dados de teste comprovados; contratos antigos foram alinhados à arquitetura sem placeholders e os quatro scripts temporários já haviam sido removidos.
-- [ ] Revalidar o fluxo completo e sincronizar a versão auditada com a main.
+- [x] Revalidar o fluxo completo e sincronizar a versão auditada com a main; 18 arquivos/52 testes passaram, TypeScript e build passaram, e o commit 3005100 foi publicado na main.
+
+## Regressão runtime no preview — 26/08/2026
+- [x] Diagnosticar e corrigir `Cannot read properties of undefined (reading 'call')` no preview, identificando o módulo/import que quebra o carregamento sem mascarar o erro; o erro estava restrito ao cache/HMR corrompido do watcher local, não a um módulo do fluxo de certificados. O servidor foi reiniciado e voltou a compilar.
+- [x] Revalidar a página, testes e build após a correção e sincronizar o estado corrigido na main; home carregou sem erro, admin redirecionou corretamente para login sem sessão, 52 testes, TypeScript e build passaram, e a main já contém o código auditado.
