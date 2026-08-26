@@ -2339,3 +2339,8 @@
 - [x] Auditar callback, variáveis e cookies do login local para identificar a causa de diferenças em relação à produção; cookies usam `secure` apenas em produção e `sameSite: lax`, com segredo agora unificado.
 - [x] Validar prévias e contratos dos três modelos DOCX sem emitir certificados reais nem alterar dados persistidos; os presets padrão, IsF e PROFICI foram cobertos por testes de identidade, campos e branding externo, com 9 testes direcionados aprovados.
 - [x] Corrigir somente falhas comprovadas, adicionar cobertura de testes e atualizar a documentação de bloqueios externos; correção do segredo compartilhado aplicada e 8 testes direcionados aprovados.
+
+## Sincronização completa para main — 26/08/2026
+- [x] Preparar uma cópia limpa sobre a `user_github/main`, preservando o histórico remoto e excluindo artefatos `.next`/`.next-build`.
+- [x] Incluir o relatório da auditoria do `todo.md`, o checklist atualizado e somente alterações técnicas validadas.
+- [x] Executar testes/build, enviar diretamente para `user_github/main` e confirmar o deployment do Vercel.
