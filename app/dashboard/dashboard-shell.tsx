@@ -210,7 +210,7 @@ export default function DashboardLayout({
   const displayedAvatarUrl = !avatarLoadFailed ? (avatarUrl || session?.user?.image || null) : null;
 
   return (
-    <div className="dashboard-frame flex h-screen bg-background text-foreground">
+    <div className="dashboard-frame flex min-h-[100dvh] bg-background text-foreground">
       {/* Tour Guiado Modal */}
       {showTour && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
@@ -241,7 +241,7 @@ export default function DashboardLayout({
       )}
 
       <aside
-        className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:relative z-40 flex h-screen w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
+        className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky md:top-0 z-40 flex h-[100dvh] w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
       >
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
@@ -298,16 +298,28 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="dashboard-panel-topbar hidden min-h-[4.75rem] items-center justify-between border-b border-border/70 px-6 py-3 text-card-foreground md:flex lg:px-8">
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Área protegida</p>
+            <p className="truncate text-lg font-black text-foreground">{activeTitle}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.12em] ${roleBadgeColor}`}>{roleLabel(visibleRole)}</span>
+            <Link href="/" className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs font-bold text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300">
+              <Home size={15} /> Ver site
+            </Link>
+          </div>
+        </header>
         <header className="dashboard-topbar flex items-center justify-between border-b border-border/70 p-4 text-card-foreground shadow-sm md:hidden">
-          <span className="font-bold text-foreground">{activeTitle}</span>
+          <div className="min-w-0"><p className="truncate font-bold text-foreground">{activeTitle}</p><p className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">{roleLabel(visibleRole)}</p></div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen}>
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </header>
 
         <main className="dashboard-content flex-1 overflow-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8">
-          <div className="mx-auto max-w-7xl min-w-0">{children}</div>
+          <div className="mx-auto min-w-0 max-w-7xl">{children}</div>
         </main>
       </div>
 

@@ -155,6 +155,14 @@ export default function AdminDashboardPage() {
 
   const effectiveRole = getEffectiveRole({ email: user?.email, role: user?.role });
   const superadmin = visibleRole === "superadmin";
+  const quickActions = [
+    { href: "/admin/usuarios", label: "Pessoas e acessos", tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" },
+    { href: "/admin/relatorios-academicos", label: "Relatórios acadêmicos", tone: "border-slate-200 bg-card text-foreground dark:border-border" },
+    { href: "/professor/turmas-externas", label: "Turmas e avaliações", tone: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300" },
+    { href: "/admin/certificados", label: "Certificados", tone: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300" },
+    ...(superadmin ? [{ href: "/admin/cms", label: "CMS e marca", tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" }] : []),
+    { href: "/admin/cursos", label: "Gerenciar cursos", tone: "border-transparent bg-primary text-primary-foreground shadow-sm shadow-red-600/20" },
+  ];
 
   if (previewRole === "professor") {
     return (
@@ -182,7 +190,7 @@ export default function AdminDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header Harmonizado com o Painel do Professor */}
-        <div className="dashboard-hero flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl">
+        <section className="dashboard-hero grid gap-6 rounded-3xl p-6 sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <ShieldCheck size={16} />
@@ -193,75 +201,13 @@ export default function AdminDashboardPage() {
               {superadmin ? "Controle global de identidade, CMS, integração financeira e todas as operações acadêmicas." : "Gestão ampla de pessoas, cursos, turmas, avaliações, certificados, moderação e auditoria."}
             </p>
           </div>
-          <div className="admin-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
-            <Link
-              href="/admin/relatorios-academicos"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
-            >
-              Relatórios & Classroom
-            </Link>
-            <Link
-              href="/admin/medalhas"
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
-            >
-              Conceder Medalhas
-            </Link>
-            <Link
-              href="/professor/turmas-externas"
-              className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-emerald-800 transition hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 shadow-sm"
-            >
-              Turmas e avaliações
-            </Link>
-            <Link
-              href="/professor/tarefas"
-              className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-indigo-800 transition hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/30 dark:text-indigo-300 shadow-sm"
-            >
-              Tarefas docentes
-            </Link>
-            <Link
-              href="/professor/turmas-externas?tab=students"
-              className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-amber-800 transition hover:bg-amber-100 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300 shadow-sm"
-            >
-              Acessos externos
-            </Link>
-            {superadmin && <Link
-              href="/admin/cms"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
-            >
-              CMS & Logo
-            </Link>}
-            <Link
-              href="/admin/auditoria"
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
-            >
-              Auditoria
-            </Link>
-            <Link
-              href="/admin/certificados"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
-            >
-              Assinar Certificados
-            </Link>
-            {superadmin && <Link
-              href="/admin/cupons"
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
-            >
-              Cupons
-            </Link>}
-            <Link
-              href="/admin/anotacoes"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
-            >
-              Anotações dos Alunos
-            </Link>
-            <Link
-              href="/admin/cursos"
-              className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
-            >
-              Gerenciar Cursos & Lixeira
-            </Link>
+          <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
+            <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
+            <div className="admin-action-grid grid grid-cols-2 gap-2">
+              {quickActions.map((action) => <Link key={action.href} href={action.href} className={`flex min-h-11 items-center rounded-xl border px-3 py-2.5 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}>{action.label}</Link>)}
+            </div>
           </div>
-        </div>
+        </section>
 
         <AdminActionCenter />
         <AdminCapabilityMap />

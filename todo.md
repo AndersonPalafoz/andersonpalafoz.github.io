@@ -2469,3 +2469,9 @@
 - [x] Exibir e ocultar grupos e itens do menu conforme aluno, professor, admin e superadmin.
 - [x] Aplicar o shell às subpáginas docentes e administrativas, mantendo as proteções de rota existentes.
 - [x] Adicionar testes de navegação e permissões, validar mobile, TypeScript e build.
+
+## Refinamento visual e responsivo dos painéis — 26/08/2026
+- [x] Diagnosticar e remover o espaço em branco indevido na versão desktop de `/admin`.
+- [x] Criar cabeçalhos e áreas iniciais mais claras para os painéis administrativo e docente.
+- [x] Ajustar grid, espaçamento, navegação e cartões para telas desktop, tablet e mobile sem rolagem lateral.
+- [x] Adicionar testes de contrato visual, validar TypeScript, build e rotas protegidas.

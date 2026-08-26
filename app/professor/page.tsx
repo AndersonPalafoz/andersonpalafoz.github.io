@@ -31,7 +31,7 @@ export default async function TeacherDashboardPage() {
     <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         {/* Header */}
-        <div className="dashboard-hero flex flex-col lg:flex-row lg:items-center justify-between gap-6 surface-card p-6 sm:p-8 rounded-3xl">
+        <section className="dashboard-hero grid gap-6 rounded-3xl p-6 sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <GraduationCap size={16} />
@@ -42,45 +42,48 @@ export default async function TeacherDashboardPage() {
               Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub com alta governança e dados em tempo real.
             </p>
           </div>
-          <div className="teacher-action-grid relative z-[1] flex flex-wrap items-center gap-2.5 pt-2 lg:pt-0">
+          <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
+            <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
+            <div className="teacher-action-grid grid grid-cols-2 gap-2">
             <Link
               href="/professor/progresso-aulas"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >
               Aulas & Speaking
             </Link>
             <Link
               href="/professor/tarefas"
-              className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-bold text-foreground transition hover:border-red-200 hover:bg-muted shadow-sm"
+              className="flex min-h-11 items-center rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-bold leading-tight text-foreground transition hover:-translate-y-0.5 hover:border-red-200 hover:bg-muted hover:shadow-sm"
             >
               Tarefas & Deadlines
             </Link>
             <Link
               href="/professor/turmas-externas"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >
               Turmas Externas
             </Link>
             <Link
               href="/professor/alunos"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >
               Aprovar Alunos
             </Link>
             <Link
               href="/professor/certificados"
-              className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs sm:text-sm font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300 shadow-sm"
+              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >
               Assinar Certificados
             </Link>
             <Link
               href="/admin/cursos"
-              className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-bold text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90"
+              className="flex min-h-11 items-center rounded-xl bg-primary px-3 py-2.5 text-xs font-bold leading-tight text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-sm"
             >
               Novo Curso
             </Link>
+            </div>
           </div>
-        </div>
+        </section>
 
         {/* Painel Estatístico Estilo Dashboard do Aluno */}
         <StudentStyleDashboardStats
