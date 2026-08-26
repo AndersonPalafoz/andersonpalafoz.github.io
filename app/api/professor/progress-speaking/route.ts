@@ -6,6 +6,21 @@ import { speakingAttempts, users, lessonProgress, userActivityProgress } from "@
 import { uploadLearningAudio } from "@/lib/learning-storage";
 import { and, eq, inArray } from "drizzle-orm";
 
+function isTechnicalCertificateAccount(student: {
+  email?: string | null;
+  loginMethod?: string | null;
+  name?: string | null;
+}) {
+  const email = student.email?.trim().toLowerCase() || "";
+  const name = student.name?.trim().toLowerCase() || "";
+  return (
+    student.loginMethod === "manual_external" ||
+    email.endsWith("@external.placeholder") ||
+    email.startsWith("nao-cadastrado-") ||
+    name.includes("teste docx")
+  );
+}
+
 export async function GET(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -30,6 +45,9 @@ export async function GET(_request: NextRequest) {
       }
     }
 
+    assignedStudents = assignedStudents.filter(
+      student => !isTechnicalCertificateAccount(student)
+    );
     const studentIds = assignedStudents.map(s => s.id);
 
     const allLessonProgress = studentIds.length > 0 ? await db.query.lessonProgress.findMany({

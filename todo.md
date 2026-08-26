@@ -2491,3 +2491,8 @@
 - [x] Diagnosticar a indisponibilidade em `/admin/relatorios-academicos` sem criar ou alterar dados reais.
 - [x] Corrigir a consulta de relatórios e isolar eventuais falhas da integração com Classroom.
 - [x] Validar dados administrativos, permissões, testes, TypeScript e build.
+
+## Correção de Progresso de Aulas — 26/08/2026
+- [x] Diagnosticar por que identidades técnicas aparecem em `/professor/progresso-aulas`.
+- [x] Excluir contas de certificados de teste e placeholders técnicos da listagem e dos indicadores docentes.
+- [x] Validar escopo de professor, admin e superadmin, testes, TypeScript e build.
