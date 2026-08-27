@@ -7,8 +7,8 @@ import { CourseTypeLegend } from "@/components/course-type-legend";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getCourses, db } from "@/lib/db";
-import { coursePurchases, enrollments, users, wishlistItems } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { coursePurchases, enrollments, users, wishlistItems, courseOffers } from "@/drizzle/schema";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { isLearnerVisibleCourse } from "@/lib/course-visibility";
 
 export const metadata = {
@@ -28,6 +28,40 @@ export default async function CursosPage() {
     user ? db.select({ courseId: wishlistItems.courseId }).from(wishlistItems).where(eq(wishlistItems.userId, user.id)) : Promise.resolve([]),
   ]);
   const cursosDb = rawCursos.filter((c) => Number(c.courseType) !== 4 && c.category !== "Curso Externo / Avulso" && isLearnerVisibleCourse(c));
+  const publishedOffersByCourse = new Map<number, Array<{
+    id: number;
+    offerName: string;
+    academicTerm: string;
+    institution: string | null;
+    modality: string | null;
+    classDays: string | null;
+    classTime: string | null;
+  }>>();
+  if (cursosDb.length > 0) {
+    try {
+      const offerRows = await db.select({
+        id: courseOffers.id,
+        courseId: courseOffers.courseId,
+        offerName: courseOffers.offerName,
+        academicTerm: courseOffers.academicTerm,
+        institution: courseOffers.institution,
+        modality: courseOffers.modality,
+        classDays: courseOffers.classDays,
+        classTime: courseOffers.classTime,
+      }).from(courseOffers).where(and(
+        inArray(courseOffers.courseId, cursosDb.map((course) => course.id)),
+        eq(courseOffers.status, "published"),
+        isNull(courseOffers.deletedAt),
+      ));
+      for (const offer of offerRows) {
+        const current = publishedOffersByCourse.get(offer.courseId) ?? [];
+        current.push(offer);
+        publishedOffersByCourse.set(offer.courseId, current);
+      }
+    } catch (error) {
+      console.error("CursosPage: failed to load published offers", error);
+    }
+  }
   const purchasedCourseIds = new Set(purchasedRows.map((row) => row.courseId));
   const enrolledCourseIds = new Set(enrollmentRows.map((row) => row.courseId));
   const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));
@@ -100,6 +134,7 @@ export default async function CursosPage() {
                 courseType: curso.courseType,
                 externalRedirectUrl: curso.externalRedirectUrl,
                 syncModality: curso.syncModality,
+                publishedOffers: publishedOffersByCourse.get(curso.id) ?? [],
               }))}
               purchasedCourseIds={Array.from(purchasedCourseIds)}
               enrolledCourseIds={Array.from(enrolledCourseIds)}
