@@ -30,6 +30,12 @@ function logExternalClassesError(operation: string, error: unknown) {
   });
 }
 
+function parseDecimalInput(value: unknown) {
+  if (value === undefined || value === null || String(value).trim() === "") return undefined;
+  const parsed = Number(String(value).trim().replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function validateGrade(score: unknown, maxScore: unknown) {
   const normalizedScore = normalizeGradeInput(score);
   const normalizedMaxScore = normalizeGradeInput(maxScore ?? "10");
@@ -193,6 +199,8 @@ export async function POST(request: NextRequest) {
     };
 
     const body = await request.json();
+    const maxAbsenceValue = parseDecimalInput(body.maxAbsencePercent);
+    const passingAverageValue = parseDecimalInput(body.passingAverage);
       const {
       action,
       institution,
@@ -287,13 +295,13 @@ export async function POST(request: NextRequest) {
       if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
         return NextResponse.json({ error: "A data final não pode ser anterior à data inicial." }, { status: 400 });
       }
-      if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
-        return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
+      if (maxAbsenceValue === null || (maxAbsenceValue !== undefined && (maxAbsenceValue < 0 || maxAbsenceValue > 100))) {
+        return NextResponse.json({ error: "O limite máximo de faltas deve ser um percentual entre 0% e 100%." }, { status: 400 });
       }
       const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
       if (hasUnits && (!Number.isInteger(Number(unitCount)) || Number(unitCount) < 1 || Number(unitCount) > 100)) return NextResponse.json({ error: "A quantidade de unidades deve estar entre 1 e 100." }, { status: 400 });
       if (gradingScope !== undefined && !["course", "unit"].includes(String(gradingScope))) return NextResponse.json({ error: "Escopo de média inválido." }, { status: 400 });
-      if (passingAverage !== undefined && (!Number.isFinite(Number(passingAverage)) || Number(passingAverage) < 0 || Number(passingAverage) > 10)) return NextResponse.json({ error: "A média mínima deve estar entre 0 e 10." }, { status: 400 });
+      if (passingAverageValue === null || (passingAverageValue !== undefined && (passingAverageValue < 0 || passingAverageValue > 10))) return NextResponse.json({ error: "A média mínima deve ser um número entre 0 e 10." }, { status: 400 });
       const normalizedDurationType = allowedDurationTypes.includes(String(durationType || "semester")) ? String(durationType || "semester") : "semester";
       if (durationValue !== undefined && durationValue !== null && (!Number.isFinite(Number(durationValue)) || Number(durationValue) <= 0)) {
         return NextResponse.json({ error: "O valor da duração deve ser maior que zero." }, { status: 400 });
@@ -314,11 +322,11 @@ export async function POST(request: NextRequest) {
         durationUnit: durationUnit ? String(durationUnit).trim() : null,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
-        maxAbsencePercent: maxAbsencePercent ? Number(maxAbsencePercent) : 25,
+        maxAbsencePercent: maxAbsenceValue ?? 25,
         hasUnits: Boolean(hasUnits),
         unitCount: hasUnits ? Number(unitCount || 1) : 1,
         gradingScope: hasUnits && gradingScope === "unit" ? "unit" : "course",
-        passingAverage: String(passingAverage ?? 5),
+        passingAverage: String(passingAverageValue ?? 5),
         unitPassingAverages: hasUnits && gradingScope === "unit" ? (unitPassingAverages ? String(unitPassingAverages) : null) : null,
         modality: modality ? modality.trim() : "Remota",
         meetingLink: meetingLink ? meetingLink.trim() : null,
@@ -345,8 +353,8 @@ export async function POST(request: NextRequest) {
       if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
         return NextResponse.json({ error: "A data final não pode ser anterior à data inicial." }, { status: 400 });
       }
-      if (maxAbsencePercent !== undefined && (Number(maxAbsencePercent) < 0 || Number(maxAbsencePercent) > 100)) {
-        return NextResponse.json({ error: "O limite máximo de faltas deve estar entre 0% e 100%." }, { status: 400 });
+      if (maxAbsenceValue === null || (maxAbsenceValue !== undefined && (maxAbsenceValue < 0 || maxAbsenceValue > 100))) {
+        return NextResponse.json({ error: "O limite máximo de faltas deve ser um percentual entre 0% e 100%." }, { status: 400 });
       }
       const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
       if (durationType !== undefined && !allowedDurationTypes.includes(String(durationType))) {
@@ -371,11 +379,11 @@ export async function POST(request: NextRequest) {
           durationUnit: durationUnit !== undefined ? (durationUnit ? String(durationUnit).trim() : null) : existing.durationUnit,
           startDate: startDate ? new Date(startDate) : existing.startDate,
           endDate: endDate ? new Date(endDate) : existing.endDate,
-          maxAbsencePercent: maxAbsencePercent !== undefined ? Number(maxAbsencePercent) : existing.maxAbsencePercent,
+          maxAbsencePercent: maxAbsenceValue !== undefined ? maxAbsenceValue : existing.maxAbsencePercent,
           hasUnits: hasUnits !== undefined ? Boolean(hasUnits) : existing.hasUnits,
           unitCount: hasUnits !== undefined ? (hasUnits ? Number(unitCount || 1) : 1) : existing.unitCount,
           gradingScope: gradingScope !== undefined ? (hasUnits === false ? "course" : String(gradingScope)) : existing.gradingScope,
-          passingAverage: passingAverage !== undefined ? String(passingAverage) : existing.passingAverage,
+          passingAverage: passingAverageValue !== undefined ? String(passingAverageValue) : existing.passingAverage,
           unitPassingAverages: unitPassingAverages !== undefined ? (gradingScope === "unit" ? String(unitPassingAverages) : null) : existing.unitPassingAverages,
           modality: modality !== undefined ? (modality ? modality.trim() : "Remota") : existing.modality,
           meetingLink: meetingLink !== undefined ? (meetingLink ? meetingLink.trim() : null) : existing.meetingLink,
