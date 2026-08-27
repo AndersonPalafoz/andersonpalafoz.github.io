@@ -2644,3 +2644,7 @@
 - [x] Permitir uma nova tentativa orientada depois de feedback docente, sem apagar a submissão ou a devolutiva anteriores.
 - [x] Criar fila docente de intervenções pedagógicas com contexto, prioridade e acesso ao estudante/atividade, respeitando o escopo de cada professor.
 - [x] Validar permissões, acessibilidade, estados vazios, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Correção de largura móvel do painel administrativo — 27/08/2026
+- [x] Remover o acúmulo de espaçamentos horizontais que torna `/admin` mais estreito que os demais painéis em smartphones.
+- [x] Validar a página administrativa em 360px, 390px e 430px, preservando rolagem, foco, navegação e hierarquia visual.

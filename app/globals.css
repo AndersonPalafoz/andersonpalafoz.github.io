@@ -653,10 +653,6 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .admin-dashboard-page {
-    padding: 0.75rem;
-  }
-
   .admin-dashboard-page .page-container {
     padding: 0;
   }
@@ -743,10 +739,6 @@ body {
 
   #mobile-navigation {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-  }
-
-  .admin-dashboard-page {
-    padding: 0.75rem;
   }
 
   .admin-dashboard-page .page-container {

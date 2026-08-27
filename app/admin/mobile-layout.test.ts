@@ -10,6 +10,8 @@ describe("painel administrativo em smartphones", () => {
 
     expect(page).toContain('mobile: true');
     expect(page).toContain('wideMobile: true');
+    expect(page).toContain('site-shell admin-dashboard-page py-4 sm:py-8');
+    expect(page).not.toContain('site-shell admin-dashboard-page px-3');
     expect(page).toContain('grid-cols-2 gap-2 sm:grid-cols-2');
     expect(page).toContain('order-2 space-y-4 rounded-3xl p-4 surface-card sm:p-8 lg:order-1');
     expect(page).toContain('order-1 space-y-4 rounded-3xl p-4 surface-card sm:p-8 lg:order-2');
@@ -28,5 +30,7 @@ describe("painel administrativo em smartphones", () => {
     expect(capabilityMap).toContain('<details className="group border-t border-border/70 md:hidden">');
     expect(capabilityMap).toContain('Explorar mapa completo de operações');
     expect(globalStyles).toContain('.admin-dashboard-page .admin-action-grid a');
+    expect(globalStyles).toContain('.admin-dashboard-page .page-container');
+    expect(globalStyles).not.toContain('.admin-dashboard-page {\n    padding: 0.75rem;');
   });
 });
