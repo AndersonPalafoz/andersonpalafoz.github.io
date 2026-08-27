@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { activities, courses, materials, users, enrollments } from "@/drizzle/schema";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { isLearnerVisibleCourse } from "@/lib/course-visibility";
 
 type TeacherUser = typeof users.$inferSelect;
 type CourseRow = typeof courses.$inferSelect;
@@ -10,6 +11,7 @@ async function getTeacherUser(userEmail?: string) {
 }
 
 function courseBelongsToTeacher(course: CourseRow, teacher: TeacherUser | null) {
+  if (!isLearnerVisibleCourse(course)) return false;
   if (!teacher || teacher.role !== "professor") return true;
   const instructor = course.instructor?.trim().toLowerCase();
   const teacherName = teacher.name?.trim().toLowerCase();

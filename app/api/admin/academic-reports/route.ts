@@ -3,23 +3,12 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
 import { users, enrollments, progress, externalClassGrades } from "@/drizzle/schema";
+import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
 import { desc, isNull } from "drizzle-orm";
 import { exec } from "child_process";
 import { promisify } from "util";
 
 const execAsync = promisify(exec);
-
-function isTechnicalCertificatePlaceholder(user: {
-  loginMethod?: string | null;
-  email?: string | null;
-}) {
-  const email = user.email?.trim().toLowerCase() || "";
-  return (
-    user.loginMethod === "manual_external" ||
-    email.endsWith("@external.placeholder") ||
-    email.startsWith("nao-cadastrado-")
-  );
-}
 
 export async function GET(request: Request) {
   try {
@@ -69,7 +58,7 @@ export async function GET(request: Request) {
 
     let students = allUsers.filter((u: any) =>
       (u.role === "user" || u.role === "student" || u.role === "aluno") &&
-      !isTechnicalCertificatePlaceholder(u)
+      !isTechnicalLearnerIdentity(u)
     );
 
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;

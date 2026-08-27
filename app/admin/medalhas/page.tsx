@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Award, ArrowLeft, PlusCircle, ShieldCheck, Sparkles, Loader } from "lucide-react";
+import { Award, ArrowLeft, PlusCircle, ShieldCheck, Sparkles, Loader, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { canAccessAdminPortal } from "@/lib/role-capabilities";
 
 interface MedalCatalogItem {
   id: number;
@@ -50,6 +51,20 @@ export default function AdminMedalsPage() {
   const [newMedal, setNewMedal] = useState({ code: "", title: "", icon: "🏅", category: "manual", description: "", requirement: "" });
   const [selectedBatchUserIds, setSelectedBatchUserIds] = useState<string[]>([]);
   const [batchSubmitting, setBatchSubmitting] = useState(false);
+  const [batchMedalCode, setBatchMedalCode] = useState("");
+  const [batchNotes, setBatchNotes] = useState("");
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [catalogCategory, setCatalogCategory] = useState("all");
+
+  const catalogCategories = useMemo(() => Array.from(new Set(catalog.map((medal) => medal.category))).sort(), [catalog]);
+  const filteredCatalog = useMemo(() => {
+    const query = catalogQuery.trim().toLocaleLowerCase("pt-BR");
+    return catalog.filter((medal) => {
+      const inCategory = catalogCategory === "all" || medal.category === catalogCategory;
+      const searchable = `${medal.title} ${medal.description} ${medal.requirement} ${medal.code}`.toLocaleLowerCase("pt-BR");
+      return inCategory && (!query || searchable.includes(query));
+    });
+  }, [catalog, catalogCategory, catalogQuery]);
 
   const fetchData = async () => {
     try {
@@ -68,7 +83,7 @@ export default function AdminMedalsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || user.role !== "admin") {
+    if (!user || !canAccessAdminPortal({ email: user.email, role: user.role })) {
       window.location.href = "/";
       return;
     }
@@ -77,8 +92,8 @@ export default function AdminMedalsPage() {
 
   const handleGrantMedal = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedUserId || !selectedMedalCode) {
-      toast.error("Selecione um aluno e uma medalha.");
+    if (!selectedUserId || !selectedMedalCode || notes.trim().length < 8) {
+      toast.error("Selecione um aluno e uma medalha e informe uma justificativa com pelo menos 8 caracteres.");
       return;
     }
 
@@ -90,7 +105,7 @@ export default function AdminMedalsPage() {
         body: JSON.stringify({
           userId: Number(selectedUserId),
           medalCode: selectedMedalCode,
-          notes,
+          notes: notes.trim(),
         }),
       });
 
@@ -110,18 +125,19 @@ export default function AdminMedalsPage() {
 
   const handleGrantBatch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBatchUserIds.length || !selectedMedalCode || !notes.trim()) {
+    if (!selectedBatchUserIds.length || !batchMedalCode || batchNotes.trim().length < 8) {
       toast.error("Selecione alunos, uma medalha e informe uma justificativa.");
       return;
     }
     setBatchSubmitting(true);
     try {
-      const res = await fetch("/api/admin/medals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "grant-batch", userIds: selectedBatchUserIds.map(Number), medalCode: selectedMedalCode, notes }) });
+      const res = await fetch("/api/admin/medals", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "grant-batch", userIds: selectedBatchUserIds.map(Number), medalCode: batchMedalCode, notes: batchNotes.trim() }) });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Não foi possível conceder as medalhas.");
       toast.success(data.message || "Medalhas concedidas com sucesso.");
       setSelectedBatchUserIds([]);
-      setNotes("");
+      setBatchMedalCode("");
+      setBatchNotes("");
       await fetchData();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao conceder medalhas.");
@@ -233,12 +249,14 @@ export default function AdminMedalsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Justificativa / Notas (Opcional)</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Justificativa pedagógica</label>
               <input
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Ex: Destaque na aula de conversação B1"
+                required
+                minLength={8}
+                placeholder="Ex: participação qualificada na aula de conversação B1"
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"
               />
             </div>
@@ -301,10 +319,10 @@ export default function AdminMedalsPage() {
               </select>
             </label>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Medalha
-              <select value={selectedMedalCode} onChange={(e) => setSelectedMedalCode(e.target.value)} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground"><option value="">Selecione</option>{catalog.map((item) => <option key={item.code} value={item.code}>{item.icon} {item.title}</option>)}</select>
+              <select value={batchMedalCode} onChange={(e) => setBatchMedalCode(e.target.value)} className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-semibold text-foreground"><option value="">Selecione</option>{catalog.map((item) => <option key={item.code} value={item.code}>{item.icon} {item.title}</option>)}</select>
             </label>
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Justificativa
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={5} placeholder="Ex: participação destacada" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground" />
+              <textarea required minLength={8} value={batchNotes} onChange={(e) => setBatchNotes(e.target.value)} rows={5} placeholder="Ex: participação destacada na atividade de speaking" className="mt-2 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium text-foreground" />
             </label>
           </div>
           <div className="flex justify-end"><Button type="submit" disabled={batchSubmitting} className="rounded-xl bg-red-600 font-black text-white">{batchSubmitting ? <Loader className="animate-spin" size={16} /> : <Sparkles size={16} />} Conceder aos selecionados</Button></div>
@@ -312,7 +330,11 @@ export default function AdminMedalsPage() {
 
         {/* Catálogo de Medalhas Disponíveis */}
         <div className="space-y-4">
-          <h2 className="text-xl font-black">Catálogo Oficial de Medalhas</h2>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><h2 className="text-xl font-black">Catálogo Oficial de Medalhas</h2><p className="mt-1 text-xs text-muted-foreground">Cada medalha deve indicar claramente a evidência de aprendizagem ou a justificativa pedagógica da concessão.</p></div><span className="text-xs font-bold text-muted-foreground">{filteredCatalog.length} de {catalog.length} medalhas</span></div>
+          <div className="grid gap-3 rounded-2xl border border-border/70 bg-muted/20 p-3 sm:grid-cols-[minmax(0,1fr)_11rem]">
+            <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><input value={catalogQuery} onChange={(event) => setCatalogQuery(event.target.value)} placeholder="Pesquisar por medalha ou critério" aria-label="Pesquisar medalhas" className="min-h-11 w-full rounded-xl border border-border bg-background py-2 pl-10 pr-10 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600" />{catalogQuery && <button type="button" onClick={() => setCatalogQuery("")} className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600" aria-label="Limpar pesquisa de medalhas"><X size={15} /></button>}</div>
+            <select value={catalogCategory} onChange={(event) => setCatalogCategory(event.target.value)} aria-label="Filtrar medalhas por categoria" className="min-h-11 rounded-xl border border-border bg-background px-3 text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-red-600"><option value="all">Todas as categorias</option>{catalogCategories.map((category) => <option key={category} value={category}>{category}</option>)}</select>
+          </div>
           {catalog.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center shadow-sm">
               <p className="text-base font-black text-foreground">Nenhuma medalha cadastrada</p>
@@ -320,8 +342,8 @@ export default function AdminMedalsPage() {
                 O catálogo real está vazio. Cadastre e aprove as medalhas institucionais antes de concedê-las aos alunos; nenhuma medalha fictícia é criada automaticamente.
               </p>
             </div>
-          ) : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {catalog.map((medal) => (
+          ) : filteredCatalog.length === 0 ? <div className="rounded-3xl border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">Nenhuma medalha corresponde à pesquisa ou à categoria selecionada.</div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredCatalog.map((medal) => (
               <div key={medal.code} className="bg-card border border-border/70 rounded-3xl p-6 shadow-md flex flex-col justify-between hover:shadow-lg transition">
                 <div>
                   <div className="flex items-center justify-between mb-4">

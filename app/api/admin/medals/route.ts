@@ -5,11 +5,14 @@ import { db } from "@/lib/db";
 import { medalsCatalog, notifications, userMedals, users } from "@/drizzle/schema";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { getPilotMedal, PILOT_MEDALS } from "@/lib/medal-pilot-catalog";
+import { canAccessAdminPortal } from "@/lib/role-capabilities";
+
+const MEDAL_CATEGORIES = new Set(["achievement", "academic", "manual", "streak"]);
 
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user || !canAccessAdminPortal({ email: session.user.email, role: session.user.role })) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -47,7 +50,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    if (!session?.user || !canAccessAdminPortal({ email: session.user.email, role: session.user.role })) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -60,8 +63,8 @@ export async function POST(request: Request) {
       const requirement = typeof body.requirement === "string" ? body.requirement.trim() : "";
       const icon = typeof body.icon === "string" ? body.icon.trim() : "🏅";
       const category = typeof body.category === "string" ? body.category.trim() : "manual";
-      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code) || code.length > 64 || !title || title.length > 120 || !description || !requirement || icon.length > 32) {
-        return NextResponse.json({ error: "Informe um código no formato palavra-palavra, título, descrição e requisito; o ícone deve ter no máximo 32 caracteres." }, { status: 400 });
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(code) || code.length > 64 || !title || title.length > 120 || description.length < 12 || description.length > 500 || requirement.length < 12 || requirement.length > 500 || icon.length > 32 || !MEDAL_CATEGORIES.has(category)) {
+        return NextResponse.json({ error: "Informe código, título, descrição e critério claros; selecione uma categoria válida e mantenha os textos entre 12 e 500 caracteres." }, { status: 400 });
       }
       const existing = await db.query.medalsCatalog.findFirst({ where: eq(medalsCatalog.code, code) });
       if (existing || getPilotMedal(code)) return NextResponse.json({ error: "Já existe uma medalha com este código." }, { status: 409 });
@@ -72,7 +75,7 @@ export async function POST(request: Request) {
     const notes = typeof body.notes === "string" ? body.notes.trim() : "";
     const batchUserIds: number[] = Array.isArray(body.userIds) ? body.userIds.map((value: unknown) => Number(value)).filter((id: number) => Number.isInteger(id) && id > 0) : [];
     if (body.action === "grant-batch") {
-      if (!Number.isInteger(adminId) || adminId <= 0 || !batchUserIds.length || !medalCode || !notes) return NextResponse.json({ error: "Selecione pelo menos um aluno, uma medalha e informe uma justificativa." }, { status: 400 });
+      if (!Number.isInteger(adminId) || adminId <= 0 || !batchUserIds.length || !medalCode || notes.length < 8) return NextResponse.json({ error: "Selecione pelo menos um aluno, uma medalha e informe uma justificativa de pelo menos 8 caracteres." }, { status: 400 });
       const medalMeta = (await db.query.medalsCatalog.findFirst({ where: eq(medalsCatalog.code, medalCode) })) ?? getPilotMedal(medalCode);
       if (!medalMeta) return NextResponse.json({ error: "Medalha não encontrada no catálogo." }, { status: 404 });
       let awarded = 0;
@@ -88,8 +91,8 @@ export async function POST(request: Request) {
     }
     const userId = Number(body.userId);
 
-    if (!Number.isInteger(adminId) || adminId <= 0 || !Number.isInteger(userId) || userId <= 0 || !medalCode || !notes) {
-      return NextResponse.json({ error: "Selecione um aluno, uma medalha e informe uma justificativa para a concessão manual." }, { status: 400 });
+    if (!Number.isInteger(adminId) || adminId <= 0 || !Number.isInteger(userId) || userId <= 0 || !medalCode || notes.length < 8) {
+      return NextResponse.json({ error: "Selecione um aluno, uma medalha e informe uma justificativa de pelo menos 8 caracteres para a concessão manual." }, { status: 400 });
     }
 
     const [targetUser, existingGrant] = await Promise.all([

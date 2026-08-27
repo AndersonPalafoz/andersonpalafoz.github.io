@@ -49,4 +49,21 @@ describe("navegação lateral unificada", () => {
     expect(styles).toContain("@media (max-width: 420px)");
     expect(styles).toContain("grid-template-columns: minmax(0, 1fr)");
   });
+
+  it("protege o hero administrativo contra palavras longas e encurta os rótulos da navegação mobile", () => {
+    expect(adminPage).toContain("admin-dashboard-hero");
+    expect(adminPage).toContain("[overflow-wrap:anywhere]");
+    expect(adminPage).toContain('index > 3 ? "hidden sm:flex" : "flex"');
+    expect(shell).toContain('mobileLabel: "Admin"');
+    expect(shell).toContain("item.mobileLabel || item.label");
+    expect(styles).toContain(".admin-dashboard-hero h1");
+  });
+
+  it("prioriza os controles exclusivos de superadmin na navegação mobile sem expô-los a outros papéis", () => {
+    expect(shell).toContain('mobileLabel: "CMS"');
+    expect(shell).toContain('mobileLabel: "Cupons"');
+    expect(shell).toContain('mobileLabel: "Auditoria"');
+    expect(shell).toContain("superadminNavItems[0]");
+    expect(shell).toContain("Superadministração");
+  });
 });

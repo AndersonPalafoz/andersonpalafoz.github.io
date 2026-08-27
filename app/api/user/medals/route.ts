@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { and, asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db, getUserByEmail } from "@/lib/db";
 import { medalsCatalog, userMedals } from "@/drizzle/schema";
+import { PILOT_MEDALS } from "@/lib/medal-pilot-catalog";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,8 @@ export async function GET() {
   const user = await getUserByEmail(session.user.email);
   if (!user) return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404, headers: { "Cache-Control": "no-store" } });
 
-  const rows = await db.select({
+  const [storedCatalog, grants] = await Promise.all([
+    db.select({
     id: medalsCatalog.id,
     code: medalsCatalog.code,
     title: medalsCatalog.title,
@@ -21,11 +23,22 @@ export async function GET() {
     icon: medalsCatalog.icon,
     category: medalsCatalog.category,
     requirement: medalsCatalog.requirement,
-    awardedAt: userMedals.createdAt,
   })
-    .from(medalsCatalog)
-    .leftJoin(userMedals, and(eq(userMedals.medalCode, medalsCatalog.code), eq(userMedals.userId, user.id)))
-    .orderBy(asc(medalsCatalog.category), asc(medalsCatalog.title));
+      .from(medalsCatalog),
+    db.select({ medalCode: userMedals.medalCode, awardedAt: userMedals.createdAt, grantType: userMedals.grantType, notes: userMedals.notes })
+      .from(userMedals)
+      .where(eq(userMedals.userId, user.id)),
+  ]);
 
-  return NextResponse.json({ medals: rows.map((row) => ({ ...row, unlocked: Boolean(row.awardedAt) })) }, { headers: { "Cache-Control": "no-store" } });
+  const storedCodes = new Set(storedCatalog.map((medal) => medal.code));
+  const grantsByCode = new Map(grants.map((grant) => [grant.medalCode, grant]));
+  const catalog = [
+    ...storedCatalog,
+    ...PILOT_MEDALS.filter((medal) => !storedCodes.has(medal.code)).map((medal) => ({ ...medal, id: -1 })),
+  ].sort((a, b) => a.category.localeCompare(b.category, "pt-BR") || a.title.localeCompare(b.title, "pt-BR"));
+
+  return NextResponse.json({ medals: catalog.map((medal) => {
+    const grant = grantsByCode.get(medal.code);
+    return { ...medal, awardedAt: grant?.awardedAt ?? null, grantType: grant?.grantType ?? null, notes: grant?.notes ?? null, unlocked: Boolean(grant) };
+  }) }, { headers: { "Cache-Control": "no-store" } });
 }

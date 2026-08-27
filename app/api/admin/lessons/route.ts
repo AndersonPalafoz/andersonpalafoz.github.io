@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getLessonPedagogy, withLessonPedagogy } from "@/lib/lesson-pedagogy";
 import { lessons, materials, modules } from "@/drizzle/schema";
 import { and, asc, eq, inArray } from "drizzle-orm";
 
@@ -15,7 +16,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user || !canManage(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();
-    const { courseId, moduleId, moduleTitle, title, description, videoUrl, audioUrl, duration, content, order, materialUrl, materialTitle, materialCategory, materialLevel } = body;
+    const { courseId, moduleId, moduleTitle, title, description, videoUrl, audioUrl, duration, content, order, materialUrl, materialTitle, materialCategory, materialLevel, learningObjectives, evidenceOfLearning } = body;
     const parsedCourseId = Number(courseId);
     if (!Number.isInteger(parsedCourseId) || parsedCourseId <= 0 || !title?.trim()) return NextResponse.json({ error: "courseId e title são obrigatórios" }, { status: 400 });
 
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
       audioUrl: normalizedAudioUrl || "",
       duration: Number.isFinite(Number(duration)) ? Number(duration) : 15,
       order: Number.isFinite(Number(order)) && Number(order) > 0 ? Number(order) : existingLessons.length + 1,
-      content: content || "",
+      content: withLessonPedagogy(content, { learningObjectives, evidenceOfLearning }),
     }).returning();
 
     let material = null;
@@ -82,8 +83,40 @@ export async function PATCH(request: NextRequest) {
     const session = await getServerSession(authOptions);
     if (!session?.user || !canManage(session.user.role)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const body = await request.json() as { courseId?: number; lessonIds?: number[] };
+    const body = await request.json() as {
+      courseId?: number;
+      lessonIds?: number[];
+      lessonId?: number;
+      learningObjectives?: string[] | string;
+      evidenceOfLearning?: string[] | string;
+    };
     const courseId = Number(body.courseId);
+    const requestedLessonId = Number(body.lessonId);
+    const isPedagogyUpdate = Number.isInteger(requestedLessonId) && requestedLessonId > 0
+      && (body.learningObjectives !== undefined || body.evidenceOfLearning !== undefined);
+
+    if (isPedagogyUpdate) {
+      if (!Number.isInteger(courseId) || courseId <= 0) {
+        return NextResponse.json({ error: "courseId válido é obrigatório para atualizar a proposta pedagógica." }, { status: 400 });
+      }
+      const courseModules = await db.query.modules.findMany({ where: eq(modules.courseId, courseId) });
+      const moduleIds = courseModules.map((module) => module.id);
+      const lesson = moduleIds.length
+        ? await db.query.lessons.findFirst({ where: and(eq(lessons.id, requestedLessonId), inArray(lessons.moduleId, moduleIds)) })
+        : null;
+      if (!lesson) return NextResponse.json({ error: "A aula não pertence ao curso informado." }, { status: 404 });
+
+      const updated = (await db.update(lessons).set({
+        content: withLessonPedagogy(lesson.content, {
+          learningObjectives: body.learningObjectives ?? getLessonPedagogy(lesson.content).learningObjectives,
+          evidenceOfLearning: body.evidenceOfLearning ?? getLessonPedagogy(lesson.content).evidenceOfLearning,
+        }),
+        updatedAt: new Date(),
+      }).where(eq(lessons.id, lesson.id)).returning())[0];
+
+      return NextResponse.json({ lesson: { ...updated, pedagogy: getLessonPedagogy(updated.content) } });
+    }
+
     const lessonIds = Array.isArray(body.lessonIds) ? body.lessonIds.map(Number) : [];
     if (!Number.isInteger(courseId) || courseId <= 0 || lessonIds.length === 0 || lessonIds.some((id) => !Number.isInteger(id) || id <= 0) || new Set(lessonIds).size !== lessonIds.length) {
       return NextResponse.json({ error: "courseId e lessonIds válidos são obrigatórios." }, { status: 400 });
@@ -128,7 +161,7 @@ export async function GET(request: NextRequest) {
       const modLessons = await db.query.lessons.findMany({ where: eq(lessons.moduleId, mod.id), orderBy: asc(lessons.order) });
       for (const lesson of modLessons) {
         const linkedMaterials = await db.select().from(materials).where(eq(materials.lessonId, lesson.id));
-        allLessons.push({ ...lesson, moduleId: mod.id, moduleTitle: mod.title, materials: linkedMaterials, materialUrl: linkedMaterials[0]?.fileUrl || null });
+        allLessons.push({ ...lesson, pedagogy: getLessonPedagogy(lesson.content), moduleId: mod.id, moduleTitle: mod.title, materials: linkedMaterials, materialUrl: linkedMaterials[0]?.fileUrl || null });
       }
     }
     return NextResponse.json({ lessons: allLessons, modules: courseModules });

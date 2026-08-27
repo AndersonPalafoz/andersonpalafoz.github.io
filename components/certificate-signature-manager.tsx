@@ -15,7 +15,13 @@ import {
   Sparkles,
   Trash2,
   X,
+  ChevronDown,
+  FilePlus2,
+  SlidersHorizontal,
 } from "lucide-react";
+import { isTechnicalCourse } from "@/lib/course-visibility";
+import { CertificateFlowSteps } from "@/components/certificate-flow-steps";
+import { resolveCertificateFlowStep } from "@/lib/certificate-flow";
 
 type SignatureType = "none" | "manual" | "govbr";
 
@@ -45,6 +51,7 @@ type CertificateItem = {
   hasSignedPdf: boolean;
   certificateUrl?: string;
   signedPdfUrl?: string;
+  downloadUrl?: string | null;
   certificateTemplateId?: number | null;
   includeSiteBranding: boolean;
 };
@@ -55,7 +62,7 @@ function signatureLabel(type: SignatureType) {
   return "Aguardando assinatura";
 }
 
-export function CertificateSignatureManager() {
+export function CertificateSignatureManager({ audience = "teacher" }: { audience?: "teacher" | "admin" }) {
   const [certificates, setCertificates] = useState<CertificateItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
@@ -80,6 +87,7 @@ export function CertificateSignatureManager() {
   const [deleting, setDeleting] = useState(false);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState(0);
+  const [uploadTargetId, setUploadTargetId] = useState<number | null>(null);
 
   // Preview and issuance modal state
   const [previewCert, setPreviewCert] = useState<CertificateItem | null>(null);
@@ -109,9 +117,12 @@ export function CertificateSignatureManager() {
     setLoading(true);
     setLoadingError(null);
     try {
-      const response = await fetch("/api/admin/certificates", {
+      const response = await fetch(
+        audience === "teacher" ? "/api/admin/certificates?view=teacher" : "/api/admin/certificates",
+        {
         cache: "no-store",
-      });
+        }
+      );
       const payload = await response.json();
       if (response.status === 403) {
         throw new Error(
@@ -242,7 +253,7 @@ export function CertificateSignatureManager() {
   }
 
   function handleExportPendingCsv() {
-    const pendingItems = certificates.filter(c => !c.hasSignedPdf);
+    const pendingItems = visibleCertificates.filter(c => !c.hasSignedPdf);
     const headers = [
       "ID",
       "Aluno",
@@ -317,9 +328,16 @@ export function CertificateSignatureManager() {
     }
   }
 
+  const visibleCertificates = useMemo(
+    () => audience === "teacher"
+      ? certificates.filter(certificate => !isTechnicalCourse({ title: certificate.courseTitle }))
+      : certificates,
+    [audience, certificates]
+  );
+
   const filteredCertificates = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    return certificates.filter(cert => {
+    return visibleCertificates.filter(cert => {
       const matchesSearch =
         !query ||
         cert.studentName.toLowerCase().includes(query) ||
@@ -347,7 +365,7 @@ export function CertificateSignatureManager() {
 
       return matchesSearch && matchesStatus && matchesDate;
     });
-  }, [certificates, searchQuery, statusFilter, startDateFilter, endDateFilter]);
+  }, [visibleCertificates, searchQuery, statusFilter, startDateFilter, endDateFilter]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -558,33 +576,39 @@ export function CertificateSignatureManager() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-4">
-        <div>
-          <h2 className="text-xl font-black text-foreground">
-            Gestão e Assinatura de Certificados
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Assine digitalmente, visualize prévias, faça uploads de PDFs
-            assinados e emite certificados com templates configuráveis.
-          </p>
+      <section className="surface-card overflow-hidden border border-border/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.12),transparent_34%),linear-gradient(135deg,rgba(255,255,255,0.96),rgba(254,242,242,0.72))] p-5 sm:p-7">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0">
+            <p className="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-red-700 dark:text-red-300"><FileSignature size={15} /> Fluxo docente</p>
+            <h2 className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">Certificados e assinaturas</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">Emita, confira a prévia, acompanhe pendências e envie o PDF já assinado para os cursos sob sua gestão.</p>
+          </div>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              onClick={() => setShowUnregisteredModal(true)}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 sm:w-auto"
+            >
+              <FilePlus2 size={15} /> Novo certificado
+            </button>
+            <button
+              type="button"
+              onClick={handleExportPendingCsv}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground transition hover:bg-muted sm:w-auto"
+            >
+              <Download size={15} /> Exportar pendências
+            </button>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setShowUnregisteredModal(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-red-700"
-          >
-            <Sparkles size={15} /> Emitir para pessoa sem cadastro
-          </button>
-          <button
-            type="button"
-            onClick={handleExportPendingCsv}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground transition hover:bg-muted"
-          >
-            <Download size={15} /> Exportar pendências (CSV)
-          </button>
+        <div className="mt-5 grid grid-cols-3 divide-x divide-border/70 rounded-2xl border border-border/70 bg-background/70 text-center">
+          <div className="min-w-0 px-3 py-3"><strong className="block text-lg font-black text-foreground">{visibleCertificates.length}</strong><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Na fila</span></div>
+          <div className="min-w-0 px-3 py-3"><strong className="block text-lg font-black text-amber-600">{visibleCertificates.filter(c => !c.hasSignedPdf).length}</strong><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Pendentes</span></div>
+          <div className="min-w-0 px-3 py-3"><strong className="block text-lg font-black text-emerald-600">{visibleCertificates.filter(c => c.hasSignedPdf).length}</strong><span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Concluídos</span></div>
         </div>
-      </div>
+        <div className="mt-4">
+          <CertificateFlowSteps role={audience === "admin" ? "admin" : "professor"} activeStep="validate" />
+        </div>
+      </section>
 
       {message && (
         <div
@@ -609,7 +633,9 @@ export function CertificateSignatureManager() {
       </div>
 
       {/* Filter and Batch Bar */}
-      <div className="surface-card grid gap-4 border border-border/70 p-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="surface-card border border-border/70 p-4 sm:p-5">
+        <div className="mb-3 flex items-center gap-2 text-xs font-black uppercase tracking-[0.16em] text-muted-foreground"><SlidersHorizontal size={15} className="text-red-600" /> Filtrar certificados</div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div>
           <label className="block text-xs font-bold text-muted-foreground uppercase mb-1">
             Pesquisar Aluno (Nome, CPF, E-mail)
@@ -660,10 +686,11 @@ export function CertificateSignatureManager() {
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
+        </div>
       </div>
 
       {/* Batch Actions Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between surface-card p-4 border border-border/70">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
             <input
             type="checkbox"
@@ -675,8 +702,7 @@ export function CertificateSignatureManager() {
             className="rounded border-border text-red-600 focus:ring-red-600 w-4 h-4 cursor-pointer"
           />
           <span className="text-sm font-bold text-foreground">
-            {selectedIds.length} de {filteredCertificates.length} certificados
-            selecionados (Total: {certificates.length})
+            {selectedIds.length} de {filteredCertificates.length} certificados selecionados
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -726,7 +752,7 @@ export function CertificateSignatureManager() {
         </div>
       ) : (
         <>
-          <div className="grid gap-5 xl:grid-cols-2">
+          <div className="grid gap-4 lg:grid-cols-2">
             {paginatedCertificates.map(certificate => {
               const isSelected = selectedIds.includes(certificate.id);
               return (
@@ -829,11 +855,17 @@ export function CertificateSignatureManager() {
                     </div>
                   </dl>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <CertificateFlowSteps
+                    compact
+                    role={audience === "admin" ? "admin" : "professor"}
+                    activeStep={resolveCertificateFlowStep(certificate)}
+                  />
+
+                  <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
                     <button
                       type="button"
                       onClick={() => setPreviewCert(certificate)}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
+                      className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted sm:flex-1"
                     >
                       <Eye size={16} className="text-red-600" /> Pré-visualizar
                       certificado
@@ -842,34 +874,43 @@ export function CertificateSignatureManager() {
                       type="button"
                       onClick={() => openIssueModal(certificate)}
                       disabled={issuingId === certificate.id}
-                      className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-red-600/30 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 hover:bg-red-500/20 dark:text-red-200 disabled:opacity-50"
+                      className="inline-flex min-w-0 items-center justify-center gap-2 rounded-xl border border-red-600/30 bg-red-500/10 px-3 py-2.5 text-xs font-bold text-red-700 hover:bg-red-500/20 dark:text-red-200 disabled:opacity-50 sm:flex-1"
                     >
                       <Sparkles size={16} /> Emitir / atualizar
                     </button>
-                    {certificate.certificateUrl && (
+                    {certificate.downloadUrl && (
                       <a
-                        href={certificate.certificateUrl}
+                        href={certificate.downloadUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs font-bold text-foreground hover:bg-muted"
                       >
-                        <Download size={16} className="text-red-600" /> Baixar
-                        PDF
+                        <Download size={16} className="text-red-600" /> Baixar PDF
                       </a>
                     )}
                     <button
                       type="button"
                       onClick={() => requestDelete([certificate.id])}
                       disabled={deleting}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-600/40 bg-red-500/10 px-4 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-500/20 dark:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-600/40 bg-red-500/10 px-3 py-2.5 text-xs font-bold text-red-700 transition hover:bg-red-500/20 dark:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Trash2 size={16} /> Excluir
                     </button>
                   </div>
 
-                  <form
+                  <button
+                    type="button"
+                    onClick={() => setUploadTargetId(current => current === certificate.id ? null : certificate.id)}
+                    className="flex w-full items-center justify-between border-t border-border/60 pt-4 text-left text-xs font-bold text-foreground"
+                    aria-expanded={uploadTargetId === certificate.id}
+                  >
+                    <span className="inline-flex items-center gap-2"><Upload size={15} className="text-red-600" /> {certificate.hasSignedPdf ? "Substituir PDF assinado" : "Registrar PDF assinado"}</span>
+                    <ChevronDown size={16} className={`transition-transform ${uploadTargetId === certificate.id ? "rotate-180" : ""}`} />
+                  </button>
+
+                  {uploadTargetId === certificate.id && <form
                     onSubmit={handleUpload}
-                    className="space-y-3 pt-2 border-t border-border/60"
+                    className="space-y-3 rounded-xl border border-border/70 bg-muted/20 p-3"
                     encType="multipart/form-data"
                   >
                     <input
@@ -932,7 +973,7 @@ export function CertificateSignatureManager() {
                         </>
                       )}
                     </button>
-                  </form>
+                  </form>}
 
                   {certificate.signedAt && (
                     <p className="flex items-center gap-2 text-xs text-muted-foreground">

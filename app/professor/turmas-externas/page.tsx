@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
-import * as XLSX from "xlsx";
+import Papa from "papaparse";
 import Link from "next/link";
 import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
@@ -105,6 +105,78 @@ type ClassFormField = "institution" | "className" | "courseName" | "academicTerm
 type ClassFormErrors = Partial<Record<ClassFormField, string>>;
 
 type ImportedAttendanceRecord = { date: string; status: "present" | "absent" | "late" | "excused" };
+
+const EXTERNAL_STUDENT_IMPORT_MAX_BYTES = 5 * 1024 * 1024;
+const EXTERNAL_STUDENT_IMPORT_MAX_DATA_ROWS = 1_000;
+const EXTERNAL_STUDENT_IMPORT_MAX_COLUMNS = 160;
+const EXTERNAL_STUDENT_IMPORT_ACCEPT = ".csv,.tsv,.xlsx";
+type ExternalStudentImportFormat = "csv" | "tsv" | "xlsx";
+
+const assertExternalStudentImportFile = (file: Pick<File, "name" | "size">): ExternalStudentImportFormat => {
+  const extension = file.name.trim().toLowerCase().split(".").pop();
+  if (extension !== "csv" && extension !== "tsv" && extension !== "xlsx") {
+    throw new Error("Use um arquivo CSV, TSV ou XLSX. O formato XLS antigo não é aceito por segurança.");
+  }
+  if (file.size <= 0) throw new Error("O arquivo selecionado está vazio.");
+  if (file.size > EXTERNAL_STUDENT_IMPORT_MAX_BYTES) {
+    throw new Error("A planilha excede o limite de 5 MB para importação segura.");
+  }
+  return extension;
+};
+
+const getImportCellValue = (value: unknown): unknown => {
+  if (value instanceof Date || typeof value === "string" || typeof value === "number" || typeof value === "boolean") return value;
+  if (value && typeof value === "object") {
+    const richValue = value as { text?: unknown; result?: unknown; richText?: Array<{ text?: unknown }> };
+    if (typeof richValue.text === "string") return richValue.text;
+    if (typeof richValue.result === "string" || typeof richValue.result === "number" || richValue.result instanceof Date) return richValue.result;
+    if (Array.isArray(richValue.richText)) return richValue.richText.map((part) => part.text || "").join("");
+  }
+  return "";
+};
+
+const assertImportedMatrixLimits = (matrix: unknown[][]) => {
+  if (matrix.length < 2) throw new Error("O arquivo precisa de um cabeçalho e ao menos uma linha de dados.");
+  if (matrix.length - 1 > EXTERNAL_STUDENT_IMPORT_MAX_DATA_ROWS) {
+    throw new Error("A planilha excede o limite de 1.000 alunos por importação.");
+  }
+  if (matrix.some((row) => row.length > EXTERNAL_STUDENT_IMPORT_MAX_COLUMNS)) {
+    throw new Error("A planilha excede o limite de 160 colunas por importação.");
+  }
+};
+
+const readExternalStudentImportMatrix = async (file: File): Promise<unknown[][]> => {
+  const format = assertExternalStudentImportFile(file);
+  if (format === "xlsx") {
+    const XLSX = await import("xlsx");
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true, WTF: false });
+    const firstSheetName = workbook.SheetNames[0];
+    if (!firstSheetName) throw new Error("A planilha não contém uma aba para importação.");
+    const worksheet = workbook.Sheets[firstSheetName];
+    const matrix = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1, defval: "", raw: true })
+      .map((row) => row.map(getImportCellValue));
+    assertImportedMatrixLimits(matrix);
+    return matrix;
+  }
+
+  const matrix = await new Promise<unknown[][]>((resolve, reject) => {
+    Papa.parse<string[]>(file, {
+      delimiter: format === "tsv" ? "\t" : "",
+      skipEmptyLines: "greedy",
+      worker: true,
+      complete: (results) => {
+        if (results.errors.length > 0) {
+          reject(new Error("Não foi possível ler o arquivo CSV/TSV. Verifique a formatação e tente novamente."));
+          return;
+        }
+        resolve(results.data.map((row) => row.map(getImportCellValue)));
+      },
+      error: () => reject(new Error("Não foi possível ler o arquivo CSV/TSV.")),
+    });
+  });
+  assertImportedMatrixLimits(matrix);
+  return matrix;
+};
 
 const normalizeImportedHeader = (value: unknown) => String(value ?? "")
   .normalize("NFD")
@@ -226,6 +298,7 @@ export default function TurmasExternasPage() {
 
   // Search and filters
   const [searchTerm, setSearchTerm] = useState("");
+  const quickSearchInputRef = useRef<HTMLInputElement>(null);
   const [selectedInstitutionFilter, setSelectedInstitutionFilter] = useState("all");
   const [studentStatusFilter, setStudentStatusFilter] = useState("all");
   const [studentAttendanceFilter, setStudentAttendanceFilter] = useState("all");
@@ -235,6 +308,24 @@ export default function TurmasExternasPage() {
   const [selectedModalityFilter, setSelectedModalityFilter] = useState("all");
   const [selectedLevelFilter, setSelectedLevelFilter] = useState("all");
   const [classSortOrder, setClassSortOrder] = useState("name_asc");
+
+  const focusQuickSearch = () => {
+    document.getElementById("external-class-quick-search")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => quickSearchInputRef.current?.focus(), 220);
+  };
+
+  useEffect(() => {
+    const handleQuickSearchShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping = target?.matches("input, textarea, select, [contenteditable='true']");
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey || isTyping) return;
+      event.preventDefault();
+      focusQuickSearch();
+    };
+
+    window.addEventListener("keydown", handleQuickSearchShortcut);
+    return () => window.removeEventListener("keydown", handleQuickSearchShortcut);
+  }, []);
 
   // Edit class mode
   const [editingClassId, setEditingClassId] = useState<number | null>(null);
@@ -1240,7 +1331,8 @@ export default function TurmasExternasPage() {
     notifySuccess(`Pré-visualização PDF aberta com o filtro: ${academicReportFilterLabel(filter)}.`);
   };
 
-  const downloadStudentTemplate = () => {
+  const downloadStudentTemplate = async () => {
+    const XLSX = await import("xlsx");
     const workbook = XLSX.utils.book_new();
     const worksheet = XLSX.utils.aoa_to_sheet([
       ["Nome completo", "CPF", "E-mail", "Matrícula", "Categoria", "Universidade", "Componente", "Dias", "Horário", "CH", "Professor", "Status"],
@@ -1252,19 +1344,14 @@ export default function TurmasExternasPage() {
     notifySuccess("Modelo de planilha baixado.");
   };
 
-  // Importação real de CSV/TSV/XLS/XLSX para os layouts IsF e PROFICI.
+  // Importação segura de CSV/TSV/XLSX para os layouts IsF e PROFICI.
   const handleCsvImport = async (classId: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setSubmitting(true);
-      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
-      const firstSheetName = workbook.SheetNames[0];
-      if (!firstSheetName) throw new Error("A planilha não contém uma aba para importação.");
-      const sheet = workbook.Sheets[firstSheetName];
-      const matrix = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "", raw: true });
-      if (matrix.length < 2) throw new Error("O arquivo precisa de um cabeçalho e ao menos uma linha de dados.");
+      const matrix = await readExternalStudentImportMatrix(file);
 
       const rawHeaders = (matrix[0] || []).map((header) => cleanImportedValue(header));
       const headers = rawHeaders.map(normalizeImportedHeader);
@@ -1350,7 +1437,7 @@ export default function TurmasExternasPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao importar alunos.");
 
-      const format = /\.xlsx?$/i.test(file.name) ? "Excel" : "CSV/TSV";
+      const format = /\.xlsx$/i.test(file.name) ? "Excel" : "CSV/TSV";
       const attendanceMessage = attendanceColumnsDetected > 0 ? ` ${attendanceColumnsDetected} coluna(s) de presença identificada(s).` : "";
       const skippedMessage = skippedRows > 0 ? ` ${skippedRows} linha(s) sem nome foram ignoradas.` : "";
       notifySuccess(`${format}: ${data.importedCount} aluno(s) importado(s) e ${data.updatedCount || 0} atualizado(s).${attendanceMessage}${skippedMessage}`);
@@ -1386,6 +1473,14 @@ export default function TurmasExternasPage() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 md:justify-end" aria-label="Resumo de sincronização">
+            <button
+              type="button"
+              onClick={focusQuickSearch}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-black text-gray-700 shadow-sm transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-red-900/60 dark:hover:bg-red-950/30 dark:hover:text-red-300 dark:focus:ring-offset-slate-900 md:hidden"
+              aria-label="Abrir busca rápida de turmas e alunos"
+            >
+              <Search size={15} aria-hidden="true" /> Buscar
+            </button>
             <button
               type="button"
               onClick={() => { setIsClassFormOpen(true); window.scrollTo({ top: 420, behavior: "smooth" }); }}
@@ -1513,19 +1608,30 @@ export default function TurmasExternasPage() {
         )}
 
         {/* Barra de Busca e Filtros Globais */}
-        <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-4 sm:p-5 lg:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-80">
+        <section id="external-class-quick-search" className="scroll-mt-24 rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:flex lg:items-center lg:justify-between lg:gap-4 lg:p-6">
+          <div className="w-full lg:w-96">
+            <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
-              type="text"
-              placeholder="Buscar por turma, curso ou aluno..."
+              ref={quickSearchInputRef}
+              type="search"
+              placeholder="Buscar turma, curso, aluno ou matrícula"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-2xl border border-gray-200 dark:border-slate-700 bg-gray-100/70 dark:bg-slate-800/80 text-sm font-semibold text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition"
+              enterKeyHint="search"
+              autoComplete="off"
+              aria-label="Busca rápida de turmas e alunos"
+              aria-describedby="external-class-search-hint"
+              className="min-h-12 w-full rounded-2xl border border-gray-200 bg-gray-100/70 py-3 pl-10 pr-11 text-sm font-semibold text-gray-900 transition placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-400 dark:focus:ring-offset-slate-900"
             />
+            {searchTerm && <button type="button" onClick={() => { setSearchTerm(""); quickSearchInputRef.current?.focus(); }} className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-gray-500 transition hover:bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 dark:hover:bg-slate-700" aria-label="Limpar busca"><X size={16} aria-hidden="true" /></button>}
+            </div>
+            <p id="external-class-search-hint" aria-live="polite" className="mt-2 px-1 text-[11px] font-semibold text-gray-500 dark:text-slate-400">
+              {searchTerm.trim() ? `${filteredClasses.length} ${filteredClasses.length === 1 ? "turma encontrada" : "turmas encontradas"}. A busca inclui alunos, e-mail e matrícula.` : "Pesquise por turma, instituição, curso, aluno, e-mail ou matrícula."}
+            </p>
           </div>
 
-          <div className="external-class-filters flex w-full flex-col items-stretch gap-3 pb-1 sm:flex-row sm:items-center md:w-auto md:pb-0">
+          <div className="external-class-filters mt-4 flex w-full flex-col items-stretch gap-3 pb-1 sm:flex-row sm:items-center lg:mt-0 lg:w-auto lg:pb-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
               <select
@@ -2293,7 +2399,7 @@ export default function TurmasExternasPage() {
                             <FileSpreadsheet size={14} className="text-green-600" /> Importar planilha
                             <input
                               type="file"
-                              accept=".csv,.tsv,.xls,.xlsx"
+                              accept={EXTERNAL_STUDENT_IMPORT_ACCEPT}
                               className="hidden"
                               onChange={(e) => void handleCsvImport(cls.id, e)}
                             />
@@ -2341,7 +2447,7 @@ export default function TurmasExternasPage() {
                                 <FileSpreadsheet size={14} className="text-green-600" /> Importar Excel/CSV
                                 <input
                                   type="file"
-                                  accept=".csv,.tsv,.xls,.xlsx"
+                                  accept={EXTERNAL_STUDENT_IMPORT_ACCEPT}
                                   className="hidden"
                                   onChange={(e) => {
                                     setActiveQuickActionsId(null);
@@ -2354,7 +2460,7 @@ export default function TurmasExternasPage() {
                                 type="button"
                                 onClick={() => {
                                   setActiveQuickActionsId(null);
-                                  downloadStudentTemplate();
+                                  void downloadStudentTemplate();
                                 }}
                                 className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
                               >

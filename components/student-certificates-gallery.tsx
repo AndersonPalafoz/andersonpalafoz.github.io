@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { CertificateShareButton } from "@/components/certificate-share-button";
 import { CertificateVerificationQr } from "@/components/certificate-verification-qr";
+import { CertificateFlowSteps } from "@/components/certificate-flow-steps";
+import { resolveCertificateFlowStep } from "@/lib/certificate-flow";
 import { toast } from "sonner";
 
 type CertificateItem = {
@@ -22,6 +24,7 @@ type CertificateItem = {
   signatureType: string;
   signedPdfUrl: string | null;
   certificateUrl: string | null;
+  downloadUrl?: string | null;
   certificateTemplateId?: number | null;
   includeSiteBranding?: boolean;
 };
@@ -225,6 +228,8 @@ export function StudentCertificatesGallery() {
         </div>
       </div>
 
+      <CertificateFlowSteps role="student" activeStep={certificates.length > 0 ? "download" : "create"} />
+
       <div className="grid gap-4 surface-card p-4 border border-border/70 rounded-2xl sm:grid-cols-2 lg:grid-cols-4">
         <div className="relative sm:col-span-2">
           <Search
@@ -293,7 +298,7 @@ export function StudentCertificatesGallery() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           {filteredCertificates.map(cert => {
-            const downloadUrl = cert.signedPdfUrl || cert.certificateUrl || "#";
+            const downloadUrl = cert.downloadUrl || "#";
             const shareUrl = cert.certificateCode
               ? `/verificar/${encodeURIComponent(cert.certificateCode)}`
               : downloadUrl;
@@ -319,6 +324,7 @@ export function StudentCertificatesGallery() {
                     Código: {cert.certificateCode || "VERIFICADO"}
                   </p>
                   <CertificateVerificationQr code={cert.certificateCode} compact />
+                  <CertificateFlowSteps compact role="student" activeStep={resolveCertificateFlowStep(cert)} />
                 </div>
 
                 <div className="mt-6 space-y-4 pt-4 border-t border-border/60">
@@ -330,7 +336,7 @@ export function StudentCertificatesGallery() {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-red-700"
                       >
-                        <Download size={14} /> Baixar PDF Assinado
+                        <Download size={14} /> {cert.signedPdfUrl ? "Baixar PDF assinado" : "Baixar PDF oficial"}
                       </a>
                     ) : (
                       <span className="text-xs text-muted-foreground italic">
@@ -339,6 +345,14 @@ export function StudentCertificatesGallery() {
                     )}
                   </div>
                   <div>
+                    {cert.certificateCode && (
+                      <a
+                        href={`/verificar/${encodeURIComponent(cert.certificateCode)}`}
+                        className="mb-3 inline-flex items-center gap-2 text-xs font-bold text-red-700 hover:text-red-800 dark:text-red-300"
+                      >
+                        <ShieldCheck size={14} /> Validar autenticidade
+                      </a>
+                    )}
                     <p className="text-[11px] font-bold text-muted-foreground mb-1.5 uppercase tracking-wider">
                       Compartilhar Conquista
                     </p>

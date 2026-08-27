@@ -17,7 +17,7 @@ describe("integração dos pilotos de medalhas", () => {
 
   it("exige justificativa nas concessões manuais", () => {
     const adminRoute = read("app/api/admin/medals/route.ts");
-    expect(adminRoute).toContain("!notes");
+    expect(adminRoute).toContain("notes.length < 8");
     expect(adminRoute).toContain("justificativa");
   });
 
@@ -34,5 +34,29 @@ describe("integração dos pilotos de medalhas", () => {
     expect(adminRoute).toContain('body.action === "grant-batch"');
     expect(adminRoute).toContain("new Set<number>(batchUserIds)");
     expect(adminRoute).toContain("awarded");
+  });
+
+  it("mantém o catálogo institucional consistente entre a administração e a galeria do aluno", () => {
+    const adminRoute = read("app/api/admin/medals/route.ts");
+    const studentRoute = read("app/api/user/medals/route.ts");
+    const gallery = read("components/profile-medals-gallery.tsx");
+
+    expect(adminRoute).toContain("canAccessAdminPortal");
+    expect(studentRoute).toContain("PILOT_MEDALS.filter");
+    expect(studentRoute).toContain("grantsByCode");
+    expect(studentRoute).toContain("grantType: grant?.grantType");
+    expect(gallery).toContain("Reconhecimentos de aprendizagem");
+    expect(gallery).toContain("Filtros da galeria de medalhas");
+    expect(gallery).toContain("Registro do professor");
+  });
+
+  it("monta o alerta imediato de concessões no dashboard do aluno", () => {
+    const dashboard = read("app/dashboard/page.tsx");
+    const alert = read("components/medal-notification-alert.tsx");
+
+    expect(dashboard).toContain("<MedalNotificationAlert />");
+    expect(alert).toContain("/api/notifications");
+    expect(alert).toContain("getNewUnreadMedalNotifications");
+    expect(alert).toContain("aria-live=\"polite\"");
   });
 });

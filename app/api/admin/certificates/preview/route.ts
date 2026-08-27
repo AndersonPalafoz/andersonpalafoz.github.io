@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     let courseTitleVal = studentCourseTitle;
     let levelVal = studentLevel || "Geral";
     let studentCpfVal = studentCpf || "";
+    let workloadHoursVal = 40;
 
     if (userId && !studentNameVal) {
       const student = await db.query.users.findFirst({ where: eq(users.id, Number(userId)) });
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       if (course) {
         courseTitleVal = course.title;
         levelVal = course.level || "Geral";
+        workloadHoursVal = course.workloadHours || workloadHoursVal;
       }
     }
 
@@ -90,7 +92,7 @@ export async function POST(req: Request) {
       level: levelVal,
       issuedAt: new Date(),
       certificateCode: "PREVIEW-" + Math.random().toString(36).substring(2, 10).toUpperCase(),
-      workloadHours: 40,
+      workloadHours: workloadHoursVal,
       includeSiteBranding: includeBranding,
       institutionName: selectedTemplate?.institution || undefined,
       templateBackgroundBytes,

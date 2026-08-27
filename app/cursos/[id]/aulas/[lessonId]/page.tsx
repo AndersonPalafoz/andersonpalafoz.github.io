@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2, ShieldAlert, Trash2 } from "lucide-react";
+import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2, ShieldAlert, Trash2, Target, ClipboardCheck, RotateCcw, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -15,6 +15,8 @@ interface SpeakingAttempt {
   aiScore: number | null;
   aiFeedback: string | null;
   aiSuggestions: string | null;
+  teacherFeedback?: string | null;
+  teacherAudioFeedbackUrl?: string | null;
   submittedAt: string;
 }
 
@@ -34,6 +36,10 @@ interface LessonData {
   videoUrl: string | null;
   audioUrl: string | null;
   type: string;
+  pedagogy?: {
+    learningObjectives: string[];
+    evidenceOfLearning: string[];
+  };
 }
 
 export default function LessonPageClient() {
@@ -63,6 +69,7 @@ export default function LessonPageClient() {
   const [speakingActivity, setSpeakingActivity] = useState<{ id: number; title: string } | null>(null);
   const [speakingHistory, setSpeakingHistory] = useState<SpeakingAttempt[]>([]);
   const [latestFeedback, setLatestFeedback] = useState<(SpeakingAttempt & { previousScore: number | null; improvement: number | null }) | null>(null);
+  const [speakingReview, setSpeakingReview] = useState<{ feedback: string | null; audioUrl: string | null } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [savingSpeaking, setSavingSpeaking] = useState(false);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -102,6 +109,12 @@ export default function LessonPageClient() {
         const speakingAct = json.activities?.find((a: any) => a.type === "speaking");
         if (speakingAct) {
           setSpeakingActivity(speakingAct);
+          const speakingProgress = json.activityProgress?.find((progress: any) => progress.activityId === speakingAct.id);
+          if (speakingProgress?.status === "in_progress" && (speakingProgress.teacherFeedback || speakingProgress.teacherAudioFeedbackUrl)) {
+            setSpeakingReview({ feedback: speakingProgress.teacherFeedback || null, audioUrl: speakingProgress.teacherAudioFeedbackUrl || null });
+          } else {
+            setSpeakingReview(null);
+          }
           const attRes = await fetch(`/api/speaking/attempts?activityId=${speakingAct.id}`);
           if (attRes.ok) {
             const attJson = await attRes.json();
@@ -223,6 +236,7 @@ export default function LessonPageClient() {
       const improvement = payload.comparison?.improvement ?? null;
       setSpeakingHistory((current) => [payload.attempt, ...current]);
       setLatestFeedback({ ...payload.attempt, previousScore, improvement });
+      setSpeakingReview(null);
       toast.success(previousScore === null ? "Speaking concluído e gravação enviada." : "Regravação de Speaking salva e comparada.", {
         action: {
           label: "Desfazer",
@@ -339,6 +353,19 @@ export default function LessonPageClient() {
             </p>
           </div>
 
+          {lesson?.pedagogy && (lesson.pedagogy.learningObjectives.length > 0 || lesson.pedagogy.evidenceOfLearning.length > 0) && (
+            <section className="rounded-2xl border border-red-100 bg-red-50/50 p-5 dark:border-red-900/60 dark:bg-red-950/20" aria-labelledby="lesson-pedagogy-title">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2"><Target size={19} className="text-red-600" /><h2 id="lesson-pedagogy-title" className="font-bold text-gray-900 dark:text-white">Roteiro de aprendizagem</h2></div>
+                <p className="text-xs font-medium text-gray-500 dark:text-slate-400">Use este roteiro para orientar sua prática.</p>
+              </div>
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                {lesson.pedagogy.learningObjectives.length > 0 && <div className="rounded-xl bg-white/80 p-4 dark:bg-slate-950/60"><h3 className="flex items-center gap-2 text-sm font-bold text-red-700 dark:text-red-200"><Target size={16} /> Ao concluir esta aula, você poderá</h3><ul className="mt-3 space-y-2 text-sm leading-6 text-gray-700 dark:text-slate-200">{lesson.pedagogy.learningObjectives.map((objective, index) => <li key={`${objective}-${index}`} className="flex gap-2"><span aria-hidden="true" className="text-red-600">•</span><span>{objective}</span></li>)}</ul></div>}
+                {lesson.pedagogy.evidenceOfLearning.length > 0 && <div className="rounded-xl bg-white/80 p-4 dark:bg-slate-950/60"><h3 className="flex items-center gap-2 text-sm font-bold text-red-700 dark:text-red-200"><ClipboardCheck size={16} /> Como demonstrar sua aprendizagem</h3><ul className="mt-3 space-y-2 text-sm leading-6 text-gray-700 dark:text-slate-200">{lesson.pedagogy.evidenceOfLearning.map((evidence, index) => <li key={`${evidence}-${index}`} className="flex gap-2"><span aria-hidden="true" className="text-red-600">•</span><span>{evidence}</span></li>)}</ul></div>}
+              </div>
+            </section>
+          )}
+
           <div className="border-t border-gray-100 pt-6 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-base text-gray-900">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div>
             {noteDeletedByAdminAt ? (
@@ -429,14 +456,22 @@ export default function LessonPageClient() {
                 <h4 className="font-bold text-gray-900 text-base">Grave sua voz e acompanhe suas tentativas</h4>
                 <p className="text-xs text-gray-600 leading-relaxed">{speakingActivity ? speakingActivity.title : "Atividade de conversação guiada."}</p>
                 <div className="pt-2 space-y-3">
+                  {speakingReview && (
+                    <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/35 dark:text-amber-100" role="status">
+                      <div className="flex items-center gap-2 font-bold"><RotateCcw size={17} className="text-amber-700 dark:text-amber-300" /> Nova tentativa orientada</div>
+                      <p className="mt-2 text-xs leading-5">{speakingReview.feedback || "Seu professor solicitou uma nova tentativa. Revise a orientação recebida e grave uma resposta atualizada."}</p>
+                      {speakingReview.audioUrl && <audio controls src={speakingReview.audioUrl} className="mt-3 h-8 w-full" aria-label="Orientação em áudio do professor" />}
+                      <p className="mt-2 text-xs font-semibold">Sua tentativa anterior e a devolutiva continuam preservadas no histórico.</p>
+                    </div>
+                  )}
                   <Button disabled={!speakingActivity || savingSpeaking} onClick={isRecording ? stopRecording : startRecording} className={`w-full py-3 rounded-xl text-white font-bold text-xs ${isRecording ? "bg-gray-900 hover:bg-black" : "bg-blue-600 hover:bg-blue-700"}`}>
-                    {savingSpeaking ? <><Loader2 size={14} className="mr-2 animate-spin" /> Salvando...</> : isRecording ? <><Square size={14} className="mr-2" /> Parar gravação</> : <><Mic size={14} className="mr-2" /> {speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa"}</>}
+                    {savingSpeaking ? <><Loader2 size={14} className="mr-2 animate-spin" /> Salvando...</> : isRecording ? <><Square size={14} className="mr-2" /> Parar gravação</> : <><Mic size={14} className="mr-2" /> {speakingReview ? "Enviar nova tentativa orientada" : speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa"}</>}
                   </Button>
                   <label className="block rounded-xl border border-dashed border-blue-200 bg-white/70 p-3 text-xs text-gray-600">Enviar arquivo de áudio
                     <input type="file" accept="audio/*" disabled={!speakingActivity || savingSpeaking} onChange={(e) => { const f = e.target.files?.[0]; if (f) void submitSpeakingAudio(f); e.currentTarget.value = ""; }} className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                   </label>
 
-                  {latestFeedback && <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 animate-fadeIn"><div className="flex items-center justify-between"><span className="text-xs font-bold text-blue-700">Resultado da tentativa</span><span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.aiScore ?? "—"}/100</span></div><p className="text-xs font-semibold text-red-600">{latestFeedback.aiFeedback}</p>{latestFeedback.improvement !== null && <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><TrendingUp size={14} /><span>{latestFeedback.improvement >= 0 ? "+" : ""}{latestFeedback.improvement} pontos vs tentativa anterior.</span></div>}</div>}
+                  {latestFeedback && <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 animate-fadeIn"><div className="flex items-center justify-between"><span className="text-xs font-bold text-blue-700">Resultado da tentativa</span><span className="text-xs font-extrabold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">{latestFeedback.aiScore ?? "—"}/100</span></div><p className="flex items-start gap-2 text-xs font-semibold text-red-600"><MessageSquare size={14} className="mt-0.5 shrink-0" /><span>{latestFeedback.teacherFeedback || latestFeedback.aiFeedback}</span></p>{latestFeedback.teacherAudioFeedbackUrl && <audio controls src={latestFeedback.teacherAudioFeedbackUrl} className="h-8 w-full" aria-label="Feedback em áudio do professor" />}{latestFeedback.improvement !== null && <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700"><TrendingUp size={14} /><span>{latestFeedback.improvement >= 0 ? "+" : ""}{latestFeedback.improvement} pontos vs tentativa anterior.</span></div>}</div>}
 
                   {speakingHistory.length > 0 && <div className="pt-2 border-t border-blue-100"><p className="text-xs font-bold text-gray-700 mb-2">Histórico ({speakingHistory.length})</p><div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">{speakingHistory.map((item) => <div key={item.id} className="flex items-center justify-between bg-white p-2 rounded-lg text-xs border border-blue-100"><span className="font-semibold text-gray-700">Tentativa #{item.attemptNumber}</span><div className="flex items-center gap-2">{item.audioResponseUrl && <audio controls src={item.audioResponseUrl} className="h-6 max-w-[120px]" />}<span className="font-bold text-blue-600">{item.aiScore ?? "—"} pts</span></div></div>)}</div></div>}
                 </div>

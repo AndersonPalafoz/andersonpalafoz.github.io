@@ -60,6 +60,7 @@ export default function AdminRelatoriosPage() {
 
   useEffect(() => {
     if (!authLoading && canAccessAdmin) {
+      setDetailsLoading(true);
       const params = new URLSearchParams();
       if (search.trim()) params.set("search", search.trim());
       void fetch(`/api/admin/reports?${params.toString()}`, { cache: "no-store" }).then(async (res) => {
@@ -164,7 +165,7 @@ export default function AdminRelatoriosPage() {
     );
   }
 
-  if (!user || user.role !== "admin") return null;
+  if (!user || !canAccessAdmin) return null;
 
   return (
     <div className="site-shell pb-12">
@@ -215,7 +216,7 @@ export default function AdminRelatoriosPage() {
 
         <section className="surface-card p-5 sm:p-6 space-y-5">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div><h2 className="text-lg font-black text-foreground">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-muted-foreground">Acompanhamento operacional para o super-admin.</p></div>
+            <div><h2 className="text-lg font-black text-foreground">Relatórios Acadêmicos Detalhados</h2><p className="text-sm text-muted-foreground">Acompanhamento operacional de alunos, professores e cursos.</p></div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <label className="relative block"><Search size={15} className="absolute left-3 top-3 text-muted-foreground" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar aluno, professor ou curso" aria-label="Buscar nos relatórios" className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3 text-xs text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 sm:w-64" /></label>
               <Button type="button" variant="outline" onClick={exportDetailedCSV} disabled={detailsLoading || !detailedReports} className="h-10 gap-2 text-xs font-bold"><Download size={14} /> Exportar aba</Button>

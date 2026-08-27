@@ -3,24 +3,8 @@ export const dynamic = "force-dynamic";
 
 import { authOptions } from "@/lib/auth";
 import { getUserActivityProgress } from "@/lib/db";
-import { CheckCircle2, Clock, AlertCircle, CheckSquare } from "lucide-react";
-
-const STATUS_LABEL: Record<string, string> = {
-  completed: "Completa",
-  in_progress: "Em Progresso",
-  pending: "Pendente",
-};
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case "completed":
-      return <CheckCircle2 className="text-green-500" size={20} />;
-    case "in_progress":
-      return <Clock className="text-blue-500" size={20} />;
-    default:
-      return <AlertCircle className="text-amber-500" size={20} />;
-  }
-}
+import { CheckSquare } from "lucide-react";
+import { StudentActivitiesBoard } from "@/components/student-activities-board";
 
 export default async function AtividadesPage() {
   const session = await getServerSession(authOptions);
@@ -28,56 +12,23 @@ export default async function AtividadesPage() {
   const atividades =
     !isNaN(userId) && userId > 0 ? await getUserActivityProgress(userId) : [];
 
+  const items = atividades.map((item) => ({
+    id: item.id,
+    title: item.activity?.title ?? "Atividade",
+    description: item.activity?.description ?? null,
+    dueDate: item.activity?.dueDate ? new Date(item.activity.dueDate).toISOString() : null,
+    courseId: item.activity?.courseId ?? null,
+    status: item.status === "completed" || item.status === "in_progress" ? item.status : "pending" as const,
+    score: item.score ?? null,
+    teacherFeedback: item.teacherFeedback ?? null,
+    submittedAt: item.submittedAt ? new Date(item.submittedAt).toISOString() : null,
+    completedAt: item.completedAt ? new Date(item.completedAt).toISOString() : null,
+  }));
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Atividades</h1>
-        <p className="text-gray-600 dark:text-slate-400">
-          Acompanhe suas atividades e tarefas
-        </p>
-      </div>
-
-      {atividades.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800">
-          <CheckSquare className="mx-auto text-gray-400 dark:text-slate-500 mb-4" size={48} />
-          <p className="text-gray-600 dark:text-slate-400">
-            Nenhuma atividade atribuída no momento.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {atividades.map((item) => (
-            <div
-              key={item.id}
-              className="p-4 rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:shadow-sm transition flex items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-4 flex-1 min-w-0">
-                <div>{getStatusIcon(item.status)}</div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                    {item.activity?.title ?? "Atividade"}
-                  </h3>
-                  {item.activity?.dueDate && (
-                    <p className="text-sm text-gray-500 dark:text-slate-400">
-                      Prazo:{" "}
-                      {new Date(item.activity.dueDate).toLocaleDateString("pt-BR")}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {STATUS_LABEL[item.status] ?? item.status}
-                </p>
-                {item.status === "completed" && item.score != null && (
-                  <p className="text-xs text-green-600">{item.score}%</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="space-y-8 pb-10">
+      <header className="dashboard-hero rounded-3xl p-5 sm:p-7"><span className="eyebrow">Organização de estudos</span><h1 className="mt-3 flex items-center gap-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl"><CheckSquare className="text-red-600" size={31} /> Atividades</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">Visualize prazos, entregas e os comentários recebidos para saber exatamente o que fazer em seguida.</p></header>
+      <StudentActivitiesBoard activities={items} />
     </div>
   );
 }

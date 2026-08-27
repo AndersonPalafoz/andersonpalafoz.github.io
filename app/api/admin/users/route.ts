@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { deleteUserPermanently } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { and, desc, eq, ilike, isNull, ne, not, or } from "drizzle-orm";
 import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 const VALID_ROLES = ["user", "professor", "admin"] as const;
@@ -13,17 +12,6 @@ const VALID_APPROVAL_STATUSES = ["pending", "approved", "rejected"] as const;
 
 type Role = (typeof VALID_ROLES)[number];
 type ApprovalStatus = (typeof VALID_APPROVAL_STATUSES)[number];
-
-async function requireSuperAdmin() {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.toLowerCase();
-
-  if (!session?.user || email !== SUPER_ADMIN_EMAIL) {
-    return null;
-  }
-
-  return session;
-}
 
 function parseUserId(value: unknown) {
   const userId = typeof value === "number" ? value : Number(value);
@@ -52,11 +40,12 @@ function serializeUser(user: typeof users.$inferSelect) {
 // GET /api/admin/users - Lista usuários, incluindo contas pendentes e excluídas logicamente.
 export async function GET() {
   try {
-    const session = await requireSuperAdmin();
+    const session = await requireAdmin();
 
     if (!session) {
-      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
+      return NextResponse.json({ error: "Acesso restrito à administração." }, { status: 403 });
     }
+    const hasGlobalGovernance = session.user.email?.toLowerCase() === SUPER_ADMIN_EMAIL || session.user.role === "super_admin";
 
     const allUsers = await db.query.users.findMany({
       where: and(
@@ -66,7 +55,10 @@ export async function GET() {
       orderBy: [desc(users.createdAt)],
     });
 
-    return NextResponse.json({ users: allUsers.map(serializeUser) });
+    const visibleUsers = hasGlobalGovernance
+      ? allUsers
+      : allUsers.filter((user) => user.role !== "admin" && user.email?.toLowerCase() !== SUPER_ADMIN_EMAIL);
+    return NextResponse.json({ users: visibleUsers.map(serializeUser) });
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json({ error: "Não foi possível carregar os usuários." }, { status: 500 });
@@ -76,11 +68,12 @@ export async function GET() {
 // PUT /api/admin/users - Edita papel/status e campos não sensíveis.
 export async function PUT(request: NextRequest) {
   try {
-    const session = await requireSuperAdmin();
+    const session = await requireAdmin();
 
     if (!session) {
-      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
+      return NextResponse.json({ error: "Acesso restrito à administração." }, { status: 403 });
     }
+    const hasGlobalGovernance = session.user.email?.toLowerCase() === SUPER_ADMIN_EMAIL || session.user.role === "super_admin";
 
     const body = await request.json();
     const userId = parseUserId(body.userId);
@@ -96,6 +89,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const isProtectedAccount = targetUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
+
+    if (!hasGlobalGovernance && (isProtectedAccount || targetUser.role === "admin")) {
+      return NextResponse.json({ error: "Administradores só podem gerenciar alunos e professores." }, { status: 403 });
+    }
 
     if (body.action === "restore") {
       if (isProtectedAccount) {
@@ -113,7 +110,7 @@ export async function PUT(request: NextRequest) {
         action: ADMIN_AUDIT_ACTIONS.RESTORE,
         targetName: targetUser.name,
         targetEmail: targetUser.email,
-        details: "Conta recuperada pelo super-admin.",
+        details: hasGlobalGovernance ? "Conta recuperada pelo superadministrador." : "Conta recuperada por administrador.",
       });
 
       return NextResponse.json({ message: "Usuário recuperado.", user: serializeUser(restoredUser[0]) });
@@ -124,6 +121,9 @@ export async function PUT(request: NextRequest) {
     if (body.role !== undefined) {
       if (!VALID_ROLES.includes(body.role as Role)) {
         return NextResponse.json({ error: "Papel inválido." }, { status: 400 });
+      }
+      if (!hasGlobalGovernance && body.role === "admin") {
+        return NextResponse.json({ error: "Somente o superadministrador pode promover uma conta a administrador." }, { status: 403 });
       }
       if (isProtectedAccount && body.role !== "admin") {
         return NextResponse.json({ error: "O super-admin principal não pode perder esse papel." }, { status: 403 });
@@ -193,11 +193,12 @@ export async function PUT(request: NextRequest) {
 // usuário já estiver na lixeira (exclusão lógica é sempre o primeiro passo).
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await requireSuperAdmin();
+    const session = await requireAdmin();
 
     if (!session) {
-      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
+      return NextResponse.json({ error: "Acesso restrito à administração." }, { status: 403 });
     }
+    const hasGlobalGovernance = session.user.email?.toLowerCase() === SUPER_ADMIN_EMAIL || session.user.role === "super_admin";
 
     const url = new URL(request.url);
     const userId = parseUserId(url.searchParams.get("id"));
@@ -216,8 +217,14 @@ export async function DELETE(request: NextRequest) {
     if (targetUser.email?.toLowerCase() === SUPER_ADMIN_EMAIL) {
       return NextResponse.json({ error: "A conta principal não pode ser excluída." }, { status: 403 });
     }
+    if (!hasGlobalGovernance && targetUser.role === "admin") {
+      return NextResponse.json({ error: "Administradores não podem excluir outras contas administrativas." }, { status: 403 });
+    }
 
     if (permanent) {
+      if (!hasGlobalGovernance) {
+        return NextResponse.json({ error: "A exclusão definitiva é exclusiva do superadministrador." }, { status: 403 });
+      }
       if (!targetUser.deletedAt) {
         return NextResponse.json(
           { error: "Exclua o usuário logicamente primeiro (ele precisa estar na lixeira) antes de excluir definitivamente." },
@@ -254,7 +261,7 @@ export async function DELETE(request: NextRequest) {
       action: ADMIN_AUDIT_ACTIONS.SOFT_DELETE,
       targetName: targetUser.name,
       targetEmail: targetUser.email,
-      details: "Conta excluída logicamente pelo super-admin.",
+      details: hasGlobalGovernance ? "Conta excluída logicamente pelo superadministrador." : "Conta excluída logicamente por administrador.",
     });
 
     return NextResponse.json({ message: "Usuário excluído logicamente.", user: serializeUser(deletedUser[0]) });

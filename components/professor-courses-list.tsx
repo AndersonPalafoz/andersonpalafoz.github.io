@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { ArrowRight, MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check, Filter } from "lucide-react";
+import { MoreVertical, Edit2, Trash2, Eye, Loader2, AlertCircle, Search, Download, FileText, Check, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Course {
   id: number;
@@ -18,6 +19,7 @@ interface Course {
 }
 
 export function ProfessorCoursesList({ initialCourses }: { initialCourses: Course[] }) {
+  const { canAccessAdmin } = useAuth();
   const [courses, setCourses] = useState<Course[]>(initialCourses);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -261,8 +263,8 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
           >
             <FileText size={13} /> PDF com Logotipo
           </Button>
-          <Link href="/admin/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1 pl-2">
-            Gerenciar <ArrowRight size={16} />
+          <Link href="/professor/cursos" className="text-red-600 hover:text-red-700 font-bold text-xs sm:text-sm flex items-center gap-1 pl-2">
+            Novo curso
           </Link>
         </div>
       </div>
@@ -389,13 +391,13 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
 
                     {isMenuOpen && (
                       <div className="absolute right-0 top-11 z-20 w-56 rounded-2xl border border-border bg-card p-2 shadow-xl space-y-1 animate-in fade-in zoom-in-95">
-                        <Link
-                          href={`/admin/cursos?edit=${course.id}`}
-                          onClick={() => setOpenMenuId(null)}
-                          className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-foreground hover:bg-muted rounded-xl transition"
+                        <button
+                          type="button"
+                          onClick={() => { setOpenMenuId(null); setStatusDropdownId(course.id); }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-foreground hover:bg-muted rounded-xl transition text-left"
                         >
-                          <Edit2 size={13} className="text-blue-600" /> Editar Detalhes e Links
-                        </Link>
+                          <Edit2 size={13} className="text-blue-600" /> Alterar status do curso
+                        </button>
                         <button
                           onClick={() => void handleSoftDelete(course.id, course.title)}
                           disabled={actionLoading === course.id}
@@ -403,7 +405,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                         >
                           {actionLoading === course.id ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />} Enviar para Lixeira
                         </button>
-                        <button
+                        {canAccessAdmin && <button
                           onClick={() => {
                             setOpenMenuId(null);
                             setDeleteModal({ isOpen: true, id: course.id, title: course.title });
@@ -412,7 +414,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
                           className="flex items-center gap-2 w-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition text-left border-t border-border mt-1 pt-2"
                         >
                           <Trash2 size={13} /> Excluir Definitivamente
-                        </button>
+                        </button>}
                       </div>
                     )}
                   </div>

@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, desc, eq, ilike } from "drizzle-orm";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { coupons, users } from "@/drizzle/schema";
+import { coupons } from "@/drizzle/schema";
 import { getStripe } from "@/lib/stripe";
-
-const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.toLowerCase();
-  if (email !== SUPER_ADMIN_EMAIL) return null;
-  const user = await db.query.users.findFirst({ where: eq(users.email, email) });
-  return user || null;
-}
+import { requireSuperAdminUser } from "@/lib/superadmin-user";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireAdmin();
-    if (!user) return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
+    const user = await requireSuperAdminUser();
+    if (!user) return NextResponse.json({ error: "Acesso restrito ao superadministrador." }, { status: 403 });
     const params = request.nextUrl.searchParams;
     const search = params.get("search")?.trim().slice(0, 64) || "";
     const status = params.get("status") || "all";
@@ -42,8 +31,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireAdmin();
-    if (!user) return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
+    const user = await requireSuperAdminUser();
+    if (!user) return NextResponse.json({ error: "Acesso restrito ao superadministrador." }, { status: 403 });
 
     const body = await request.json();
     const code = String(body.code || "").trim().toUpperCase();

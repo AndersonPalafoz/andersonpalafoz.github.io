@@ -10,6 +10,7 @@ import { ProfessorCoursesTrashManager } from "@/components/professor-courses-tra
 import { ProfessorCoursesList } from "@/components/professor-courses-list";
 import { StudentStyleDashboardStats } from "@/components/student-style-dashboard-stats";
 import { authOptions } from "@/lib/auth";
+import { canAccessProfessorPortal, type StoredRole } from "@/lib/role-capabilities";
 
 export const metadata = {
   title: "Painel do Professor | Anderson Palafoz",
@@ -18,7 +19,7 @@ export const metadata = {
 
 export default async function TeacherDashboardPage() {
   const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user.role !== "professor" && session.user.role !== "admin")) redirect("/login?callbackUrl=/professor");
+  if (!session?.user || !canAccessProfessorPortal({ email: session.user.email, role: session.user.role as StoredRole })) redirect("/login?callbackUrl=/professor");
   const teacherEmail = session.user.email ?? undefined;
   const [data, allCourses, allStudents, allMaterials] = await Promise.all([
     getTeacherDashboardData(teacherEmail),
@@ -76,7 +77,7 @@ export default async function TeacherDashboardPage() {
               Assinar Certificados
             </Link>
             <Link
-              href="/admin/cursos"
+              href="/professor/cursos"
               className="flex min-h-11 items-center rounded-xl bg-primary px-3 py-2.5 text-xs font-bold leading-tight text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-sm"
             >
               Novo Curso
@@ -137,8 +138,8 @@ export default async function TeacherDashboardPage() {
           <div className="surface-card space-y-6 p-6 sm:p-8">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-foreground">Biblioteca de Materiais</h2>
-              <Link href="/admin/materiais" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1">
-                Gerenciar <ArrowRight size={16} />
+              <Link href="/materiais" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1">
+                Ver biblioteca <ArrowRight size={16} />
               </Link>
             </div>
             <div className="space-y-4">
@@ -165,8 +166,8 @@ export default async function TeacherDashboardPage() {
         <div className="surface-card space-y-6 p-6 sm:p-8">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-foreground">Alunos Ativos Recentes</h2>
-            <Link href="/admin/usuarios" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1">
-              Ver Todos os Alunos <ArrowRight size={16} />
+            <Link href="/professor/alunos" className="text-red-600 hover:text-red-700 font-semibold text-sm flex items-center gap-1">
+              Revisar solicitações <ArrowRight size={16} />
             </Link>
           </div>
           <div className="space-y-3 md:hidden">

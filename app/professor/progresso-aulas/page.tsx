@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare, Search, Users, Activity } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare, Search, Users, Activity, RotateCcw, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function ProfessorProgressSpeakingPage() {
-  const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[] } | null>(null);
+  const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[]; interventions?: any[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
@@ -15,6 +15,7 @@ export default function ProfessorProgressSpeakingPage() {
   const [scoreVal, setScoreVal] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackAudio, setFeedbackAudio] = useState<File | null>(null);
+  const [requestRevision, setRequestRevision] = useState(false);
   const [feedbackFilter, setFeedbackFilter] = useState<"all" | "pending" | "reviewed">("all");
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [studentQuery, setStudentQuery] = useState("");
@@ -49,6 +50,7 @@ export default function ProfessorProgressSpeakingPage() {
       if (scoreVal === null || !Number.isFinite(scoreVal)) { toast.error("Informe uma nota antes de salvar a avaliação."); return; }
       payload.append("score", String(scoreVal));
       payload.append("teacherFeedback", feedbackText);
+      if (requestRevision) payload.append("requestRevision", "true");
       if (feedbackAudio) payload.append("teacherAudio", feedbackAudio);
 
       const res = await fetch("/api/professor/progress-speaking", {
@@ -57,9 +59,10 @@ export default function ProfessorProgressSpeakingPage() {
       });
 
       if (!res.ok) throw new Error("Erro ao salvar avaliação");
-      toast.success("Avaliação salva com sucesso pelo professor!");
+      toast.success(requestRevision ? "Nova tentativa solicitada com orientação ao estudante." : "Avaliação salva com sucesso pelo professor!");
       setEvaluatingId(null);
       setFeedbackAudio(null);
+      setRequestRevision(false);
 
       const refreshRes = await fetch("/api/professor/progress-speaking");
       if (refreshRes.ok) {
@@ -112,6 +115,7 @@ export default function ProfessorProgressSpeakingPage() {
   const activityProgress = data?.activityProgress || [];
   const speakingSubmissions = activityProgress.filter(ap => ap.activity?.type === "speaking" || ap.audioResponseUrl);
   const speakingAttempts = data?.speakingAttempts || [];
+  const interventions = data?.interventions || [];
   const filteredStudents = students.filter((student) => `${student.name || ""} ${student.email || ""}`.toLowerCase().includes(studentQuery.trim().toLowerCase()));
   const completedLessons = lessonProgress.filter((item) => item.completed === 1).length;
   const lessonCoverage = students.length > 0 ? Math.round((completedLessons / Math.max(lessonProgress.length, 1)) * 100) : 0;
@@ -151,6 +155,29 @@ export default function ProfessorProgressSpeakingPage() {
           <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><CheckCircle2 size={15} className="text-emerald-600" /> Aulas concluídas</div><p className="mt-2 text-2xl font-black text-foreground">{completedLessons}</p></div>
           <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><MessageSquare size={15} className="text-amber-600" /> Feedbacks pendentes</div><p className="mt-2 text-2xl font-black text-foreground">{pendingFeedbackCount}</p></div>
           <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Activity size={15} className="text-blue-600" /> Cobertura registrada</div><p className="mt-2 text-2xl font-black text-foreground">{lessonCoverage}%</p></div>
+        </section>
+
+        <section className="surface-card space-y-4 p-5 sm:p-6" aria-labelledby="interventions-title" aria-live="polite">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 id="interventions-title" className="flex items-center gap-2 text-xl font-black text-foreground"><ListChecks className="text-red-600" size={23} /> Fila de intervenções pedagógicas</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">A fila destaca somente ações apoiadas por evidências registradas: devolutivas pendentes e novas tentativas já orientadas. Ela não usa ranking nem estima o desempenho do estudante.</p>
+            </div>
+            <span className="self-start rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-950/40 dark:text-red-200">{interventions.length} {interventions.length === 1 ? "ação" : "ações"}</span>
+          </div>
+          {interventions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">Nenhuma intervenção pedagógica pendente no escopo atual. Novas gravações e pedidos de revisão aparecerão aqui quando houver uma ação docente clara.</div>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {interventions.map((item: any) => (
+                <a key={item.id} href={`#activity-progress-${item.activityProgressId}`} className="rounded-2xl border border-border/70 bg-muted/50 p-4 text-left transition hover:border-red-300 hover:bg-red-50/40 focus:outline-none focus:ring-2 focus:ring-red-500 dark:hover:bg-red-950/20">
+                  <div className="flex flex-wrap items-center justify-between gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${item.priority === "ação agora" ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.priority}</span><span className="text-[11px] font-bold text-muted-foreground">{item.actionLabel}</span></div>
+                  <p className="mt-3 text-sm font-bold text-foreground">{item.studentName} · {item.activityTitle}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.reason}</p>
+                </a>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* Seção 1: Progresso de Aulas por Aluno */}
@@ -225,7 +252,7 @@ export default function ProfessorProgressSpeakingPage() {
                 const needsFeedback = !sub.teacherFeedback && !sub.teacherAudioFeedbackUrl;
                 const attempts = speakingAttempts.filter((attempt) => attempt.userId === sub.userId && attempt.activityId === sub.activityId);
                 return (
-                  <div key={sub.id} className={`rounded-2xl border p-5 sm:p-6 space-y-4 ${needsFeedback ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-200" : "border-border/70 bg-muted/50"}`}>
+                  <div id={`activity-progress-${sub.id}`} key={sub.id} className={`scroll-mt-6 rounded-2xl border p-5 sm:p-6 space-y-4 ${needsFeedback ? "border-amber-300 bg-amber-50/50 ring-1 ring-amber-200" : "border-border/70 bg-muted/50"}`}>
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -236,6 +263,7 @@ export default function ProfessorProgressSpeakingPage() {
                             Aluno: {student?.name || student?.email || `ID ${sub.userId}`}
                           </span>
                           {needsFeedback && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold uppercase">Aguardando feedback</span>}
+                          {sub.status === "in_progress" && (sub.teacherFeedback || sub.teacherAudioFeedbackUrl) && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold uppercase">Nova tentativa solicitada</span>}
                         </div>
                         <p className="text-sm font-semibold text-foreground">
                           Status: <span className="uppercase text-red-600">{sub.status}</span> {sub.score ? `• Nota: ${sub.score}/100` : ""}
@@ -259,7 +287,7 @@ export default function ProfessorProgressSpeakingPage() {
                               <p className="text-[11px] text-muted-foreground">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
                             </div>
                             {attempt.audioResponseUrl && <audio controls src={attempt.audioResponseUrl} className="h-8 w-full md:w-56" />}
-                            <Button size="sm" variant="outline" onClick={() => { setSelectedAttemptId(attempt.id); setEvaluatingId(sub.id); }} className="text-xs">Avaliar esta</Button>
+                            <Button size="sm" variant="outline" onClick={() => { setSelectedAttemptId(attempt.id); setEvaluatingId(sub.id); setScoreVal(sub.score ?? attempt.aiScore ?? null); setFeedbackText(attempt.teacherFeedback || sub.teacherFeedback || ""); setFeedbackAudio(null); setRequestRevision(sub.status === "in_progress"); }} className="text-xs">Avaliar esta</Button>
                           </div>
                         ))}
                       </div>
@@ -297,6 +325,10 @@ export default function ProfessorProgressSpeakingPage() {
                             className="field-control w-full text-sm"
                           />
                         </div>
+                        <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-blue-200 bg-blue-50/60 p-3 text-sm text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
+                          <input type="checkbox" checked={requestRevision} onChange={(event) => setRequestRevision(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-blue-400 text-red-600 focus:ring-red-500" />
+                          <span><strong className="flex items-center gap-1.5"><RotateCcw size={15} /> Solicitar nova tentativa</strong><span className="mt-1 block text-xs leading-5">Mantenha a devolutiva objetiva e indique o que o estudante deve revisar antes de regravar. A tentativa anterior não será apagada.</span></span>
+                        </label>
                         <div className="rounded-xl border border-dashed border-red-200 bg-red-50/50 p-3">
                           <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
                           <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
@@ -307,7 +339,7 @@ export default function ProfessorProgressSpeakingPage() {
                             onClick={() => handleEvaluate(sub.id)}
                             className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold"
                           >
-                            Salvar Avaliação
+                            {requestRevision ? "Salvar e solicitar nova tentativa" : "Salvar Avaliação"}
                           </Button>
                           <Button
                             variant="outline"
@@ -322,7 +354,7 @@ export default function ProfessorProgressSpeakingPage() {
                       <div className="flex justify-end">
                         <Button
                           size="sm"
-                          onClick={() => { setEvaluatingId(sub.id); setSelectedAttemptId(attempts[0]?.id || null); setFeedbackText(""); setFeedbackAudio(null); }}
+                          onClick={() => { setEvaluatingId(sub.id); setSelectedAttemptId(attempts[0]?.id || null); setScoreVal(sub.score ?? attempts[0]?.aiScore ?? null); setFeedbackText(sub.teacherFeedback || attempts[0]?.teacherFeedback || ""); setFeedbackAudio(null); setRequestRevision(sub.status === "in_progress"); }}
                           className="bg-foreground text-background text-xs font-bold hover:bg-foreground/90"
                         >
                           Avaliar Submissão

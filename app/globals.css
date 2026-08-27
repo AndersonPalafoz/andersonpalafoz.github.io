@@ -652,6 +652,33 @@ body {
   .teacher-action-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+
+  .admin-dashboard-page {
+    padding: 0.75rem;
+  }
+
+  .admin-dashboard-page .page-container {
+    padding: 0;
+  }
+
+  .admin-dashboard-hero {
+    overflow: clip;
+  }
+
+  .admin-dashboard-hero h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-bottom-nav {
+    inset-right: 0.5rem;
+    inset-left: 0.5rem;
+    column-gap: 0.125rem;
+  }
+
+  .dashboard-bottom-nav a {
+    padding-right: 0.125rem;
+    padding-left: 0.125rem;
+  }
 }
 
 .data-table tbody tr {
@@ -733,6 +760,16 @@ body {
     gap: 1rem;
     border-radius: 1.5rem;
     padding: 1.25rem;
+  }
+
+  .admin-dashboard-page .admin-action-grid a {
+    min-height: 3rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .admin-dashboard-page .admin-action-grid a > span {
+    overflow-wrap: anywhere;
   }
 
   .admin-dashboard-hero h1 {

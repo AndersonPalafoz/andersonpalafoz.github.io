@@ -22,4 +22,13 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain('userRole === "super_admin"');
     expect(routeContent).toContain("const isGlobalAdmin");
   });
+
+  it("limita o volume e normaliza os dados recebidos na importação de alunos", () => {
+    expect(routeContent).toContain("MAX_IMPORTED_STUDENT_ROWS");
+    expect(routeContent).toContain("MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT");
+    expect(routeContent).toContain("MAX_IMPORTED_TEXT_LENGTH");
+    expect(routeContent).toContain("firstImportedText");
+    expect(routeContent).toContain("hasInvalidPayload");
+    expect(routeContent).toContain("status: 413");
+  });
 });

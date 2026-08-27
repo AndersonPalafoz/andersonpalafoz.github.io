@@ -79,6 +79,17 @@ function isJpeg(bytes: Uint8Array) {
   return hasSignature(bytes, [0xff, 0xd8, 0xff]);
 }
 
+/**
+ * Somente PDF, PNG e JPEG podem ser usados como uma página de fundo pelo
+ * pdf-lib. Arquivos DOCX continuam sendo modelos de campos, mas precisam usar
+ * a composição institucional gerada para não suprimir a moldura e o cabeçalho.
+ */
+export function hasRenderableCertificateTemplateBackground(
+  bytes: Uint8Array | undefined
+) {
+  return Boolean(bytes?.length) && (isPdf(bytes!) || isPng(bytes!) || isJpeg(bytes!));
+}
+
 function drawTextAt(
   page: PDFPage,
   font: PDFFont,
@@ -100,10 +111,12 @@ function drawTextAt(
 export async function buildCertificatePdf(input: CertificatePdfInput) {
   const pdf = await PDFDocument.create();
   const includeBranding = input.includeSiteBranding ?? true;
-  const hasTemplate = Boolean(input.templateBackgroundBytes?.length);
+  const hasTemplateBackground = hasRenderableCertificateTemplateBackground(
+    input.templateBackgroundBytes
+  );
   const composition = input.composition ? parseCertificateComposition(input.composition) : null;
 
-  if (hasTemplate && isPdf(input.templateBackgroundBytes!)) {
+  if (hasTemplateBackground && isPdf(input.templateBackgroundBytes!)) {
     try {
       const templatePdf = await PDFDocument.load(input.templateBackgroundBytes!);
       const [templatePage] = await pdf.copyPages(templatePdf, [0]);
@@ -112,7 +125,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
       console.warn("Certificate PDF template could not be loaded; using generated composition", error);
       pdf.addPage([842, 595]);
     }
-  } else if (hasTemplate && (isPng(input.templateBackgroundBytes!) || isJpeg(input.templateBackgroundBytes!))) {
+  } else if (hasTemplateBackground && (isPng(input.templateBackgroundBytes!) || isJpeg(input.templateBackgroundBytes!))) {
     const page = pdf.addPage([842, 595]);
     try {
       const image = isPng(input.templateBackgroundBytes!)
@@ -139,7 +152,7 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
   const muted = rgb(0.36, 0.39, 0.43);
   const lineColor = includeBranding ? red : navy;
 
-  if (!hasTemplate) {
+  if (!hasTemplateBackground) {
     page.drawRectangle({
       x: 0,
       y: 0,
@@ -194,29 +207,6 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
         font: bold,
         color: graphite,
       });
-    }
-  }
-
-  const compositionHasSiteLogo = Boolean(
-    composition?.elements.some(element => element.type === "image" && element.isSiteBranding)
-  );
-  if (includeBranding && input.logoBytes?.length && !compositionHasSiteLogo) {
-    try {
-      let logo;
-      try {
-        logo = await pdf.embedPng(input.logoBytes);
-      } catch {
-        logo = await pdf.embedJpg(input.logoBytes);
-      }
-      page.drawImage(logo, {
-        x: 70,
-        y: 480,
-        width: 64,
-        height: 64,
-        opacity: 0.96,
-      });
-    } catch (error) {
-      console.error("Failed to embed site logo in certificate PDF", error);
     }
   }
 
@@ -330,10 +320,35 @@ export async function buildCertificatePdf(input: CertificatePdfInput) {
       regular,
       bold,
       composition,
-      { ...input, hasTemplateBackground: hasTemplate },
+      { ...input, hasTemplateBackground },
       includeBranding,
       { serif, serifBold, mono, monoBold }
     );
+  }
+
+  const compositionHasSiteLogo = Boolean(
+    composition?.elements.some(element => element.type === "image" && element.isSiteBranding)
+  );
+  // A logo deve ser aplicada após a composição: o painel/moldura de fundo dos
+  // presets não pode encobrir a marca institucional durante a exportação.
+  if (includeBranding && input.logoBytes?.length && !compositionHasSiteLogo) {
+    try {
+      let logo;
+      try {
+        logo = await pdf.embedPng(input.logoBytes);
+      } catch {
+        logo = await pdf.embedJpg(input.logoBytes);
+      }
+      page.drawImage(logo, {
+        x: 70,
+        y: 480,
+        width: 64,
+        height: 64,
+        opacity: 0.96,
+      });
+    } catch (error) {
+      console.error("Failed to embed site logo in certificate PDF", error);
+    }
   }
 
   if (input.signatureImageBytes?.length) {

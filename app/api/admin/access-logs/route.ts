@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { and, desc, eq, gte, ilike, lte } from "drizzle-orm";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { eventLogs } from "@/drizzle/schema";
+import { requireSuperAdmin } from "@/lib/admin-auth";
 
 const EVENT_TYPES = ["login", "material_submission", "activity_complete", "course_enroll", "role_change"] as const;
 const MAX_LIMIT = 100;
@@ -23,9 +22,9 @@ function parseDate(value: string | null, endOfDay = false) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
+    const session = await requireSuperAdmin();
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito ao superadministrador." }, { status: 403 });
     }
 
     const params = request.nextUrl.searchParams;

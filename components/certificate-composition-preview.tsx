@@ -261,7 +261,10 @@ export function CertificateCompositionPreview({
 
       <div className="pointer-events-none absolute bottom-[4%] left-[5%] right-[5%] z-[6] flex justify-between gap-3 border-t pt-1 text-[6px] font-semibold uppercase tracking-wider" style={{ borderColor: variant.border, color: variant.muted }}>
         <span>{variant.footerLabel}</span>
-        <span>Prévia antes da emissão</span>
+        <span className="mr-[12%]">Prévia antes da emissão</span>
+      </div>
+      <div className="pointer-events-none absolute bottom-[6%] right-[5%] z-[7] grid h-[12%] w-[9%] place-items-center rounded border bg-white/90 text-[5px] font-black uppercase tracking-[0.12em]" style={{ borderColor: variant.border, color: variant.muted }} aria-hidden="true">
+        QR<br />Validação
       </div>
     </div>
   );

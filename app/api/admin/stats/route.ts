@@ -2,6 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { getAdminCommerceStats, getAdminStats } from "@/lib/db";
+import { isSuperadmin } from "@/lib/role-capabilities";
 
 export async function GET() {
   try {
@@ -14,7 +15,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [stats, commerce] = await Promise.all([getAdminStats(), getAdminCommerceStats()]);
+    const stats = await getAdminStats();
+    const commerce = isSuperadmin({ email, role }) ? await getAdminCommerceStats() : null;
     return NextResponse.json({ ...stats, commerce });
   } catch (error) {
     console.error("Error fetching admin stats:", error);

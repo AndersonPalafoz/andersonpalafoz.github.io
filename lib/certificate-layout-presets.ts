@@ -67,7 +67,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: center(421, 178, 12, 260),
     issuedAt: left(70, 88, 11, 220),
     coordinatorName: center(610, 88, 11, 220, { weight: "bold" }),
-    certificateCode: right(772, 54, 10, 220),
+    certificateCode: left(70, 54, 10, 340),
   },
   isf: {
     institutionName: left(62, 535, 12, 390, { weight: "bold" }),
@@ -79,7 +79,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: left(300, 178, 12, 270),
     issuedAt: left(100, 95, 11, 190),
     coordinatorName: right(740, 95, 11, 260, { weight: "bold" }),
-    certificateCode: right(740, 55, 10, 190),
+    certificateCode: left(100, 55, 10, 220),
   },
   profici: {
     institutionName: left(86, 526, 12, 660, { weight: "bold" }),
@@ -91,7 +91,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: left(300, 240, 11, 330),
     issuedAt: center(421, 177, 11, 360),
     coordinatorName: center(421, 92, 11, 300, { weight: "normal" }),
-    certificateCode: right(790, 34, 8, 220),
+    certificateCode: left(86, 34, 8, 240),
   },
   minimal: {
     institutionName: left(82, 525, 13, 390, { weight: "bold" }),
@@ -115,7 +115,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: center(421, 176, 12, 260),
     issuedAt: left(86, 88, 11, 210),
     coordinatorName: right(756, 88, 11, 250, { weight: "bold" }),
-    certificateCode: right(756, 54, 10, 220),
+    certificateCode: left(86, 54, 10, 240),
   },
   botanical: {
     institutionName: left(88, 526, 13, 420, { weight: "bold" }),
@@ -127,7 +127,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: center(421, 177, 12, 260),
     issuedAt: left(88, 88, 11, 220),
     coordinatorName: right(754, 88, 11, 250, { weight: "bold" }),
-    certificateCode: right(754, 54, 10, 220),
+    certificateCode: left(88, 54, 10, 240),
   },
   geometric: {
     institutionName: left(74, 526, 13, 420, { weight: "bold" }),
@@ -139,7 +139,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: left(340, 194, 12, 270),
     issuedAt: left(118, 92, 11, 200),
     coordinatorName: right(730, 92, 11, 250, { weight: "bold" }),
-    certificateCode: right(730, 54, 10, 220),
+    certificateCode: left(118, 54, 10, 240),
   },
   midnight: {
     institutionName: left(70, 526, 13, 420, { weight: "bold" }),
@@ -151,7 +151,7 @@ export const CERTIFICATE_LAYOUT_PRESETS: Record<
     period: center(421, 174, 12, 260),
     issuedAt: left(70, 82, 11, 220),
     coordinatorName: right(772, 82, 11, 250, { weight: "bold" }),
-    certificateCode: right(772, 50, 10, 220),
+    certificateCode: left(70, 50, 10, 240),
   },
 };
 

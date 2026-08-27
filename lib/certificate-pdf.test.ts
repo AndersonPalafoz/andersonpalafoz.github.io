@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { PDFDocument } from "pdf-lib";
-import { buildCertificatePdf } from "@/lib/certificate-pdf";
+import {
+  buildCertificatePdf,
+  hasRenderableCertificateTemplateBackground,
+} from "@/lib/certificate-pdf";
 
 describe("certificado PDF", () => {
   const baseInput = {
@@ -28,9 +31,11 @@ describe("certificado PDF", () => {
   });
 
   it("ignora bytes DOCX no fundo e gera uma composição PDF segura", async () => {
+    const docxBytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
+    expect(hasRenderableCertificateTemplateBackground(docxBytes)).toBe(false);
     const bytes = await buildCertificatePdf({
       ...baseInput,
-      templateBackgroundBytes: new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]),
+      templateBackgroundBytes: docxBytes,
     });
     expect(bytes.length).toBeGreaterThan(500);
     expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe("%PDF-");
@@ -40,6 +45,7 @@ describe("certificado PDF", () => {
     const template = await PDFDocument.create();
     template.addPage([842, 595]);
     const templateBytes = await template.save();
+    expect(hasRenderableCertificateTemplateBackground(templateBytes)).toBe(true);
     const bytes = await buildCertificatePdf({
       ...baseInput,
       includeSiteBranding: true,

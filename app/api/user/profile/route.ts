@@ -10,7 +10,10 @@ export async function GET() {
     if (!session?.user?.email) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     const user = await getUserByEmail(session.user.email);
     if (!user || user.deletedAt) return NextResponse.json({ error: "Usuário não encontrado" }, { status: 404 });
-    return NextResponse.json({ user: { id: user.id, name: user.name, socialName: user.socialName, cpf: user.cpf, email: user.email, phone: user.phone, location: user.location, bio: user.bio, avatarUrl: user.avatarUrl } });
+    return NextResponse.json(
+      { user: { id: user.id, name: user.name, socialName: user.socialName, cpf: user.cpf, email: user.email, phone: user.phone, location: user.location, bio: user.bio, avatarUrl: user.avatarUrl } },
+      { headers: { "Cache-Control": "private, max-age=300, stale-while-revalidate=86400" } },
+    );
   } catch (error) {
     console.error("Error loading profile:", error);
     return NextResponse.json({ error: "Falha ao carregar perfil" }, { status: 500 });

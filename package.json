@@ -69,9 +69,11 @@
     "konva": "^10.3.1",
     "lucide-react": "^0.453.0",
     "marked": "^18.0.10",
-    "next": "^15.5.21",
+    "nanoid": "3.3.18",
+    "next": "^15.5.24",
     "next-auth": "4.24.15",
     "next-themes": "^0.4.6",
+    "papaparse": "5.7.0",
     "pdf-lib": "^1.17.1",
     "postgres": "^3.4.9",
     "qrcode": "^1.5.4",
@@ -89,7 +91,7 @@
     "tailwindcss-animate": "^1.0.7",
     "type-fest": "^5.8.0",
     "vaul": "^1.1.2",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -97,28 +99,18 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.7.0",
+    "@types/papaparse": "5.5.2",
     "@types/react": "^19.2.1",
     "@types/react-dom": "^19.2.1",
     "autoprefixer": "^10.4.21",
     "drizzle-kit": "^0.31.4",
     "jsdom": "^30.0.1",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.23",
     "prettier": "^3.6.2",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.23.12",
     "typescript": "5.9.3",
     "vitest": "^3.2.6"
-  },
-  "pnpm": {
-    "overrides": {
-      "lodash": "^4.18.0",
-      "uuid": "^11.1.1",
-      "vite": "^6.4.3",
-      "rollup": "^4.59.0",
-      "sharp": "^0.35.0",
-      "esbuild": "^0.25.0",
-      "postcss": "^8.5.10"
-    }
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af"
 }

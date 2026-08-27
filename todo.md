@@ -2594,3 +2594,53 @@
 - [x] Reorganizar controles e dados para toque, leitura e rolagem nativa sem corte lateral em telas pequenas.
 - [x] Validar layout, acessibilidade, teste de regressão, TypeScript e build em viewport móvel.
 - [x] Salvar checkpoint e sincronizar somente a otimização validada de Turmas Externas com a branch `main` oficial.
+
+## Busca rápida em Turmas Externas — 27/08/2026
+- [x] Revisar os filtros e dados já disponíveis para permitir busca imediata por turma, instituição, curso e aluno.
+- [x] Criar uma barra de pesquisa rápida com limpeza de termo, atalho de foco e estado vazio claro para smartphones.
+- [x] Validar combinação de filtros, acessibilidade, teste de regressão, TypeScript e build.
+
+## Aprimoramento do sistema de medalhas — 27/08/2026
+- [x] Auditar catálogo, critérios de concessão, registros existentes e telas de medalhas sem criar conquistas fictícias.
+- [x] Melhorar a descoberta, explicação de critérios, administração e visual responsivo das medalhas com foco em progresso pedagógico.
+- [x] Validar regras, permissões, responsividade, testes, TypeScript e build antes da entrega.
+
+## Notificação imediata de novas medalhas — 27/08/2026
+- [x] Mapear o fluxo de concessão e as notificações já persistidas para identificar medalhas novas sem criar alertas duplicados.
+- [x] Exibir alerta imediato, acessível e discreto no painel do aluno quando uma medalha for concedida.
+- [x] Validar estados de leitura, atualizações, acessibilidade, testes, TypeScript e build antes da entrega.
+
+## Refinamento mobile do painel administrativo — 27/08/2026
+- [x] Auditar a composição da página administrativa principal em telas de 360px a 430px, sem alterar dados ou permissões.
+- [x] Reorganizar hierarquia, ações, indicadores e blocos de gestão para leitura e toque confortáveis em smartphones.
+- [x] Validar ausência de corte lateral, acessibilidade, testes, TypeScript e build antes da entrega.
+
+## Filtros rápidos da Central de Pendências — 27/08/2026
+- [x] Mapear as categorias e contadores reais da Central de Pendências sem alterar os dados operacionais.
+- [x] Implementar filtro rápido e ordenação por prioridade ou tipo, com controles adequados para celulares.
+- [x] Validar estados vazios, acessibilidade, responsividade, testes, TypeScript e build antes da entrega.
+
+## Auditoria ampla da plataforma — 27/08/2026
+- [x] Mapear experiências, arquitetura, indicadores e riscos técnicos sem alterar dados reais.
+- [x] Consolidar recomendações priorizadas para as áreas pública, aluno, professor e administração.
+
+## Auditoria pedagógica da plataforma de ensino — 27/08/2026
+- [x] Avaliar jornada formativa, metodologia, avaliação, autonomia e acompanhamento dos estudantes sem alterar dados acadêmicos.
+- [x] Consolidar recomendações pedagógicas priorizadas para aluno, professor, cursos, materiais e ecossistema de conteúdo.
+
+## Priorização de dependências vulneráveis — 27/08/2026
+- [x] Identificar pacotes, versões afetadas, severidade e caminhos de dependência a partir do audit atual.
+- [x] Avaliar correções disponíveis e recomendar ordem de atualização sem modificar dependências nesta etapa.
+
+## Correção de dependências vulneráveis — 27/08/2026
+- [x] Mapear os usos de `xlsx`, `postcss` e `nanoid`, protegendo a importação de Turmas Externas contra arquivos maliciosos.
+- [x] Atualizar `postcss` e `nanoid` para versões corrigidas, respeitando compatibilidade de Next.js, Tailwind e build.
+- [x] Substituir a leitura de planilhas baseada em `xlsx` por uma alternativa mantida ou por fluxo seguro equivalente, sem alterar turmas, alunos, notas ou materiais existentes.
+- [x] Validar audit de produção, importação, testes focados, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Ciclo pedagógico: objetivos, revisão e intervenções — 27/08/2026
+- [x] Mapear os modelos de aula, atividades, feedback e acompanhamento docente sem alterar registros acadêmicos existentes.
+- [x] Estruturar objetivos de aprendizagem e evidências observáveis por aula, com edição autorizada e exibição clara ao aluno.
+- [x] Permitir uma nova tentativa orientada depois de feedback docente, sem apagar a submissão ou a devolutiva anteriores.
+- [x] Criar fila docente de intervenções pedagógicas com contexto, prioridade e acesso ao estudante/atividade, respeitando o escopo de cada professor.
+- [x] Validar permissões, acessibilidade, estados vazios, testes, TypeScript, build e integridade do diff antes do checkpoint.
