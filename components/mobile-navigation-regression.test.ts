@@ -35,7 +35,7 @@ describe("navegação em smartphones", () => {
     const adminPage = read("app/admin/page.tsx");
     const styles = read("app/globals.css");
 
-    expect(adminPage).toContain('index > 3 ? "hidden md:flex" : "flex"');
+    expect(adminPage).toContain('action.mobile ? "flex" : "hidden sm:flex"');
     expect(styles).toContain(".admin-dashboard-hero {");
     expect(styles).toContain("grid-template-columns: minmax(0, 1fr);");
   });

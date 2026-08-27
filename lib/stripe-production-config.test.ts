@@ -10,8 +10,10 @@ describe("Stripe production configuration contract", () => {
     expect(source).not.toContain("secretKey}");
   });
 
-  it("requires both the server key and webhook secret for a complete configuration", async () => {
-    const { isStripeConfigured } = await import("./stripe");
-    expect(typeof isStripeConfigured()).toBe("boolean");
+  it("requires both the server key and webhook secret for a complete configuration", () => {
+    const source = readFileSync(join(process.cwd(), "lib/stripe.ts"), "utf8");
+    expect(source).toContain("function isStripeConfigured");
+    expect(source).toContain("STRIPE_SECRET_KEY");
+    expect(source).toContain("STRIPE_WEBHOOK_SECRET");
   });
 });

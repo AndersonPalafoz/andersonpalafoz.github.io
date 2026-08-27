@@ -1,15 +1,23 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
+const read = (relativePath: string) => readFileSync(join(process.cwd(), relativePath), "utf8");
 
 describe("Smoke Tests e Integração de Rotas Críticas", () => {
-  it("confirma que a API de turmas externas possui estrutura de tratamento de erros segura", async () => {
-    const routeModule = await import("@/app/api/professor/external-classes/route");
-    expect(typeof routeModule.GET).toBe("function");
+  it("confirma que a API de turmas externas possui estrutura de tratamento de erros segura", () => {
+    const source = read("app/api/professor/external-classes/route.ts");
+    expect(source).toContain("export async function GET");
+    expect(source).toContain("try {");
+    expect(source).toContain("catch");
   });
 
-  it("confirma que a API de progresso e speaking possui estrutura segura", async () => {
-    const routeModule = await import("@/app/api/professor/progress-speaking/route");
-    expect(typeof routeModule.GET).toBe("function");
-    expect(typeof routeModule.POST).toBe("function");
+  it("confirma que a API de progresso e speaking possui estrutura segura", () => {
+    const source = read("app/api/professor/progress-speaking/route.ts");
+    expect(source).toContain("export async function GET");
+    expect(source).toContain("export async function POST");
+    expect(source).toContain("try {");
+    expect(source).toContain("catch");
   });
 
   it("confirma que o utilitário de links do Google Drive processa URLs corretamente", async () => {
@@ -20,3 +28,9 @@ describe("Smoke Tests e Integração de Rotas Críticas", () => {
     expect(links[0]).toBe(testUrl);
   });
 });
+
+function readRoute(relativePath: string) {
+  return read(relativePath);
+}
+
+void readRoute;

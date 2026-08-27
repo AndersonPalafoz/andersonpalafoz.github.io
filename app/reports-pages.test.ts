@@ -21,7 +21,7 @@ describe("academic report pages", () => {
     expect(source).toContain("db.select().from(progress)");
     expect(source).toContain("db.select().from(enrollments)");
     expect(source).toContain("courseTitles.get(enrollment.courseId)");
-    expect(source).toContain("session.user.role !== \"professor\"");
+    expect(source).toContain("canAccessProfessorPortal");
   });
 
   it("keeps the speaking progress route resilient with loading and error feedback", () => {
