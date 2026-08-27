@@ -28,7 +28,25 @@ const downloadRouteSource = readFileSync(new URL("../../api/certificates/[id]/do
     expect(adminRouteSource).toContain("requireTeacherOrAdmin");
     expect(adminRouteSource).toContain("canManageCourse");
     expect(adminRouteSource).toContain("uploadSignedCertificatePdf");
+    expect(adminRouteSource).toContain("deleteCertificatePdfFiles");
     expect(adminRouteSource).toContain("signatureType");
+  });
+
+  it("só remove a versão anterior depois de persistir o novo PDF e reverte o upload se a persistência falhar", () => {
+    expect(adminRouteSource).toContain(
+      "const previousSignedPdfUrl = certificate.signedPdfUrl"
+    );
+    expect(adminRouteSource).toContain(
+      "signedPdfUrl: uploaded.objectPath"
+    );
+    expect(adminRouteSource).toContain(
+      "signedPdfUrl: previousSignedPdfUrl"
+    );
+    expect(adminRouteSource).toContain("const storageCleanup = previousSignedPdfUrl");
+    expect(adminRouteSource).toContain("const uploadRollback = await deleteCertificatePdfFiles");
+    expect(adminRouteSource.indexOf("const storageCleanup = previousSignedPdfUrl")).toBeGreaterThan(
+      adminRouteSource.indexOf("const updated = await updateCertificateSignature")
+    );
   });
 
   it("protege o download com sessão, proprietário ou gestor autorizado e URL assinada", () => {

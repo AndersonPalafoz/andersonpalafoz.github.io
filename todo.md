@@ -2496,3 +2496,74 @@
 - [x] Diagnosticar por que identidades técnicas aparecem em `/professor/progresso-aulas`.
 - [x] Excluir contas de certificados de teste e placeholders técnicos da listagem e dos indicadores docentes.
 - [x] Validar escopo de professor, admin e superadmin, testes, TypeScript e build.
+
+## Auditoria global de áreas e inconsistências — 26/08/2026
+- [x] Auditar rotas públicas, autenticação, navegação compartilhada e erros de execução publicados.
+- [x] Auditar Dashboard, áreas docente e administrativa para consultas quebradas, permissões incoerentes e exposição de identidades técnicas.
+- [x] Corrigir somente inconsistências confirmadas, acrescentar testes de regressão e preservar dados reais.
+- [x] Validar as correções com testes, TypeScript, build e uma amostra visual das rotas críticas.
+- [x] Ocultar cursos técnicos rotulados como teste das visões pública, discente e docente, preservando-os no painel administrativo.
+
+## Otimização do avatar da barra lateral — 26/08/2026
+- [x] Diagnosticar a lentidão percebida no carregamento da foto de perfil no Dashboard.
+- [x] Otimizar prioridade, cache e placeholder do avatar, preservando fallback acessível.
+- [x] Validar a otimização com testes, TypeScript, build e responsividade.
+
+## Correção mobile do painel administrativo — 26/08/2026
+- [x] Diagnosticar o corte lateral, a tipografia excessiva e a navegação em `/admin` no mobile.
+- [x] Ajustar o layout administrativo, os atalhos e a barra de navegação para telas estreitas sem overflow.
+- [x] Validar mobile, acessibilidade, testes, TypeScript e build.
+
+## Certificados: composição e área docente — 26/08/2026
+- [x] Diagnosticar e corrigir a divergência entre a prévia institucional e o PDF emitido, incluindo áreas seguras de assinatura e QR Code.
+- [x] Reorganizar a página `/professor/certificados` para um fluxo responsivo de emissão, assinatura e notificação.
+- [x] Ocultar certificados técnicos de teste da experiência docente sem apagar dados administrativos.
+- [x] Validar geração, responsividade, testes, TypeScript e build antes de salvar o checkpoint.
+
+## Fluxo integrado de certificados por papel — 26/08/2026
+- [x] Mapear e nomear as etapas compartilhadas de criação, validação e download para administração, professor e aluno.
+- [x] Unificar a validação e o download individual para documentos emitidos ou assinados, mantendo autorização por papel e curso.
+- [x] Aproximar as interfaces de administração, docência e aluno com status, próximos passos e ações coerentes e responsivas.
+- [x] Validar permissões, regressões, responsividade, TypeScript e build antes de salvar o checkpoint.
+
+## Governança e áreas de superadministração — 26/08/2026
+- [x] Consolidar a descoberta de ferramentas exclusivas de superadmin no painel e na navegação mobile.
+- [x] Corrigir a autorização e a experiência responsiva da Auditoria de Acessos como subárea exclusiva.
+- [x] Harmonizar o painel raiz, CMS e área financeira com atalhos, estados e limites de privilégio claros.
+- [x] Validar permissões, responsividade, testes, TypeScript e build antes de salvar o checkpoint.
+
+## Operações e subáreas administrativas — 26/08/2026
+- [x] Alinhar a gestão de pessoas ao escopo do administrador, preservando ações irreversíveis e contas administrativas para o superadmin.
+- [x] Corrigir inconsistências de navegação, busca e cópia nas subáreas de fórum e relatórios.
+- [x] Refinar feedbacks, estados e atalhos do painel administrativo sem expor controles financeiros ou de governança global.
+- [x] Validar permissões, responsividade, testes, TypeScript e build antes de salvar o checkpoint.
+
+## Operações e subáreas docentes — 26/08/2026
+- [x] Corrigir o acesso efetivo ao painel docente e remover atalhos que direcionam o professor a áreas administrativas indevidas.
+- [x] Permitir que professores autorizados gerenciem o acesso de alunos de suas próprias turmas externas, sem acesso global.
+- [x] Refinar a experiência de tarefas e aprovações com feedback, recuperação e estados mais claros em telas pequenas.
+- [x] Validar escopo, responsividade, testes, TypeScript e build antes de salvar o checkpoint.
+
+## Jornada e subáreas do aluno — 26/08/2026
+- [x] Transformar a área de atividades em uma fila clara de pendências, entregas e feedbacks, com filtros responsivos.
+- [x] Melhorar a continuidade de cursos e o histórico no painel do aluno sem rolagem lateral em telas pequenas.
+- [x] Reforçar estados vazios, feedback pedagógico e rotas seguras nas superfícies principais do aluno.
+- [x] Validar responsividade, permissões, testes, TypeScript e build antes de salvar o checkpoint.
+
+## Limpeza controlada de dados técnicos — 26/08/2026
+- [x] Remover em branch temporária os certificados, cursos, contas e matrícula explicitamente confirmados como artefatos técnicos.
+- [x] Preservar os placeholders ambíguos de Adna Caroline Vale Oliveira e todas as turmas, alunos, notas e materiais do SIMAL.
+- [x] Verificar contagens pós-limpeza e registrar o resultado sem alterar dados pedagógicos reais.
+- [x] Auditar e remover apenas as referências de PDF geradas pelos certificados técnicos confirmados, preservando documentos reais.
+
+## Exclusão de PDFs de certificados no armazenamento — 27/08/2026
+- [x] Criar helper idempotente para identificar e excluir com segurança os objetos PDF original e assinado de um certificado.
+- [x] Integrar a limpeza de objetos ao fluxo administrativo autorizado de exclusão individual e em lote.
+- [x] Preservar a exclusão do registro mesmo quando um arquivo legado já estiver ausente e registrar falhas de armazenamento sem expor caminhos sensíveis.
+- [x] Cobrir exclusão, autorização, URLs externas e falhas de storage com testes, TypeScript e build.
+
+## Substituição segura de PDFs assinados — 27/08/2026
+- [x] Mapear todas as rotas que recebem um novo PDF assinado e preservar o documento atual até a persistência bem-sucedida da substituição.
+- [x] Remover a versão assinada anterior somente após a atualização do certificado, sem afetar PDFs originais ou caminhos externos.
+- [x] Cobrir sucesso, ausência de arquivo anterior, falha de remoção e continuidade do reenvio com testes, TypeScript e build.
+- [x] Salvar checkpoint e sincronizar somente esta implementação validada com a branch `main` oficial.
