@@ -1419,7 +1419,7 @@ export default function TurmasExternasPage() {
         averageGrade === null ? "" : formatReportNumber(averageGrade),
       ]),
     ];
-    const content = "\uFEFF" + csvRows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const content = "\uFEFF" + csvRows.map((row) => row.map((cell) => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(";")).join("\n");
     const blob = new Blob([content], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1430,6 +1430,53 @@ export default function TurmasExternasPage() {
     link.remove();
     URL.revokeObjectURL(url);
     notifySuccess(`Relatório CSV exportado com o filtro: ${academicReportFilterLabel(filter, minimumAttendance, minimumGrade)}.`);
+  };
+
+  const exportAcademicXlsx = async (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
+    const XLSX = await import("xlsx");
+    const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
+    const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
+    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade, minimumAttendance);
+    const headers = ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"];
+    const dataRows = rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => [
+      student.name,
+      student.cpf || "",
+      student.email || "",
+      student.category || "",
+      student.university || "",
+      student.component || "",
+      student.status,
+      academicStatusLabel({ attendancePercent, averageGrade, gradePassed, failedByGrade, failedByAttendance }),
+      attendance.present,
+      attendance.absent,
+      attendance.late,
+      attendance.excused,
+      attendance.total,
+      attendancePercent === null ? "" : formatReportNumber(attendancePercent),
+      grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; "),
+      simalGrade.isSimal ? formatReportNumber(simalGrade.proofScore) : "",
+      simalGrade.isSimal ? formatReportNumber(simalGrade.presentationScore) : "",
+      simalGrade.isSimal ? formatReportNumber(simalGrade.finalScore) : "",
+      averageGrade === null ? "" : formatReportNumber(averageGrade),
+    ]);
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
+      ["Instituição", cls.institution, "Turma", cls.className, "Curso / Disciplina", cls.courseName],
+      ["Período", cls.academicTerm, "Nível", (cls as any).level || "Não informado", "Modalidade", (cls as any).modality || "Não informada"],
+      ["Gerado em", new Date().toLocaleString("pt-BR"), "Filtro aplicado", academicReportFilterLabel(filter, minimumAttendance, minimumGrade)],
+      ["Frequência mínima (%)", formatReportNumber(minimumAttendance), "Média mínima", formatReportNumber(minimumGrade), "Alunos incluídos", rows.length],
+      [],
+      headers,
+      ...dataRows,
+    ]);
+    worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
+    worksheet["!cols"] = [24, 16, 30, 18, 18, 18, 16, 26, 12, 10, 10, 13, 17, 16, 42, 17, 18, 17, 14].map((wch) => ({ wch }));
+    worksheet["!autofilter"] = { ref: `A7:S${7 + dataRows.length}` };
+    worksheet["!freeze"] = { xSplit: 0, ySplit: 7 };
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório acadêmico");
+    XLSX.writeFile(workbook, `relatorio_academico_${cls.id}_${filter}.xlsx`);
+    notifySuccess(`Relatório Excel exportado com o filtro: ${academicReportFilterLabel(filter, minimumAttendance, minimumGrade)}.`);
   };
 
   const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
@@ -1470,7 +1517,7 @@ export default function TurmasExternasPage() {
     }
     printWindow.opener = null;
     printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
-      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 7px; } td { border-bottom: 1px solid #e5e7eb; padding: 5px 4px; vertical-align: top; font-size: 8px; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
+      @page { size: A4 landscape; margin: 12mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; line-height: 1.35; } header { border-bottom: 4px solid #dc2626; padding: 0 0 13px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 22px; letter-spacing: -0.02em; } h2 { margin: 0 0 7px; color: #111827; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; table-layout: fixed; } thead { display: table-header-group; } tr { page-break-inside: avoid; } th { background: #991b1b; color: white; text-align: left; padding: 7px 5px; font-size: 7px; letter-spacing: 0.02em; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; vertical-align: top; font-size: 8px; overflow-wrap: anywhere; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
       ${reportSummaryHtml}
       <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter, minimumAttendance, minimumGrade))}</div><div><b>Frequência mínima</b>${formatReportNumber(minimumAttendance)}%</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
@@ -1490,8 +1537,22 @@ export default function TurmasExternasPage() {
       ["Nome completo", "CPF", "E-mail", "Matrícula", "Categoria", "Universidade", "Componente", "Dias", "Horário", "CH", "Professor", "Status"],
       ["Exemplo: Ana Silva", "", "ana@example.com", "", "Estudante", "UFBA", "Básico", "Quarta", "18:00 às 22:00", "16H", "", "active"],
     ]);
-    worksheet["!cols"] = [18, 15, 28, 16, 22, 18, 16, 14, 18, 10, 24, 12].map((wch) => ({ wch }));
+    worksheet["!cols"] = [24, 15, 30, 16, 20, 20, 18, 14, 20, 10, 24, 14].map((wch) => ({ wch }));
+    worksheet["!autofilter"] = { ref: "A1:L2" };
+    worksheet["!freeze"] = { xSplit: 0, ySplit: 1 };
+    worksheet["!rows"] = [{ hpt: 24 }, { hpt: 20 }];
     XLSX.utils.book_append_sheet(workbook, worksheet, "Alunos");
+    const instructions = XLSX.utils.aoa_to_sheet([
+      ["MODELO DE IMPORTAÇÃO — TURMAS EXTERNAS"],
+      ["Preencha a aba Alunos mantendo a primeira linha de cabeçalhos. Uma linha representa um aluno."],
+      ["Campos obrigatórios", "Nome completo"],
+      ["Status aceitos", "active, completed ou inactive"],
+      ["Datas de chamada", "Use colunas no formato Presença DD/MM/AAAA com valores presente, ausente, atrasado ou justificado."],
+      ["Observação", "As colunas adicionais podem ser mantidas; o sistema ignora campos não reconhecidos."],
+    ]);
+    instructions["!cols"] = [{ wch: 24 }, { wch: 100 }];
+    instructions["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    XLSX.utils.book_append_sheet(workbook, instructions, "Instruções");
     XLSX.writeFile(workbook, "modelo-importacao-alunos-turma-externa.xlsx");
     notifySuccess("Modelo de planilha baixado.");
   };
@@ -2602,6 +2663,14 @@ export default function TurmasExternasPage() {
                           </button>
                           <button
                             type="button"
+                            onClick={() => void exportAcademicXlsx(cls)}
+                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-blue-300 hover:bg-blue-50 dark:hover:border-blue-900/60 dark:hover:bg-blue-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                            title="Baixar relatório acadêmico em Excel"
+                          >
+                            <FileSpreadsheet size={14} className="text-blue-600" /> Relatório Excel
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => exportAcademicPdf(cls)}
                             className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-red-300 hover:bg-red-50 dark:hover:border-red-900/60 dark:hover:bg-red-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
                             title="Abrir relatório acadêmico para salvar em PDF"
@@ -2697,6 +2766,16 @@ export default function TurmasExternasPage() {
                                 className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
                               >
                                 <FileSpreadsheet size={14} className="text-emerald-600" /> Relatório acadêmico CSV
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveQuickActionsId(null);
+                                  void exportAcademicXlsx(cls);
+                                }}
+                                className="w-full px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-50 dark:hover:bg-blue-950/30 flex items-center gap-2 text-gray-700 dark:text-gray-200 text-left"
+                              >
+                                <FileSpreadsheet size={14} className="text-blue-600" /> Relatório acadêmico Excel
                               </button>
                               <button
                                 type="button"
@@ -2916,18 +2995,26 @@ export default function TurmasExternasPage() {
                                           <head>
                                             <title>Boletim Individual - ${st.name}</title>
                                             <style>
-                                              body { font-family: Arial, sans-serif; margin: 40px; color: #111; }
-                                              h1 { color: #dc2626; font-size: 20px; margin-bottom: 4px; }
-                                              h2 { font-size: 14px; margin-top: 25px; border-bottom: 2px solid #dc2626; padding-bottom: 4px; }
-                                              table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-                                              th { background: #f3f4f6; padding: 8px; text-align: left; border-bottom: 2px solid #ccc; }
-                                              td { padding: 8px; border-bottom: 1px solid #ddd; }
-                                              .meta { background: #f9fafb; padding: 14px; border-radius: 8px; margin-bottom: 20px; font-size: 12px; line-height: 1.5; }
+                                              @page { size: A4 portrait; margin: 16mm; }
+                                              body { font-family: Arial, sans-serif; margin: 0; color: #1f2937; line-height: 1.45; }
+                                              header { border-bottom: 4px solid #dc2626; padding-bottom: 12px; margin-bottom: 18px; }
+                                              h1 { color: #b91c1c; font-size: 22px; letter-spacing: -0.02em; margin: 0 0 4px; }
+                                              h2 { color: #111827; font-size: 14px; margin: 24px 0 10px; border-bottom: 2px solid #dc2626; padding-bottom: 5px; }
+                                              table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+                                              thead { display: table-header-group; }
+                                              tr { page-break-inside: avoid; }
+                                              th { background: #991b1b; color: white; padding: 8px; text-align: left; border-bottom: 2px solid #7f1d1d; }
+                                              td { padding: 8px; border-bottom: 1px solid #e5e7eb; vertical-align: top; overflow-wrap: anywhere; }
+                                              tr:nth-child(even) td { background: #f8fafc; }
+                                              .meta { background: #f8fafc; border: 1px solid #e5e7eb; padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 11px; line-height: 1.6; }
+                                              .meta strong { color: #374151; }
                                             </style>
                                           </head>
                                           <body>
-                                            <h1>Boletim Acadêmico Individual</h1>
-                                            <p>Plataforma Anderson Palafoz — Ensino de Inglês e Capacitação</p>
+                                            <header>
+                                              <h1>Boletim Acadêmico Individual</h1>
+                                              <p>Plataforma Anderson Palafoz — Ensino de Inglês e Capacitação</p>
+                                            </header>
                                             <div class="meta">
                                               <strong>Aluno(a):</strong> ${st.name} <br/>
                                               <strong>E-mail:</strong> ${st.email || "Não informado"} | <strong>Matrícula:</strong> ${st.studentIdNumber || "N/A"}<br/>
