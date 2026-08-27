@@ -14,6 +14,6 @@ export default async function ProfessorLayout({ children }: { children: React.Re
   const canPreviewRoles = isSuperadmin({ email, role });
 
   return (
-    <RolePreviewProvider actualRole={actualRole} enabled={canPreviewRoles}><DashboardShell>{children}</DashboardShell></RolePreviewProvider>
+    <RolePreviewProvider actualRole={actualRole} enabled={canPreviewRoles}><DashboardShell initialAvatarUrl={session.user.avatarUrl || session.user.image || null}>{children}</DashboardShell></RolePreviewProvider>
   );
 }

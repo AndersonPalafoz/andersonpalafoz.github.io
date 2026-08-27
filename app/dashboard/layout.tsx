@@ -15,5 +15,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const email = session.user.email?.toLowerCase();
   const actualRole = getEffectiveRole({ email, role: session.user.role });
 
-  return <RolePreviewProvider actualRole={actualRole} enabled={isSuperadmin({ email, role: session.user.role })}><DashboardShell>{children}</DashboardShell></RolePreviewProvider>;
+  return <RolePreviewProvider actualRole={actualRole} enabled={isSuperadmin({ email, role: session.user.role })}><DashboardShell initialAvatarUrl={session.user.avatarUrl || session.user.image || null}>{children}</DashboardShell></RolePreviewProvider>;
 }

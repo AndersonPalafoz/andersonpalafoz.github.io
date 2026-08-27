@@ -90,17 +90,48 @@ function getInitials(name?: string | null) {
   return primeiras.join("") || "?";
 }
 
+const AVATAR_CACHE_KEY_PREFIX = "dashboard_sidebar_avatar_v2";
+
+function getAvatarCacheKey(email?: string | null) {
+  const normalizedEmail = email?.trim().toLowerCase();
+  return normalizedEmail
+    ? `${AVATAR_CACHE_KEY_PREFIX}:${encodeURIComponent(normalizedEmail)}`
+    : null;
+}
+
+function readCachedAvatarUrl(email?: string | null) {
+  const cacheKey = getAvatarCacheKey(email);
+  if (!cacheKey) return null;
+  try {
+    return window.localStorage.getItem(cacheKey);
+  } catch {
+    return null;
+  }
+}
+
+function cacheAvatarUrl(email: string | null | undefined, url: string | null) {
+  const cacheKey = getAvatarCacheKey(email);
+  if (!cacheKey) return;
+  try {
+    if (url) window.localStorage.setItem(cacheKey, url);
+    else window.localStorage.removeItem(cacheKey);
+  } catch {
+    // O avatar continua funcional quando o armazenamento local não está disponível.
+  }
+}
 export default function DashboardLayout({
   children,
+  initialAvatarUrl = null,
 }: {
   children: React.ReactNode;
+  initialAvatarUrl?: string | null;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [wishlistPulse, setWishlistPulse] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
   const [avatarLoadFailed, setAvatarLoadFailed] = useState(false);
-  const [avatarLoading, setAvatarLoading] = useState(true);
+  const [avatarLoading, setAvatarLoading] = useState(!initialAvatarUrl);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -150,13 +181,32 @@ export default function DashboardLayout({
   useEffect(() => {
     if (!session?.user?.email) { setAvatarLoading(false); return; }
     let active = true;
-    setAvatarLoading(true);
-    fetch("/api/user/profile", { cache: "no-store" })
+    const sessionEmail = session.user.email;
+    const cachedAvatarUrl = readCachedAvatarUrl(sessionEmail);
+    const immediateAvatarUrl = initialAvatarUrl || session.user?.avatarUrl || session.user?.image || cachedAvatarUrl || null;
+
+    if (immediateAvatarUrl) {
+      setAvatarUrl((current) => current || immediateAvatarUrl);
+      setAvatarLoading(false);
+    } else {
+      setAvatarLoading(true);
+    }
+
+    fetch("/api/user/profile", { cache: "default" })
       .then(async (response) => response.ok ? response.json() : null)
-      .then((payload) => { if (active) { const nextUrl = payload?.user?.avatarUrl || session.user?.image || null; setAvatarUrl(payload?.user?.avatarUrl || null); setAvatarLoadFailed(false); if (!nextUrl) setAvatarLoading(false); } })
+      .then((payload) => {
+        const profileAvatarUrl = payload?.user?.avatarUrl || null;
+        if (profileAvatarUrl) cacheAvatarUrl(sessionEmail, profileAvatarUrl);
+        if (active) {
+          const nextUrl = profileAvatarUrl || immediateAvatarUrl;
+          setAvatarUrl(profileAvatarUrl || immediateAvatarUrl);
+          setAvatarLoadFailed(false);
+          if (!nextUrl) setAvatarLoading(false);
+        }
+      })
       .catch(() => { if (active) setAvatarLoading(false); });
     return () => { active = false; };
-  }, [session?.user?.email]);
+  }, [initialAvatarUrl, session?.user?.avatarUrl, session?.user?.email, session?.user?.image]);
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -169,7 +219,9 @@ export default function DashboardLayout({
       const response = await fetch("/api/user/profile", { method: "PUT", body: formData });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Não foi possível atualizar a foto.");
-      setAvatarUrl(payload.user?.avatarUrl || null);
+      const nextAvatarUrl = payload.user?.avatarUrl || null;
+      cacheAvatarUrl(session?.user?.email, nextAvatarUrl);
+      setAvatarUrl(nextAvatarUrl);
       setAvatarLoadFailed(false);
       setAvatarLoading(!payload.user?.avatarUrl);
       toast.success("Foto de perfil atualizada.");
@@ -246,7 +298,7 @@ export default function DashboardLayout({
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
           <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarUploading} aria-label="Alterar foto de perfil" title="Clique para alterar sua foto" className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-red-600 text-white font-semibold shadow-lg shadow-red-600/20 transition hover:-translate-y-0.5 hover:ring-4 hover:ring-red-100 disabled:cursor-wait disabled:opacity-70">
-            {displayedAvatarUrl ? <><img src={displayedAvatarUrl} alt={`Foto de perfil de ${session?.user?.name || "usuário"}`} className={`h-full w-full object-cover transition-opacity duration-200 ${avatarLoading ? "opacity-0" : "opacity-100"}`} onLoad={() => setAvatarLoading(false)} onError={() => { setAvatarLoadFailed(true); setAvatarLoading(false); }} />{avatarLoading && <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />}</> : avatarLoading ? <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" /> : <span aria-hidden="true">{getInitials(session?.user?.name)}</span>}
+            {displayedAvatarUrl ? <><img src={displayedAvatarUrl} alt={`Foto de perfil de ${session?.user?.name || "usuário"}`} width={48} height={48} loading="eager" fetchPriority="high" decoding="async" className={`h-full w-full object-cover transition-opacity duration-200 ${avatarLoading ? "opacity-0" : "opacity-100"}`} onLoad={() => setAvatarLoading(false)} onError={() => { cacheAvatarUrl(session?.user?.email, null); setAvatarLoadFailed(true); setAvatarLoading(false); }} />{avatarLoading && <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" />}</> : avatarLoading ? <span aria-hidden="true" className="absolute inset-0 animate-pulse bg-slate-200 dark:bg-slate-700" /> : <span aria-hidden="true">{getInitials(session?.user?.name)}</span>}
             {avatarUploading && <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-[10px]">...</span>}
           </button>
           <div className="min-w-0 flex-1">

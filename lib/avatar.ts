@@ -68,7 +68,8 @@ export async function uploadAvatar(userId: number, file: File) {
 
   const { error } = await storage.upload(objectPath, bytes, {
     contentType: file.type,
-    cacheControl: "3600",
+    // Cada upload recebe UUID próprio; a URL nunca é reutilizada ao trocar a foto.
+    cacheControl: "31536000",
     upsert: false,
   });
 

@@ -20,13 +20,25 @@ describe("security inactivity and dashboard avatar contracts", () => {
     expect(source).toContain('new CustomEvent("ap:inactivity-changed")');
   });
 
-  it("uses the uploaded profile avatar before falling back to session image or initials", () => {
+  it("renders the server-provided avatar eagerly before hydration and keeps a per-user cache fallback", () => {
     const source = read("app/dashboard/dashboard-shell.tsx");
-    expect(source).toContain("avatarUrl || session?.user?.image");
+    const dashboardLayout = read("app/dashboard/layout.tsx");
+    const adminLayout = read("app/admin/layout.tsx");
+    const teacherLayout = read("app/professor/layout.tsx");
+    const avatarStorage = read("lib/avatar.ts");
+    expect(source).toContain("initialAvatarUrl");
+    expect(source).toContain("AVATAR_CACHE_KEY_PREFIX");
+    expect(source).toContain("session.user?.avatarUrl || session.user?.image");
     expect(source).toContain("avatarLoading");
     expect(source).toContain("animate-pulse bg-slate-200");
+    expect(source).toContain('fetchPriority="high"');
+    expect(source).toContain('loading="eager"');
     expect(source).toContain("onLoad={() => setAvatarLoading(false)}");
     expect(source).toContain("getInitials(session?.user?.name)");
+    for (const layout of [dashboardLayout, adminLayout, teacherLayout]) {
+      expect(layout).toContain("initialAvatarUrl={session.user.avatarUrl || session.user.image || null}");
+    }
+    expect(avatarStorage).toContain('cacheControl: "31536000"');
   });
   it("uses the reusable confirmation dialog and success/error toasts for note deletion", () => {
     const studentPage = read("app/dashboard/anotacoes/page.tsx");
