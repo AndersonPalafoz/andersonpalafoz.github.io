@@ -2593,3 +2593,4 @@
 - [x] Auditar Turmas Externas em 360px e 430px, incluindo abas, ações, cards de turma, alunos, notas e frequência.
 - [x] Reorganizar controles e dados para toque, leitura e rolagem nativa sem corte lateral em telas pequenas.
 - [x] Validar layout, acessibilidade, teste de regressão, TypeScript e build em viewport móvel.
+- [x] Salvar checkpoint e sincronizar somente a otimização validada de Turmas Externas com a branch `main` oficial.
