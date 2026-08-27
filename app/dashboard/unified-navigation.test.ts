@@ -10,6 +10,7 @@ const adminLayout = readFileSync(resolve(root, "app/admin/layout.tsx"), "utf8");
 const siteFrame = readFileSync(resolve(root, "components/site-frame.tsx"), "utf8");
 const adminPage = readFileSync(resolve(root, "app/admin/page.tsx"), "utf8");
 const professorPage = readFileSync(resolve(root, "app/professor/page.tsx"), "utf8");
+const profilePage = readFileSync(resolve(root, "app/dashboard/perfil/page.tsx"), "utf8");
 const styles = readFileSync(resolve(root, "app/globals.css"), "utf8");
 
 describe("navegação lateral unificada", () => {
@@ -53,7 +54,7 @@ describe("navegação lateral unificada", () => {
   it("protege o hero administrativo contra palavras longas e encurta os rótulos da navegação mobile", () => {
     expect(adminPage).toContain("admin-dashboard-hero");
     expect(adminPage).toContain("[overflow-wrap:anywhere]");
-    expect(adminPage).toContain('index > 3 ? "hidden sm:flex" : "flex"');
+    expect(adminPage).toContain('action.mobile ? "flex" : "hidden sm:flex"');
     expect(shell).toContain('mobileLabel: "Admin"');
     expect(shell).toContain("item.mobileLabel || item.label");
     expect(styles).toContain(".admin-dashboard-hero h1");
@@ -65,5 +66,23 @@ describe("navegação lateral unificada", () => {
     expect(shell).toContain('mobileLabel: "Auditoria"');
     expect(shell).toContain("superadminNavItems[0]");
     expect(shell).toContain("Superadministração");
+  });
+
+  it("mantém as medalhas acessíveis por atalho do aluno, menu completo administrativo e perfil", () => {
+    expect(shell).toContain('href: "/dashboard/perfil#medals-title", label: "Medalhas"');
+    expect(shell).toContain('href: "/admin/medalhas", label: "Medalhas"');
+    expect(shell).toContain("mobileOverflowItems");
+    expect(shell).toContain("studentNavItems[8]");
+    expect(profilePage).toContain('href="#medals-title"');
+    expect(profilePage).toContain("Ver minhas medalhas e emblemas");
+  });
+
+  it("expõe o menu completo na barra inferior sem duplicar atalhos nem ampliar permissões", () => {
+    expect(shell).toContain("const mobileOverflowItems = allNavItems.filter");
+    expect(shell).toContain('aria-label="Abrir todas as funções disponíveis"');
+    expect(shell).toContain('aria-label="Atalhos e menu principal mobile"');
+    expect(shell).toContain("setSidebarOpen(true)");
+    expect(shell).toContain("teacherNavItems[4]");
+    expect(shell).toContain("superadminNavItems[2]");
   });
 });

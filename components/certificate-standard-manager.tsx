@@ -39,6 +39,9 @@ export function CertificateStandardManager() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isBulkExporting, setIsBulkExporting] = useState(false);
+  const [bulkDownloadProgress, setBulkDownloadProgress] = useState(0);
   const [listError, setListError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "signed" | "pending">("all");
@@ -111,6 +114,7 @@ export function CertificateStandardManager() {
 
   const handleBulkDeleteConfirmed = async () => {
     if (selectedIds.length === 0) return;
+    setIsBulkDeleting(true);
     try {
       const res = await fetch(`/api/admin/certificates/issue?ids=${selectedIds.join(",")}`, { method: "DELETE" });
       const json = await res.json();
@@ -122,20 +126,47 @@ export function CertificateStandardManager() {
       fetchCertificates();
     } catch (e: any) {
       toast.error(e.message || "Erro ao excluir em massa.");
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
-  const handleBulkExport = () => {
+  const handleBulkExport = async () => {
     if (selectedIds.length === 0) return;
-    const selectedCerts = issuedCertificates.filter(c => selectedIds.includes(c.id));
-    selectedCerts.forEach((c, idx) => {
-      if (c.certificateUrl && c.certificateUrl !== "#") {
-        setTimeout(() => {
-          window.open(c.certificateUrl, "_blank");
-        }, idx * 400);
+    setIsBulkExporting(true);
+    setBulkDownloadProgress(12);
+    const progressTimer = window.setInterval(() => {
+      setBulkDownloadProgress(current => current < 82 ? current + 18 : current);
+    }, 320);
+
+    try {
+      const response = await fetch("/api/user/certificates/batch-download", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ certificateIds: selectedIds }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || "Não foi possível preparar o arquivo ZIP.");
       }
-    });
-    toast.success(`Iniciando download de ${selectedCerts.length} certificado(s)...`);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `certificados-selecionados-${Date.now()}.zip`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      setBulkDownloadProgress(100);
+      toast.success(`${selectedIds.length} certificado(s) foram reunidos em um arquivo ZIP.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível baixar os certificados selecionados.");
+    } finally {
+      window.clearInterval(progressTimer);
+      setIsBulkExporting(false);
+      window.setTimeout(() => setBulkDownloadProgress(0), 900);
+    }
   };
 
   const toggleSelectAll = () => {
@@ -475,12 +506,12 @@ export function CertificateStandardManager() {
             </CardDescription>
           </div>
           {selectedIds.length > 0 && (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleBulkExport} className="h-8 text-xs bg-white">
-                <Download size={14} className="mr-1" /> Baixar Selecionados ({selectedIds.length})
+            <div className="hidden gap-2 sm:flex">
+              <Button variant="outline" size="sm" onClick={handleBulkExport} disabled={isBulkExporting || isBulkDeleting} className="h-8 text-xs bg-white">
+                {isBulkExporting ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Download size={14} className="mr-1" />} {isBulkExporting ? "Preparando ZIP..." : `Baixar ZIP (${selectedIds.length})`}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowBulkDeleteModal(true)} className="h-8 text-xs bg-red-600 hover:bg-red-700">
-                <Trash2 size={14} className="mr-1" /> Excluir Selecionados ({selectedIds.length})
+              <Button variant="outline" size="sm" onClick={() => setShowBulkDeleteModal(true)} disabled={isBulkExporting || isBulkDeleting} className="h-8 text-xs bg-red-600 hover:bg-red-700">
+                {isBulkDeleting ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Trash2 size={14} className="mr-1" />} {isBulkDeleting ? "Excluindo..." : `Excluir (${selectedIds.length})`}
               </Button>
             </div>
           )}
@@ -528,12 +559,26 @@ export function CertificateStandardManager() {
             <span><strong className="text-foreground">{filteredCertificates.length}</strong> certificado(s) encontrado(s)</span>
             {filteredCertificates.length > 0 && <span>Página {page} de {totalPages}</span>}
           </div>
+          {visibleCertificates.length > 0 && (
+            <div className="mb-4 flex gap-2 md:hidden">
+              <Button type="button" variant="outline" onClick={toggleSelectAll} disabled={isBulkExporting || isBulkDeleting} className="min-h-11 flex-1 gap-2 text-xs font-bold">
+                {visibleCertificates.every(cert => selectedIds.includes(cert.id)) ? <CheckSquare size={16} className="text-red-600" /> : <Square size={16} />}
+                {visibleCertificates.every(cert => selectedIds.includes(cert.id)) ? "Desmarcar página" : `Selecionar página (${visibleCertificates.length})`}
+              </Button>
+            </div>
+          )}
+          {isBulkExporting && (
+            <div className="mb-4 rounded-2xl border border-red-200 bg-red-50/70 p-3 dark:border-red-900/60 dark:bg-red-950/20" role="status" aria-live="polite">
+              <div className="mb-2 flex items-center justify-between gap-3 text-xs font-bold text-red-800 dark:text-red-100"><span>Preparando arquivo ZIP…</span><span>{bulkDownloadProgress}%</span></div>
+              <div className="h-2 overflow-hidden rounded-full bg-red-100 dark:bg-red-950/70"><div className="h-full rounded-full bg-red-600 transition-[width] duration-300" style={{ width: `${bulkDownloadProgress}%` }} role="progressbar" aria-label="Preparando download em lote" aria-valuemin={0} aria-valuemax={100} aria-valuenow={bulkDownloadProgress} /></div>
+            </div>
+          )}
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-muted/50 uppercase text-[10px] text-muted-foreground font-semibold border-b">
                 <tr>
                   <th className="p-3 w-10 text-center">
-                    <button onClick={toggleSelectAll} className="flex items-center justify-center">
+                    <button type="button" onClick={toggleSelectAll} className="flex items-center justify-center" aria-label="Selecionar ou desmarcar certificados desta página">
                       {visibleCertificates.length > 0 && visibleCertificates.every(cert => selectedIds.includes(cert.id)) ? (
                         <CheckSquare size={16} className="text-red-600" />
                       ) : (
@@ -649,6 +694,19 @@ export function CertificateStandardManager() {
             })}
           </div>
 
+          {selectedIds.length > 0 && (
+            <section className="sticky bottom-3 z-20 mt-4 rounded-2xl border border-red-200 bg-card/95 p-3 shadow-lg shadow-slate-900/10 backdrop-blur dark:border-red-900/60 md:hidden" aria-label="Ações em lote para certificados selecionados">
+              <div className="mb-3 flex items-center justify-between gap-3 text-xs">
+                <span className="font-black text-foreground" aria-live="polite">{selectedIds.length} selecionado(s)</span>
+                <button type="button" onClick={() => setSelectedIds([])} disabled={isBulkExporting || isBulkDeleting} className="min-h-10 px-2 text-xs font-bold text-red-700 underline-offset-2 hover:underline disabled:opacity-50 dark:text-red-300">Limpar seleção</button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button type="button" onClick={handleBulkExport} disabled={isBulkExporting || isBulkDeleting} className="min-h-11 gap-1.5 px-2 text-xs font-bold">{isBulkExporting ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />} {isBulkExporting ? "Preparando" : "Baixar ZIP"}</Button>
+                <Button type="button" variant="outline" onClick={() => setShowBulkDeleteModal(true)} disabled={isBulkExporting || isBulkDeleting} className="min-h-11 gap-1.5 border-red-300 bg-red-50 px-2 text-xs font-bold text-red-700 hover:bg-red-100 disabled:opacity-50 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-200">{isBulkDeleting ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />} {isBulkDeleting ? "Excluindo" : "Excluir"}</Button>
+              </div>
+            </section>
+          )}
+
           {filteredCertificates.length > pageSize && (
             <div className="mt-5 flex items-center justify-between gap-3 border-t border-border/70 pt-4">
               <Button type="button" variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(current => Math.max(1, current - 1))} className="gap-1 text-xs"><ChevronLeft size={14} /> Anterior</Button>
@@ -661,14 +719,14 @@ export function CertificateStandardManager() {
 
       {/* Modal de Confirmação de Segurança para Exclusão em Massa */}
       {showBulkDeleteModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-card text-card-foreground p-6 rounded-2xl max-w-md w-full shadow-2xl border border-red-200 space-y-4 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+          <div role="dialog" aria-modal="true" aria-labelledby="bulk-delete-title" className="w-full max-w-md space-y-4 rounded-2xl border border-red-200 bg-card p-4 text-card-foreground shadow-2xl animate-in fade-in zoom-in-95 duration-200 dark:border-red-900/60 sm:p-6">
             <div className="flex items-center gap-3 text-red-600">
               <div className="p-3 bg-red-100 rounded-full">
                 <AlertTriangle size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-foreground">Confirmação de Exclusão em Massa</h3>
+                <h3 id="bulk-delete-title" className="text-lg font-bold text-foreground">Confirmação de Exclusão em Massa</h3>
                 <p className="text-xs text-muted-foreground">Esta ação é irreversível e removerá registros do banco.</p>
               </div>
             </div>
@@ -677,12 +735,12 @@ export function CertificateStandardManager() {
               Você está prestes a excluir permanentemente <strong className="text-foreground">{selectedIds.length} certificado(s)</strong> selecionado(s). Deseja realmente prosseguir?
             </p>
 
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)} className="text-xs">
+            <div className="grid grid-cols-1 gap-2 border-t pt-4 sm:flex sm:justify-end sm:gap-3">
+              <Button variant="outline" onClick={() => setShowBulkDeleteModal(false)} disabled={isBulkDeleting} className="min-h-11 text-xs sm:min-h-9">
                 Cancelar
               </Button>
-              <Button variant="outline" onClick={handleBulkDeleteConfirmed} className="text-xs bg-red-600 hover:bg-red-700 font-bold">
-                Sim, Excluir {selectedIds.length} Certificado(s)
+              <Button variant="outline" onClick={handleBulkDeleteConfirmed} disabled={isBulkDeleting} className="min-h-11 text-xs bg-red-600 font-bold hover:bg-red-700 sm:min-h-9">
+                {isBulkDeleting ? <><Loader2 size={14} className="mr-1 animate-spin" /> Excluindo…</> : `Sim, Excluir ${selectedIds.length} Certificado(s)`}
               </Button>
             </div>
           </div>

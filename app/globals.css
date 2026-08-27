@@ -724,6 +724,18 @@ body {
 }
 
 @media (max-width: 767px) {
+  .dashboard-content > .site-shell,
+  .dashboard-content > div > .site-shell {
+    min-width: 0;
+    padding-inline: 0;
+  }
+
+  .dashboard-content > .site-shell > .page-container,
+  .dashboard-content > div > .site-shell > .page-container {
+    max-width: 100%;
+    padding-inline: 0;
+  }
+
   .dashboard-content {
     min-width: 0;
     overflow-x: clip;
