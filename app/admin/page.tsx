@@ -192,7 +192,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="site-shell admin-dashboard-page px-3 py-4 sm:px-6 sm:py-8 lg:px-8">
+    <div className="site-shell admin-dashboard-page py-4 sm:py-8">
       <div className="page-container min-w-0 space-y-6 sm:space-y-8">
         {/* Header Harmonizado com o Painel do Professor */}
         <section className="dashboard-hero admin-dashboard-hero grid min-w-0 gap-5 rounded-2xl p-4 sm:gap-6 sm:rounded-3xl sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
