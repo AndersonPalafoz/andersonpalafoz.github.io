@@ -23,6 +23,9 @@ interface ExternalStudentItem {
   component: string | null;
   status: string;
   notes: string | null;
+  manualAverage: string | null;
+  manualAverageReason: string | null;
+  manualAverageUpdatedAt?: string | null;
   lastSignedIn?: string | null;
 }
 
@@ -461,6 +464,10 @@ export default function TurmasExternasPage() {
   const [gradeAssessmentDate, setGradeAssessmentDate] = useState<Record<number, string>>({});
   const [gradeRubricScores, setGradeRubricScores] = useState<Record<number, { content: string; language: string; comprehensibility: string }>>({});
   const [editingGradeId, setEditingGradeId] = useState<number | null>(null);
+  const [editingGradeClassId, setEditingGradeClassId] = useState<number | null>(null);
+  const [manualAverageDraft, setManualAverageDraft] = useState<Record<string, string>>({});
+  const [manualAverageReasonDraft, setManualAverageReasonDraft] = useState<Record<string, string>>({});
+  const [savingManualAverageKey, setSavingManualAverageKey] = useState<string | null>(null);
   const [simalBatchPreset, setSimalBatchPreset] = useState<Record<number, string>>({});
   const [simalBatchComponent, setSimalBatchComponent] = useState<Record<number, string>>({});
   const [simalBatchScores, setSimalBatchScores] = useState<Record<number, Record<number, string>>>({});
@@ -1079,6 +1086,7 @@ export default function TurmasExternasPage() {
       if (!res.ok) throw new Error(data.error || "Erro ao salvar nota.");
       notifySuccess(editingGradeId ? "Avaliação atualizada com sucesso!" : "Nota lançada com sucesso!");
       setEditingGradeId(null);
+      setEditingGradeClassId(null);
       setGradeAssessmentTitle(prev => ({ ...prev, [classId]: "" }));
       setGradeAssessmentPreset(prev => ({ ...prev, [classId]: "" }));
       setGradeAssessmentComponent(prev => ({ ...prev, [classId]: "" }));
@@ -1121,14 +1129,74 @@ export default function TurmasExternasPage() {
   };
 
   const handleEditGrade = (classId: number, grade: ExternalClassGradeItem) => {
+    const preset = SIMAL_ASSESSMENTS.find((item) => item.label === grade.assessmentTitle && (!grade.assessmentVersion || item.version === grade.assessmentVersion));
+    let rubric: { content: string; language: string; comprehensibility: string } = { content: "", language: "", comprehensibility: "" };
+    if (grade.rubricScores) {
+      try {
+        const parsed = JSON.parse(grade.rubricScores) as Partial<typeof rubric>;
+        rubric = { content: String(parsed.content || ""), language: String(parsed.language || ""), comprehensibility: String(parsed.comprehensibility || "") };
+      } catch {
+        // Rubricas antigas inválidas continuam editáveis sem interromper o formulário.
+      }
+    }
     setEditingGradeId(grade.id);
+    setEditingGradeClassId(classId);
     setGradeStudentId((current) => ({ ...current, [classId]: grade.studentId }));
+    setGradeAssessmentPreset((current) => ({ ...current, [classId]: preset?.value || "" }));
     setGradeAssessmentTitle((current) => ({ ...current, [classId]: grade.assessmentTitle }));
     setGradeAssessmentComponent((current) => ({ ...current, [classId]: grade.assessmentComponent || "total" }));
     setGradeScore((current) => ({ ...current, [classId]: grade.score }));
     setGradeAssessmentDate((current) => ({ ...current, [classId]: grade.assessmentDate || new Date().toISOString().slice(0, 10) }));
     setGradeFeedback((current) => ({ ...current, [classId]: grade.feedback || "" }));
+    setGradeRubricScores((current) => ({ ...current, [classId]: rubric }));
     setClassWorkspaceTab(classId, "grades");
+    window.setTimeout(() => document.getElementById(`grade-editor-${classId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+  };
+
+  const cancelGradeEdit = () => {
+    setEditingGradeId(null);
+    setEditingGradeClassId(null);
+    setGradeAssessmentPreset((current) => Object.fromEntries(Object.keys(current).map((key) => [key, ""])));
+    setGradeAssessmentTitle((current) => Object.fromEntries(Object.keys(current).map((key) => [key, ""])));
+    setGradeAssessmentComponent((current) => Object.fromEntries(Object.keys(current).map((key) => [key, ""])));
+    setGradeScore((current) => Object.fromEntries(Object.keys(current).map((key) => [key, ""])));
+    setGradeFeedback((current) => Object.fromEntries(Object.keys(current).map((key) => [key, ""])));
+    setGradeRubricScores((current) => Object.fromEntries(Object.keys(current).map((key) => [key, { content: "", language: "", comprehensibility: "" }])));
+  };
+
+  const handleSaveManualAverage = async (classId: number, student: ExternalStudentItem, draftOverride?: string, reasonOverride?: string) => {
+    const key = `${classId}:${student.id}`;
+    const draft = (draftOverride ?? manualAverageDraft[key] ?? student.manualAverage ?? "").trim();
+    const reason = (reasonOverride ?? manualAverageReasonDraft[key] ?? student.manualAverageReason ?? "").trim();
+    if (draft) {
+      const parsed = parseGradeNumber(draft);
+      if (parsed === null || parsed < 0 || parsed > 10) {
+        notifyError("A média manual deve estar entre 0 e 10. Use ponto ou vírgula para casas decimais.");
+        return;
+      }
+      if (reason.length < 8) {
+        notifyError("Informe uma justificativa com pelo menos 8 caracteres para o ajuste manual.");
+        return;
+      }
+    }
+    try {
+      setSavingManualAverageKey(key);
+      const response = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setManualAverage", studentId: student.id, manualAverage: draft || null, manualAverageReason: draft ? reason : null }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível ajustar a média.");
+      notifySuccess(data.message || "Média atualizada.");
+      setManualAverageDraft((current) => ({ ...current, [key]: draft }));
+      setManualAverageReasonDraft((current) => ({ ...current, [key]: reason }));
+      await loadClasses();
+    } catch (error) {
+      notifyError(error instanceof Error ? error.message : "Não foi possível ajustar a média.");
+    } finally {
+      setSavingManualAverageKey(null);
+    }
   };
 
   const handleSetGradeStatus = async (classId: number, status: "open" | "closed") => {
@@ -1256,14 +1324,14 @@ export default function TurmasExternasPage() {
       const attendance = attendanceByStudent.get(student.id) || { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
       const studentGrades = (cls.grades || []).filter((grade) => grade.studentId === student.id);
       const simalGrade = calculateSimalComposite(studentGrades);
-          const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => { const score = parseGradeNumber(grade.score); const max = parseGradeNumber(grade.maxScore); return { score: max !== null && max > 0 && score !== null ? (score / max) * 10 : null, unit: grade.unitNumber }; }));
-      const averageGrade = simalGrade.isSimal ? simalGrade.finalScore : configuredGrade.average;
+      const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => { const score = parseGradeNumber(grade.score); const max = parseGradeNumber(grade.maxScore); return { score: max !== null && max > 0 && score !== null ? (score / max) * 10 : null, unit: grade.unitNumber }; }));
+      const calculatedAverage = simalGrade.isSimal ? simalGrade.finalScore : configuredGrade.average;
+      const manualAverage = parseGradeNumber(student.manualAverage);
+      const averageGrade = manualAverage !== null ? manualAverage : calculatedAverage;
       const countedAttendance = attendance.present + attendance.late + attendance.absent;
       const attendancePercent = countedAttendance > 0 ? ((attendance.present + attendance.late) / countedAttendance) * 100 : null;
       const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
-      const gradePassed = simalGrade.isSimal
-        ? (simalGrade.finalScore === null ? null : simalGrade.finalScore >= minimumGrade)
-        : configuredGrade.passed;
+      const gradePassed = averageGrade === null ? null : averageGrade >= minimumGrade;
       const failedByGrade = gradePassed === false || hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) && gradePassed !== null;
       const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent }, minimumAttendance);
       return {
@@ -1273,6 +1341,9 @@ export default function TurmasExternasPage() {
         grades: studentGrades,
         simalGrade,
         averageGrade,
+        calculatedAverage,
+        manualAverage,
+        manualAverageReason: student.manualAverageReason,
         gradePassed,
         failedByGrade,
         failedByAttendance,
@@ -1280,7 +1351,7 @@ export default function TurmasExternasPage() {
     });
   };
 
-  const academicStatusLabel = (row: ReturnType<typeof getAcademicReportRows>[number]) => {
+  const academicStatusLabel = (row: Pick<ReturnType<typeof getAcademicReportRows>[number], "gradePassed" | "averageGrade" | "attendancePercent" | "failedByGrade" | "failedByAttendance">) => {
     if (row.failedByGrade && row.failedByAttendance) return "Reprovado por nota e falta";
     if (row.failedByGrade) return "Reprovado por nota";
     if (row.failedByAttendance) return "Reprovado por falta";
@@ -1315,7 +1386,7 @@ export default function TurmasExternasPage() {
         student.university || "",
         student.component || "",
         student.status,
-        academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }),
+        academicStatusLabel({ attendancePercent, averageGrade, gradePassed, failedByGrade, failedByAttendance }),
         attendance.present,
         attendance.absent,
         attendance.late,
@@ -1363,7 +1434,7 @@ export default function TurmasExternasPage() {
         <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.presentationScore)}/2` : "—")}</td>
         <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.finalScore)}/10` : "—")}</td>
         <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
-        <td class="status ${failedByGrade || failedByAttendance ? "status-failed" : averageGrade === null || attendancePercent === null ? "status-pending" : "status-approved"}">${escapeReportHtml(academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }))}</td>
+        <td class="status ${failedByGrade || failedByAttendance ? "status-failed" : averageGrade === null || attendancePercent === null ? "status-pending" : "status-approved"}">${escapeReportHtml(academicStatusLabel({ attendancePercent, averageGrade, gradePassed, failedByGrade, failedByAttendance }))}</td>
       </tr>`).join("");
     const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
     const reportSummaryHtml = `<section class="summary" aria-label="Resumo de aprovação e reprovação">
@@ -3037,10 +3108,11 @@ export default function TurmasExternasPage() {
                             <span className="rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-blue-800 dark:bg-slate-900/70 dark:text-blue-200">{academicRows.filter((row) => row.averageGrade !== null).length}/{academicRows.length} com média</span>
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                            {academicRows.map(({ student, averageGrade, simalGrade, gradePassed, failedByGrade, failedByAttendance, attendancePercent }) => {
+                            {academicRows.map(({ student, averageGrade, calculatedAverage, manualAverage, manualAverageReason, simalGrade, gradePassed, failedByGrade, failedByAttendance, attendancePercent }) => {
                               const hasGrade = averageGrade !== null;
+                              const manualAverageKey = `${cls.id}:${student.id}`;
                               const passed = gradePassed === true && !failedByAttendance;
-                              const statusLabel = academicStatusLabel({ student, attendance: { present: 0, absent: 0, late: 0, excused: 0, total: 0 }, attendancePercent, grades: [], simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance });
+                              const statusLabel = academicStatusLabel({ attendancePercent, averageGrade, gradePassed, failedByGrade, failedByAttendance });
                               return (
                                 <div key={student.id} className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2.5 dark:border-blue-900/50 dark:bg-slate-900/60">
                                   <div className="flex items-center justify-between gap-2">
@@ -3049,16 +3121,29 @@ export default function TurmasExternasPage() {
                                   </div>
                                   <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">{simalGrade.isSimal ? `SIMAL: prova ${simalGrade.proofScore?.toFixed(1) ?? "—"}/8 + apresentação ${simalGrade.presentationScore?.toFixed(1) ?? "—"}/2` : gradePassed === null ? "Aguardando avaliações" : hasGrade ? (passed ? "Média mínima atingida" : `Mínimo: ${(parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE).toFixed(1)}`) : "Aguardando avaliações"}</p>
                                   <p className={`mt-1 text-[10px] font-bold ${statusLabel.startsWith("Aprovado") ? "text-emerald-700 dark:text-emerald-300" : statusLabel.startsWith("Reprovado") ? "text-red-700 dark:text-red-300" : "text-amber-700 dark:text-amber-300"}`}>{statusLabel}</p>
+                                  <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50/70 p-2 dark:border-blue-900/50 dark:bg-blue-950/20">
+                                    <div className="flex items-center justify-between gap-2">
+                                      <label htmlFor={`manual-average-${manualAverageKey}`} className="text-[10px] font-black uppercase tracking-wide text-blue-800 dark:text-blue-200">Correção manual da média</label>
+                                      {manualAverage !== null && <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-black text-amber-800 dark:bg-amber-950/50 dark:text-amber-200">Ajustada</span>}
+                                    </div>
+                                    <div className="mt-1 flex gap-1.5">
+                                      <input id={`manual-average-${manualAverageKey}`} type="text" inputMode="decimal" placeholder={calculatedAverage === null ? "0 a 10" : calculatedAverage.toFixed(1)} value={manualAverageDraft[manualAverageKey] ?? (manualAverage !== null ? manualAverage.toFixed(1) : "")} onChange={(e) => setManualAverageDraft((current) => ({ ...current, [manualAverageKey]: e.target.value }))} className="min-w-0 flex-1 rounded-md border border-blue-200 bg-white px-2 py-1 text-[11px] font-bold text-gray-900 dark:border-blue-800 dark:bg-slate-900 dark:text-white" aria-label={`Média manual de ${student.name}`} />
+                                      <button type="button" onClick={() => void handleSaveManualAverage(cls.id, student)} disabled={submitting || savingManualAverageKey === manualAverageKey || gradesClosed} className="rounded-md bg-blue-700 px-2 py-1 text-[10px] font-black text-white transition hover:bg-blue-800 disabled:opacity-50">{savingManualAverageKey === manualAverageKey ? "Salvando…" : "Salvar"}</button>
+                                    </div>
+                                    <textarea value={manualAverageReasonDraft[manualAverageKey] ?? manualAverageReason ?? ""} onChange={(e) => setManualAverageReasonDraft((current) => ({ ...current, [manualAverageKey]: e.target.value }))} maxLength={500} placeholder="Justificativa do ajuste (mínimo 8 caracteres)" className="mt-1 w-full rounded-md border border-blue-200 bg-white px-2 py-1 text-[10px] text-gray-700 dark:border-blue-800 dark:bg-slate-900 dark:text-gray-200" rows={2} aria-label={`Justificativa da média manual de ${student.name}`} />
+                                    <div className="mt-1 flex items-center justify-between gap-2 text-[9px] text-blue-700/80 dark:text-blue-300/80"><span>{manualAverage !== null ? `Calculada: ${calculatedAverage === null ? "—" : calculatedAverage.toFixed(1)} · ajustada: ${manualAverage.toFixed(1)}` : "Sem ajuste: usa o cálculo automático"}</span>{manualAverage !== null && <button type="button" onClick={() => void handleSaveManualAverage(cls.id, student, "", "")} disabled={submitting || savingManualAverageKey === manualAverageKey || gradesClosed} className="font-black underline hover:text-blue-900 disabled:opacity-50 dark:hover:text-blue-100">Restaurar cálculo</button>}</div>
+                                  </div>
                                 </div>
                               );
                             })}
                             {academicRows.length === 0 && <p className="text-xs text-blue-800 dark:text-blue-200">Cadastre alunos para visualizar as médias calculadas.</p>}
                           </div>
                         </div>
-                        <div className="bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3">
+                        <div id={`grade-editor-${cls.id}`} className={`bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3 ${editingGradeClassId === cls.id ? "ring-2 ring-blue-200 dark:ring-blue-900/60" : ""}`}>
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
-                              <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Lançar avaliação SIMAL</h4>
+                              <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">{editingGradeClassId === cls.id ? "Editar avaliação" : "Lançar avaliação SIMAL"}</h4>
+                              {editingGradeClassId === cls.id && <p className="mt-1 text-[11px] font-bold text-blue-700 dark:text-blue-300">Você está alterando uma avaliação existente. Confira os campos antes de salvar.</p>}
                               <p className="mt-1 text-[11px] text-gray-500">Funciona para alunos já cadastrados e para novos alunos adicionados na aba Alunos.</p>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
@@ -3113,7 +3198,10 @@ export default function TurmasExternasPage() {
                             </div>
                           )}
                           <input type="text" placeholder="Feedback / comentário (opcional)" value={gradeFeedback[cls.id] || ""} onChange={(e) => setGradeFeedback({ ...gradeFeedback, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
-                          <button type="button" onClick={() => void handleSaveGrade(cls.id)} disabled={submitting || gradesClosed || cls.students.length === 0} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">Salvar nota da avaliação</button>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button type="button" onClick={() => void handleSaveGrade(cls.id)} disabled={submitting || gradesClosed || cls.students.length === 0} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">{editingGradeClassId === cls.id ? "Salvar alterações" : "Salvar nota da avaliação"}</button>
+                            {editingGradeClassId === cls.id && <button type="button" onClick={cancelGradeEdit} disabled={submitting} className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-gray-200 dark:hover:bg-slate-800">Cancelar edição</button>}
+                          </div>
                         </div>
 
                         <div className="space-y-3 rounded-2xl border border-red-100 bg-red-50/50 p-4 dark:border-red-950/50 dark:bg-red-950/10">

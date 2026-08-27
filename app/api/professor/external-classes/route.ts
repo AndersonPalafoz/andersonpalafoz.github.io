@@ -255,6 +255,8 @@ export async function POST(request: NextRequest) {
       unitNumber,
       feedback,
       gradeId,
+      manualAverage,
+      manualAverageReason,
       materialTitle,
       fileUrl,
       materialDescription,
@@ -659,6 +661,41 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ success: true, importedCount, updatedCount, skippedCount, attendanceImportedCount });
+    }
+
+    if (action === "setManualAverage") {
+      if (!studentId) return NextResponse.json({ error: "ID do aluno não informado." }, { status: 400 });
+      const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      if (!targetStudent) return NextResponse.json({ error: "Aluno não encontrado." }, { status: 404 });
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, targetStudent.externalClassId) });
+      if (!existingClass) return NextResponse.json({ error: "Turma associada não encontrada." }, { status: 404 });
+      if (!canManageClass(existingClass.id, existingClass.teacherId)) return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
+      if (existingClass.gradeStatus === "closed") return NextResponse.json({ error: "As notas desta turma estão fechadas. Reabra o lançamento antes de ajustar a média." }, { status: 409 });
+
+      const parsedManualAverage = parseDecimalInput(manualAverage);
+      const normalizedManualAverage: number | null = manualAverage === undefined || manualAverage === null || String(manualAverage).trim() === "" ? null : parsedManualAverage === undefined ? null : parsedManualAverage;
+      if (manualAverage !== undefined && manualAverage !== null && String(manualAverage).trim() !== "" && normalizedManualAverage === null) {
+        return NextResponse.json({ error: "A média manual deve ser um número válido. Use ponto ou vírgula para casas decimais." }, { status: 400 });
+      }
+      if (normalizedManualAverage !== null && (normalizedManualAverage < 0 || normalizedManualAverage > 10)) {
+        return NextResponse.json({ error: "A média manual deve estar entre 0 e 10." }, { status: 400 });
+      }
+      const normalizedReason = typeof manualAverageReason === "string" ? manualAverageReason.trim() : "";
+      if (normalizedManualAverage !== null && normalizedReason.length < 8) {
+        return NextResponse.json({ error: "Informe uma justificativa com pelo menos 8 caracteres para o ajuste manual." }, { status: 400 });
+      }
+      if (normalizedReason.length > MAX_IMPORTED_TEXT_LENGTH) {
+        return NextResponse.json({ error: `A justificativa deve ter no máximo ${MAX_IMPORTED_TEXT_LENGTH} caracteres.` }, { status: 400 });
+      }
+
+      const [updatedStudent] = await db.update(externalStudents).set({
+        manualAverage: normalizedManualAverage === null ? null : String(normalizedManualAverage),
+        manualAverageReason: normalizedManualAverage === null ? null : normalizedReason,
+        manualAverageUpdatedAt: normalizedManualAverage === null ? null : new Date(),
+        manualAverageUpdatedBy: normalizedManualAverage === null ? null : teacher.id,
+        updatedAt: new Date(),
+      }).where(eq(externalStudents.id, targetStudent.id)).returning();
+      return NextResponse.json({ success: true, student: updatedStudent, message: normalizedManualAverage === null ? "Ajuste manual removido; média calculada restaurada." : "Média manual ajustada com sucesso." });
     }
 
     if (action === "deleteStudent") {
