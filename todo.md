@@ -2577,3 +2577,4 @@
 - [x] Auditar as superfícies móveis compartilhadas, incluindo menu público, navegação do dashboard e páginas protegidas prioritárias.
 - [x] Melhorar a descoberta de rotas, a área de toque, os estados ativos e a contenção contra rolagem lateral em smartphones.
 - [x] Validar os fluxos em viewport mobile, acessibilidade, testes, TypeScript e build de produção.
+- [x] Sincronizar o checkpoint validado de navegação mobile com a branch `main` oficial.
