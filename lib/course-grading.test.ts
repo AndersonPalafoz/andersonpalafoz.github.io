@@ -19,6 +19,19 @@ describe("course grading configuration", () => {
     expect(result.passed).toBe(false);
   });
 
+  it("uses 6,0 as the default decimal approval threshold", () => {
+    expect(calculateCourseGrade({ hasUnits: false }, [{ score: 6 }]).passed).toBe(true);
+    expect(calculateCourseGrade({ hasUnits: false }, [{ score: 5.9 }]).passed).toBe(false);
+  });
+
+  it("keeps unit-scoped approval pending until every unit has a decimal average", () => {
+    const result = calculateCourseGrade({ hasUnits: true, unitCount: 2, gradingScope: "unit", passingAverage: 6 }, [
+      { score: 7, unit: 1 },
+    ]);
+    expect(result.passed).toBeNull();
+    expect(result.units[1]?.average).toBeNull();
+  });
+
   it("parses invalid overrides safely", () => {
     expect(parseUnitPassingAverages("invalid")).toEqual({});
   });

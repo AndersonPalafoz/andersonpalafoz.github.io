@@ -84,6 +84,7 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("JSON.parse(attendance.attendanceData)");
     expect(source).toContain("cls.grades || []");
     expect(source).toContain("averageGrade");
+    expect(source).toContain("gradePassed");
     expect(source).toContain("attendancePercent");
   });
 
@@ -104,6 +105,7 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("CPF");
     expect(source).toContain("Universidade");
     expect(source).toContain("Frequência (%)");
+    expect(source).toContain("Situação acadêmica");
     expect(source).toContain("relatorio_academico_");
     expect(source).toContain("_${filter}.csv");
     expect(source).toContain("text/csv;charset=utf-8");

@@ -360,7 +360,7 @@ export default function TurmasExternasPage() {
   const [hasUnits, setHasUnits] = useState(false);
   const [unitCount, setUnitCount] = useState(1);
   const [gradingScope, setGradingScope] = useState<"course" | "unit">("course");
-  const [passingAverage, setPassingAverage] = useState(5);
+  const [passingAverage, setPassingAverage] = useState(6);
   const [unitPassingAverages, setUnitPassingAverages] = useState<Record<number, number>>({});
   const [modality, setModality] = useState("Remota");
   const [meetingLink, setMeetingLink] = useState("");
@@ -811,7 +811,7 @@ export default function TurmasExternasPage() {
     setHasUnits(Boolean((cls as any).hasUnits));
     setUnitCount(Math.max(1, Number((cls as any).unitCount) || 1));
     setGradingScope((cls as any).gradingScope === "unit" ? "unit" : "course");
-    setPassingAverage(parseGradeNumber((cls as any).passingAverage) ?? 5);
+    setPassingAverage(parseGradeNumber((cls as any).passingAverage) ?? REPORT_MIN_GRADE);
     try { setUnitPassingAverages(JSON.parse((cls as any).unitPassingAverages || "{}")); } catch { setUnitPassingAverages({}); }
     setModality((cls as any).modality || "Remota");
     setMeetingLink((cls as any).meetingLink || "");
@@ -841,7 +841,7 @@ export default function TurmasExternasPage() {
     setHasUnits(false);
     setUnitCount(1);
     setGradingScope("course");
-    setPassingAverage(5);
+    setPassingAverage(REPORT_MIN_GRADE);
     setUnitPassingAverages({});
     setModality("Remota");
     setMeetingLink("");
@@ -1261,7 +1261,10 @@ export default function TurmasExternasPage() {
       const countedAttendance = attendance.present + attendance.late + attendance.absent;
       const attendancePercent = countedAttendance > 0 ? ((attendance.present + attendance.late) / countedAttendance) * 100 : null;
       const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
-      const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) || (configuredGrade.scope === "unit" && configuredGrade.passed === false);
+      const gradePassed = simalGrade.isSimal
+        ? (simalGrade.finalScore === null ? null : simalGrade.finalScore >= minimumGrade)
+        : configuredGrade.passed;
+      const failedByGrade = gradePassed === false || hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) && gradePassed !== null;
       const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent }, minimumAttendance);
       return {
         student,
@@ -1270,6 +1273,7 @@ export default function TurmasExternasPage() {
         grades: studentGrades,
         simalGrade,
         averageGrade,
+        gradePassed,
         failedByGrade,
         failedByAttendance,
       };
@@ -1280,7 +1284,7 @@ export default function TurmasExternasPage() {
     if (row.failedByGrade && row.failedByAttendance) return "Reprovado por nota e falta";
     if (row.failedByGrade) return "Reprovado por nota";
     if (row.failedByAttendance) return "Reprovado por falta";
-    if (row.averageGrade === null) return "Pendente: média";
+    if (row.gradePassed === null || row.averageGrade === null) return "Pendente: média";
     if (row.attendancePercent === null) return "Pendente: frequência";
     return "Aprovado";
   };
@@ -1302,8 +1306,8 @@ export default function TurmasExternasPage() {
       ["Frequência mínima (%)", formatReportNumber(minimumAttendance)],
       ["Alunos incluídos", rows.length],
       [],
-      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
-      ...rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade }) => [
+      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
+      ...rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => [
         student.name,
         student.cpf || "",
         student.email || "",
@@ -1311,6 +1315,7 @@ export default function TurmasExternasPage() {
         student.university || "",
         student.component || "",
         student.status,
+        academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }),
         attendance.present,
         attendance.absent,
         attendance.late,
@@ -1343,7 +1348,7 @@ export default function TurmasExternasPage() {
     const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade, minimumAttendance);
     const reportSummary = summarizeAcademicReportRows(reportRows, minimumGrade, minimumAttendance);
     const generatedAt = new Date().toLocaleString("pt-BR");
-    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, failedByGrade, failedByAttendance }) => `
+    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => `
       <tr>
         <td><strong>${escapeReportHtml(student.name)}</strong><br><small>${escapeReportHtml(student.email || "E-mail não informado")}</small></td>
         <td>${escapeReportHtml(student.cpf || "—")}</td>
@@ -1358,7 +1363,7 @@ export default function TurmasExternasPage() {
         <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.presentationScore)}/2` : "—")}</td>
         <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.finalScore)}/10` : "—")}</td>
         <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
-        <td class="status ${failedByGrade || failedByAttendance ? "status-failed" : averageGrade === null || attendancePercent === null ? "status-pending" : "status-approved"}">${escapeReportHtml(academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, failedByGrade, failedByAttendance }))}</td>
+        <td class="status ${failedByGrade || failedByAttendance ? "status-failed" : averageGrade === null || attendancePercent === null ? "status-pending" : "status-approved"}">${escapeReportHtml(academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }))}</td>
       </tr>`).join("");
     const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
     const reportSummaryHtml = `<section class="summary" aria-label="Resumo de aprovação e reprovação">
@@ -3032,17 +3037,17 @@ export default function TurmasExternasPage() {
                             <span className="rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-blue-800 dark:bg-slate-900/70 dark:text-blue-200">{academicRows.filter((row) => row.averageGrade !== null).length}/{academicRows.length} com média</span>
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                            {academicRows.map(({ student, averageGrade, simalGrade, failedByGrade, failedByAttendance, attendancePercent }) => {
+                            {academicRows.map(({ student, averageGrade, simalGrade, gradePassed, failedByGrade, failedByAttendance, attendancePercent }) => {
                               const hasGrade = averageGrade !== null;
-                              const passed = hasGrade && averageGrade >= (parseGradeNumber(cls.passingAverage) ?? 5) && !failedByAttendance;
-                              const statusLabel = academicStatusLabel({ student, attendance: { present: 0, absent: 0, late: 0, excused: 0, total: 0 }, attendancePercent, grades: [], simalGrade, averageGrade, failedByGrade, failedByAttendance });
+                              const passed = gradePassed === true && !failedByAttendance;
+                              const statusLabel = academicStatusLabel({ student, attendance: { present: 0, absent: 0, late: 0, excused: 0, total: 0 }, attendancePercent, grades: [], simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance });
                               return (
                                 <div key={student.id} className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2.5 dark:border-blue-900/50 dark:bg-slate-900/60">
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="min-w-0 truncate text-xs font-bold text-gray-900 dark:text-white">{student.name}</span>
                                     <span className={`shrink-0 text-sm font-black ${passed ? "text-emerald-700 dark:text-emerald-300" : hasGrade ? "text-amber-700 dark:text-amber-300" : "text-gray-400"}`}>{hasGrade ? `${averageGrade.toFixed(1)} / 10` : "—"}</span>
                                   </div>
-                                  <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">{simalGrade.isSimal ? `SIMAL: prova ${simalGrade.proofScore?.toFixed(1) ?? "—"}/8 + apresentação ${simalGrade.presentationScore?.toFixed(1) ?? "—"}/2` : hasGrade ? (passed ? "Média mínima atingida" : `Mínimo: ${(parseGradeNumber(cls.passingAverage) ?? 5).toFixed(1)}`) : "Aguardando avaliações"}</p>
+                                  <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">{simalGrade.isSimal ? `SIMAL: prova ${simalGrade.proofScore?.toFixed(1) ?? "—"}/8 + apresentação ${simalGrade.presentationScore?.toFixed(1) ?? "—"}/2` : gradePassed === null ? "Aguardando avaliações" : hasGrade ? (passed ? "Média mínima atingida" : `Mínimo: ${(parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE).toFixed(1)}`) : "Aguardando avaliações"}</p>
                                   <p className={`mt-1 text-[10px] font-bold ${statusLabel.startsWith("Aprovado") ? "text-emerald-700 dark:text-emerald-300" : statusLabel.startsWith("Reprovado") ? "text-red-700 dark:text-red-300" : "text-amber-700 dark:text-amber-300"}`}>{statusLabel}</p>
                                 </div>
                               );
