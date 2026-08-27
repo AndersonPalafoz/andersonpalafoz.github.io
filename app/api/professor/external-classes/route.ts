@@ -46,6 +46,19 @@ function validateGrade(score: unknown, maxScore: unknown) {
   return null;
 }
 
+function validateMaterialUrl(value: unknown) {
+  const normalized = String(value ?? "").trim();
+  if (!normalized) return "O link do material é obrigatório.";
+  if (normalized.startsWith("/manus-storage/")) return null;
+  try {
+    const parsed = new URL(normalized);
+    if (!["http:", "https:"].includes(parsed.protocol)) return "Informe uma URL HTTP ou HTTPS válida.";
+  } catch {
+    return "Informe uma URL HTTP ou HTTPS válida.";
+  }
+  return null;
+}
+
 const MAX_IMPORTED_STUDENT_ROWS = 1_000;
 const MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT = 160;
 const MAX_IMPORTED_TEXT_LENGTH = 500;
@@ -704,13 +717,12 @@ export async function POST(request: NextRequest) {
       }
 
       const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
-      if (student) {
-        const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
-        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
-          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
-        }
-        await db.delete(externalStudents).where(eq(externalStudents.id, Number(studentId)));
+      if (!student) return NextResponse.json({ error: "Aluno não encontrado." }, { status: 404 });
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, student.externalClassId) });
+      if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+      await db.delete(externalStudents).where(eq(externalStudents.id, Number(studentId)));
 
       return NextResponse.json({ success: true });
     }
@@ -862,6 +874,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Há um status de frequência inválido. Use presente, ausente, atrasado ou justificado." }, { status: 400 });
       }
 
+      const attendanceStudents = await db.select({ id: externalStudents.id }).from(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
+      const attendanceStudentIds = new Set(attendanceStudents.map((student) => student.id));
+      const unknownAttendanceStudentIds = Object.keys(attendanceData as Record<string, unknown>)
+        .map(Number)
+        .filter((id) => !Number.isInteger(id) || !attendanceStudentIds.has(id));
+      if (unknownAttendanceStudentIds.length > 0) {
+        return NextResponse.json({ error: "Há aluno(s) que não pertencem a esta turma na chamada." }, { status: 400 });
+      }
+
       // Verificar se já existe chamada para esta data
       const existingAtt = await db.query.externalClassAttendance.findFirst({
         where: and(
@@ -904,7 +925,6 @@ export async function POST(request: NextRequest) {
       }
       const classStudents = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
       const validStudentIds = new Set(classStudents.map(s => s.id));
-
       let processedCount = 0;
       const errors = [];
 
@@ -989,20 +1009,6 @@ export async function POST(request: NextRequest) {
         feedback: feedback ? String(feedback).trim() : null,
       }).returning();
 
-      // Notificar aluno se tiver usuário cadastrado com o e-mail
-      if (targetStudent?.email) {
-        const userAccount = await db.query.users.findFirst({ where: eq(users.email, targetStudent.email) });
-        if (userAccount) {
-          await db.insert(notifications).values({
-            userId: userAccount.id,
-            type: "grade",
-            title: `Nova Nota: ${assessmentTitle}`,
-            message: `Você recebeu nota ${score}/${maxScore} na turma ${existingClass.className} (${existingClass.institution}).`,
-            metadata: JSON.stringify({ classId: Number(classId) }),
-          });
-        }
-      }
-
       await notifyGradeChange(inserted[0], existingClass, "created");
       return NextResponse.json({ success: true, grade: inserted[0] });
     }
@@ -1046,13 +1052,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "ID da nota não informado." }, { status: 400 });
       }
       const grade = await db.query.externalClassGrades.findFirst({ where: eq(externalClassGrades.id, Number(gradeId)) });
-      if (grade) {
-        const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, grade.externalClassId) });
-        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
-          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
-        }
-        await db.delete(externalClassGrades).where(eq(externalClassGrades.id, Number(gradeId)));
+      if (!grade) return NextResponse.json({ error: "Avaliação não encontrada." }, { status: 404 });
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, grade.externalClassId) });
+      if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+      await db.delete(externalClassGrades).where(eq(externalClassGrades.id, Number(gradeId)));
       return NextResponse.json({ success: true });
     }
 
@@ -1061,6 +1066,8 @@ export async function POST(request: NextRequest) {
       if (!classId || !materialTitle || !fileUrl) {
         return NextResponse.json({ error: "Turma, título do material e URL/link do arquivo são obrigatórios." }, { status: 400 });
       }
+      const materialUrlError = validateMaterialUrl(fileUrl);
+      if (materialUrlError) return NextResponse.json({ error: materialUrlError }, { status: 400 });
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
       if (!existingClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
       if (!canManageClass(existingClass.id, existingClass.teacherId)) {
@@ -1098,13 +1105,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "ID do material não informado." }, { status: 400 });
       }
       const mat = await db.query.externalClassMaterials.findFirst({ where: eq(externalClassMaterials.id, Number(materialId)) });
-      if (mat) {
-        const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, mat.externalClassId) });
-        if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
-          return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
-        }
-        await db.delete(externalClassMaterials).where(eq(externalClassMaterials.id, Number(materialId)));
+      if (!mat) return NextResponse.json({ error: "Material não encontrado." }, { status: 404 });
+      const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, mat.externalClassId) });
+      if (existingClass && !canManageClass(existingClass.id, existingClass.teacherId)) {
+        return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+      await db.delete(externalClassMaterials).where(eq(externalClassMaterials.id, Number(materialId)));
       return NextResponse.json({ success: true });
     }
 

@@ -83,5 +83,25 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("const duplicate");
     expect(routeContent).toContain('await notifyGradeChange(inserted[0], existingClass, "created")');
     expect(routeContent).toContain('await notifyGradeChange(updated, existingClass, "updated")');
+    expect(routeContent).not.toContain("title: `Nova Nota: ${assessmentTitle}`");
+  });
+
+  it("valida URLs de materiais no servidor e preserva armazenamento interno", () => {
+    expect(routeContent).toContain("function validateMaterialUrl");
+    expect(routeContent).toContain("parsed.protocol");
+    expect(routeContent).toContain('"/manus-storage/"');
+    expect(routeContent).toContain("Informe uma URL HTTP ou HTTPS válida.");
+  });
+
+  it("impede IDs de alunos de outra turma na chamada", () => {
+    expect(routeContent).toContain("attendanceStudentIds");
+    expect(routeContent).toContain("unknownAttendanceStudentIds");
+    expect(routeContent).toContain("não pertencem a esta turma na chamada");
+  });
+
+  it("retorna recurso inexistente para exclusões inválidas", () => {
+    expect(routeContent).toContain('"Aluno não encontrado." }, { status: 404 }');
+    expect(routeContent).toContain('"Avaliação não encontrada." }, { status: 404 }');
+    expect(routeContent).toContain('"Material não encontrado." }, { status: 404 }');
   });
 });
