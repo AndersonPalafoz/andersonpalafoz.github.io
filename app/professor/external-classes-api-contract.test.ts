@@ -49,4 +49,13 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("gradesClosedAt");
     expect(routeContent).toContain("gradesClosedBy");
   });
+
+  it("notifica alunos em lançamento e edição sem duplicar o mesmo evento", () => {
+    expect(routeContent).toContain("const notifyGradeChange");
+    expect(routeContent).toContain('event: "created" | "updated"');
+    expect(routeContent).toContain("external-grade:");
+    expect(routeContent).toContain("const duplicate");
+    expect(routeContent).toContain('await notifyGradeChange(inserted[0], existingClass, "created")');
+    expect(routeContent).toContain('await notifyGradeChange(updated, existingClass, "updated")');
+  });
 });

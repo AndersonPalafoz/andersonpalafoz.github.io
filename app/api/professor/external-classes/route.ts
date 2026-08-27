@@ -169,6 +169,24 @@ export async function POST(request: NextRequest) {
       : [];
     const delegatedClassIds = new Set(delegatedRows.map((row) => row.externalClassId));
     const canManageClass = (classId: number, ownerId: number) => isGlobalAdmin || ownerId === teacher.id || delegatedClassIds.has(classId);
+    const notifyGradeChange = async (grade: { id: number; studentId: number; score: string; maxScore: string; assessmentTitle: string; updatedAt: Date | null }, classInfo: { id: number; className: string; institution: string }, event: "created" | "updated") => {
+      const student = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, grade.studentId) });
+      if (!student?.email) return false;
+      const userAccount = await db.query.users.findFirst({ where: eq(users.email, student.email) });
+      if (!userAccount) return false;
+      const eventKey = `external-grade:${event}:${grade.id}:${grade.updatedAt?.toISOString() || grade.score}`;
+      const metadata = JSON.stringify({ classId: classInfo.id, gradeId: grade.id, event, eventKey });
+      const duplicate = await db.query.notifications.findFirst({ where: and(eq(notifications.userId, userAccount.id), eq(notifications.type, "grade"), eq(notifications.metadata, metadata)) });
+      if (duplicate) return false;
+      await db.insert(notifications).values({
+        userId: userAccount.id,
+        type: "grade",
+        title: event === "created" ? "Nova nota lançada" : "Nota atualizada",
+        message: `${event === "created" ? "Uma nova nota foi lançada" : "Uma avaliação foi atualizada"}: ${grade.assessmentTitle} — ${grade.score}/${grade.maxScore} na turma ${classInfo.className} (${classInfo.institution}).`,
+        metadata,
+      });
+      return true;
+    };
 
     const body = await request.json();
       const {
@@ -851,7 +869,7 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        await db.insert(externalClassGrades).values({
+        const [savedGrade] = await db.insert(externalClassGrades).values({
           externalClassId: Number(classId),
           studentId: studentIdNum,
           assessmentTitle: String(assessmentTitle).trim(),
@@ -863,25 +881,11 @@ export async function POST(request: NextRequest) {
           rubricScores: item.rubricScores ? JSON.stringify(item.rubricScores) : (rubricScores ? String(rubricScores) : null),
           assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
           unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
-          feedback: item.feedback ? String(item.feedback).trim() : null,
-        });
-
+                    feedback: item.feedback ? String(item.feedback).trim() : null,
+        }).returning();
         processedCount++;
 
-        // Notificar aluno se houver conta vinculada
-        const targetStudent = classStudents.find(s => s.id === studentIdNum);
-        if (targetStudent?.email) {
-          const userAccount = await db.query.users.findFirst({ where: eq(users.email, targetStudent.email) });
-          if (userAccount) {
-            await db.insert(notifications).values({
-              userId: userAccount.id,
-              type: "grade",
-              title: `Nova Nota em Lote: ${assessmentTitle}`,
-              message: `Você recebeu nota ${scoreVal}/${maxScore || "10.0"} na turma ${existingClass.className} (${existingClass.institution}).`,
-              metadata: JSON.stringify({ classId: Number(classId) }),
-            });
-          }
-        }
+        if (savedGrade) await notifyGradeChange(savedGrade, existingClass, "created");
       }
 
       return NextResponse.json({
@@ -911,8 +915,8 @@ export async function POST(request: NextRequest) {
       }
       const gradeError = validateGrade(score, maxScore || "10.0");
       if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
-      const inserted = await db.insert(externalClassGrades).values({
-        externalClassId: Number(classId),
+        const inserted = await db.insert(externalClassGrades).values({
+          externalClassId: Number(classId),
         studentId: Number(studentId),
         assessmentTitle: String(assessmentTitle).trim(),
         assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
@@ -940,6 +944,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      await notifyGradeChange(inserted[0], existingClass, "created");
       return NextResponse.json({ success: true, grade: inserted[0] });
     }
 
@@ -972,9 +977,9 @@ export async function POST(request: NextRequest) {
         feedback: feedback ? String(feedback).trim() : null,
         updatedAt: new Date(),
       }).where(eq(externalClassGrades.id, Number(gradeId))).returning();
+            await notifyGradeChange(updated, existingClass, "updated");
       return NextResponse.json({ success: true, grade: updated });
     }
-
     if (action === "deleteGrade") {
       if (!gradeId) {
         return NextResponse.json({ error: "ID da nota não informado." }, { status: 400 });
