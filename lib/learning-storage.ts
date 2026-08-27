@@ -137,6 +137,94 @@ export async function uploadCertificatePdf(
   return { objectPath, url: data.publicUrl };
 }
 
+type CertificateStorageTarget = {
+  bucket: typeof CERTIFICATE_BUCKET | typeof SIGNED_CERTIFICATE_BUCKET;
+  objectPath: string;
+};
+
+type CertificateStorageReferences = {
+  certificateUrl?: string | null;
+  signedPdfUrl?: string | null;
+};
+
+function getPublicCertificateObjectPath(value?: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  if (!normalized) return null;
+  if (!/^https?:\/\//i.test(normalized)) {
+    return normalized.startsWith("users/") || normalized.startsWith("external/")
+      ? normalized
+      : null;
+  }
+
+  try {
+    const pathname = new URL(normalized).pathname;
+    const marker = `/storage/v1/object/public/${CERTIFICATE_BUCKET}/`;
+    const markerIndex = pathname.indexOf(marker);
+    return markerIndex >= 0
+      ? decodeURIComponent(pathname.slice(markerIndex + marker.length))
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function getPrivateCertificateObjectPath(value?: string | null) {
+  if (!value) return null;
+  const normalized = value.trim();
+  if (!normalized || /^https?:\/\//i.test(normalized) || normalized.startsWith("/")) {
+    return null;
+  }
+  return normalized;
+}
+
+/**
+ * Retorna somente caminhos cuja origem e bucket são reconhecidos. URLs externas
+ * ou legadas são ignoradas para evitar remover arquivos que não pertencem à plataforma.
+ */
+export function getCertificatePdfStorageTargets(
+  references: CertificateStorageReferences
+): CertificateStorageTarget[] {
+  const targets: CertificateStorageTarget[] = [];
+  const originalPdf = getPublicCertificateObjectPath(references.certificateUrl);
+  const signedPdf = getPrivateCertificateObjectPath(references.signedPdfUrl);
+
+  if (originalPdf) {
+    targets.push({ bucket: CERTIFICATE_BUCKET, objectPath: originalPdf });
+  }
+  if (signedPdf) {
+    targets.push({ bucket: SIGNED_CERTIFICATE_BUCKET, objectPath: signedPdf });
+  }
+
+  return targets;
+}
+
+async function removeCertificatePdfObject(target: CertificateStorageTarget) {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase.storage.from(target.bucket).remove([target.objectPath]);
+  if (error) throw error;
+}
+
+/**
+ * Remove os arquivos reconhecidos de um certificado sem bloquear a exclusão do registro
+ * quando um objeto histórico já não existe ou o armazenamento falha momentaneamente.
+ */
+export async function deleteCertificatePdfFiles(
+  references: CertificateStorageReferences,
+  removeObject: (target: CertificateStorageTarget) => Promise<void> = removeCertificatePdfObject
+) {
+  const targets = getCertificatePdfStorageTargets(references);
+  const results = await Promise.allSettled(targets.map(target => removeObject(target)));
+  const removed = results.filter(result => result.status === "fulfilled").length;
+  const failed = results.length - removed;
+
+  return {
+    attempted: targets.length,
+    removed,
+    failed,
+  };
+}
+
 export function validateCertificateTemplate(input: {
   mimeType: string;
   size: number;
