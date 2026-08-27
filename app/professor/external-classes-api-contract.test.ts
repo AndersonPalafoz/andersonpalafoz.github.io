@@ -46,6 +46,8 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("parseDecimalInput");
     expect(routeContent).toContain("maxAbsenceValue");
     expect(routeContent).toContain("passingAverageValue");
+    expect(routeContent).toContain("passingAverage: String(passingAverageValue ?? 6)");
+    expect(routeContent).not.toContain("passingAverage: String(passingAverageValue ?? 5)");
     expect(routeContent).toContain("O limite máximo de faltas deve ser um percentual entre 0% e 100%.");
     expect(routeContent).toContain("A média mínima deve ser um número entre 0 e 10.");
   });

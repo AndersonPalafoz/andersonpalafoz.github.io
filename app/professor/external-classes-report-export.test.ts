@@ -143,7 +143,7 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
 
   it("oferece o filtro e as ações de exportação no desktop e no menu de ações rápidas", () => {
     expect(source).toContain("aria-label=\"Filtrar exportação por reprovação\"");
-    expect(source).toContain("Reprovados por nota (&lt; 6,0)");
+    expect(source).toContain("Reprovados por nota (regra da turma)");
     expect(source).toContain("Reprovados por falta (regra da turma)");
     expect(source).toContain("Relatório CSV");
     expect(source).toContain("Relatório PDF");

@@ -326,7 +326,7 @@ export async function POST(request: NextRequest) {
         hasUnits: Boolean(hasUnits),
         unitCount: hasUnits ? Number(unitCount || 1) : 1,
         gradingScope: hasUnits && gradingScope === "unit" ? "unit" : "course",
-        passingAverage: String(passingAverageValue ?? 5),
+        passingAverage: String(passingAverageValue ?? 6),
         unitPassingAverages: hasUnits && gradingScope === "unit" ? (unitPassingAverages ? String(unitPassingAverages) : null) : null,
         modality: modality ? modality.trim() : "Remota",
         meetingLink: meetingLink ? meetingLink.trim() : null,

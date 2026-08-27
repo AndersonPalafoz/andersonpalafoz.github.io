@@ -1802,7 +1802,7 @@ export default function TurmasExternasPage() {
                 className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
               >
                 <option value="all">Todos os alunos</option>
-                <option value="grade">Reprovados por nota (&lt; 6,0)</option>
+                <option value="grade">Reprovados por nota (regra da turma)</option>
                 <option value="attendance">Reprovados por falta (regra da turma)</option>
                 <option value="any">Qualquer reprovação</option>
               </select>
