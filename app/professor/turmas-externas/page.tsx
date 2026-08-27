@@ -1379,6 +1379,23 @@ export default function TurmasExternasPage() {
     return "Aprovado";
   };
 
+  const comparisonChartData = useMemo(() => classes.map((cls) => {
+    const rows = getAcademicReportRows(cls);
+    const gradeBuckets = [0, 0, 0, 0];
+    const attendanceBuckets = [0, 0, 0];
+    for (const row of rows) {
+      if (row.averageGrade !== null) {
+        const gradeIndex = row.averageGrade < 5 ? 0 : row.averageGrade < 6 ? 1 : row.averageGrade < 8 ? 2 : 3;
+        gradeBuckets[gradeIndex] += 1;
+      }
+      if (row.attendancePercent !== null) {
+        const attendanceIndex = row.attendancePercent < 75 ? 0 : row.attendancePercent < 90 ? 1 : 2;
+        attendanceBuckets[attendanceIndex] += 1;
+      }
+    }
+    return { id: cls.id, className: cls.className, studentCount: cls.students.length, gradeBuckets, attendanceBuckets };
+  }), [classes]);
+
   const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
     const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
     const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
@@ -1819,6 +1836,56 @@ export default function TurmasExternasPage() {
                 </div>
               </div>
             ))}
+          </section>
+        )}
+
+        {comparisonChartData.length > 0 && (
+          <section aria-labelledby="external-comparison-chart-title" className="rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Comparativo acadêmico</p>
+                <h2 id="external-comparison-chart-title" className="text-lg font-black text-gray-950 dark:text-white sm:text-xl">Distribuição de notas e frequência</h2>
+                <p className="mt-1 max-w-3xl text-xs leading-relaxed text-gray-500 dark:text-slate-400">Cada barra representa a quantidade de alunos em uma faixa. A média considera o cálculo acadêmico configurado e a frequência usa presença e atraso válidos.</p>
+              </div>
+              <div className="flex flex-wrap gap-2 text-[10px] font-bold text-gray-500 dark:text-slate-400" aria-label="Legenda do gráfico">
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Notas</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-500" /> Frequência</span>
+              </div>
+            </div>
+            <div className="mt-5 grid min-w-0 gap-4 xl:grid-cols-2">
+              {comparisonChartData.map((chart) => {
+                const gradeMax = Math.max(...chart.gradeBuckets, 1);
+                const attendanceMax = Math.max(...chart.attendanceBuckets, 1);
+                return (
+                  <article key={chart.id} className="min-w-0 rounded-2xl border border-gray-100 bg-gray-50/70 p-4 dark:border-slate-800 dark:bg-slate-800/40">
+                    <div className="flex items-center justify-between gap-3">
+                      <h3 className="min-w-0 truncate text-sm font-black text-gray-900 dark:text-white">{chart.className}</h3>
+                      <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-extrabold text-gray-500 dark:bg-slate-900 dark:text-slate-300">{chart.studentCount} {chart.studentCount === 1 ? "aluno" : "alunos"}</span>
+                    </div>
+                    <div className="mt-4 grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <h4 className="mb-2 text-[10px] font-black uppercase tracking-wider text-red-700 dark:text-red-300">Médias (0–10)</h4>
+                        <div className="space-y-2.5">
+                          {["0–4,9", "5–5,9", "6–7,9", "8–10"].map((label, index) => {
+                            const value = chart.gradeBuckets[index];
+                            return <div key={label} className="grid grid-cols-[3.25rem_minmax(0,1fr)_1.25rem] items-center gap-2 text-[10px] font-bold text-gray-600 dark:text-slate-300"><span>{label}</span><div className="h-2 overflow-hidden rounded-full bg-red-100 dark:bg-red-950/50"><span className="block h-full rounded-full bg-red-500 transition-all" style={{ width: `${(value / gradeMax) * 100}%` }} /></div><strong className="text-right text-gray-900 dark:text-white">{value}</strong></div>;
+                          })}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="mb-2 text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">Frequência</h4>
+                        <div className="space-y-2.5">
+                          {["Abaixo de 75%", "75–89,9%", "90–100%"].map((label, index) => {
+                            const value = chart.attendanceBuckets[index];
+                            return <div key={label} className="grid grid-cols-[5.75rem_minmax(0,1fr)_1.25rem] items-center gap-2 text-[10px] font-bold text-gray-600 dark:text-slate-300"><span className="truncate" title={label}>{label}</span><div className="h-2 overflow-hidden rounded-full bg-blue-100 dark:bg-blue-950/50"><span className="block h-full rounded-full bg-blue-500 transition-all" style={{ width: `${(value / attendanceMax) * 100}%` }} /></div><strong className="text-right text-gray-900 dark:text-white">{value}</strong></div>;
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           </section>
         )}
 
