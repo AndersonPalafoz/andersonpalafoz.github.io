@@ -12,7 +12,11 @@ import {
   getAllCertificatesForAdmin,
   updateCertificateSignature,
 } from "@/lib/db";
-import { uploadSignedCertificatePdf } from "@/lib/learning-storage";
+import {
+  deleteCertificatePdfFiles,
+  uploadSignedCertificatePdf,
+} from "@/lib/learning-storage";
+import { isTechnicalCourse } from "@/lib/course-visibility";
 
 const uploadableSignatureTypes = ["manual", "govbr"] as const;
 type UploadableSignatureType = (typeof uploadableSignatureTypes)[number];
@@ -245,18 +249,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const previousSignedPdfUrl = certificate.signedPdfUrl;
     const uploaded = await uploadSignedCertificatePdf(
       adminUser.id,
       certificateId,
       file
     );
-    const updated = await updateCertificateSignature({
-      certificateId,
-      signatureType: signatureTypeValue,
-      signedPdfUrl: uploaded.objectPath,
-      signedAt: new Date(),
-      signedBy: adminUser.id,
-    });
+    let updated;
+    try {
+      updated = await updateCertificateSignature({
+        certificateId,
+        signatureType: signatureTypeValue,
+        signedPdfUrl: uploaded.objectPath,
+        signedAt: new Date(),
+        signedBy: adminUser.id,
+      });
+    } catch (error) {
+      const uploadRollback = await deleteCertificatePdfFiles({
+        signedPdfUrl: uploaded.objectPath,
+      });
+      if (uploadRollback.failed > 0) {
+        console.warn("Falha ao limpar PDF assinado recém-enviado após falha de persistência.", {
+          attempted: uploadRollback.attempted,
+          removed: uploadRollback.removed,
+          failed: uploadRollback.failed,
+        });
+      }
+      throw error;
+    }
+
+    const storageCleanup = previousSignedPdfUrl
+      ? await deleteCertificatePdfFiles({ signedPdfUrl: previousSignedPdfUrl })
+      : { attempted: 0, removed: 0, failed: 0 };
+    if (storageCleanup.failed > 0) {
+      console.warn("Falha ao limpar versão anterior de PDF assinado.", {
+        attempted: storageCleanup.attempted,
+        removed: storageCleanup.removed,
+        failed: storageCleanup.failed,
+      });
+    }
 
     await db.insert(adminAuditLogs).values({
       adminEmail: adminUser.email || session.user.email || "desconhecido",
@@ -269,6 +300,8 @@ export async function POST(request: NextRequest) {
         signatureType: signatureTypeValue,
         fileName: file.name,
         fileSize: file.size,
+        replacedExistingSignedPdf: Boolean(previousSignedPdfUrl),
+        storageCleanup,
       }),
     });
 
@@ -279,6 +312,7 @@ export async function POST(request: NextRequest) {
           ? "Certificado assinado via gov.br enviado com sucesso."
           : "Certificado assinado manualmente enviado com sucesso.",
       certificate: updated,
+      storageCleanup,
     });
   } catch (error) {
     console.error("Erro ao enviar certificado assinado:", error);
