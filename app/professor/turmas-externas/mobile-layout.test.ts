@@ -10,7 +10,7 @@ describe("Turmas Externas em smartphones", () => {
     const styles = read("app/globals.css");
 
     expect(page).toContain("external-classes-page min-h-screen overflow-x-clip");
-    expect(page).toContain("external-class-filters mt-4 flex w-full flex-col");
+    expect(page).toContain("external-class-filters mt-4 grid w-full");
     expect(styles).toContain(".external-class-filters > div:not(:last-child) {");
     expect(styles).toContain("grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);");
   });

@@ -1508,10 +1508,10 @@ export default function TurmasExternasPage() {
   };
 
   return (
-    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-4 sm:p-6 lg:p-10 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto max-w-[1500px] min-w-0 space-y-6 sm:space-y-8">
+    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-4 sm:p-6 lg:px-8 lg:py-8 xl:px-10 xl:py-10 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto w-full max-w-[1500px] min-w-0 space-y-6 sm:space-y-8 xl:max-w-[1680px]">
         {/* Cabeçalho */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 px-5 py-5 md:px-7 md:py-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)] dark:shadow-none backdrop-blur">
+        <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 px-5 py-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-none md:px-7 md:py-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <Link
@@ -1554,7 +1554,7 @@ export default function TurmasExternasPage() {
           </div>
         </header>
 
-        <section aria-labelledby="operational-overview-title" className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-4 sm:p-5 lg:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none">
+        <section aria-labelledby="operational-overview-title" className="rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Visão operacional</p>
@@ -1562,7 +1562,7 @@ export default function TurmasExternasPage() {
             </div>
             <p className="text-xs text-gray-500 dark:text-slate-400">Os indicadores são calculados a partir dos registros atuais das turmas.</p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6 xl:gap-3">
             {[
               { label: "Turmas ativas", value: operationalMetrics.activeClasses, icon: Building2, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
               { label: "Próximas aulas", value: operationalMetrics.upcomingLessons, icon: Calendar, tone: "text-blue-600 bg-blue-50 dark:bg-blue-950/30" },
@@ -1571,10 +1571,12 @@ export default function TurmasExternasPage() {
               { label: "Avaliações pendentes", value: operationalMetrics.pendingAssessments, icon: BarChart3, tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/30" },
               { label: "Potenciais certificados", value: operationalMetrics.potentialCertificates, icon: Award, tone: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30" },
             ].map(({ label, value, icon: Icon, tone }) => (
-              <div key={label} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50/70 dark:bg-slate-800/40 p-3.5">
-                <div className={`mb-3 inline-flex rounded-xl p-2 ${tone}`}><Icon size={16} aria-hidden="true" /></div>
-                <p className={`text-2xl font-black ${loadError ? "text-gray-400 dark:text-slate-500" : "text-gray-950 dark:text-white"}`}>{loadError ? "—" : value}</p>
-                <p className="mt-1 text-[11px] font-bold leading-tight text-gray-500 dark:text-slate-400">{label}</p>
+              <div key={label} className="flex min-h-[108px] flex-col justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-gray-200 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-800/40 dark:hover:border-slate-700 dark:hover:bg-slate-800">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="max-w-[11rem] text-[10px] font-black uppercase leading-tight tracking-wide text-gray-500 dark:text-slate-400">{label}</p>
+                  <div className={`shrink-0 rounded-xl p-2 ${tone}`}><Icon size={16} aria-hidden="true" /></div>
+                </div>
+                <p className={`text-2xl font-black tracking-tight ${loadError ? "text-gray-400 dark:text-slate-500" : "text-gray-950 dark:text-white"}`}>{loadError ? "—" : value}</p>
               </div>
             ))}
           </div>
@@ -1665,8 +1667,8 @@ export default function TurmasExternasPage() {
         )}
 
         {/* Barra de Busca e Filtros Globais */}
-        <section id="external-class-quick-search" className="scroll-mt-24 rounded-[28px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:flex lg:items-center lg:justify-between lg:gap-4 lg:p-6">
-          <div className="w-full lg:w-96">
+        <section id="external-class-quick-search" className="scroll-mt-24 rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:grid lg:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)] lg:items-start lg:gap-6 lg:p-6">
+          <div className="w-full min-w-0 lg:w-auto">
             <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
@@ -1688,7 +1690,7 @@ export default function TurmasExternasPage() {
             </p>
           </div>
 
-          <div className="external-class-filters mt-4 flex w-full flex-col items-stretch gap-3 pb-1 sm:flex-row sm:items-center lg:mt-0 lg:w-auto lg:pb-0">
+          <div className="external-class-filters mt-4 grid w-full grid-cols-1 items-stretch gap-3 pb-1 sm:grid-cols-2 sm:items-center lg:mt-0 lg:grid-cols-2 lg:pb-0 xl:grid-cols-3 2xl:grid-cols-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
               <select
@@ -1801,7 +1803,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:col-span-2 xl:col-span-3 2xl:col-span-4">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Instituição:</span>
               <button
                 type="button"
@@ -1832,9 +1834,9 @@ export default function TurmasExternasPage() {
           </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)] lg:gap-7 xl:gap-8">
           {/* Formulários de Cadastro / Edição */}
-          <div className="space-y-6 lg:col-span-1">
+          <div className="min-w-0 space-y-6">
             {canManage && (<>
             {/* Criar / Editar Turma */}
             <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
@@ -2320,7 +2322,7 @@ export default function TurmasExternasPage() {
             </>)}
           </div>
           {/* Listagem de Turmas, Abas e Gerenciamento */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="min-w-0 space-y-6">
             {loading ? (
               <div role="status" aria-live="polite" className="space-y-4" aria-label="Carregando turmas externas">
                 <div className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-700 dark:text-blue-200"><Loader2 size={15} className="animate-spin" aria-hidden="true" /> Carregando turmas, alunos e indicadores…</div>
@@ -2409,7 +2411,7 @@ export default function TurmasExternasPage() {
                 const academicRows = getAcademicReportRows(cls);
 
                 return (
-                  <div key={cls.id} className="group rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] dark:shadow-none space-y-6 transition duration-200 hover:border-red-200 dark:hover:border-red-900/60 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
+                  <div key={cls.id} className="group min-w-0 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-200 hover:border-red-200 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-red-900/60 sm:p-6 xl:p-7">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-5">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -2666,8 +2668,8 @@ export default function TurmasExternasPage() {
                         onClick={() => setClassWorkspaceTab(cls.id, "students")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "students"
-                            ? "border-red-600 text-red-600 dark:text-red-400"
-                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            ? "border-red-600 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950/30 dark:text-red-300"
+                            : "border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800/70 dark:hover:text-white"
                         }`}
                       >
                         <Users size={14} /> Alunos ({cls.students.length})
@@ -2678,8 +2680,8 @@ export default function TurmasExternasPage() {
                         onClick={() => setClassWorkspaceTab(cls.id, "attendance")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "attendance"
-                            ? "border-red-600 text-red-600 dark:text-red-400"
-                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            ? "border-red-600 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950/30 dark:text-red-300"
+                            : "border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800/70 dark:hover:text-white"
                         }`}
                       >
                         <Calendar size={14} /> Chamada ({cls.attendance?.length || 0})
@@ -2689,8 +2691,8 @@ export default function TurmasExternasPage() {
                         onClick={() => setClassWorkspaceTab(cls.id, "grades")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "grades"
-                            ? "border-red-600 text-red-600 dark:text-red-400"
-                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            ? "border-red-600 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950/30 dark:text-red-300"
+                            : "border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800/70 dark:hover:text-white"
                         }`}
                       >
                         <Award size={14} /> Notas & Avaliações ({cls.grades?.length || 0})
@@ -2700,8 +2702,8 @@ export default function TurmasExternasPage() {
                         onClick={() => setClassWorkspaceTab(cls.id, "materials")}
                         className={`pb-2.5 px-3 text-xs font-bold whitespace-nowrap border-b-2 transition flex items-center gap-1.5 ${
                           activeTab === "materials"
-                            ? "border-red-600 text-red-600 dark:text-red-400"
-                            : "border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                            ? "border-red-600 bg-red-50 text-red-700 dark:border-red-400 dark:bg-red-950/30 dark:text-red-300"
+                            : "border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:hover:bg-slate-800/70 dark:hover:text-white"
                         }`}
                       >
                         <FileText size={14} /> Materiais Didáticos ({cls.materials?.length || 0})
