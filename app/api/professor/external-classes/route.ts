@@ -30,8 +30,8 @@ function logExternalClassesError(operation: string, error: unknown) {
 }
 
 function validateGrade(score: unknown, maxScore: unknown) {
-  const scoreNumber = Number(String(score ?? "").replace(",", "."));
-  const maxNumber = Number(String(maxScore ?? "10").replace(",", "."));
+  const scoreNumber = Number(String(score ?? "").trim().replace(",", "."));
+  const maxNumber = Number(String(maxScore ?? "10").trim().replace(",", "."));
   if (!Number.isFinite(scoreNumber) || !Number.isFinite(maxNumber) || maxNumber <= 0) return "A nota e o valor máximo devem ser numéricos.";
   if (scoreNumber < 0 || scoreNumber > maxNumber) return `A nota deve estar entre 0 e ${maxNumber}.`;
   return null;
@@ -40,6 +40,7 @@ function validateGrade(score: unknown, maxScore: unknown) {
 const MAX_IMPORTED_STUDENT_ROWS = 1_000;
 const MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT = 160;
 const MAX_IMPORTED_TEXT_LENGTH = 500;
+const VALID_ATTENDANCE_STATUSES = new Set(["present", "absent", "late", "excused"]);
 
 const firstImportedText = (row: Record<string, unknown>, ...keys: string[]) => {
   for (const key of keys) {
@@ -763,6 +764,13 @@ export async function POST(request: NextRequest) {
       if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+      if (!attendanceData || typeof attendanceData !== "object" || Array.isArray(attendanceData)) {
+        return NextResponse.json({ error: "Os dados de frequência devem ser um mapa de aluno para status." }, { status: 400 });
+      }
+      const invalidStatuses = Object.values(attendanceData as Record<string, unknown>).filter((status) => !VALID_ATTENDANCE_STATUSES.has(String(status)));
+      if (invalidStatuses.length > 0) {
+        return NextResponse.json({ error: "Há um status de frequência inválido. Use presente, ausente, atrasado ou justificado." }, { status: 400 });
+      }
 
       // Verificar se já existe chamada para esta data
       const existingAtt = await db.query.externalClassAttendance.findFirst({
@@ -865,7 +873,7 @@ export async function POST(request: NextRequest) {
 
     // Ações de Notas (Grades)
     if (action === "saveGrade") {
-      if (!classId || !studentId || !assessmentTitle || !score) {
+      if (!classId || !studentId || !assessmentTitle || score === undefined || score === null || String(score).trim() === "") {
         return NextResponse.json({ error: "Turma, aluno, título da avaliação e nota são obrigatórios." }, { status: 400 });
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
@@ -873,9 +881,12 @@ export async function POST(request: NextRequest) {
       if (!canManageClass(existingClass.id, existingClass.teacherId)) {
         return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
       }
+            const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      if (!targetStudent || targetStudent.externalClassId !== Number(classId)) {
+        return NextResponse.json({ error: "O aluno selecionado não pertence a esta turma." }, { status: 400 });
+      }
       const gradeError = validateGrade(score, maxScore || "10.0");
       if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
-
       const inserted = await db.insert(externalClassGrades).values({
         externalClassId: Number(classId),
         studentId: Number(studentId),
@@ -892,7 +903,6 @@ export async function POST(request: NextRequest) {
       }).returning();
 
       // Notificar aluno se tiver usuário cadastrado com o e-mail
-      const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
       if (targetStudent?.email) {
         const userAccount = await db.query.users.findFirst({ where: eq(users.email, targetStudent.email) });
         if (userAccount) {

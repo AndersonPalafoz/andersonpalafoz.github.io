@@ -8,7 +8,7 @@ import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academic
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { calculateSimalComposite } from "@/lib/simal-grading";
-import { calculateCourseGrade } from "@/lib/course-grading";
+import { calculateCourseGrade, parseGradeNumber } from "@/lib/course-grading";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
 import { useRolePreview } from "@/components/role-preview";
 
@@ -1044,7 +1044,7 @@ export default function TurmasExternasPage() {
     const maxVal = componentPreset?.maxScore || preset?.maxScore || "10.0";
     const fb = gradeFeedback[classId] || "";
 
-    if (!sId || !title || !effectiveScore) {
+    if (!sId || !title || effectiveScore === undefined || effectiveScore === null || String(effectiveScore).trim() === "") {
       notifyError("Selecione o aluno e informe a avaliação e a nota.");
       return;
     }
@@ -1100,7 +1100,7 @@ export default function TurmasExternasPage() {
     }
     try {
       setSubmitting(true);
-      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component,                                       maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || "2026-08-18", unitNumber: (document.getElementById(`simal_unit_${classId}`) as HTMLSelectElement)?.value || null, gradesList }) });
+      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component,                                       maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || new Date().toISOString().slice(0, 10), unitNumber: (document.getElementById(`simal_unit_${classId}`) as HTMLSelectElement)?.value || null, gradesList }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Não foi possível salvar as notas SIMAL.");
       notifySuccess(`${data.processedCount || gradesList.length} nota(s) SIMAL registrada(s) com sucesso.`);
@@ -1218,10 +1218,10 @@ export default function TurmasExternasPage() {
       const attendance = attendanceByStudent.get(student.id) || { present: 0, absent: 0, late: 0, excused: 0, total: 0 };
       const studentGrades = (cls.grades || []).filter((grade) => grade.studentId === student.id);
       const simalGrade = calculateSimalComposite(studentGrades);
-          const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
+          const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => { const score = parseGradeNumber(grade.score); const max = parseGradeNumber(grade.maxScore); return { score: max !== null && max > 0 && score !== null ? (score / max) * 10 : null, unit: grade.unitNumber }; }));
       const averageGrade = simalGrade.isSimal ? simalGrade.finalScore : configuredGrade.average;
       const attendancePercent = attendance.total > 0 ? (attendance.present / attendance.total) * 100 : null;
-      const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+      const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
       const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) || (configuredGrade.scope === "unit" && configuredGrade.passed === false);
       const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent });
       return {
@@ -1238,7 +1238,7 @@ export default function TurmasExternasPage() {
   };
 
   const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
-    const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+    const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
     const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
     const csvRows = [
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
@@ -1288,7 +1288,7 @@ export default function TurmasExternasPage() {
   };
 
   const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
-    const minimumGrade = Number(cls.passingAverage) || REPORT_MIN_GRADE;
+    const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
     const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
     const reportSummary = minimumGrade === REPORT_MIN_GRADE
       ? summarizeAcademicReportRows(reportRows)
@@ -2807,7 +2807,19 @@ export default function TurmasExternasPage() {
                             <input
                               type="date"
                               value={classDate}
-                              onChange={(e) => setAttendanceDate({ ...attendanceDate, [cls.id]: e.target.value })}
+                              onChange={(e) => {
+                                const nextDate = e.target.value;
+                                const savedAttendance = cls.attendance?.find((item) => item.date === nextDate);
+                                let savedStatuses: Record<number, string> = {};
+                                try {
+                                  const parsed = savedAttendance ? JSON.parse(savedAttendance.attendanceData) as Record<string, string> : {};
+                                  savedStatuses = Object.fromEntries(Object.entries(parsed).map(([studentId, status]) => [Number(studentId), status]));
+                                } catch {
+                                  savedStatuses = {};
+                                }
+                                setAttendanceDate((current) => ({ ...current, [cls.id]: nextDate }));
+                                setAttendanceStatuses((current) => ({ ...current, [cls.id]: savedStatuses }));
+                              }}
                               className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white"
                             />
                             <button
@@ -2832,6 +2844,7 @@ export default function TurmasExternasPage() {
                                   <th className="py-2.5 px-3 text-center">Presente</th>
                                   <th className="py-2.5 px-3 text-center">Ausente</th>
                                   <th className="py-2.5 px-3 text-center">Atrasado</th>
+                                  <th className="py-2.5 px-3 text-center">Justificado</th>
                                 </tr>
                               </thead>
                               <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
@@ -2874,6 +2887,18 @@ export default function TurmasExternasPage() {
                                             [cls.id]: { ...currentStatuses, [st.id]: "late" }
                                           })}
                                           className="accent-amber-600 cursor-pointer"
+                                        />
+                                      </td>
+                                      <td data-label="Justificado" className="py-3 px-3 text-center">
+                                        <input
+                                          type="radio"
+                                          name={`att_${cls.id}_${st.id}`}
+                                          checked={studentStatusVal === "excused"}
+                                          onChange={() => setAttendanceStatuses({
+                                            ...attendanceStatuses,
+                                            [cls.id]: { ...currentStatuses, [st.id]: "excused" }
+                                          })}
+                                          className="accent-blue-600 cursor-pointer"
                                         />
                                       </td>
                                     </tr>
@@ -2940,7 +2965,7 @@ export default function TurmasExternasPage() {
                             </div>
                             <div>
                               <label className="block text-[10px] font-bold text-gray-500 mb-1">Data da avaliação</label>
-                              <input type="date" value={gradeAssessmentDate[cls.id] || "2026-08-18"} onChange={(e) => setGradeAssessmentDate({ ...gradeAssessmentDate, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
+                              <input type="date" value={gradeAssessmentDate[cls.id] || new Date().toISOString().slice(0, 10)} onChange={(e) => setGradeAssessmentDate({ ...gradeAssessmentDate, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
                             </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

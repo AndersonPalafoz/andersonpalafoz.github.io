@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCourseGrade, parseUnitPassingAverages } from "./course-grading";
+import { calculateCourseGrade, parseGradeNumber, parseUnitPassingAverages } from "./course-grading";
 
 describe("course grading configuration", () => {
   it("calculates a whole-course average with a configurable threshold", () => {
@@ -21,5 +21,11 @@ describe("course grading configuration", () => {
 
   it("parses invalid overrides safely", () => {
     expect(parseUnitPassingAverages("invalid")).toEqual({});
+  });
+
+  it("normalizes decimal commas without rejecting zero", () => {
+    expect(parseGradeNumber("0")).toBe(0);
+    expect(parseGradeNumber("7,5")).toBe(7.5);
+    expect(parseGradeNumber("não é nota")).toBeNull();
   });
 });

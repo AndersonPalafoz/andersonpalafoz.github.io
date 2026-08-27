@@ -31,4 +31,14 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("hasInvalidPayload");
     expect(routeContent).toContain("status: 413");
   });
+
+  it("preserva nota zero e impede lançar nota em aluno de outra turma", () => {
+    expect(routeContent).toContain("score === undefined || score === null || String(score).trim() === \"\"");
+    expect(routeContent).toContain("O aluno selecionado não pertence a esta turma.");
+  });
+
+  it("valida os quatro status de frequência suportados", () => {
+    expect(routeContent).toContain('["present", "absent", "late", "excused"]');
+    expect(routeContent).toContain("Há um status de frequência inválido");
+  });
 });
