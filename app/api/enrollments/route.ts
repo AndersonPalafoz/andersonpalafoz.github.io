@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { enrollments, courses, users } from "@/drizzle/schema";
+import { enrollments, courses, users, courseOffers, courseOfferStudents } from "@/drizzle/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { notifyStudentAndTeacher } from "@/lib/email";
@@ -17,9 +17,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { courseId } = await request.json();
+    const body = await request.json();
+    const courseId = Number(body.courseId);
+    const offerId = body.offerId === undefined || body.offerId === null || body.offerId === "" ? null : Number(body.offerId);
 
-    if (!courseId) {
+    if (!Number.isInteger(courseId) || courseId <= 0) {
       return NextResponse.json(
         { error: "courseId é obrigatório" },
         { status: 400 }
@@ -57,6 +59,18 @@ export async function POST(request: Request) {
     }
 
     const courseRecord = course[0];
+    let offerRecord: typeof courseOffers.$inferSelect | null = null;
+    if (offerId !== null) {
+      if (!Number.isInteger(offerId) || offerId <= 0) {
+        return NextResponse.json({ error: "offerId inválido" }, { status: 400 });
+      }
+      offerRecord = await db.query.courseOffers.findFirst({
+        where: and(eq(courseOffers.id, offerId), eq(courseOffers.courseId, courseId)),
+      }) ?? null;
+      if (!offerRecord || offerRecord.deletedAt || offerRecord.status !== "published") {
+        return NextResponse.json({ error: "Oferta não encontrada ou indisponível para matrícula." }, { status: 404 });
+      }
+    }
     const isCourseFree = courseRecord.isFree === true || Number(courseRecord.price || 0) <= 0;
 
     // Se o curso for pago, verificar se o usuário possui liberação manual de acesso (pela tabela paidAccessGrants ou similar)
@@ -87,7 +101,16 @@ export async function POST(request: Request) {
       }
     }
 
-    // Verificar se o usuário já está inscrito
+    if (offerRecord) {
+      const contextualEnrollment = await db.query.courseOfferStudents.findFirst({
+        where: and(eq(courseOfferStudents.offerId, offerRecord.id), eq(courseOfferStudents.userId, userId)),
+      });
+      if (contextualEnrollment) {
+        return NextResponse.json({ ...contextualEnrollment, offerId: offerRecord.id, courseId }, { status: 409 });
+      }
+    }
+
+    // Verificar se o usuário já está inscrito no curso legado
     const existingEnrollment = await db
       .select()
       .from(enrollments)
@@ -99,14 +122,26 @@ export async function POST(request: Request) {
       )
       .limit(1);
 
-    if (existingEnrollment.length > 0) {
+    if (existingEnrollment.length > 0 && !offerRecord) {
       return NextResponse.json(
         { error: "Você já está inscrito neste curso" },
         { status: 409 }
       );
     }
 
-    // Criar inscrição
+    if (existingEnrollment.length > 0 && offerRecord) {
+      const [contextualEnrollment] = await db.insert(courseOfferStudents).values({
+        offerId: offerRecord.id,
+        userId,
+        name: user[0].name || user[0].email || "Aluno",
+        email: user[0].email,
+        status: "active",
+      }).onConflictDoNothing().returning();
+      return NextResponse.json({ ...existingEnrollment[0], offerId: offerRecord.id, contextualEnrollment }, { status: 200 });
+    }
+
+    // Criar inscrição legada e, quando informado, o contexto da oferta
+
     const enrollment = await db
       .insert(enrollments)
       .values({
@@ -116,6 +151,16 @@ export async function POST(request: Request) {
         enrolledAt: new Date(),
       })
       .returning();
+
+    if (offerRecord) {
+      await db.insert(courseOfferStudents).values({
+        offerId: offerRecord.id,
+        userId,
+        name: user[0].name || user[0].email || "Aluno",
+        email: user[0].email,
+        status: "active",
+      }).onConflictDoNothing();
+    }
 
     // Disparar e-mail para aluno e professor
     try {
@@ -196,7 +241,21 @@ export async function GET() {
       .leftJoin(courses, eq(enrollments.courseId, courses.id))
       .where(eq(enrollments.userId, userId));
 
-    return NextResponse.json(userEnrollments);
+    const contextualEnrollments = await db
+      .select({ courseId: courseOffers.courseId, offerId: courseOfferStudents.offerId })
+      .from(courseOfferStudents)
+      .innerJoin(courseOffers, eq(courseOfferStudents.offerId, courseOffers.id))
+      .where(eq(courseOfferStudents.userId, userId));
+    const offerIdsByCourse = new Map<number, number[]>();
+    for (const contextual of contextualEnrollments) {
+      const current = offerIdsByCourse.get(contextual.courseId) ?? [];
+      current.push(contextual.offerId);
+      offerIdsByCourse.set(contextual.courseId, current);
+    }
+    return NextResponse.json(userEnrollments.map((enrollment) => ({
+      ...enrollment,
+      offerIds: offerIdsByCourse.get(enrollment.courseId) ?? [],
+    })));
   } catch (error) {
     console.error("Erro ao buscar inscrições:", error);
     return NextResponse.json(

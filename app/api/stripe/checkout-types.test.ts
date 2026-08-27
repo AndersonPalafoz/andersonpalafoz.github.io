@@ -12,6 +12,14 @@ describe("Stripe checkout and fulfillment for course types 1 and 2", () => {
     expect(source).toContain("if (course.isFree) return NextResponse.json({ error: \"Este curso é gratuito.\" }");
   });
 
+  it("validates and transports the optional offer context", () => {
+    const source = fs.readFileSync(checkoutRoutePath, "utf8");
+    expect(source).toContain("const offerId");
+    expect(source).toContain("courseOffers");
+    expect(source).toContain("offer_id");
+    expect(source).toContain("Oferta não encontrada ou indisponível.");
+  });
+
   it("handles webhook event and fulfills course purchase with active enrollment", () => {
     const webhookSource = fs.readFileSync(webhookRoutePath, "utf8");
     const dbSource = fs.readFileSync(dbLibPath, "utf8");

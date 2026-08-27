@@ -832,6 +832,7 @@ export async function createArticleComment(data: {
 export async function fulfillCoursePurchase(input: {
   userId: number;
   courseId: number;
+  offerId?: number | null;
   stripeCheckoutSessionId: string;
   stripePaymentIntentId?: string | null;
   stripeCustomerId?: string | null;
@@ -867,6 +868,26 @@ export async function fulfillCoursePurchase(input: {
         enrolledAt: new Date(),
       })
       .onConflictDoNothing();
+  }
+  if (input.offerId) {
+    const offer = await db.query.courseOffers.findFirst({
+      where: and(
+        eq(schema.courseOffers.id, input.offerId),
+        eq(schema.courseOffers.courseId, input.courseId),
+        isNull(schema.courseOffers.deletedAt),
+      ),
+    });
+    if (!offer) throw new Error("Oferta não encontrada durante o cumprimento do pagamento.");
+    const user = await db.query.users.findFirst({ where: eq(schema.users.id, input.userId) });
+    if (user) {
+      await db.insert(schema.courseOfferStudents).values({
+        offerId: offer.id,
+        userId: user.id,
+        name: user.name || user.email || "Aluno",
+        email: user.email,
+        status: "active",
+      }).onConflictDoNothing();
+    }
   }
   return {
     purchase: insertedPurchase[0] || null,

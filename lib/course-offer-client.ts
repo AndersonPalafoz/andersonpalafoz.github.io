@@ -25,6 +25,28 @@ function jsonHeaders() {
   return { "Content-Type": "application/json" };
 }
 
+export type CourseEnrollmentPayload = { courseId: number; offerId?: number | null };
+export type CourseEnrollmentResponse = { id?: number; courseId?: number; offerId?: number; enrolled?: boolean; message?: string };
+export type CourseCheckoutResponse = { checkoutUrl?: string; sessionId?: string; enrolled?: boolean; courseId?: number; message?: string };
+
+export async function enrollInCourse(payload: CourseEnrollmentPayload): Promise<CourseEnrollmentResponse> {
+  const response = await fetch("/api/enrollments", {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseResponse<CourseEnrollmentResponse>(response);
+}
+
+export async function startCourseCheckout(payload: CourseEnrollmentPayload): Promise<CourseCheckoutResponse> {
+  const response = await fetch("/api/stripe/checkout", {
+    method: "POST",
+    headers: jsonHeaders(),
+    body: JSON.stringify(payload),
+  });
+  return parseResponse<CourseCheckoutResponse>(response);
+}
+
 export async function getCourseOffers(options: { courseId?: number; includeDeleted?: boolean } = {}): Promise<CourseOffer[]> {
   const params = new URLSearchParams();
   if (options.courseId) params.set("courseId", String(options.courseId));

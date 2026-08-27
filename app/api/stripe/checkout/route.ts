@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { and, eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { courses, enrollments, materials, users } from "@/drizzle/schema";
+import { courses, enrollments, materials, users, courseOffers } from "@/drizzle/schema";
 import { ensureCoursePrice, getStripe, getStripeOrigin, StripeConfigurationError } from "@/lib/stripe";
 
 export async function POST(request: NextRequest) {
@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.email) return NextResponse.json({ error: "Faça login para realizar a compra." }, { status: 401 });
     const body = await request.json();
     const courseId = body.courseId ? Number(body.courseId) : null;
+    const offerId = body.offerId ? Number(body.offerId) : null;
     const materialId = body.materialId ? Number(body.materialId) : null;
 
     if (!courseId && !materialId) return NextResponse.json({ error: "Item de compra inválido." }, { status: 400 });
@@ -25,10 +26,16 @@ export async function POST(request: NextRequest) {
     if (courseId) {
       const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
       if (!course) return NextResponse.json({ error: "Curso não encontrado." }, { status: 404 });
+      let offer: typeof courseOffers.$inferSelect | null = null;
+      if (offerId !== null) {
+        if (!Number.isInteger(offerId) || offerId <= 0) return NextResponse.json({ error: "Oferta inválida." }, { status: 400 });
+        offer = await db.query.courseOffers.findFirst({ where: and(eq(courseOffers.id, offerId), eq(courseOffers.courseId, course.id)) }) ?? null;
+        if (!offer || offer.deletedAt || offer.status !== "published") return NextResponse.json({ error: "Oferta não encontrada ou indisponível." }, { status: 404 });
+      }
       if (course.isFree) return NextResponse.json({ error: "Este curso é gratuito." }, { status: 400 });
 
       const existingEnrollment = await db.query.enrollments.findFirst({ where: and(eq(enrollments.userId, user.id), eq(enrollments.courseId, course.id)) });
-      if (existingEnrollment) return NextResponse.json({ enrolled: true, courseId: course.id, message: "Você já tem acesso a este curso." }, { status: 409 });
+      if (existingEnrollment && !offer) return NextResponse.json({ enrolled: true, courseId: course.id, message: "Você já tem acesso a este curso." }, { status: 409 });
 
       const priceId = await ensureCoursePrice(course);
       const checkout = await stripe.checkout.sessions.create({
@@ -37,9 +44,9 @@ export async function POST(request: NextRequest) {
         customer_email: user.email || undefined,
         client_reference_id: String(user.id),
         allow_promotion_codes: true,
-        metadata: { user_id: String(user.id), course_id: String(course.id), customer_email: user.email || "", customer_name: user.name || "" },
+        metadata: { user_id: String(user.id), course_id: String(course.id), ...(offer ? { offer_id: String(offer.id) } : {}), customer_email: user.email || "", customer_name: user.name || "" },
         success_url: `${origin}/pagamento/sucesso?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/cursos/${course.id}?checkout=cancelled`,
+        cancel_url: `${origin}/cursos/${course.id}${offer ? `?offerId=${offer.id}&checkout=cancelled` : "?checkout=cancelled"}`,
       });
 
       return NextResponse.json({ checkoutUrl: checkout.url, sessionId: checkout.id });

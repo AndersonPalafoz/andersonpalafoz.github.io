@@ -23,16 +23,18 @@ export async function POST(request: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = Number(session.metadata?.user_id || session.client_reference_id);
-      const courseId = Number(session.metadata?.course_id);
-      if (session.payment_status === "paid") {
-        if (!Number.isInteger(userId) || userId <= 0 || !Number.isInteger(courseId) || courseId <= 0) {
+          const courseId = Number(session.metadata?.course_id);
+          const offerId = session.metadata?.offer_id ? Number(session.metadata.offer_id) : null;
+          if (session.payment_status === "paid") {
+          if (!Number.isInteger(userId) || userId <= 0 || !Number.isInteger(courseId) || courseId <= 0 || (offerId !== null && (!Number.isInteger(offerId) || offerId <= 0))) {
           console.error("[Stripe Webhook] completed session missing valid course metadata", { eventId: event.id, sessionId: session.id });
           return NextResponse.json({ error: "O pagamento foi recebido, mas os metadados da matrícula estão incompletos.", code: "STRIPE_METADATA_INVALID" }, { status: 422 });
         }
         await fulfillCoursePurchase({
-          userId,
-          courseId,
-          stripeCheckoutSessionId: session.id,
+            userId,
+            courseId,
+            offerId,
+            stripeCheckoutSessionId: session.id,
           stripePaymentIntentId: typeof session.payment_intent === "string" ? session.payment_intent : session.payment_intent?.id,
           stripeCustomerId: typeof session.customer === "string" ? session.customer : session.customer?.id,
         });
