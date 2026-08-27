@@ -92,6 +92,8 @@ interface ExternalClassItem {
   gradingScope?: string | null;
   passingAverage?: string | number | null;
   unitPassingAverages?: string | null;
+  gradeStatus?: string | null;
+  gradesClosedAt?: string | null;
   instructorName: string | null;
   monitors: string | null;
   students: ExternalStudentItem[];
@@ -458,6 +460,7 @@ export default function TurmasExternasPage() {
   const [gradeAssessmentComponent, setGradeAssessmentComponent] = useState<Record<number, string>>({});
   const [gradeAssessmentDate, setGradeAssessmentDate] = useState<Record<number, string>>({});
   const [gradeRubricScores, setGradeRubricScores] = useState<Record<number, { content: string; language: string; comprehensibility: string }>>({});
+  const [editingGradeId, setEditingGradeId] = useState<number | null>(null);
   const [simalBatchPreset, setSimalBatchPreset] = useState<Record<number, string>>({});
   const [simalBatchComponent, setSimalBatchComponent] = useState<Record<number, string>>({});
   const [simalBatchScores, setSimalBatchScores] = useState<Record<number, Record<number, string>>>({});
@@ -1055,7 +1058,8 @@ export default function TurmasExternasPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: "saveGrade",
+          action: editingGradeId ? "updateGrade" : "saveGrade",
+          gradeId: editingGradeId || undefined,
           classId,
           studentId: sId,
           assessmentTitle: title,
@@ -1071,7 +1075,8 @@ export default function TurmasExternasPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar nota.");
-      notifySuccess("Nota lançada com sucesso!");
+      notifySuccess(editingGradeId ? "Avaliação atualizada com sucesso!" : "Nota lançada com sucesso!");
+      setEditingGradeId(null);
       setGradeAssessmentTitle(prev => ({ ...prev, [classId]: "" }));
       setGradeAssessmentPreset(prev => ({ ...prev, [classId]: "" }));
       setGradeAssessmentComponent(prev => ({ ...prev, [classId]: "" }));
@@ -1108,6 +1113,36 @@ export default function TurmasExternasPage() {
       void loadClasses();
     } catch (err) {
       notifyError(err instanceof Error ? err.message : "Erro ao salvar notas SIMAL.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEditGrade = (classId: number, grade: ExternalClassGradeItem) => {
+    setEditingGradeId(grade.id);
+    setGradeStudentId((current) => ({ ...current, [classId]: grade.studentId }));
+    setGradeAssessmentTitle((current) => ({ ...current, [classId]: grade.assessmentTitle }));
+    setGradeAssessmentComponent((current) => ({ ...current, [classId]: grade.assessmentComponent || "total" }));
+    setGradeScore((current) => ({ ...current, [classId]: grade.score }));
+    setGradeAssessmentDate((current) => ({ ...current, [classId]: grade.assessmentDate || new Date().toISOString().slice(0, 10) }));
+    setGradeFeedback((current) => ({ ...current, [classId]: grade.feedback || "" }));
+    setClassWorkspaceTab(classId, "grades");
+  };
+
+  const handleSetGradeStatus = async (classId: number, status: "open" | "closed") => {
+    try {
+      setSubmitting(true);
+      const response = await fetch("/api/professor/external-classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setGradeStatus", classId, gradeStatus: status }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Não foi possível alterar o estado das notas.");
+      notifySuccess(status === "closed" ? "Notas fechadas para esta turma." : "Lançamento de notas reaberto.");
+      await loadClasses();
+    } catch (error) {
+      notifyError(error instanceof Error ? error.message : "Não foi possível alterar o estado das notas.");
     } finally {
       setSubmitting(false);
     }
@@ -2320,6 +2355,7 @@ export default function TurmasExternasPage() {
                 const activeTab = activeTabByClass[cls.id] || "students";
                 const classDate = attendanceDate[cls.id] || new Date().toISOString().split("T")[0];
                 const currentStatuses = attendanceStatuses[cls.id] || {};
+                const gradesClosed = cls.gradeStatus === "closed";
                 const assignmentState = assignmentFeedback[cls.id];
 
                 return (
@@ -2940,7 +2976,11 @@ export default function TurmasExternasPage() {
                               <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Lançar avaliação SIMAL</h4>
                               <p className="mt-1 text-[11px] text-gray-500">Funciona para alunos já cadastrados e para novos alunos adicionados na aba Alunos.</p>
                             </div>
-                            <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-black text-red-700 dark:bg-red-950/40 dark:text-red-300">Versão A aplicada</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className={`rounded-full px-2 py-1 text-[10px] font-black ${gradesClosed ? "bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200" : "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"}`}>{gradesClosed ? "Notas fechadas" : "Lançamento aberto"}</span>
+                              <span className="rounded-full bg-red-100 px-2 py-1 text-[10px] font-black text-red-700 dark:bg-red-950/40 dark:text-red-300">Versão A aplicada</span>
+                              {canManage && <button type="button" onClick={() => void handleSetGradeStatus(cls.id, gradesClosed ? "open" : "closed")} disabled={submitting} className="rounded-lg border border-gray-200 px-2 py-1 text-[10px] font-black text-gray-700 transition hover:bg-white disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800">{gradesClosed ? "Reabrir notas" : "Fechar notas"}</button>}
+                            </div>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                             <div>
@@ -2988,7 +3028,7 @@ export default function TurmasExternasPage() {
                             </div>
                           )}
                           <input type="text" placeholder="Feedback / comentário (opcional)" value={gradeFeedback[cls.id] || ""} onChange={(e) => setGradeFeedback({ ...gradeFeedback, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
-                          <button type="button" onClick={() => void handleSaveGrade(cls.id)} disabled={submitting || cls.students.length === 0} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">Salvar nota da avaliação</button>
+                          <button type="button" onClick={() => void handleSaveGrade(cls.id)} disabled={submitting || gradesClosed || cls.students.length === 0} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50">Salvar nota da avaliação</button>
                         </div>
 
                         <div className="space-y-3 rounded-2xl border border-red-100 bg-red-50/50 p-4 dark:border-red-950/50 dark:bg-red-950/10">
@@ -3008,7 +3048,7 @@ export default function TurmasExternasPage() {
                             {cls.students.map((student) => <div key={student.id} className="grid grid-cols-[minmax(0,1fr)_96px] items-center gap-3 border-b border-gray-100 px-3 py-2 last:border-0 dark:border-slate-800"><div className="min-w-0"><p className="truncate text-xs font-bold text-gray-900 dark:text-white">{student.name}</p><p className="truncate text-[10px] text-gray-500">{student.email || student.studentIdNumber || "Sem e-mail/matrícula"}</p></div><input type="text" inputMode="decimal" placeholder="Nota" aria-label={`Nota de ${student.name}`} value={simalBatchScores[cls.id]?.[student.id] || ""} onChange={(e) => setSimalBatchScores({ ...simalBatchScores, [cls.id]: { ...(simalBatchScores[cls.id] || {}), [student.id]: e.target.value } })} className="w-full rounded-lg border border-gray-200 bg-gray-50 p-2 text-center text-xs font-bold text-gray-900 dark:border-slate-700 dark:bg-slate-800 dark:text-white" /></div>)}
                             {cls.students.length === 0 && <p className="p-4 text-center text-xs text-gray-500">Cadastre alunos na aba Alunos antes de lançar as notas.</p>}
                           </div>
-                          <button type="button" onClick={() => void handleSaveSimalBatch(cls)} disabled={submitting || cls.students.length === 0} className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50">Salvar notas preenchidas</button>
+                          <button type="button" onClick={() => void handleSaveSimalBatch(cls)} disabled={submitting || gradesClosed || cls.students.length === 0} className="rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-50">Salvar notas preenchidas</button>
                         </div>
 
                         {/* Edição em Lote de Notas */}
@@ -3079,7 +3119,7 @@ export default function TurmasExternasPage() {
                                 setSubmitting(false);
                               }
                             }}
-                            disabled={submitting || cls.students.length === 0}
+                            disabled={submitting || gradesClosed || cls.students.length === 0}
                             className="px-4 py-2 bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
                           >
                             Aplicar Nota em Lote para Todos os Alunos
@@ -3108,14 +3148,24 @@ export default function TurmasExternasPage() {
                                       </p>
                                       <p className="text-gray-500 mt-0.5">Nota: <strong className="text-gray-900 dark:text-white">{g.score} / {g.maxScore}</strong> {g.feedback ? `• "${g.feedback}"` : ""}</p>
                                     </div>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteGrade(g.id)}
-                                      className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 transition"
-                                      title="Excluir Nota"
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
+                                    {!gradesClosed && <>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleEditGrade(cls.id, g)}
+                                        className="rounded-lg border border-blue-200 p-1.5 text-blue-700 transition hover:bg-blue-50 dark:border-blue-900/60 dark:text-blue-300"
+                                        title="Editar Nota"
+                                      >
+                                        <Edit3 size={14} />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteGrade(g.id)}
+                                        className="p-1.5 rounded-lg border border-red-200 dark:border-red-900/60 text-red-600 hover:bg-red-50 transition"
+                                        title="Excluir Nota"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </>}
                                   </div>
                                 );
                               })}
