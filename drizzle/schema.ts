@@ -903,6 +903,9 @@ export const externalClasses = pgTable("external_classes", {
   gradingScope: varchar("grading_scope", { length: 16 }).notNull().default("course"),
   passingAverage: varchar("passing_average", { length: 8 }).notNull().default("5"),
   unitPassingAverages: text("unit_passing_averages"),
+  gradeStatus: varchar("grade_status", { length: 16 }).notNull().default("open"), // open, closed
+  gradesClosedAt: timestamp("grades_closed_at"),
+  gradesClosedBy: integer("grades_closed_by").references(() => users.id, { onDelete: "set null" }),
   modality: varchar("modality", { length: 32 }).default("Remota"),
   meetingLink: varchar("meeting_link", { length: 500 }),
   classroomLocation: varchar("classroom_location", { length: 255 }),

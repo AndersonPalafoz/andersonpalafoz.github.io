@@ -41,4 +41,12 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain('["present", "absent", "late", "excused"]');
     expect(routeContent).toContain("Há um status de frequência inválido");
   });
+
+  it("mantém edição de avaliação e fechamento protegidos por turma", () => {
+    expect(routeContent).toContain('action === "updateGrade"');
+    expect(routeContent).toContain('action === "setGradeStatus"');
+    expect(routeContent).toContain('gradeStatus === "closed"');
+    expect(routeContent).toContain("gradesClosedAt");
+    expect(routeContent).toContain("gradesClosedBy");
+  });
 });
