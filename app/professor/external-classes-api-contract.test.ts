@@ -60,6 +60,13 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("gradesClosedBy");
   });
 
+  it("permite corrigir uma chamada existente pela mesma data", () => {
+    expect(routeContent).toContain('action === "saveAttendance"');
+    expect(routeContent).toContain("const existingAtt");
+    expect(routeContent).toContain("externalClassAttendance.id, existingAtt.id");
+    expect(routeContent).toContain('eq(externalClassAttendance.date, String(date).trim())');
+  });
+
   it("protege e persiste o ajuste manual da média por aluno", () => {
     expect(routeContent).toContain('action === "setManualAverage"');
     expect(routeContent).toContain("manualAverageReason");

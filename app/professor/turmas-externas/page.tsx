@@ -1014,6 +1014,25 @@ export default function TurmasExternasPage() {
   };
 
   // Handlers para Chamada, Notas e Materiais
+  const selectAttendanceDate = (classId: number, date: string, attendance: ExternalClassAttendanceItem[] = []) => {
+    const savedAttendance = attendance.find((item) => item.date === date);
+    let savedStatuses: Record<number, string> = {};
+    try {
+      const parsed = savedAttendance ? JSON.parse(savedAttendance.attendanceData) as Record<string, string> : {};
+      savedStatuses = Object.fromEntries(Object.entries(parsed).map(([studentId, status]) => [Number(studentId), status]));
+    } catch {
+      savedStatuses = {};
+    }
+    setAttendanceDate((current) => ({ ...current, [classId]: date }));
+    setAttendanceStatuses((current) => ({ ...current, [classId]: savedStatuses }));
+  };
+
+  const handleEditAttendance = (classId: number, date: string, attendance: ExternalClassAttendanceItem[]) => {
+    selectAttendanceDate(classId, date, attendance);
+    setClassWorkspaceTab(classId, "attendance");
+    window.setTimeout(() => document.getElementById(`attendance-editor-${classId}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 0);
+  };
+
   const handleSaveAttendance = async (classId: number, students: ExternalStudentItem[]) => {
     const date = attendanceDate[classId] || new Date().toISOString().split("T")[0];
     const dataMap = attendanceStatuses[classId] || {};
@@ -2962,10 +2981,10 @@ export default function TurmasExternasPage() {
                     {/* CONTEÚDO DA ABA: CHAMADA */}
                     {activeTab === "attendance" && (
                       <div className="space-y-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl">
+                        <div id={`attendance-editor-${cls.id}`} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-gray-50 p-4 dark:bg-slate-800/40 ${cls.attendance?.some((item) => item.date === classDate) ? "ring-2 ring-blue-200 dark:ring-blue-900/60" : ""}`}>
                           <div>
-                            <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Nova Chamada / Frequência</h4>
-                            <p className="text-[11px] text-gray-500">Selecione a data da aula e marque a presença de cada aluno.</p>
+                            <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">{cls.attendance?.some((item) => item.date === classDate) ? "Editar chamada / frequência" : "Nova chamada / frequência"}</h4>
+                            <p className="text-[11px] text-gray-500">{cls.attendance?.some((item) => item.date === classDate) ? "Os registros desta data foram carregados. Corrija qualquer aluno e salve novamente." : "Selecione a data da aula e marque a presença de cada aluno."}</p>
                           </div>
                           <div className="external-attendance-toolbar flex items-center gap-2">
                             <input
@@ -2973,16 +2992,7 @@ export default function TurmasExternasPage() {
                               value={classDate}
                               onChange={(e) => {
                                 const nextDate = e.target.value;
-                                const savedAttendance = cls.attendance?.find((item) => item.date === nextDate);
-                                let savedStatuses: Record<number, string> = {};
-                                try {
-                                  const parsed = savedAttendance ? JSON.parse(savedAttendance.attendanceData) as Record<string, string> : {};
-                                  savedStatuses = Object.fromEntries(Object.entries(parsed).map(([studentId, status]) => [Number(studentId), status]));
-                                } catch {
-                                  savedStatuses = {};
-                                }
-                                setAttendanceDate((current) => ({ ...current, [cls.id]: nextDate }));
-                                setAttendanceStatuses((current) => ({ ...current, [cls.id]: savedStatuses }));
+                                selectAttendanceDate(cls.id, nextDate, cls.attendance || []);
                               }}
                               className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white"
                             />
@@ -2992,7 +3002,7 @@ export default function TurmasExternasPage() {
                               disabled={submitting || cls.students.length === 0}
                               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
                             >
-                              Salvar Chamada
+                              {cls.attendance?.some((item) => item.date === classDate) ? "Atualizar chamada" : "Salvar chamada"}
                             </button>
                           </div>
                         </div>
@@ -3081,12 +3091,12 @@ export default function TurmasExternasPage() {
                           ) : (
                             <div className="space-y-2">
                               {cls.attendance.map((att) => (
-                                <div key={att.id} className="p-3 rounded-xl bg-gray-50 dark:bg-slate-800/60 flex items-center justify-between text-xs">
-                                  <div className="flex items-center gap-2">
-                                    <CheckCircle2 size={14} className="text-green-600" />
-                                    <span className="font-bold text-gray-900 dark:text-white">Aula em {att.date}</span>
+                                <div key={att.id} className={`flex items-center justify-between gap-3 rounded-xl p-3 text-xs ${att.date === classDate ? "border border-blue-200 bg-blue-50 dark:border-blue-900/60 dark:bg-blue-950/20" : "bg-gray-50 dark:bg-slate-800/60"}`}>
+                                  <div className="flex min-w-0 items-center gap-2">
+                                    <CheckCircle2 size={14} className={att.date === classDate ? "text-blue-600" : "text-green-600"} />
+                                    <div className="min-w-0"><span className="block truncate font-bold text-gray-900 dark:text-white">Aula em {att.date}</span><span className="text-[10px] text-gray-400">Registrado em {new Date(att.createdAt).toLocaleDateString("pt-BR")}</span></div>
                                   </div>
-                                  <span className="text-[10px] text-gray-400">Registrado em {new Date(att.createdAt).toLocaleDateString("pt-BR")}</span>
+                                  <button type="button" onClick={() => handleEditAttendance(cls.id, att.date, cls.attendance || [])} className="shrink-0 rounded-lg border border-blue-200 bg-white px-2.5 py-1.5 text-[10px] font-black text-blue-700 transition hover:bg-blue-50 dark:border-blue-900/60 dark:bg-slate-900 dark:text-blue-300 dark:hover:bg-blue-950/40">Editar chamada</button>
                                 </div>
                               ))}
                             </div>
