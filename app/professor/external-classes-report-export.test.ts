@@ -109,8 +109,19 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("relatorio_academico_");
     expect(source).toContain("_${filter}.csv");
     expect(source).toContain("text/csv;charset=utf-8");
+    expect(source).toContain('join(";")');
+    expect(source).toContain("\\uFEFF");
     expect(source).toContain("Filtro aplicado");
     expect(source).toContain("Alunos incluídos");
+  });
+
+  it("oferece relatório Excel estruturado com filtros e colunas dimensionadas", () => {
+    expect(source).toContain("exportAcademicXlsx");
+    expect(source).toContain("relatorio_academico_${cls.id}_${filter}.xlsx");
+    expect(source).toContain("Relatório acadêmico");
+    expect(source).toContain('worksheet["!cols"]');
+    expect(source).toContain('worksheet["!autofilter"]');
+    expect(source).toContain('worksheet["!freeze"]');
   });
 
   it("abre uma prévia imprimível em PDF com o filtro e os limites acadêmicos", () => {
@@ -130,6 +141,9 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("background: #16a34a");
     expect(source).toContain("background: #dc2626");
     expect(source).toContain("background: #9ca3af");
+    expect(source).toContain("table-layout: fixed");
+    expect(source).toContain("thead { display: table-header-group; }");
+    expect(source).toContain("A4 portrait");
     expect(source).toContain(".approved-label { color: #166534; }");
     expect(source).toContain(".failed-label { color: #991b1b; }");
     expect(source).toContain(".insufficient-label { color: #4b5563; }");
