@@ -1274,6 +1274,15 @@ export default function TurmasExternasPage() {
     });
   };
 
+  const academicStatusLabel = (row: ReturnType<typeof getAcademicReportRows>[number]) => {
+    if (row.failedByGrade && row.failedByAttendance) return "Reprovado por nota e falta";
+    if (row.failedByGrade) return "Reprovado por nota";
+    if (row.failedByAttendance) return "Reprovado por falta";
+    if (row.averageGrade === null) return "Pendente: média";
+    if (row.attendancePercent === null) return "Pendente: frequência";
+    return "Aprovado";
+  };
+
   const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
     const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
     const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
@@ -1331,7 +1340,7 @@ export default function TurmasExternasPage() {
       ? summarizeAcademicReportRows(reportRows)
       : summarizeAcademicReportRows(reportRows, minimumGrade);
     const generatedAt = new Date().toLocaleString("pt-BR");
-    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade }) => `
+    const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, failedByGrade, failedByAttendance }) => `
       <tr>
         <td><strong>${escapeReportHtml(student.name)}</strong><br><small>${escapeReportHtml(student.email || "E-mail não informado")}</small></td>
         <td>${escapeReportHtml(student.cpf || "—")}</td>
@@ -1341,8 +1350,12 @@ export default function TurmasExternasPage() {
         <td>${attendance.excused}</td>
         <td>${attendance.total}</td>
         <td>${escapeReportHtml(formatReportNumber(attendancePercent))}</td>
-        <td>${escapeReportHtml(`${grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas"}${simalGrade.isSimal ? ` • SIMAL: prova ${formatReportNumber(simalGrade.proofScore)}/8 + apresentação ${formatReportNumber(simalGrade.presentationScore)}/2 = ${formatReportNumber(simalGrade.finalScore)}/10` : ""}`)}</td>
+        <td>${escapeReportHtml(`${grades.map((grade) => `${grade.assessmentTitle}: ${grade.score}/${grade.maxScore}`).join("; ") || "Sem notas"}`)}</td>
+        <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.proofScore)}/8` : "—")}</td>
+        <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.presentationScore)}/2` : "—")}</td>
+        <td>${escapeReportHtml(simalGrade.isSimal ? `${formatReportNumber(simalGrade.finalScore)}/10` : "—")}</td>
         <td>${escapeReportHtml(formatReportNumber(averageGrade))}</td>
+        <td class="status ${failedByGrade || failedByAttendance ? "status-failed" : averageGrade === null || attendancePercent === null ? "status-pending" : "status-approved"}">${escapeReportHtml(academicStatusLabel({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, failedByGrade, failedByAttendance }))}</td>
       </tr>`).join("");
     const clampPercent = (value: number) => Math.max(0, Math.min(100, value));
     const reportSummaryHtml = `<section class="summary" aria-label="Resumo de aprovação e reprovação">
@@ -1359,11 +1372,11 @@ export default function TurmasExternasPage() {
     }
     printWindow.opener = null;
     printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
-      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 8px; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 5px; vertical-align: top; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
+      @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 7px; } td { border-bottom: 1px solid #e5e7eb; padding: 5px 4px; vertical-align: top; font-size: 8px; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
       ${reportSummaryHtml}
       <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter))}</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
-      <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Média</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="10">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
+      <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Prova SIMAL</th><th>Apresentação</th><th>Nota SIMAL</th><th>Média final</th><th>Situação</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="14">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
       <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${minimumGrade.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
       </body></html>`);
     printWindow.document.close();

@@ -110,6 +110,11 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain(".failed-label { color: #991b1b; }");
     expect(source).toContain(".insufficient-label { color: #4b5563; }");
     expect(source).toContain("Dados insuficientes");
+    expect(source).toContain("Média final");
+    expect(source).toContain("Nota SIMAL");
+    expect(source).toContain("Situação");
+    expect(source).toContain("academicStatusLabel");
+    expect(source).toContain("Aprovado");
   });
 
   it("oferece o filtro e as ações de exportação no desktop e no menu de ações rápidas", () => {
