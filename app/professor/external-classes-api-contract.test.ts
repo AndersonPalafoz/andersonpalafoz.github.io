@@ -60,6 +60,15 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("gradesClosedBy");
   });
 
+  it("protege e persiste o ajuste manual da média por aluno", () => {
+    expect(routeContent).toContain('action === "setManualAverage"');
+    expect(routeContent).toContain("manualAverageReason");
+    expect(routeContent).toContain("A média manual deve estar entre 0 e 10.");
+    expect(routeContent).toContain("justificativa com pelo menos 8 caracteres");
+    expect(routeContent).toContain("gradeStatus === \"closed\"");
+    expect(routeContent).toContain("manualAverageUpdatedBy: normalizedManualAverage === null ? null : teacher.id");
+  });
+
   it("notifica alunos em lançamento e edição sem duplicar o mesmo evento", () => {
     expect(routeContent).toContain("const notifyGradeChange");
     expect(routeContent).toContain('event: "created" | "updated"');

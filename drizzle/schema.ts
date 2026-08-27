@@ -968,6 +968,10 @@ export const externalStudents = pgTable("external_students", {
   component: varchar("component", { length: 100 }), // ex: Básico
   status: varchar("status", { length: 32 }).notNull().default("active"), // active, inactive, completed
   notes: text("notes"),
+  manualAverage: varchar("manual_average", { length: 32 }), // média final ajustada manualmente, na escala de 0 a 10
+  manualAverageReason: text("manual_average_reason"), // justificativa obrigatória para o ajuste
+  manualAverageUpdatedAt: timestamp("manual_average_updated_at"),
+  manualAverageUpdatedBy: integer("manual_average_updated_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
