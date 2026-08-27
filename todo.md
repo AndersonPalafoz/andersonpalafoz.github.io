@@ -2578,3 +2578,13 @@
 - [x] Melhorar a descoberta de rotas, a área de toque, os estados ativos e a contenção contra rolagem lateral em smartphones.
 - [x] Validar os fluxos em viewport mobile, acessibilidade, testes, TypeScript e build de produção.
 - [x] Sincronizar o checkpoint validado de navegação mobile com a branch `main` oficial.
+
+## Auditoria do estado atual da plataforma — 27/08/2026
+- [x] Verificar o estado do repositório, a branch `main`, os testes, TypeScript e o build sem alterar dados de produção.
+- [x] Auditar rotas públicas e protegidas prioritárias, navegação mobile e controles de acesso por papel.
+- [x] Verificar dados, armazenamento, pendências operacionais e registrar achados priorizados em relatório técnico.
+
+## Correção de rolagem e layout administrativo mobile — 27/08/2026
+- [x] Identificar e corrigir o bloqueio de rolagem vertical e qualquer largura que ultrapasse a viewport no painel mobile.
+- [x] Reorganizar o cabeçalho, hero e ações frequentes da administração em uma hierarquia legível para smartphone.
+- [x] Validar a navegação, rolagem, estados de foco, responsividade, testes, TypeScript e build.

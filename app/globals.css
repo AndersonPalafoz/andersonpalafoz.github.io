@@ -702,7 +702,10 @@ body {
 
 @media (max-width: 767px) {
   .dashboard-content {
-    overscroll-behavior-y: contain;
+    min-width: 0;
+    overflow-x: clip;
+    overscroll-behavior-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
   }
 
@@ -713,6 +716,37 @@ body {
 
   #mobile-navigation {
     padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .admin-dashboard-page {
+    padding: 0.75rem;
+  }
+
+  .admin-dashboard-page .page-container {
+    max-width: 100%;
+    overflow-x: clip;
+    padding: 0;
+  }
+
+  .admin-dashboard-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    border-radius: 1.5rem;
+    padding: 1.25rem;
+  }
+
+  .admin-dashboard-hero h1 {
+    max-inline-size: 100%;
+    font-size: clamp(1.9rem, 8vw, 2.35rem);
+    overflow-wrap: anywhere;
+  }
+
+  .admin-dashboard-hero p {
+    max-inline-size: 100%;
+  }
+
+  .admin-action-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
