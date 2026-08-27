@@ -14,6 +14,7 @@ import { coursePurchases, enrollments, lessonProgress } from "@/drizzle/schema";
 import { eq, and } from "drizzle-orm";
 import { parseGoogleDriveLinks } from "@/lib/google-drive-links";
 import { getCourseTypeDefinition, getSyncModalityLabel } from "@/lib/course-types";
+import { listPublishedCourseOffers } from "@/lib/course-offer-service";
 import { ExternalCourseCta } from "@/components/external-course-cta";
 
 async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
@@ -198,6 +199,11 @@ async function CourseDetail({ courseId }: { courseId: number }) {
     console.error("Failed to load modules for course", courseId, err);
   }
 
+  const offers = await listPublishedCourseOffers(courseId).catch((error) => {
+    console.error("CourseDetail: failed to load published offers", { courseId, error });
+    return [];
+  });
+
   const resumeLesson = user?.id
     ? await getResumeLesson(Number(user.id), courseId).catch((error) => {
         console.error("Failed to resolve resume lesson", { courseId, userId: user.id, error });
@@ -381,6 +387,17 @@ async function CourseDetail({ courseId }: { courseId: number }) {
               isFree={course.isFree ?? true}
               price={course.price}
               resumeLessonId={resumeLesson?.lesson.id ?? null}
+              offers={offers.map((offer) => ({
+                id: offer.id,
+                offerName: offer.offerName,
+                academicTerm: offer.academicTerm,
+                institution: offer.institution,
+                modality: offer.modality,
+                classDays: offer.classDays,
+                classTime: offer.classTime,
+                status: offer.status,
+                deletedAt: offer.deletedAt,
+              }))}
             />
             <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>

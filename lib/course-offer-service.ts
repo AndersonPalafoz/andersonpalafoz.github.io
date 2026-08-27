@@ -28,6 +28,17 @@ export async function listCourseOffers(options: {
   return db.query.courseOffers.findMany({ where, orderBy: [desc(courseOffers.updatedAt)] });
 }
 
+export async function listPublishedCourseOffers(courseId: number): Promise<CourseOffer[]> {
+  return db.query.courseOffers.findMany({
+    where: and(
+      eq(courseOffers.courseId, courseId),
+      eq(courseOffers.status, "published"),
+      isNull(courseOffers.deletedAt),
+    ),
+    orderBy: [desc(courseOffers.startDate), desc(courseOffers.updatedAt)],
+  });
+}
+
 export async function getCourseOfferById(offerId: number): Promise<CourseOffer | undefined> {
   return db.query.courseOffers.findFirst({ where: eq(courseOffers.id, offerId) });
 }
