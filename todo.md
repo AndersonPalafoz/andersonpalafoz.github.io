@@ -2588,3 +2588,8 @@
 - [x] Identificar e corrigir o bloqueio de rolagem vertical e qualquer largura que ultrapasse a viewport no painel mobile.
 - [x] Reorganizar o cabeçalho, hero e ações frequentes da administração em uma hierarquia legível para smartphone.
 - [x] Validar a navegação, rolagem, estados de foco, responsividade, testes, TypeScript e build.
+
+## Turmas Externas em smartphones — 27/08/2026
+- [x] Auditar Turmas Externas em 360px e 430px, incluindo abas, ações, cards de turma, alunos, notas e frequência.
+- [x] Reorganizar controles e dados para toque, leitura e rolagem nativa sem corte lateral em telas pequenas.
+- [x] Validar layout, acessibilidade, teste de regressão, TypeScript e build em viewport móvel.

@@ -1364,8 +1364,8 @@ export default function TurmasExternasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] pb-32 text-gray-900 dark:bg-slate-950 dark:text-white p-4 sm:p-6 lg:p-10 font-sans">
-      <div className="max-w-[1500px] mx-auto space-y-6 sm:space-y-8">
+    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-3 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white sm:p-6 lg:p-10">
+      <div className="mx-auto max-w-[1500px] min-w-0 space-y-6 sm:space-y-8">
         {/* Cabeçalho */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 px-5 py-5 md:px-7 md:py-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)] dark:shadow-none backdrop-blur">
           <div className="space-y-1">
@@ -1525,7 +1525,7 @@ export default function TurmasExternasPage() {
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+          <div className="external-class-filters flex w-full flex-col items-stretch gap-3 pb-1 sm:flex-row sm:items-center md:w-auto md:pb-0">
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
               <select
@@ -2464,7 +2464,7 @@ export default function TurmasExternasPage() {
                     )}
 
                     {/* Navegação por Abas (Alunos, Chamada, Notas, Materiais) */}
-                    <div className="flex border-b border-gray-200 dark:border-slate-800 gap-2 overflow-x-auto">
+                    <div className="external-class-tabs grid grid-cols-2 gap-1.5 border-b border-gray-200 pb-2 dark:border-slate-800 sm:flex sm:gap-2 sm:overflow-x-auto sm:pb-0" aria-label="Áreas de gestão da turma">
                       <button
                         type="button"
                         onClick={() => setClassWorkspaceTab(cls.id, "students")}
@@ -2476,7 +2476,7 @@ export default function TurmasExternasPage() {
                       >
                         <Users size={14} /> Alunos ({cls.students.length})
                       </button>
-                      {canManage && <button type="button" onClick={() => provisionExternalAccess(cls.id)} disabled={provisioningAccess === cls.id || cls.students.length === 0} className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">{provisioningAccess === cls.id ? "Enviando..." : "Reenviar senha temporária"}</button>}
+                      {canManage && <button type="button" onClick={() => provisionExternalAccess(cls.id)} disabled={provisioningAccess === cls.id || cls.students.length === 0} className="external-access-resend inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">{provisioningAccess === cls.id ? "Enviando..." : "Reenviar senha temporária"}</button>}
                       <button
                         type="button"
                         onClick={() => setClassWorkspaceTab(cls.id, "attendance")}
@@ -2693,7 +2693,7 @@ export default function TurmasExternasPage() {
                             <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">Nova Chamada / Frequência</h4>
                             <p className="text-[11px] text-gray-500">Selecione a data da aula e marque a presença de cada aluno.</p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="external-attendance-toolbar flex items-center gap-2">
                             <input
                               type="date"
                               value={classDate}
@@ -2714,7 +2714,7 @@ export default function TurmasExternasPage() {
                         {cls.students.length === 0 ? (
                           <p className="text-xs text-gray-400 py-4 text-center">Cadastre alunos na turma antes de realizar a chamada.</p>
                         ) : (
-                          <div className="overflow-x-auto">
+                          <div className="external-attendance-table overflow-x-auto">
                             <table className="w-full text-left text-xs">
                               <thead>
                                 <tr className="border-b border-gray-200 dark:border-slate-800 text-gray-500 font-bold uppercase text-[10px]">
@@ -2730,7 +2730,7 @@ export default function TurmasExternasPage() {
                                   return (
                                     <tr key={st.id}>
                                       <td className="py-3 px-3 font-bold text-gray-900 dark:text-white">{st.name}</td>
-                                      <td className="py-3 px-3 text-center">
+                                      <td data-label="Presente" className="py-3 px-3 text-center">
                                         <input
                                           type="radio"
                                           name={`att_${cls.id}_${st.id}`}
@@ -2742,7 +2742,7 @@ export default function TurmasExternasPage() {
                                           className="accent-green-600 cursor-pointer"
                                         />
                                       </td>
-                                      <td className="py-3 px-3 text-center">
+                                      <td data-label="Ausente" className="py-3 px-3 text-center">
                                         <input
                                           type="radio"
                                           name={`att_${cls.id}_${st.id}`}
@@ -2754,7 +2754,7 @@ export default function TurmasExternasPage() {
                                           className="accent-red-600 cursor-pointer"
                                         />
                                       </td>
-                                      <td className="py-3 px-3 text-center">
+                                      <td data-label="Atrasado" className="py-3 px-3 text-center">
                                         <input
                                           type="radio"
                                           name={`att_${cls.id}_${st.id}`}
