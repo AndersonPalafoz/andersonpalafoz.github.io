@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
   insert: vi.fn(),
 }));
 
-vi.mock("next-auth", () => ({ getServerSession: mocks.getServerSession }));
+vi.mock("next-auth/next", () => ({ getServerSession: mocks.getServerSession }));
 vi.mock("@/lib/auth", () => ({ authOptions: {} }));
 vi.mock("@/lib/db", () => ({
   db: {
@@ -75,10 +75,11 @@ describe("Admin users API", () => {
     expect(response.status).toBe(403);
   });
 
-  it("rejects an administrator who is not the designated super-admin", async () => {
+  it("allows an administrator to consult the user list without global governance", async () => {
     mocks.getServerSession.mockResolvedValue(teacherAdminSession);
     const response = await GET();
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
+    expect(mocks.findMany).toHaveBeenCalledOnce();
   });
 
   it("returns pending accounts to the super-admin", async () => {

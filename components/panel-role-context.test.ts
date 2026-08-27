@@ -12,16 +12,16 @@ const teacherProgress = readFileSync(resolve(root, "app/professor/progresso/page
 
 describe("contexto e acesso dos painéis", () => {
   it("aplica contexto de papel e guardas nas áreas administrativa e docente", () => {
-    expect(adminLayout).toContain("PanelRoleContext");
+    expect(adminLayout).toContain("RolePreviewProvider");
     expect(professorLayout).toContain("canAccessProfessorPortal");
-    expect(professorLayout).toContain("PanelRoleContext");
+    expect(professorLayout).toContain("RolePreviewProvider");
   });
 
   it("mantém CMS e Stripe como operações exclusivas do superadmin", () => {
     expect(cms).toContain("canUseCms");
     expect(cms).toContain("Controle exclusivo de superadmin");
     expect(coupons).toContain("isSuperadmin");
-    expect(couponDelete).toContain("email !== SUPER_ADMIN_EMAIL");
+    expect(couponDelete).toContain("requireSuperAdminUser");
   });
 
   it("reutiliza o escopo central de cursos no progresso docente", () => {

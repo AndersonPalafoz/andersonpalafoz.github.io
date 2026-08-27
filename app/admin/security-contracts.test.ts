@@ -11,7 +11,7 @@ function source(relativePath: string) {
 describe("contratos de segurança dos módulos administrativos", () => {
   it("mantém paginação, filtros e guard administrativo na API de cupons", () => {
     const route = source("app/api/admin/coupons/route.ts");
-    expect(route).toContain("requireAdmin");
+    expect(route).toContain("requireSuperAdminUser");
     expect(route).toContain("ilike(coupons.code");
     expect(route).toContain("pageSize");
     expect(route).toContain("Math.min(Math.max(pageSizeValue, 1), 50)");

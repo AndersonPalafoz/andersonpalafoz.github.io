@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const root = process.cwd();
 const quickAccess = readFileSync(resolve(root, "components/panel-quick-access.tsx"), "utf8");
+const dashboardShell = readFileSync(resolve(root, "app/dashboard/dashboard-shell.tsx"), "utf8");
 const adminLayout = readFileSync(resolve(root, "app/admin/layout.tsx"), "utf8");
 const professorLayout = readFileSync(resolve(root, "app/professor/layout.tsx"), "utf8");
 const adminMobileNav = readFileSync(resolve(root, "components/admin-mobile-nav.tsx"), "utf8");
@@ -18,8 +19,10 @@ describe("atalhos diretos entre áreas", () => {
   });
 
   it("disponibiliza a troca de área nos layouts e na navegação mobile administrativa", () => {
-    expect(adminLayout).toContain("PanelQuickAccess");
-    expect(professorLayout).toContain("PanelQuickAccess");
+    expect(dashboardShell).toContain("teacherNavItems");
+    expect(dashboardShell).toContain('href: "/professor"');
+    expect(adminLayout).toContain("DashboardShell");
+    expect(professorLayout).toContain("DashboardShell");
     expect(adminMobileNav).toContain('href: "/professor"');
     expect(adminMobileNav).toContain('label: "Docência"');
   });

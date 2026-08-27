@@ -8,8 +8,8 @@ const profileRoute = readFileSync(resolve(root, "app/api/user/profile/route.ts")
 
 describe("avatar da barra lateral", () => {
   it("reutiliza a foto conhecida antes de revalidar o perfil", () => {
-    expect(shell).toContain('AVATAR_CACHE_KEY = "dashboard_sidebar_avatar_v1"');
-    expect(shell).toContain("readCachedAvatarUrl()");
+    expect(shell).toContain('AVATAR_CACHE_KEY_PREFIX = "dashboard_sidebar_avatar_v2"');
+    expect(shell).toContain("readCachedAvatarUrl(sessionEmail)");
     expect(shell).toContain('cache: "default"');
   });
 

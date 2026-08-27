@@ -15,6 +15,6 @@ describe("governança das subpáginas administrativas", () => {
 
   it("mantém CMS e operações de cupom restritos ao superadmin", () => {
     expect(cmsApi).toContain("requireSuperAdmin");
-    expect(couponsApi).toContain("email !== SUPER_ADMIN_EMAIL");
+    expect(couponsApi).toContain("requireSuperAdminUser");
   });
 });

@@ -8,7 +8,7 @@ describe("secure area layout audit", () => {
   it("keeps server-side admin and dashboard boundaries", () => {
     expect(read("app/admin/layout.tsx")).toContain("getServerSession");
     expect(read("app/admin/layout.tsx")).toContain("isAuthorized");
-    expect(read("app/admin/layout.tsx")).toContain('role === "super_admin"');
+    expect(read("app/admin/layout.tsx")).toContain("canAccessAdminPortal");
     expect(read("app/admin/layout.tsx")).toContain('/login?callbackUrl=/admin');
     expect(read("app/dashboard/layout.tsx")).toContain("getServerSession");
     expect(read("app/dashboard/layout.tsx")).toContain("/login?callbackUrl=/dashboard");
