@@ -1,7 +1,8 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getUserByEmail } from "@/lib/db";
-import { User, Mail, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+import { User, Mail, ShieldCheck, Award } from "lucide-react";
 import { ProfileForm } from "@/components/profile-form";
 import { ProfileBillingSection } from "@/components/profile-billing-section";
 import { ProfileNotesSection } from "@/components/profile-notes-section";
@@ -25,6 +26,11 @@ export default async function PerfilPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Meu Perfil</h1>
         <p className="text-gray-600 dark:text-slate-400">Gerencie suas informações pessoais e visualize suas conquistas</p>
       </div>
+
+      <Link href="#medals-title" className="surface-card flex min-h-12 items-center justify-between gap-3 border border-red-200 bg-red-50/70 px-4 py-3 text-sm font-black text-red-800 transition hover:border-red-300 hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-100 md:hidden">
+        <span className="inline-flex min-w-0 items-center gap-2"><Award size={18} className="shrink-0" /> <span>Ver minhas medalhas e emblemas</span></span>
+        <span aria-hidden="true">→</span>
+      </Link>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Avatar e Info Principal */}

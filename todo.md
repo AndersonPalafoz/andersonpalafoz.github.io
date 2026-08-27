@@ -2648,3 +2648,33 @@
 ## Correção de largura móvel do painel administrativo — 27/08/2026
 - [x] Remover o acúmulo de espaçamentos horizontais que torna `/admin` mais estreito que os demais painéis em smartphones.
 - [x] Validar a página administrativa em 360px, 390px e 430px, preservando rolagem, foco, navegação e hierarquia visual.
+
+## Auditoria de responsividade móvel das demais páginas — 27/08/2026
+- [x] Mapear as rotas públicas, do aluno, do professor e da administração com maior risco de largura estreita, overflow ou rolagem inconsistente em smartphones.
+- [x] Inspecionar os contêineres, grids e controles das rotas prioritárias em 360px, 390px e 430px e corrigir somente os problemas confirmados.
+- [x] Validar as correções, testes, TypeScript, build e integridade do diff antes de registrar o checkpoint.
+
+## Tabelas responsivas de certificados e relatórios — 27/08/2026
+- [x] Mapear as tabelas e ações de certificados e relatórios exibidas nas áreas administrativa, docente e do aluno.
+- [x] Adaptar listagens densas para cartões móveis ou rolagem horizontal acessível, sem ocultar identificadores, status ou ações essenciais.
+- [x] Validar as experiências em 360px, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Boletins externos responsivos no mobile — 27/08/2026
+- [x] Mapear a listagem de boletins externos e os indicadores acadêmicos que devem permanecer visíveis em 360px.
+- [x] Exibir cartões móveis completos e preservar a tabela para telas médias e grandes, sem alterar notas ou frequência.
+- [x] Validar em 360px, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Acesso móvel ao sistema de medalhas — 27/08/2026
+- [x] Mapear as rotas de medalhas e a navegação móvel disponível para aluno, professor, administrador e superadministrador.
+- [x] Restaurar um atalho móvel visível para medalhas, sem ampliar permissões no cliente ou servidor.
+- [x] Validar o acesso por papel, acessibilidade, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Ações em lote de certificados no mobile — 27/08/2026
+- [x] Revisar seleção, exportação e exclusão em lote na listagem de certificados sem alterar registros existentes.
+- [x] Otimizar os controles móveis, confirmações e estados de processamento para telas de 360px.
+- [x] Validar o fluxo, acessibilidade, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Descobribilidade de funções docentes e administrativas no mobile — 27/08/2026
+- [x] Mapear os atalhos de navegação móvel de professor, administrador e superadministrador e identificar operações autorizadas pouco visíveis.
+- [x] Reorganizar a barra móvel e os acessos ao menu completo sem expor funções fora do escopo de permissão.
+- [x] Validar navegação, acessibilidade, testes, TypeScript, build e integridade do diff antes do checkpoint.

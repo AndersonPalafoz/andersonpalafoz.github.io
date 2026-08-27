@@ -93,35 +93,35 @@ export default function StudentReportPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white p-6 md:p-10 font-sans">
+    <div className="min-h-screen bg-gray-50 py-2 text-gray-900 dark:bg-slate-950 dark:text-white sm:p-4 md:p-10 font-sans">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Cabeçalho de Navegação */}
-        <header className="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 pb-6 print:hidden">
+        <header className="flex flex-col items-stretch gap-3 border-b border-gray-200 pb-5 print:hidden dark:border-slate-800 sm:flex-row sm:items-center sm:justify-between sm:pb-6">
           <Link
             href="/professor/turmas-externas"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-100 transition shadow-xs"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3.5 py-2 text-xs font-bold text-gray-700 shadow-xs transition hover:bg-gray-100 dark:border-slate-800 dark:bg-slate-900 dark:text-gray-300 sm:w-auto"
           >
             <ArrowLeft size={16} /> Voltar para Gestão de Turmas
           </Link>
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-2"
+            className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-red-700 sm:w-auto"
           >
             <FileText size={16} /> Imprimir / Salvar PDF
           </button>
         </header>
 
         {/* Cartão de Identificação do Aluno */}
-        <section className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 sm:p-8 rounded-3xl shadow-sm space-y-4">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
+        <section className="space-y-4 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0 space-y-1">
               <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
                 Boletim Acadêmico Consolidado
               </span>
-              <h1 className="text-2xl font-black text-gray-950 dark:text-white mt-1">{report.studentInfo.name}</h1>
+              <h1 className="mt-1 break-words text-2xl font-black text-gray-950 dark:text-white">{report.studentInfo.name}</h1>
             </div>
-            <div className="w-12 h-12 rounded-2xl bg-red-600/10 text-red-600 flex items-center justify-center font-bold text-lg">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-600/10 text-lg font-bold text-red-600">
               <User size={24} />
             </div>
           </div>
@@ -150,7 +150,7 @@ export default function StudentReportPage() {
           ) : (
             <div className="space-y-4">
               {report.enrollments.map((enrol, idx) => (
-                <div key={idx} className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm space-y-4">
+                <article key={idx} className="space-y-4 rounded-3xl border border-gray-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -180,10 +180,10 @@ export default function StudentReportPage() {
                   <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
                       <div className="mb-3 flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Notas lançadas</strong><span className="text-[10px] text-gray-500">{enrol.grades.length} registro(s)</span></div>
-                      {enrol.grades.length === 0 ? <p className="text-xs text-gray-500">Nenhuma nota lançada nesta turma.</p> : <div className="space-y-2">{enrol.grades.map((grade) => <div key={grade.id} className="flex items-start justify-between gap-3 border-b border-gray-200/70 pb-2 text-xs last:border-0 last:pb-0 dark:border-slate-700"><div><p className="font-bold text-gray-900 dark:text-white">{grade.assessmentTitle}</p>{grade.feedback && <p className="mt-0.5 text-gray-500">{grade.feedback}</p>}</div><span className="whitespace-nowrap font-black text-red-600">{grade.score} / {grade.maxScore}</span></div>)}</div>}
+                      {enrol.grades.length === 0 ? <p className="text-xs text-gray-500">Nenhuma nota lançada nesta turma.</p> : <div className="space-y-2">{enrol.grades.map((grade) => <div key={grade.id} className="flex items-start justify-between gap-3 border-b border-gray-200/70 pb-2 text-xs last:border-0 last:pb-0 dark:border-slate-700"><div className="min-w-0 flex-1"><p className="break-words font-bold text-gray-900 dark:text-white">{grade.assessmentTitle}</p>{grade.feedback && <p className="mt-0.5 break-words text-gray-500">{grade.feedback}</p>}</div><span className="shrink-0 whitespace-nowrap font-black text-red-600">{grade.score} / {grade.maxScore}</span></div>)}</div>}
                     </div>
                     <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 dark:border-slate-800 dark:bg-slate-800/50 space-y-3">
-                      <div className="flex items-center justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Frequência registrada</strong><span className="text-[10px] font-semibold text-gray-500">Limite máx. faltas: {enrol.maxAbsencePercent}%</span></div>
+                      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between"><strong className="text-xs font-black uppercase tracking-wider text-gray-900 dark:text-white">Frequência registrada</strong><span className="text-[10px] font-semibold text-gray-500">Limite máx. faltas: {enrol.maxAbsencePercent}%</span></div>
                       {enrol.attendance.length === 0 ? <p className="text-xs text-gray-500">Nenhuma presença registrada nesta turma.</p> : (
                         <>
                           <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
@@ -206,7 +206,7 @@ export default function StudentReportPage() {
                     </div>
                   </div>
                   {enrol.notes && <div className="rounded-2xl border border-gray-100 bg-gray-50 p-3.5 text-xs text-gray-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-gray-300"><strong className="mb-0.5 block text-gray-900 dark:text-white">Observações Acadêmicas:</strong>{enrol.notes}</div>}
-                </div>
+                </article>
               ))}
             </div>
           )}

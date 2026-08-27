@@ -52,6 +52,7 @@ const studentNavItems: NavigationItem[] = [
   { href: "/dashboard/calendario", label: "Calendário", icon: Calendar },
   { href: "/dashboard/desejos", label: "Lista de Desejos", icon: Heart },
   { href: "/dashboard/notificacoes", label: "Notificações", icon: Bell },
+  { href: "/dashboard/perfil#medals-title", label: "Medalhas", icon: Award },
   { href: "/dashboard/certificados", label: "Certificados", icon: Award },
   { href: "/dashboard/historico", label: "Histórico", icon: FileText },
   { href: "/dashboard/perfil", label: "Perfil", icon: User },
@@ -76,6 +77,7 @@ const adminNavItems: NavigationItem[] = [
   { href: "/admin/mensagens", label: "Mensagens", icon: MessageSquare },
   { href: "/admin/certificados", label: "Certificados", mobileLabel: "Certifs.", icon: FileSignature },
   { href: "/admin/relatorios-academicos", label: "Relatórios", mobileLabel: "Relatórios", icon: BarChart3 },
+  { href: "/admin/medalhas", label: "Medalhas", mobileLabel: "Medalhas", icon: Award },
 ];
 
 const superadminNavItems: NavigationItem[] = [
@@ -276,12 +278,14 @@ export default function DashboardLayout({
   const activeTitle = allNavItems.find(item => isActive(item.href, item.exact))?.label || "Minha Área";
   const roleBadgeColor = visibleRole === "superadmin" ? "bg-violet-600 text-white" : visibleRole === "admin" ? "bg-red-600 text-white" : visibleRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
   const mobileNavItems = visibleRole === "superadmin"
-    ? [adminNavItems[0], superadminNavItems[0], superadminNavItems[1], superadminNavItems[2], adminNavItems[1]]
+    ? [adminNavItems[0], superadminNavItems[0], superadminNavItems[1], superadminNavItems[2]]
     : visibleRole === "admin"
-      ? [adminNavItems[0], adminNavItems[1], adminNavItems[2], adminNavItems[7], adminNavItems[8]]
+      ? [adminNavItems[0], adminNavItems[1], adminNavItems[7], adminNavItems[8]]
     : visibleRole === "professor"
-      ? [teacherNavItems[0], teacherNavItems[1], teacherNavItems[2], teacherNavItems[3], teacherNavItems[5]]
-      : [studentNavItems[0], studentNavItems[1], studentNavItems[3], studentNavItems[7], studentNavItems[10]];
+      ? [teacherNavItems[0], teacherNavItems[1], teacherNavItems[2], teacherNavItems[4]]
+      : [studentNavItems[0], studentNavItems[1], studentNavItems[3], studentNavItems[8]];
+  const mobileOverflowItems = allNavItems.filter(item => !mobileNavItems.some(primaryItem => primaryItem.href === item.href));
+  const hasMobileOverflowActive = mobileOverflowItems.some(item => isActive(item.href, item.exact));
   const displayedAvatarUrl = !avatarLoadFailed ? (avatarUrl || session?.user?.image || null) : null;
 
   return (
@@ -402,7 +406,7 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      <nav className="dashboard-bottom-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_16px_45px_rgba(15,23,42,0.16)] backdrop-blur-xl md:hidden" aria-label="Navegação principal mobile">
+      <nav className="dashboard-bottom-nav fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_16px_45px_rgba(15,23,42,0.16)] backdrop-blur-xl md:hidden" aria-label="Atalhos e menu principal mobile">
         {mobileNavItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.href, item.exact);
@@ -419,6 +423,17 @@ export default function DashboardLayout({
             </Link>
           );
         })}
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          aria-label="Abrir todas as funções disponíveis"
+          aria-expanded={sidebarOpen}
+          aria-controls="dashboard-mobile-navigation"
+          className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-black transition ${hasMobileOverflowActive || sidebarOpen ? "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+        >
+          <Menu size={17} />
+          <span className="max-w-full truncate">Mais</span>
+        </button>
       </nav>
 
       {sidebarOpen && <button type="button" tabIndex={-1} aria-label="Fechar menu de navegação" className="fixed inset-0 z-30 cursor-default bg-slate-950/40 backdrop-blur-[2px] md:hidden" onClick={() => setSidebarOpen(false)} />}
