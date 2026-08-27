@@ -8,7 +8,7 @@ import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academic
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { calculateSimalComposite } from "@/lib/simal-grading";
-import { calculateCourseGrade, parseGradeNumber } from "@/lib/course-grading";
+import { calculateCourseGrade, normalizeGradeInput, parseGradeNumber } from "@/lib/course-grading";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
 import { useRolePreview } from "@/components/role-preview";
 
@@ -1041,13 +1041,15 @@ export default function TurmasExternasPage() {
     const componentPreset = SIMAL_COMPONENTS.find((item) => item.value === component);
     const scoreVal = gradeScore[classId];
     const rubric = gradeRubricScores[classId];
-    const rubricValues = rubric ? [rubric.content, rubric.language, rubric.comprehensibility].map(Number) : [];
-    const computedRubricScore = rubricValues.length === 3 && rubricValues.every((value) => Number.isFinite(value)) ? rubricValues.reduce((sum, value) => sum + value, 0).toFixed(2) : "";
+    const rubricValues = rubric ? [rubric.content, rubric.language, rubric.comprehensibility].map(parseGradeNumber) : [];
+    const hasValidRubric = rubricValues.length === 3 && rubricValues.every((value): value is number => value !== null && Number.isFinite(value));
+    const computedRubricScore = hasValidRubric ? rubricValues.reduce((sum, value) => sum + value, 0).toFixed(2) : "";
     const effectiveScore = preset?.type === "oral" && computedRubricScore ? computedRubricScore : scoreVal;
-    const maxVal = componentPreset?.maxScore || preset?.maxScore || "10.0";
+        const maxVal = componentPreset?.maxScore || preset?.maxScore || "10.0";
+    const normalizedScore = normalizeGradeInput(effectiveScore);
+    const normalizedMaxVal = normalizeGradeInput(maxVal);
     const fb = gradeFeedback[classId] || "";
-
-    if (!sId || !title || effectiveScore === undefined || effectiveScore === null || String(effectiveScore).trim() === "") {
+    if (!sId || !title || normalizedScore === null || normalizedMaxVal === null) {
       notifyError("Selecione o aluno e informe a avaliação e a nota.");
       return;
     }
@@ -1066,8 +1068,8 @@ export default function TurmasExternasPage() {
           assessmentType: preset?.type || "custom",
           assessmentVersion: preset?.version || null,
           assessmentComponent: component,
-          score: effectiveScore,
-          maxScore: maxVal,
+          score: normalizedScore,
+          maxScore: normalizedMaxVal,
           rubricScores: rubric ? JSON.stringify(rubric) : null,
           assessmentDate: gradeAssessmentDate[classId] || new Date().toISOString().slice(0, 10),
           feedback: fb,
@@ -2260,6 +2262,19 @@ export default function TurmasExternasPage() {
                     <option value="inactive">Inativo</option>
                   </select>
                 </div>
+                <div>
+                  <label htmlFor="student-teacher-notes" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Anotações do professor</label>
+                  <textarea
+                    id="student-teacher-notes"
+                    value={studentNotes}
+                    onChange={(e) => setStudentNotes(e.target.value)}
+                    placeholder="Registre acompanhamento, pendências ou observações pedagógicas…"
+                    rows={4}
+                    maxLength={2000}
+                    className="w-full resize-y rounded-xl border border-amber-200 bg-amber-50/50 p-3 text-xs font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-white"
+                  />
+                  <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">Visível apenas no gerenciamento da turma pelo professor.</p>
+                </div>
                 <button
                   type="submit"
                   disabled={submitting || !selectedClassId}
@@ -2357,6 +2372,7 @@ export default function TurmasExternasPage() {
                 const currentStatuses = attendanceStatuses[cls.id] || {};
                 const gradesClosed = cls.gradeStatus === "closed";
                 const assignmentState = assignmentFeedback[cls.id];
+                const academicRows = getAcademicReportRows(cls);
 
                 return (
                   <div key={cls.id} className="group rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.06)] dark:shadow-none space-y-6 transition duration-200 hover:border-red-200 dark:hover:border-red-900/60 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]">
@@ -2738,7 +2754,7 @@ export default function TurmasExternasPage() {
                                       {st.component && <span className="text-[10px] px-2 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-semibold">Comp: {st.component}</span>}
                                     </div>
                                   )}
-                                  {st.notes && <p className="text-xs text-gray-400 italic mt-1">Obs: {st.notes}</p>}
+                                  {st.notes && <p className="mt-1 rounded-lg border border-amber-100 bg-amber-50/70 px-2 py-1 text-xs italic text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200"><strong>Anotação do professor:</strong> {st.notes}</p>}
                                 </div>
                                 <div className="flex items-center gap-2 flex-wrap">
                                   {canManage && st.email && (
@@ -2970,6 +2986,31 @@ export default function TurmasExternasPage() {
                     {/* CONTEÚDO DA ABA: NOTAS */}
                     {activeTab === "grades" && (
                       <div className="space-y-4">
+                        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-4 dark:border-blue-950/50 dark:bg-blue-950/15">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <h4 className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200">Resumo calculado por aluno</h4>
+                              <p className="mt-1 text-[11px] text-blue-800/80 dark:text-blue-200/80">As notas decimais são convertidas para uma escala de 0 a 10 antes da média. No SIMAL, a nota final combina prova escrita e apresentação.</p>
+                            </div>
+                            <span className="rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-blue-800 dark:bg-slate-900/70 dark:text-blue-200">{academicRows.filter((row) => row.averageGrade !== null).length}/{academicRows.length} com média</span>
+                          </div>
+                          <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                            {academicRows.map(({ student, averageGrade, simalGrade }) => {
+                              const hasGrade = averageGrade !== null;
+                              const passed = hasGrade && averageGrade >= (parseGradeNumber(cls.passingAverage) ?? 5);
+                              return (
+                                <div key={student.id} className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2.5 dark:border-blue-900/50 dark:bg-slate-900/60">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="min-w-0 truncate text-xs font-bold text-gray-900 dark:text-white">{student.name}</span>
+                                    <span className={`shrink-0 text-sm font-black ${passed ? "text-emerald-700 dark:text-emerald-300" : hasGrade ? "text-amber-700 dark:text-amber-300" : "text-gray-400"}`}>{hasGrade ? `${averageGrade.toFixed(1)} / 10` : "—"}</span>
+                                  </div>
+                                  <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">{simalGrade.isSimal ? `SIMAL: prova ${simalGrade.proofScore?.toFixed(1) ?? "—"}/8 + apresentação ${simalGrade.presentationScore?.toFixed(1) ?? "—"}/2` : hasGrade ? (passed ? "Média mínima atingida" : `Mínimo: ${(parseGradeNumber(cls.passingAverage) ?? 5).toFixed(1)}`) : "Aguardando avaliações"}</p>
+                                </div>
+                              );
+                            })}
+                            {academicRows.length === 0 && <p className="text-xs text-blue-800 dark:text-blue-200">Cadastre alunos para visualizar as médias calculadas.</p>}
+                          </div>
+                        </div>
                         <div className="bg-gray-50 dark:bg-slate-800/40 p-4 rounded-2xl space-y-3">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
@@ -3015,7 +3056,7 @@ export default function TurmasExternasPage() {
                             </div>
                             <div>
                               <label className="block text-[10px] font-bold text-gray-500 mb-1">Nota obtida</label>
-                              <input type="text" placeholder="Ex.: 1.7" value={gradeScore[cls.id] || ""} onChange={(e) => setGradeScore({ ...gradeScore, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
+                              <input type="text" inputMode="decimal" placeholder="Ex.: 1,75" aria-label="Nota obtida" value={gradeScore[cls.id] || ""} onChange={(e) => setGradeScore({ ...gradeScore, [cls.id]: e.target.value })} className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-semibold text-gray-900 dark:text-white" />
                             </div>
                           </div>
                           {gradeAssessmentPreset[cls.id] === "simal-speaking" && (
@@ -3040,7 +3081,7 @@ export default function TurmasExternasPage() {
                             <div className="flex flex-wrap gap-2">
                               <select value={simalBatchPreset[cls.id] || ""} onChange={(e) => { const value = e.target.value; const preset = SIMAL_ASSESSMENTS.find((item) => item.value === value); setSimalBatchPreset({ ...simalBatchPreset, [cls.id]: value }); setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: preset?.type === "presentation" ? "presentation" : "total" }); }} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white"><option value="">Escolher avaliação</option>{SIMAL_ASSESSMENTS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select>
                               <select value={simalBatchComponent[cls.id] || "total"} onChange={(e) => setSimalBatchComponent({ ...simalBatchComponent, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white">{SIMAL_COMPONENTS.map((item) => <option key={item.value} value={item.value}>{item.label} / {item.maxScore}</option>)}</select>
-                              <input type="date" value={simalBatchDate[cls.id] || "2026-08-18"} onChange={(e) => setSimalBatchDate({ ...simalBatchDate, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white" />
+                              <input type="date" value={simalBatchDate[cls.id] || new Date().toISOString().slice(0, 10)} onChange={(e) => setSimalBatchDate({ ...simalBatchDate, [cls.id]: e.target.value })} className="rounded-lg border border-red-200 bg-white p-2 text-[11px] text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white" />
                               {cls.hasUnits && <select id={`simal_unit_${cls.id}`} defaultValue="1" className="rounded-lg border border-red-200 bg-white p-2 text-[11px] font-semibold text-gray-900 dark:border-red-900 dark:bg-slate-900 dark:text-white"><option value="">Sem unidade</option>{Array.from({ length: Math.max(1, cls.unitCount || 1) }, (_, index) => <option key={index + 1} value={index + 1}>Unidade {index + 1}</option>)}</select>}
                             </div>
                           </div>

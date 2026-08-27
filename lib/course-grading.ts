@@ -32,8 +32,19 @@ export type CourseGradeSummary = {
 const DEFAULT_PASSING_AVERAGE = 5;
 
 export function parseGradeNumber(value: unknown): number | null {
-  const parsed = Number(String(value ?? "").trim().replace(",", "."));
+  const raw = String(value ?? "").trim();
+  if (!raw) return null;
+  const parsed = Number(raw.replace(",", "."));
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Normaliza notas digitadas com vírgula ou ponto para persistência consistente. */
+export function normalizeGradeInput(value: unknown): string | null {
+  let raw = String(value ?? "").trim().replace(",", ".");
+  if (raw.startsWith(".")) raw = `0${raw}`;
+  if (!raw || !/^\d+(?:\.\d+)?$/.test(raw)) return null;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? String(parsed) : null;
 }
 
 function asNumber(value: unknown): number | null {
