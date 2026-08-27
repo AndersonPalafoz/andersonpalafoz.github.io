@@ -1786,7 +1786,7 @@ export default function TurmasExternasPage() {
           </div>
 
           <div className="external-class-filters mt-4 grid w-full grid-cols-1 items-stretch gap-3 pb-1 sm:grid-cols-2 sm:items-center lg:mt-0 lg:grid-cols-2 lg:pb-0 xl:grid-cols-3 2xl:grid-cols-4">
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
               <select
                 value={selectedYearFilter}
@@ -1800,7 +1800,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Semestre:</span>
               <select
                 value={selectedSemesterFilter}
@@ -1813,7 +1813,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Modalidade:</span>
               <select
                 value={selectedModalityFilter}
@@ -1827,7 +1827,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Nível:</span>
               <select
                 value={selectedLevelFilter}
@@ -1841,7 +1841,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ordenar:</span>
               <select
                 value={classSortOrder}
@@ -1855,7 +1855,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Status Aluno:</span>
               <select
                 value={studentStatusFilter}
@@ -1869,7 +1869,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Frequência:</span>
               <select
                 value={studentAttendanceFilter}
@@ -1883,7 +1883,7 @@ export default function TurmasExternasPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Relatório:</span>
               <select
                 value={reportFilter}
@@ -2506,8 +2506,8 @@ export default function TurmasExternasPage() {
                 const academicRows = getAcademicReportRows(cls);
 
                 return (
-                  <div key={cls.id} className="group min-w-0 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 p-5 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-200 hover:border-red-200 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-red-900/60 sm:p-6 xl:p-7">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-5">
+                  <div key={cls.id} className="group min-w-0 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-200 hover:border-red-200 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-red-900/60 sm:p-6 xl:p-7">
+                    <div className="flex min-w-0 flex-col gap-4 border-b border-gray-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span
@@ -2581,7 +2581,7 @@ export default function TurmasExternasPage() {
                           </details>
                         )}
                       </div>
-                      {canManage && (<div className="relative flex items-center gap-2">
+                      {canManage && (<div className="relative flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
                         <div className="hidden sm:flex items-center gap-2 flex-wrap">
                           <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
                             <FileSpreadsheet size={14} className="text-green-600" /> Importar planilha
@@ -2736,7 +2736,7 @@ export default function TurmasExternasPage() {
                     </div>
                     {/* Resumo estatístico da turma */}
                     {cls.stats && (
-                      <div className="grid grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
+                      <div className="grid grid-cols-2 gap-2 bg-gray-50 p-2.5 text-center dark:bg-slate-800/50 sm:grid-cols-4 sm:gap-3 sm:p-3">
                         <div>
                           <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Alunos</p>
                           <p className="text-sm font-black text-gray-900 dark:text-white mt-0.5">{cls.stats.total}</p>
@@ -2769,7 +2769,7 @@ export default function TurmasExternasPage() {
                       >
                         <Users size={14} /> Alunos ({cls.students.length})
                       </button>
-                      {canManage && <button type="button" onClick={() => provisionExternalAccess(cls.id)} disabled={provisioningAccess === cls.id || cls.students.length === 0} className="external-access-resend inline-flex items-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200">{provisioningAccess === cls.id ? "Enviando..." : "Reenviar senha temporária"}</button>}
+                      {canManage && <button type="button" onClick={() => provisionExternalAccess(cls.id)} disabled={provisioningAccess === cls.id || cls.students.length === 0} className="external-access-resend col-span-2 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-wait disabled:opacity-50 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-200 sm:col-span-1 sm:w-auto">{provisioningAccess === cls.id ? "Enviando..." : "Reenviar senha temporária"}</button>}
                       <button
                         type="button"
                         onClick={() => setClassWorkspaceTab(cls.id, "attendance")}
@@ -2852,8 +2852,8 @@ export default function TurmasExternasPage() {
                               const isLowGrade = avgGrade !== null && avgGrade < 6.0;
 
                               return (
-                                <div key={st.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <div>
+                                <div key={st.id} className="flex min-w-0 flex-col justify-between gap-3 py-4 sm:flex-row sm:items-center">
+                                <div className="min-w-0">
                                   <div className="flex items-center gap-2 flex-wrap">
                                     <span className="font-bold text-sm text-gray-900 dark:text-white">{st.name}</span>
                                     <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
@@ -2887,7 +2887,7 @@ export default function TurmasExternasPage() {
                                   )}
                                   {st.notes && <p className="mt-1 rounded-lg border border-amber-100 bg-amber-50/70 px-2 py-1 text-xs italic text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-200"><strong>Anotação do professor:</strong> {st.notes}</p>}
                                 </div>
-                                <div className="flex items-center gap-2 flex-wrap">
+                                <div className="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
                                   {canManage && st.email && (
                                     <button
                                       type="button"
@@ -2986,7 +2986,7 @@ export default function TurmasExternasPage() {
                             <h4 className="text-xs font-black uppercase tracking-wider text-gray-700 dark:text-gray-300">{cls.attendance?.some((item) => item.date === classDate) ? "Editar chamada / frequência" : "Nova chamada / frequência"}</h4>
                             <p className="text-[11px] text-gray-500">{cls.attendance?.some((item) => item.date === classDate) ? "Os registros desta data foram carregados. Corrija qualquer aluno e salve novamente." : "Selecione a data da aula e marque a presença de cada aluno."}</p>
                           </div>
-                          <div className="external-attendance-toolbar flex items-center gap-2">
+                          <div className="external-attendance-toolbar flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                             <input
                               type="date"
                               value={classDate}
@@ -2994,13 +2994,13 @@ export default function TurmasExternasPage() {
                                 const nextDate = e.target.value;
                                 selectAttendanceDate(cls.id, nextDate, cls.attendance || []);
                               }}
-                              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white"
+                              className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-white sm:w-auto"
                             />
                             <button
                               type="button"
                               onClick={() => void handleSaveAttendance(cls.id, cls.students)}
                               disabled={submitting || cls.students.length === 0}
-                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50"
+                              className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-sm disabled:opacity-50 sm:w-auto"
                             >
                               {cls.attendance?.some((item) => item.date === classDate) ? "Atualizar chamada" : "Salvar chamada"}
                             </button>
