@@ -506,7 +506,7 @@ export async function createCourse(data: CourseWriteData) {
       hasUnits: data.hasUnits ?? false,
       unitCount: data.hasUnits ? (data.unitCount ?? 1) : 1,
       gradingScope: data.hasUnits && data.gradingScope === "unit" ? "unit" : "course",
-      passingAverage: String(data.passingAverage ?? 5),
+      passingAverage: String(data.passingAverage ?? 6),
       unitPassingAverages: data.hasUnits && data.gradingScope === "unit" ? data.unitPassingAverages ?? null : null,
       courseType: normalizeCourseType(data.courseType),
       externalRedirectUrl: data.externalRedirectUrl?.trim() || null,

@@ -29,7 +29,7 @@ export type CourseGradeSummary = {
   units: UnitGradeSummary[];
 };
 
-const DEFAULT_PASSING_AVERAGE = 5;
+export const DEFAULT_PASSING_AVERAGE = 6;
 
 export function parseGradeNumber(value: unknown): number | null {
   const raw = String(value ?? "").trim();
