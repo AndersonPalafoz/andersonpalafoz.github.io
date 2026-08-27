@@ -6,7 +6,7 @@ import { getUserEnrollments, getCertificates, getUserActivityProgress, getResume
 import { db } from "@/lib/db";
 import { externalClassGrades, externalClasses, externalStudents, users } from "@/drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
-import { calculateCourseGrade } from "@/lib/course-grading";
+import { calculateCourseGrade, parseGradeNumber } from "@/lib/course-grading";
 import { BookOpen, Award, CheckSquare, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WeeklyGoalsWidget } from "./metas-semanais";
@@ -55,7 +55,7 @@ export default async function DashboardPage() {
           externalAcademic = classes.map((externalClass) => {
             const records = externalRecords.filter((student) => student.externalClassId === externalClass.id);
             const grades = gradeRows.filter((grade) => records.some((student) => student.id === grade.studentId));
-            const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, grades.map((grade) => ({ score: Number(grade.maxScore) > 0 ? (Number(grade.score) / Number(grade.maxScore)) * 10 : null, unit: grade.unitNumber })));
+            const result = calculateCourseGrade({ hasUnits: externalClass.hasUnits, unitCount: externalClass.unitCount, gradingScope: externalClass.gradingScope, passingAverage: externalClass.passingAverage, unitPassingAverages: externalClass.unitPassingAverages }, grades.map((grade) => { const score = parseGradeNumber(grade.score); const max = parseGradeNumber(grade.maxScore); return { score: max !== null && max > 0 && score !== null ? (score / max) * 10 : null, unit: grade.unitNumber }; }));
             return { className: externalClass.className, courseName: externalClass.courseName, hasUnits: Boolean(externalClass.hasUnits), unitCount: result.units.length || 1, gradingScope: result.scope, passingAverage: result.passingAverage, units: result.units.map((unit) => ({ number: unit.unit, average: unit.average, minimum: unit.passingAverage, ratio: unit.average === null ? 0 : Math.min(100, (unit.average / 10) * 100) })) };
           });
         }

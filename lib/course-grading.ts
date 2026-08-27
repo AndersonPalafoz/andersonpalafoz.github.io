@@ -31,9 +31,13 @@ export type CourseGradeSummary = {
 
 const DEFAULT_PASSING_AVERAGE = 5;
 
-function asNumber(value: unknown): number | null {
-  const parsed = Number(String(value ?? "").replace(",", "."));
+export function parseGradeNumber(value: unknown): number | null {
+  const parsed = Number(String(value ?? "").trim().replace(",", "."));
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function asNumber(value: unknown): number | null {
+  return parseGradeNumber(value);
 }
 
 export function normalizePassingAverage(value: unknown, fallback = DEFAULT_PASSING_AVERAGE): number {
