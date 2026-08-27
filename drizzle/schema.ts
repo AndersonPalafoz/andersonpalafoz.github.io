@@ -1043,6 +1043,143 @@ export const externalClassMaterials = pgTable("external_class_materials", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
+/**
+ * Oferta/coorte operacional de um curso interno.
+ * Mantém o curso como conteúdo e concentra agenda, regras acadêmicas e ciclo de vida.
+ */
+export const courseOffers = pgTable(
+  "course_offers",
+  {
+    id: serial("id").primaryKey(),
+    courseId: integer("courseId")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    sourceExternalClassId: integer("sourceExternalClassId").references(() => externalClasses.id, { onDelete: "set null" }),
+    institution: varchar("institution", { length: 120 }),
+    offerName: varchar("offerName", { length: 180 }).notNull(),
+    academicTerm: varchar("academicTerm", { length: 50 }).notNull(),
+    ownerTeacherId: integer("ownerTeacherId")
+      .notNull()
+      .references(() => users.id),
+    description: text("description"),
+    classDays: varchar("class_days", { length: 255 }),
+    classTime: varchar("class_time", { length: 100 }),
+    workloadHours: integer("workload_hours").default(40),
+    startDate: timestamp("start_date"),
+    endDate: timestamp("end_date"),
+    durationType: varchar("duration_type", { length: 32 }).default("semester"),
+    durationValue: integer("duration_value"),
+    durationUnit: varchar("duration_unit", { length: 24 }),
+    modality: varchar("modality", { length: 32 }).default("Remota"),
+    meetingLink: varchar("meeting_link", { length: 500 }),
+    classroomLocation: varchar("classroom_location", { length: 255 }),
+    maxAbsencePercent: integer("max_absence_percent").default(25),
+    hasUnits: boolean("has_units").notNull().default(false),
+    unitCount: integer("unit_count").default(1),
+    gradingScope: varchar("grading_scope", { length: 16 }).notNull().default("course"),
+    gradingPolicy: varchar("grading_policy", { length: 32 }).notNull().default("standard"),
+    passingAverage: varchar("passing_average", { length: 8 }).notNull().default("6"),
+    unitPassingAverages: text("unit_passing_averages"),
+    gradeStatus: varchar("grade_status", { length: 16 }).notNull().default("open"),
+    status: varchar("status", { length: 24 }).notNull().default("draft"),
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    courseOfferIdentity: uniqueIndex("course_offers_course_term_name_unique").on(
+      table.courseId,
+      table.academicTerm,
+      table.offerName
+    ),
+  })
+);
+
+export type CourseOffer = typeof courseOffers.$inferSelect;
+export type InsertCourseOffer = typeof courseOffers.$inferInsert;
+
+export const courseOfferTeacherAssignments = pgTable(
+  "course_offer_teacher_assignments",
+  {
+    id: serial("id").primaryKey(),
+    offerId: integer("offerId")
+      .notNull()
+      .references(() => courseOffers.id, { onDelete: "cascade" }),
+    teacherId: integer("teacherId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    assignedBy: integer("assignedBy").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => ({
+    courseOfferTeacherUnique: uniqueIndex("course_offer_teacher_assignments_unique").on(
+      table.offerId,
+      table.teacherId
+    ),
+  })
+);
+
+export type CourseOfferTeacherAssignment = typeof courseOfferTeacherAssignments.$inferSelect;
+export type InsertCourseOfferTeacherAssignment = typeof courseOfferTeacherAssignments.$inferInsert;
+
+export const courseOfferStudents = pgTable(
+  "course_offer_students",
+  {
+    id: serial("id").primaryKey(),
+    offerId: integer("offerId")
+      .notNull()
+      .references(() => courseOffers.id, { onDelete: "cascade" }),
+    userId: integer("userId").references(() => users.id, { onDelete: "set null" }),
+    externalStudentId: integer("externalStudentId").references(() => externalStudents.id, { onDelete: "set null" }),
+    name: varchar("name", { length: 180 }).notNull(),
+    socialName: varchar("socialName", { length: 160 }),
+    email: varchar("email", { length: 320 }),
+    studentIdNumber: varchar("studentIdNumber", { length: 64 }),
+    status: varchar("status", { length: 32 }).notNull().default("active"),
+    notes: text("notes"),
+    enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    courseOfferStudentUserUnique: uniqueIndex("course_offer_students_offer_user_unique").on(
+      table.offerId,
+      table.userId
+    ),
+    courseOfferStudentExternalUnique: uniqueIndex("course_offer_students_offer_external_unique").on(
+      table.offerId,
+      table.externalStudentId
+    ),
+  })
+);
+
+export type CourseOfferStudent = typeof courseOfferStudents.$inferSelect;
+export type InsertCourseOfferStudent = typeof courseOfferStudents.$inferInsert;
+
+export const courseOfferAttendance = pgTable(
+  "course_offer_attendance",
+  {
+    id: serial("id").primaryKey(),
+    offerId: integer("offerId")
+      .notNull()
+      .references(() => courseOffers.id, { onDelete: "cascade" }),
+    date: varchar("date", { length: 32 }).notNull(),
+    attendanceData: text("attendanceData").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    courseOfferAttendanceDateUnique: uniqueIndex("course_offer_attendance_offer_date_unique").on(
+      table.offerId,
+      table.date
+    ),
+  })
+);
+
+export type CourseOfferAttendance = typeof courseOfferAttendance.$inferSelect;
+export type InsertCourseOfferAttendance = typeof courseOfferAttendance.$inferInsert;
+
 export const materialComments = pgTable("material_comments", {
   id: serial("id").primaryKey(),
   materialId: integer("material_id")
