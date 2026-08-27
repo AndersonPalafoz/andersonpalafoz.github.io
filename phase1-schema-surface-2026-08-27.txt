@@ -1,0 +1,124 @@
+=== TABLE DECLARATIONS ===
+37:export const progressStatusEnum = pgEnum("progress_status", [
+105:export const courses = pgTable("courses", {
+176:export const enrollments = pgTable(
+202:export const materials = pgTable("materials", {
+290:export const certificates = pgTable("certificates", {
+324:export const activities = pgTable("activities", {
+403:export const modules = pgTable("modules", {
+419:export const lessons = pgTable("lessons", {
+471:export const progress = pgTable("progress", {
+655:export const notifications = pgTable("notifications", {
+882:export const externalClasses = pgTable("external_classes", {
+928:export const externalClassTeacherAssignments = pgTable(
+954:export const externalStudents = pgTable("external_students", {
+1003:export const externalClassAttendance = pgTable("external_class_attendance", {
+1013:export const externalClassGrades = pgTable("external_class_grades", {
+1035:export const externalClassMaterials = pgTable("external_class_materials", {
+=== RELATIONSHIP MARKERS ===
+76:  teacherId: integer("teacherId"),
+83:  deletedAt: timestamp("deletedAt"),
+91:  userId: integer("userId")
+137:  passingAverage: varchar("passing_average", { length: 8 }).notNull().default("5"),
+142:  deletedAt: timestamp("deleted_at"),
+155:  userId: integer("userId")
+158:  courseId: integer("courseId")
+180:    userId: serial("userId").notNull(),
+181:    courseId: serial("courseId").notNull(),
+190:      table.userId,
+191:      table.courseId
+209:  lessonId: integer("lessonId").references(() => lessons.id),
+212:  courseId: integer("courseId").references(() => courses.id),
+216:  deletedAt: timestamp("deletedAt"),
+226:    userId: integer("userId")
+239:      table.userId,
+251:    userId: integer("userId")
+261:      table.userId,
+293:  userId: integer("userId").references(() => users.id),
+294:  courseId: integer("courseId").notNull(),
+295:  /** Identidade independente do destinatário quando userId é nulo. */
+326:  courseId: serial("courseId").notNull(),
+351:  userId: serial("userId").notNull(),
+352:  activityId: serial("activityId").notNull(),
+373:    userId: integer("userId").notNull(),
+374:    activityId: integer("activityId").notNull(),
+390:      table.userId,
+391:      table.activityId,
+405:  courseId: serial("courseId").notNull(),
+421:  moduleId: serial("moduleId").notNull(),
+443:    userId: serial("userId").notNull(),
+444:    lessonId: serial("lessonId").notNull(),
+459:      table.userId,
+460:      table.lessonId
+473:  userId: integer("userId")
+476:  courseId: integer("courseId")
+524:  deletedAt: timestamp("deletedAt"),
+581:  courseId: integer("courseId").references(() => courses.id),
+582:  teacherId: integer("teacherId")
+606:  studentId: integer("studentId")
+623:  userId: integer("userId").references(() => users.id),
+657:  userId: integer("userId")
+688:    userId: integer("userId")
+691:    courseId: integer("courseId")
+698:      table.userId,
+699:      table.courseId
+709:    userId: integer("userId")
+712:    lessonId: integer("lessonId")
+727:      table.userId,
+728:      table.lessonId
+738:    userId: integer("userId")
+741:    courseId: integer("courseId")
+751:      table.userId,
+752:      table.courseId
+803:    userId: integer("userId")
+813:      table.userId
+828:  userId: integer("userId")
+864:  userId: integer("userId")
+868:  awardedBy: integer("awardedBy").references(() => users.id), // null if automatic, admin userId if manual
+888:  teacherId: integer("teacherId")
+904:  passingAverage: varchar("passing_average", { length: 8 }).notNull().default("5"),
+906:  gradeStatus: varchar("grade_status", { length: 16 }).notNull().default("open"), // open, closed
+915:  deletedAt: timestamp("deleted_at"),
+925: * continua registrado em externalClasses.teacherId; esta tabela permite que
+932:    externalClassId: integer("externalClassId")
+935:    teacherId: integer("teacherId")
+945:      table.externalClassId,
+946:      table.teacherId
+956:  externalClassId: integer("externalClassId")
+963:  userId: integer("user_id").references(() => users.id, { onDelete: "set null" }),
+965:  studentIdNumber: varchar("studentIdNumber", { length: 64 }), // ex: Matrícula institucional
+971:  manualAverage: varchar("manual_average", { length: 32 }), // média final ajustada manualmente, na escala de 0 a 10
+972:  manualAverageReason: text("manual_average_reason"), // justificativa obrigatória para o ajuste
+973:  manualAverageUpdatedAt: timestamp("manual_average_updated_at"),
+974:  manualAverageUpdatedBy: integer("manual_average_updated_by").references(() => users.id, { onDelete: "set null" }),
+1005:  externalClassId: integer("externalClassId")
+1009:  attendanceData: text("attendanceData").notNull(), // JSON string map of studentId -> status ("present", "absent", "late")
+1015:  externalClassId: integer("externalClassId")
+1018:  studentId: integer("studentId")
+1037:  externalClassId: integer("externalClassId")
+1051:  userId: integer("user_id")
+1067:  userId: integer("userId")
+1134:    userId: integer("userId")
+1142:      table.userId
+1154:  userId: integer("userId")
+1197:    userId: integer("userId")
+1200:    courseId: integer("courseId").references(() => courses.id, {
+1214:      table.userId,
+1215:      table.courseId
+1218:      table.userId,
+1232:  userId: integer("userId"),
+=== INTERNAL PAGE SIZES ===
+   130 app/cursos/page.tsx
+   414 app/cursos/[id]/page.tsx
+   511 app/cursos/[id]/aulas/[lessonId]/page.tsx
+    61 app/dashboard/cursos/page.tsx
+    41 app/professor/cursos/page.tsx
+  1212 app/admin/cursos/page.tsx
+   252 app/admin/cursos/[id]/modulos/page.tsx
+  2621 total
+=== EXTERNAL PAGE/API SIZES ===
+  3752 app/professor/turmas-externas/page.tsx
+  1122 app/api/professor/external-classes/route.ts
+    59 app/dashboard/aluno-externo/page.tsx
+   217 app/professor/boletim/[studentId]/page.tsx
+  5150 total
