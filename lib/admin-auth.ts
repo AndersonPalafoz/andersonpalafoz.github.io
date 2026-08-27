@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { users, courses, externalClasses, externalClassTeacherAssignments, materials } from "@/drizzle/schema";
+import { users, courses, externalClasses, externalClassTeacherAssignments, materials, courseOffers, courseOfferTeacherAssignments, courseOfferStudents } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -89,6 +89,41 @@ export async function canManageExternalClass(session: AdminAuthSession, classId:
   return Boolean(assignment);
 }
 
+
+export async function canManageCourseOffer(session: AdminAuthSession, offerId: number): Promise<boolean> {
+  const email = session.user.email?.toLowerCase();
+  if (!email) return false;
+  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "super_admin") return true;
+
+  const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!dbUser || dbUser.role !== "professor") return false;
+  const offer = await db.query.courseOffers.findFirst({ where: eq(courseOffers.id, offerId) });
+  if (!offer) return false;
+  if (offer.ownerTeacherId === dbUser.id) return true;
+
+  const assignment = await db.query.courseOfferTeacherAssignments.findFirst({
+    where: and(
+      eq(courseOfferTeacherAssignments.offerId, offerId),
+      eq(courseOfferTeacherAssignments.teacherId, dbUser.id)
+    ),
+  });
+  return Boolean(assignment);
+}
+
+export async function canReadCourseOffer(session: AdminAuthSession, offerId: number): Promise<boolean> {
+  const email = session.user.email?.toLowerCase();
+  if (!email) return false;
+  if (email === SUPER_ADMIN_EMAIL || session.user.role === "admin" || session.user.role === "super_admin") return true;
+
+  const dbUser = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!dbUser) return false;
+  if (dbUser.role === "professor" && await canManageCourseOffer(session, offerId)) return true;
+
+  const enrollment = await db.query.courseOfferStudents.findFirst({
+    where: and(eq(courseOfferStudents.offerId, offerId), eq(courseOfferStudents.userId, dbUser.id)),
+  });
+  return Boolean(enrollment);
+}
 
 export async function canManageMaterial(session: AdminAuthSession, materialId: number): Promise<boolean> {
   const email = session.user.email?.toLowerCase();
