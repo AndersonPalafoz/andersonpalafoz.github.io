@@ -1485,13 +1485,13 @@ export default function TurmasExternasPage() {
             >
               <Search size={15} aria-hidden="true" /> Buscar
             </button>
-            <button
+            {canManage && (<button
               type="button"
               onClick={() => { setIsClassFormOpen(true); window.scrollTo({ top: 420, behavior: "smooth" }); }}
               className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-3.5 py-2.5 text-xs font-black text-white shadow-sm transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
             >
               <Plus size={15} aria-hidden="true" /> Nova turma
-            </button>
+            </button>)}
               <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-[11px] font-extrabold ${loadError ? "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"}`}>
               <span className={`h-2 w-2 rounded-full ${loadError ? "bg-red-500" : "bg-emerald-500"}`} aria-hidden="true" /> {loadError ? "Falha na atualização" : lastUpdatedAt ? `Atualizado às ${lastUpdatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : "Atualizando dados"}
             </span>
@@ -1782,6 +1782,7 @@ export default function TurmasExternasPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Formulários de Cadastro / Edição */}
           <div className="space-y-6 lg:col-span-1">
+            {canManage && (<>
             {/* Criar / Editar Turma */}
             <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
               <div className="flex items-center justify-between gap-3">
@@ -2232,10 +2233,10 @@ export default function TurmasExternasPage() {
                   {submitting ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                   {editingStudentId ? "Salvar Aluno" : "Matricular Aluno"}
                 </button>
-              </form>
+                            </form>
             </section>
+            </>)}
           </div>
-
           {/* Listagem de Turmas, Abas e Gerenciamento */}
           <div className="lg:col-span-2 space-y-6">
             {loading ? (
@@ -2397,7 +2398,7 @@ export default function TurmasExternasPage() {
                           </details>
                         )}
                       </div>
-                      <div className="relative flex items-center gap-2">
+                      {canManage && (<div className="relative flex items-center gap-2">
                         <div className="hidden sm:flex items-center gap-2 flex-wrap">
                           <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
                             <FileSpreadsheet size={14} className="text-green-600" /> Importar planilha
@@ -2548,9 +2549,8 @@ export default function TurmasExternasPage() {
                           aria-hidden="true"
                         >
                         </button>
-                      </div>
+                                            </div>)}
                     </div>
-
                     {/* Resumo estatístico da turma */}
                     {cls.stats && (
                       <div className="grid grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-800/50 p-3 rounded-2xl text-center">
