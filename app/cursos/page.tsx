@@ -9,6 +9,7 @@ import { authOptions } from "@/lib/auth";
 import { getCourses, db } from "@/lib/db";
 import { coursePurchases, enrollments, users, wishlistItems } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
+import { isLearnerVisibleCourse } from "@/lib/course-visibility";
 
 export const metadata = {
   title: "Cursos de Inglês | Anderson Palafoz",
@@ -26,7 +27,7 @@ export default async function CursosPage() {
     user ? db.select({ courseId: enrollments.courseId }).from(enrollments).where(eq(enrollments.userId, user.id)) : Promise.resolve([]),
     user ? db.select({ courseId: wishlistItems.courseId }).from(wishlistItems).where(eq(wishlistItems.userId, user.id)) : Promise.resolve([]),
   ]);
-  const cursosDb = rawCursos.filter((c) => Number(c.courseType) !== 4 && c.category !== "Curso Externo / Avulso");
+  const cursosDb = rawCursos.filter((c) => Number(c.courseType) !== 4 && c.category !== "Curso Externo / Avulso" && isLearnerVisibleCourse(c));
   const purchasedCourseIds = new Set(purchasedRows.map((row) => row.courseId));
   const enrolledCourseIds = new Set(enrollmentRows.map((row) => row.courseId));
   const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));

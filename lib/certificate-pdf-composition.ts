@@ -256,6 +256,9 @@ export async function drawCertificateComposition(
     NonNullable<CertificateComposition["fieldMappings"][CertificateFieldKey]>
   ][];
   for (const [key, mapping] of fieldEntries) {
+    // Em composições institucionais geradas, a assinatura já possui um bloco
+    // próprio e fixo no rodapé. Não duplicamos o coordenador sobre esse bloco.
+    if (key === "coordinatorName" && !input.hasTemplateBackground) continue;
     const text = resolveCertificateText(`{{${key}}}`, values);
     if (!text) continue;
     const size = mapping.size || 14;

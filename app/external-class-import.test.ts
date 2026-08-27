@@ -7,10 +7,20 @@ describe("importação de turmas externas IsF e PROFICI", () => {
   const route = readFileSync(join(process.cwd(), "app/api/professor/external-classes/route.ts"), "utf8");
   const schema = readFileSync(join(process.cwd(), "drizzle/schema.ts"), "utf8");
 
-  it("aceita arquivos CSV, TSV, XLS e XLSX e usa o parser de planilhas", () => {
-    expect(page).toContain('import * as XLSX from "xlsx"');
-    expect(page).toContain('XLSX.read(await file.arrayBuffer()');
-    expect(page).toContain('accept=".csv,.tsv,.xls,.xlsx"');
+  it("aceita arquivos CSV, TSV e XLSX com parsers mantidos e carregamento sob demanda", () => {
+    expect(page).toContain('import Papa from "papaparse"');
+    expect(page).toContain('import("xlsx")');
+    expect(page).toContain('const EXTERNAL_STUDENT_IMPORT_ACCEPT = ".csv,.tsv,.xlsx"');
+    expect(page).not.toContain('import * as XLSX from "xlsx"');
+  });
+
+  it("rejeita arquivos e payloads de importação acima dos limites seguros", () => {
+    expect(page).toContain("EXTERNAL_STUDENT_IMPORT_MAX_BYTES");
+    expect(page).toContain("EXTERNAL_STUDENT_IMPORT_MAX_DATA_ROWS");
+    expect(page).toContain("O formato XLS antigo não é aceito por segurança.");
+    expect(route).toContain("MAX_IMPORTED_STUDENT_ROWS");
+    expect(route).toContain("MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT");
+    expect(route).toContain("hasInvalidPayload");
   });
 
   it("mapeia os campos cadastrais dos layouts IsF e PROFICI", () => {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getCourses, getTrashCourses, createCourse, updateCourse, softDeleteCourse, restoreCourse, deleteCourse } from "@/lib/db";
-import { requireAdmin, canManageCourse } from "@/lib/admin-auth";
+import { requireTeacherOrAdmin, canManageCourse } from "@/lib/admin-auth";
 import { validateCourseTypeFields } from "@/lib/course-types";
 
 const coursePayloadSchema = z.object({
@@ -55,7 +55,7 @@ function parsePayload(payload: unknown, partial = false) {
 
 export async function GET(request: NextRequest) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireTeacherOrAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Não autorizado.", code: "AUTH_REQUIRED" }, { status: 401 });
     }
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireTeacherOrAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Não autorizado.", code: "AUTH_REQUIRED" }, { status: 401 });
     }
@@ -90,7 +90,10 @@ export async function POST(request: NextRequest) {
     const payload = parsePayload(await request.json());
     if (payload.error || !payload.data) return NextResponse.json({ error: payload.error || "Os dados do curso são inválidos.", code: "COURSE_VALIDATION_FAILED" }, { status: 400 });
 
-    const course = await createCourse(payload.data as unknown as Parameters<typeof createCourse>[0]);
+    const course = await createCourse({
+      ...payload.data,
+      ...(admin.user.role === "professor" ? { instructor: admin.user.name || admin.user.email || "Professor" } : {}),
+    } as unknown as Parameters<typeof createCourse>[0]);
     return NextResponse.json(course, { status: 201 });
   } catch (error) {
     console.error("Error creating course:", error);
@@ -100,7 +103,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireTeacherOrAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Não autorizado.", code: "AUTH_REQUIRED" }, { status: 401 });
     }
@@ -129,7 +132,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const admin = await requireAdmin();
+    const admin = await requireTeacherOrAdmin();
     if (!admin) {
       return NextResponse.json({ error: "Não autorizado.", code: "AUTH_REQUIRED" }, { status: 401 });
     }
@@ -153,6 +156,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Professores só podem gerenciar seus próprios cursos.", code: "COURSE_FORBIDDEN" }, { status: 403 });
     }
 
+    if (permanent && admin.user.role === "professor") {
+      return NextResponse.json({ error: "A exclusão definitiva de cursos é exclusiva da administração." }, { status: 403 });
+    }
     if (restore) return NextResponse.json(await restoreCourse(courseId));
     if (permanent) return NextResponse.json(await deleteCourse(courseId));
     return NextResponse.json(await softDeleteCourse(courseId));

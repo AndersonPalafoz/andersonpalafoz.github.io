@@ -13,6 +13,8 @@ describe("admin certificate workflow", () => {
     expect(workflow).toContain('label: "Revisar assinaturas"');
     expect(workflow).toContain('label: "Laboratório experimental"');
     expect(workflow).toContain("CertificateStandardManager");
+    expect(workflow).toContain("CertificateFlowSteps");
+    expect(workflow).toContain('CertificateSignatureManager audience="admin"');
     expect(workflow).toContain("3 engines");
   });
 

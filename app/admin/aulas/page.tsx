@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { BookOpen, Plus, Video, Clock, Loader2, Upload, FileText, Headphones, ChevronUp, ChevronDown, GripVertical } from "lucide-react";
+import { BookOpen, Plus, Video, Clock, Loader2, Upload, FileText, Headphones, ChevronUp, ChevronDown, GripVertical, Target, ClipboardCheck, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface Course {
@@ -21,6 +21,10 @@ interface Lesson {
   duration: number | null;
   order: number;
   content: string | null;
+  pedagogy?: {
+    learningObjectives: string[];
+    evidenceOfLearning: string[];
+  };
   moduleTitle?: string;
   materialUrl?: string;
 }
@@ -45,7 +49,12 @@ export default function AdminAulasPage() {
     order: 1,
     content: "",
     materialUrl: "",
+    learningObjectives: "",
+    evidenceOfLearning: "",
   });
+  const [editingPedagogy, setEditingPedagogy] = useState<Lesson | null>(null);
+  const [pedagogyDraft, setPedagogyDraft] = useState({ learningObjectives: "", evidenceOfLearning: "" });
+  const [savingPedagogy, setSavingPedagogy] = useState(false);
 
   useEffect(() => {
     async function loadCourses() {
@@ -117,6 +126,8 @@ export default function AdminAulasPage() {
         order: lessons.length + 1,
         content: "",
         materialUrl: "",
+        learningObjectives: "",
+        evidenceOfLearning: "",
       });
       setShowForm(false);
     } catch (err) {
@@ -150,6 +161,41 @@ export default function AdminAulasPage() {
     } catch (error) {
       setLessons(previous);
       toast.error(error instanceof Error ? error.message : "Erro ao salvar ordem das aulas.", { id: "reorder-lesson" });
+    }
+  };
+
+  const openPedagogyEditor = (lesson: Lesson) => {
+    setEditingPedagogy(lesson);
+    setPedagogyDraft({
+      learningObjectives: lesson.pedagogy?.learningObjectives.join("\n") || "",
+      evidenceOfLearning: lesson.pedagogy?.evidenceOfLearning.join("\n") || "",
+    });
+  };
+
+  const savePedagogy = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!selectedCourseId || !editingPedagogy) return;
+    setSavingPedagogy(true);
+    try {
+      const response = await fetch("/api/admin/lessons", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: selectedCourseId,
+          lessonId: editingPedagogy.id,
+          learningObjectives: pedagogyDraft.learningObjectives,
+          evidenceOfLearning: pedagogyDraft.evidenceOfLearning,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Não foi possível salvar a proposta pedagógica.");
+      setLessons((current) => current.map((lesson) => lesson.id === editingPedagogy.id ? data.lesson : lesson));
+      setEditingPedagogy(null);
+      toast.success("Objetivos e evidências atualizados para esta aula.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar a proposta pedagógica.");
+    } finally {
+      setSavingPedagogy(false);
     }
   };
 
@@ -366,6 +412,31 @@ export default function AdminAulasPage() {
                 />
               </div>
 
+              <div className="grid grid-cols-1 gap-6 rounded-2xl border border-red-100 bg-red-50/50 p-5 md:grid-cols-2 dark:border-red-900/50 dark:bg-red-950/15">
+                <div>
+                  <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><Target size={16} className="text-red-600" /> Objetivos de aprendizagem</label>
+                  <textarea
+                    rows={4}
+                    value={formData.learningObjectives}
+                    onChange={(e) => setFormData({ ...formData, learningObjectives: e.target.value })}
+                    placeholder={"Um objetivo por linha.\nEx.: Usar o Simple Present para descrever rotinas."}
+                    className="w-full resize-none rounded-xl border border-gray-300 p-4 text-sm outline-none transition focus:border-red-600 dark:border-slate-700 dark:bg-slate-900"
+                  />
+                  <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">Declare o que o estudante deverá compreender ou conseguir fazer ao final da aula.</p>
+                </div>
+                <div>
+                  <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-slate-300"><ClipboardCheck size={16} className="text-red-600" /> Evidências de aprendizagem</label>
+                  <textarea
+                    rows={4}
+                    value={formData.evidenceOfLearning}
+                    onChange={(e) => setFormData({ ...formData, evidenceOfLearning: e.target.value })}
+                    placeholder={"Uma evidência por linha.\nEx.: Produzir três frases contextualizadas sobre a própria rotina."}
+                    className="w-full resize-none rounded-xl border border-gray-300 p-4 text-sm outline-none transition focus:border-red-600 dark:border-slate-700 dark:bg-slate-900"
+                  />
+                  <p className="mt-2 text-xs text-gray-500 dark:text-slate-400">Indique produções ou desempenhos observáveis que demonstram a aprendizagem.</p>
+                </div>
+              </div>
+
               <div className="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-slate-800">
                 <button
                   type="button"
@@ -407,7 +478,7 @@ export default function AdminAulasPage() {
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-slate-800">
               {lessons.map((lesson, index) => (
-                <div key={lesson.id} className="p-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/60 transition">
+                <div key={lesson.id} className="flex flex-col justify-between gap-4 p-6 transition hover:bg-gray-50 dark:hover:bg-slate-800/60 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-4">
                     <div className="cursor-grab text-gray-400 dark:text-slate-500">
                       <GripVertical size={20} />
@@ -415,7 +486,7 @@ export default function AdminAulasPage() {
                     <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 font-bold flex items-center justify-center text-sm">
                       {index + 1}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold uppercase text-red-600 bg-red-50 px-2.5 py-0.5 rounded-full">
                           {lesson.moduleTitle || "Módulo Geral"}
@@ -428,10 +499,24 @@ export default function AdminAulasPage() {
                       </div>
                       <h3 className="font-bold text-gray-900 dark:text-white mt-1">{lesson.title}</h3>
                       <p className="text-xs text-gray-500 dark:text-slate-400">{lesson.description || "Sem descrição informada."}</p>
+                      {(lesson.pedagogy?.learningObjectives.length || lesson.pedagogy?.evidenceOfLearning.length) ? (
+                        <div className="mt-3 grid gap-2 text-xs text-gray-600 dark:text-slate-300 sm:grid-cols-2">
+                          {lesson.pedagogy.learningObjectives.length > 0 && <p className="flex items-start gap-1.5"><Target size={14} className="mt-0.5 shrink-0 text-red-600" /><span><strong>Objetivos:</strong> {lesson.pedagogy.learningObjectives.length}</span></p>}
+                          {lesson.pedagogy.evidenceOfLearning.length > 0 && <p className="flex items-start gap-1.5"><ClipboardCheck size={14} className="mt-0.5 shrink-0 text-red-600" /><span><strong>Evidências:</strong> {lesson.pedagogy.evidenceOfLearning.length}</span></p>}
+                        </div>
+                      ) : <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-300">Objetivos e evidências ainda não declarados.</p>}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => openPedagogyEditor(lesson)}
+                      className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 text-xs font-bold text-red-700 transition hover:bg-red-100 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200"
+                      aria-label={`Editar objetivos e evidências da aula ${lesson.title}`}
+                    >
+                      <Pencil size={14} /> Proposta pedagógica
+                    </button>
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={() => moveLesson(index, "up")}
@@ -454,6 +539,24 @@ export default function AdminAulasPage() {
             </div>
           )}
         </div>
+
+        {editingPedagogy && (
+          <form onSubmit={savePedagogy} className="rounded-2xl border border-red-200 bg-white p-6 shadow-lg dark:border-red-900/60 dark:bg-slate-900" aria-labelledby="pedagogy-editor-title">
+            <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-red-600">Proposta pedagógica da aula</p>
+                <h2 id="pedagogy-editor-title" className="mt-1 text-xl font-bold text-gray-900 dark:text-white">{editingPedagogy.title}</h2>
+                <p className="mt-1 text-sm text-gray-600 dark:text-slate-400">A atualização preserva o roteiro e os materiais já associados.</p>
+              </div>
+              <button type="button" onClick={() => setEditingPedagogy(null)} disabled={savingPedagogy} className="inline-flex min-h-10 items-center justify-center gap-1.5 self-start rounded-xl border border-gray-300 px-3 text-xs font-bold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200"><X size={15} /> Fechar</button>
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300">Objetivos de aprendizagem<textarea rows={5} value={pedagogyDraft.learningObjectives} onChange={(event) => setPedagogyDraft((current) => ({ ...current, learningObjectives: event.target.value }))} className="mt-2 w-full resize-none rounded-xl border border-gray-300 p-3 text-sm outline-none focus:border-red-600 dark:border-slate-700 dark:bg-slate-950" /></label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300">Evidências de aprendizagem<textarea rows={5} value={pedagogyDraft.evidenceOfLearning} onChange={(event) => setPedagogyDraft((current) => ({ ...current, evidenceOfLearning: event.target.value }))} className="mt-2 w-full resize-none rounded-xl border border-gray-300 p-3 text-sm outline-none focus:border-red-600 dark:border-slate-700 dark:bg-slate-950" /></label>
+            </div>
+            <div className="mt-5 flex flex-wrap justify-end gap-3"><button type="button" onClick={() => setEditingPedagogy(null)} disabled={savingPedagogy} className="min-h-11 rounded-xl border border-gray-300 px-4 text-sm font-bold text-gray-700 dark:border-slate-700 dark:text-slate-200">Cancelar</button><button type="submit" disabled={savingPedagogy} className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-red-600 px-5 text-sm font-bold text-white transition hover:bg-red-700 disabled:opacity-60">{savingPedagogy && <Loader2 size={16} className="animate-spin" />} Salvar proposta</button></div>
+          </form>
+        )}
       </div>
     </div>
   );

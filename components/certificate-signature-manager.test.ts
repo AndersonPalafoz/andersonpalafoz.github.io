@@ -13,6 +13,10 @@ const certificateCompatibilityMigration = readFileSync(
   new URL("../drizzle/migrations/0075_certificate_external_recipient_compatibility.sql", import.meta.url),
   "utf8"
 );
+const professorCertificatesPage = readFileSync(
+  new URL("../app/professor/certificados/page.tsx", import.meta.url),
+  "utf8"
+);
 
 describe("gerenciador administrativo de certificados", () => {
   it("exibe badges claros para certificados com e sem a marca do site", () => {
@@ -28,6 +32,29 @@ describe("gerenciador administrativo de certificados", () => {
     expect(source).toContain("studentEmail");
     expect(source).toContain("certificateCode");
     expect(source).toContain("searchQuery");
+  });
+
+  it("mantém a experiência docente livre de registros técnicos de teste", () => {
+    expect(source).toContain('/api/admin/certificates?view=teacher');
+    expect(source).toContain("audience = \"teacher\"");
+    expect(source).toContain("visibleCertificates");
+    expect(source).toContain("isTechnicalCourse");
+    expect(source).toContain("uploadTargetId");
+    expect(source).toContain("Registrar PDF assinado");
+    expect(routeSource).toContain('requestedView === "teacher"');
+    expect(routeSource).toContain("canManageCourse(session, certificate.courseId)");
+  });
+
+  it("reutiliza a mesma etapa de criação, validação e download para gestão docente e administrativa", () => {
+    expect(source).toContain("CertificateFlowSteps");
+    expect(source).toContain("resolveCertificateFlowStep(certificate)");
+    expect(source).toContain("certificate.downloadUrl");
+  });
+
+  it("conecta a prévia docente ao mesmo contexto de composição do gerador oficial", () => {
+    expect(professorCertificatesPage).toContain("CertificateWorkspaceProvider");
+    expect(professorCertificatesPage).toContain("Certificados e assinaturas");
+    expect(professorCertificatesPage).toContain("cursos que você pode gerenciar");
   });
 
   it("pagina resultados e reinicia a página ao trocar filtros", () => {

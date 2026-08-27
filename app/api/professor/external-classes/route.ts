@@ -37,6 +37,20 @@ function validateGrade(score: unknown, maxScore: unknown) {
   return null;
 }
 
+const MAX_IMPORTED_STUDENT_ROWS = 1_000;
+const MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT = 160;
+const MAX_IMPORTED_TEXT_LENGTH = 500;
+
+const firstImportedText = (row: Record<string, unknown>, ...keys: string[]) => {
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value !== "string" && typeof value !== "number") continue;
+    const normalized = String(value).trim();
+    if (normalized) return normalized;
+  }
+  return "";
+};
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -474,6 +488,19 @@ export async function POST(request: NextRequest) {
       if (!classId || !csvData || !Array.isArray(csvData)) {
         return NextResponse.json({ error: "Dados CSV inválidos ou turma não informada." }, { status: 400 });
       }
+      if (csvData.length > MAX_IMPORTED_STUDENT_ROWS) {
+        return NextResponse.json({ error: "A importação excede o limite de 1.000 alunos por arquivo." }, { status: 413 });
+      }
+      const importedRows = csvData as Array<Record<string, unknown>>;
+      const hasInvalidPayload = importedRows.some((row) => {
+        if (!row || typeof row !== "object" || Array.isArray(row)) return true;
+        if (Object.values(row).some((value) => typeof value === "string" && value.length > MAX_IMPORTED_TEXT_LENGTH)) return true;
+        const attendanceRecords = row.attendanceRecords;
+        return Array.isArray(attendanceRecords) && attendanceRecords.length > MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT;
+      });
+      if (hasInvalidPayload) {
+        return NextResponse.json({ error: "O arquivo contém dados acima dos limites permitidos para uma importação segura." }, { status: 413 });
+      }
 
       const externalClassId = Number(classId);
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, externalClassId) });
@@ -483,6 +510,9 @@ export async function POST(request: NextRequest) {
       }
 
       const metadata = classMetadata && typeof classMetadata === "object" ? classMetadata as Record<string, unknown> : {};
+      if (Object.values(metadata).some((value) => typeof value === "string" && value.length > MAX_IMPORTED_TEXT_LENGTH)) {
+        return NextResponse.json({ error: "Os dados complementares da turma excedem o limite permitido." }, { status: 413 });
+      }
       const importedClassDays = typeof metadata.classDays === "string" ? metadata.classDays.trim() : "";
       const importedClassTime = typeof metadata.classTime === "string" ? metadata.classTime.trim() : "";
       const importedLevel = typeof metadata.level === "string" ? metadata.level.trim() : "";
@@ -509,19 +539,18 @@ export async function POST(request: NextRequest) {
       let skippedCount = 0;
       let attendanceImportedCount = 0;
 
-      for (const rawRow of csvData) {
-        const row = rawRow as Record<string, unknown>;
-        const name = row.name || row.nome || row["nome completo"];
+      for (const row of importedRows) {
+        const name = firstImportedText(row, "name", "nome", "nome completo");
         if (!name) {
           skippedCount++;
           continue;
         }
-        const normalizedEmail = String(row.email || row.e_mail || row["e-mail"] || "").trim().toLowerCase();
-        const normalizedCpf = String(row.cpf || "").trim().replace(/\D/g, "");
-        const normalizedId = String(row.studentIdNumber || row.matricula || row.id || row["número de matrícula"] || "").trim();
-        const normalizedCategory = String(row.category || row.categoria || "").trim();
-        const normalizedUniversity = String(row.university || row.universidade || row.instituicao || "").trim();
-        const normalizedComponent = String(row.component || row.componente || row.nivel || "").trim();
+        const normalizedEmail = firstImportedText(row, "email", "e_mail", "e-mail").toLowerCase();
+        const normalizedCpf = firstImportedText(row, "cpf").replace(/\D/g, "");
+        const normalizedId = firstImportedText(row, "studentIdNumber", "matricula", "id", "número de matrícula");
+        const normalizedCategory = firstImportedText(row, "category", "categoria");
+        const normalizedUniversity = firstImportedText(row, "university", "universidade", "instituicao");
+        const normalizedComponent = firstImportedText(row, "component", "componente", "nivel");
 
         const duplicateWhere = normalizedEmail
           ? and(eq(externalStudents.externalClassId, externalClassId), eq(externalStudents.email, normalizedEmail))
@@ -533,7 +562,7 @@ export async function POST(request: NextRequest) {
 
         if (existingStudent) {
           const updated = await db.update(externalStudents).set({
-            name: String(name).trim(),
+            name,
             email: normalizedEmail || existingStudent.email,
             studentIdNumber: normalizedId || existingStudent.studentIdNumber,
             cpf: normalizedCpf || existingStudent.cpf,
@@ -547,7 +576,7 @@ export async function POST(request: NextRequest) {
         } else {
           const inserted = await db.insert(externalStudents).values({
             externalClassId,
-            name: String(name).trim(),
+            name,
             email: normalizedEmail || null,
             studentIdNumber: normalizedId || null,
             cpf: normalizedCpf || null,

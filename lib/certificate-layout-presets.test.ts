@@ -28,4 +28,11 @@ describe("certificate layout presets", () => {
     expect(variants.map(getCertificateVisualVariant)).toHaveLength(4);
     expect(variants.every(variant => getCertificateVisualVariant(variant).id === variant)).toBe(true);
   });
+
+  it("reserves the lower right area for the validation QR code", () => {
+    for (const variant of CERTIFICATE_VISUAL_VARIANT_LIST) {
+      const preset = getCertificateLayoutPreset(variant.id);
+      expect(preset.certificateCode?.x).toBeLessThan(400);
+    }
+  });
 });

@@ -19,9 +19,8 @@ describe("resiliência dos Relatórios Acadêmicos", () => {
   });
 
   it("não lista destinatários técnicos de certificados como alunos acadêmicos", () => {
-    expect(routeSource).toContain("function isTechnicalCertificatePlaceholder");
-    expect(routeSource).toContain('email.endsWith("@external.placeholder")');
-    expect(routeSource).toContain("!isTechnicalCertificatePlaceholder(u)");
+    expect(routeSource).toContain('import { isTechnicalLearnerIdentity } from "@/lib/technical-identities"');
+    expect(routeSource).toContain("!isTechnicalLearnerIdentity(u)");
   });
 
   it("explica quando apenas a média depende de uma fonte temporariamente indisponível", () => {

@@ -81,16 +81,17 @@ export type CertificateComposition = {
 export const DEFAULT_FIELD_MAPPINGS: Partial<
   Record<CertificateFieldKey, CertificateFieldMapping>
 > = {
-  studentName: { x: 70, y: 355, size: 28, maxWidth: 700, weight: "bold" },
-  courseTitle: { x: 70, y: 258, size: 23, maxWidth: 700, weight: "bold" },
-  level: { x: 70, y: 218, size: 14, maxWidth: 700 },
-  issuedAt: { x: 70, y: 155, size: 13, maxWidth: 320 },
-  certificateCode: { x: 70, y: 125, size: 11, maxWidth: 340 },
-  workloadHours: { x: 300, y: 218, size: 14, maxWidth: 160 },
-  studentCpf: { x: 70, y: 320, size: 12, maxWidth: 300 },
-  period: { x: 470, y: 218, size: 14, maxWidth: 220 },
-  coordinatorName: { x: 560, y: 140, size: 11, maxWidth: 212, weight: "bold" },
-  institutionName: { x: 70, y: 520, size: 15, maxWidth: 420, weight: "bold" },
+  institutionName: { x: 70, y: 535, size: 14, maxWidth: 390, weight: "bold" },
+  studentName: { x: 421, y: 342, size: 29, maxWidth: 650, weight: "bold", align: "center" },
+  studentCpf: { x: 421, y: 303, size: 12, maxWidth: 420, align: "center" },
+  courseTitle: { x: 421, y: 252, size: 20, maxWidth: 650, weight: "bold", align: "center" },
+  level: { x: 421, y: 217, size: 13, maxWidth: 260, align: "center" },
+  workloadHours: { x: 178, y: 178, size: 12, maxWidth: 180 },
+  period: { x: 421, y: 178, size: 12, maxWidth: 260, align: "center" },
+  issuedAt: { x: 70, y: 88, size: 11, maxWidth: 220 },
+  coordinatorName: { x: 610, y: 88, size: 11, maxWidth: 220, weight: "bold", align: "center" },
+  // A faixa inferior direita é reservada ao QR Code de validação.
+  certificateCode: { x: 70, y: 54, size: 10, maxWidth: 340 },
 };
 
 export const DEFAULT_CERTIFICATE_COMPOSITION: CertificateComposition = {

@@ -1,22 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { externalClasses, externalStudents, users } from "@/drizzle/schema";
 import { eq, inArray } from "drizzle-orm";
 import { hashPassword } from "@/lib/password";
 import { sendEmailNotification } from "@/lib/email";
-
-const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
+import { canManageExternalClass, requireTeacherOrAdmin } from "@/lib/admin-auth";
 
 function temporaryPassword() {
   return `AP-${crypto.randomUUID().replace(/-/g, "").slice(0, 10)}!9a`;
 }
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  const isAdmin = session?.user?.role === "admin" || session?.user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
-  if (!isAdmin) return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
+  const session = await requireTeacherOrAdmin();
+  if (!session) return NextResponse.json({ error: "Acesso restrito a professores e administradores." }, { status: 403 });
   const body = await request.json().catch(() => ({}));
   const classId = Number(body.classId);
   const resend = body.action === "resend";
@@ -25,6 +21,9 @@ export async function POST(request: NextRequest) {
 
   const externalClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, classId) });
   if (!externalClass) return NextResponse.json({ error: "Turma não encontrada." }, { status: 404 });
+  if (!(await canManageExternalClass(session, classId))) {
+    return NextResponse.json({ error: "Professores só podem gerenciar o acesso de alunos em suas próprias turmas." }, { status: 403 });
+  }
   const students = await db.query.externalStudents.findMany({ where: requestedIds.length ? inArray(externalStudents.id, requestedIds) : eq(externalStudents.externalClassId, classId) });
   const classStudents = students.filter((student) => student.externalClassId === classId && student.email);
   let created = 0;

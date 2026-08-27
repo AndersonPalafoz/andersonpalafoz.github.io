@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { and, count, desc, eq, or } from "drizzle-orm";
-import { authOptions } from "@/lib/auth";
+import { and, count, desc, eq, ilike, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
 import { forumPosts, forumReplies, users } from "@/drizzle/schema";
+import { requireAdmin } from "@/lib/admin-auth";
 
 const VALID_STATUSES = ["pending", "approved", "rejected", "resolved"] as const;
 type ForumStatus = (typeof VALID_STATUSES)[number];
@@ -16,16 +15,16 @@ function parseId(value: unknown) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
     }
 
     const status = request.nextUrl.searchParams.get("status")?.trim() || "";
-    const search = request.nextUrl.searchParams.get("search")?.trim() || "";
+    const search = request.nextUrl.searchParams.get("search")?.trim().slice(0, 160) || "";
     const filters = [
       ...(status && VALID_STATUSES.includes(status as ForumStatus) ? [eq(forumPosts.status, status as ForumStatus)] : []),
-      ...(search ? [or(eq(forumPosts.title, search), eq(forumPosts.content, search))] : []),
+      ...(search ? [or(ilike(forumPosts.title, `%${search}%`), ilike(forumPosts.content, `%${search}%`))] : []),
     ];
 
     const rows = await db
@@ -68,8 +67,8 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
     }
 
@@ -122,8 +121,8 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
+    const session = await requireAdmin();
+    if (!session) {
       return NextResponse.json({ error: "Acesso restrito a administradores." }, { status: 403 });
     }
 

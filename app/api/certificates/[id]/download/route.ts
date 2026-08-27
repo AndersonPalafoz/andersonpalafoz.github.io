@@ -30,8 +30,9 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     if (!certificate) {
       return NextResponse.json({ error: "Certificado não encontrado." }, { status: 404 });
     }
-    if (!certificate.signedPdfUrl) {
-      return NextResponse.json({ error: "Este certificado ainda não possui um PDF assinado." }, { status: 404 });
+    const downloadableUrl = certificate.signedPdfUrl || certificate.certificateUrl;
+    if (!downloadableUrl) {
+      return NextResponse.json({ error: "Este certificado ainda está em criação e não possui um PDF disponível." }, { status: 404 });
     }
 
     const isOwner = certificate.userId === currentUser.id;
@@ -44,8 +45,13 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Você não tem permissão para baixar este certificado." }, { status: 403 });
     }
 
-    const signedUrl = await createSignedCertificateUrl(certificate.signedPdfUrl);
-    return NextResponse.redirect(signedUrl);
+    // PDFs assinados estão em bucket privado e recebem URL temporária. PDFs
+    // oficiais emitidos já têm URL persistida; ambos seguem a mesma rota e a
+    // mesma checagem de autorização antes do redirecionamento.
+    const downloadUrl = certificate.signedPdfUrl
+      ? await createSignedCertificateUrl(certificate.signedPdfUrl)
+      : certificate.certificateUrl!;
+    return NextResponse.redirect(downloadUrl);
   } catch (error) {
     console.error("Erro ao gerar download do certificado assinado:", error);
     return NextResponse.json({ error: "Não foi possível preparar o download do certificado." }, { status: 500 });

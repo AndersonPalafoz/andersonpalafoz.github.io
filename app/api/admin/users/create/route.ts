@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
+import { requireAdmin } from "@/lib/admin-auth";
+import { isSuperadmin } from "@/lib/role-capabilities";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 const VALID_ROLES = ["user", "professor", "admin"] as const;
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await requireAdmin();
 
-    if (session?.user?.email?.toLowerCase() !== SUPER_ADMIN_EMAIL) {
-      return NextResponse.json({ error: "Acesso restrito ao super-admin." }, { status: 403 });
+    if (!session) {
+      return NextResponse.json({ error: "Acesso restrito à administração." }, { status: 403 });
     }
+    const hasGlobalGovernance = isSuperadmin({
+      email: session.user.email,
+      role: session.user.role as "user" | "student" | "professor" | "admin" | "super_admin" | undefined,
+    });
 
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
@@ -26,6 +30,9 @@ export async function POST(request: NextRequest) {
 
     if (!VALID_ROLES.includes(role)) {
       return NextResponse.json({ error: "Papel inválido." }, { status: 400 });
+    }
+    if (!hasGlobalGovernance && role === "admin") {
+      return NextResponse.json({ error: "Somente o superadministrador pode criar novas contas administrativas." }, { status: 403 });
     }
 
     const existingUser = await db.query.users.findFirst({

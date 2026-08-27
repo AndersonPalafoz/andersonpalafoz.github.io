@@ -4,22 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { speakingAttempts, users, lessonProgress, userActivityProgress } from "@/drizzle/schema";
 import { uploadLearningAudio } from "@/lib/learning-storage";
+import { buildPedagogicalInterventions } from "@/lib/pedagogical-interventions";
+import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
 import { and, eq, inArray } from "drizzle-orm";
-
-function isTechnicalCertificateAccount(student: {
-  email?: string | null;
-  loginMethod?: string | null;
-  name?: string | null;
-}) {
-  const email = student.email?.trim().toLowerCase() || "";
-  const name = student.name?.trim().toLowerCase() || "";
-  return (
-    student.loginMethod === "manual_external" ||
-    email.endsWith("@external.placeholder") ||
-    email.startsWith("nao-cadastrado-") ||
-    name.includes("teste docx")
-  );
-}
 
 export async function GET(_request: NextRequest) {
   try {
@@ -46,7 +33,7 @@ export async function GET(_request: NextRequest) {
     }
 
     assignedStudents = assignedStudents.filter(
-      student => !isTechnicalCertificateAccount(student)
+      student => !isTechnicalLearnerIdentity(student)
     );
     const studentIds = assignedStudents.map(s => s.id);
 
@@ -70,6 +57,11 @@ export async function GET(_request: NextRequest) {
       lessonProgress: allLessonProgress,
       activityProgress: allActivityProgress,
       speakingAttempts: allSpeakingAttempts,
+      interventions: buildPedagogicalInterventions({
+        students: assignedStudents,
+        activityProgress: allActivityProgress,
+        speakingAttempts: allSpeakingAttempts,
+      }),
     });
   } catch (error) {
     console.error("Error fetching progress/speaking:", error);
@@ -92,6 +84,7 @@ export async function POST(request: NextRequest) {
     const scoreValue = getValue("score");
     const attemptIdValue = getValue("attemptId");
     const teacherAudio = getValue("teacherAudio");
+    const requestRevision = ["true", "1", "on"].includes(String(getValue("requestRevision") || "").toLowerCase());
 
     if (!activityProgressId) {
       return NextResponse.json({ error: "activityProgressId é obrigatório" }, { status: 400 });
@@ -103,8 +96,9 @@ export async function POST(request: NextRequest) {
     if (!existingProgress) return NextResponse.json({ error: "Submissão não encontrada." }, { status: 404 });
 
     const teacher = session.user.email ? await db.query.users.findFirst({ where: eq(users.email, session.user.email) }) : null;
-    if (session.user.role === "professor" && (!teacher || existingProgress.userId !== teacher.id)) {
-      const assignedStudent = await db.query.users.findFirst({ where: and(eq(users.id, existingProgress.userId), eq(users.teacherId, teacher?.id ?? -1)) });
+    if (session.user.role === "professor") {
+      if (!teacher) return NextResponse.json({ error: "Não foi possível confirmar sua identidade docente." }, { status: 403 });
+      const assignedStudent = await db.query.users.findFirst({ where: and(eq(users.id, existingProgress.userId), eq(users.teacherId, teacher.id)) });
       if (!assignedStudent) return NextResponse.json({ error: "Você não tem acesso a esta submissão." }, { status: 403 });
     }
     let teacherAudioFeedbackUrl: string | undefined;
@@ -118,28 +112,32 @@ export async function POST(request: NextRequest) {
     const parsedScore = scoreValue !== undefined && scoreValue !== null && String(scoreValue) !== "" ? Number(scoreValue) : null;
     const finalScore = parsedScore !== null && Number.isFinite(parsedScore) ? parsedScore : existingProgress.score;
     if (finalScore === null || finalScore === undefined) return NextResponse.json({ error: "Informe uma nota do professor antes de concluir a avaliação." }, { status: 400 });
+    if (requestRevision && teacherFeedback.length < 12) {
+      return NextResponse.json({ error: "Explique em pelo menos 12 caracteres o que o estudante deve revisar antes de reenviar." }, { status: 400 });
+    }
     const feedbackToSave = teacherFeedback;
+    const progressUpdate = {
+      teacherFeedback: feedbackToSave,
+      score: finalScore,
+      status: requestRevision ? "in_progress" as const : "completed" as const,
+      completedAt: requestRevision ? null : new Date(),
+      ...(teacherAudioFeedbackUrl ? { teacherAudioFeedbackUrl } : {}),
+    };
 
     const updated = await db
       .update(userActivityProgress)
-      .set({
-        teacherFeedback: feedbackToSave,
-        teacherAudioFeedbackUrl,
-        score: finalScore,
-        status: "completed",
-        completedAt: new Date(),
-      })
+      .set(progressUpdate)
       .where(eq(userActivityProgress.id, activityProgressId))
       .returning();
 
     if (targetAttempt) {
       await db.update(speakingAttempts).set({
         teacherFeedback: feedbackToSave,
-        teacherAudioFeedbackUrl,
+        ...(teacherAudioFeedbackUrl ? { teacherAudioFeedbackUrl } : {}),
       }).where(eq(speakingAttempts.id, targetAttempt.id));
     }
 
-    return NextResponse.json({ success: true, progress: updated[0], teacherAudioFeedbackUrl });
+    return NextResponse.json({ success: true, progress: updated[0], teacherAudioFeedbackUrl, revisionRequested: requestRevision });
   } catch (error) {
     console.error("Error updating feedback:", error);
     return NextResponse.json({ error: "Failed to update feedback" }, { status: 500 });

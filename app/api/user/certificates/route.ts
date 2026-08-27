@@ -30,9 +30,11 @@ export async function GET() {
         level: certificate.level,
         certificateCode: certificate.certificateCode,
         certificateUrl: certificate.certificateUrl,
-        signedPdfUrl: certificate.signedPdfUrl
-          ? `/api/certificates/${certificate.id}/download`
-          : null,
+        signedPdfUrl: certificate.signedPdfUrl,
+        downloadUrl:
+          certificate.signedPdfUrl || certificate.certificateUrl
+            ? `/api/certificates/${certificate.id}/download`
+            : null,
         courseTitle: certificate.course?.title || "Curso",
 
         signatureType: certificate.signatureType,

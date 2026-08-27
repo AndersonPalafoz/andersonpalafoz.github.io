@@ -115,8 +115,8 @@ export default function AdminForumModerationPage() {
     <div className="page-container py-8 sm:py-10 space-y-8">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <Link href="/dashboard" className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:underline mb-3">
-            <ArrowLeft size={14} /> Voltar ao Dashboard
+          <Link href="/admin" className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:underline mb-3">
+            <ArrowLeft size={14} /> Voltar ao Painel Administrativo
           </Link>
           <h1 className="text-3xl font-black text-foreground flex items-center gap-3"><Shield className="text-red-600" size={28} /> Moderação do Fórum</h1>
           <p className="text-sm text-muted-foreground mt-2">Tópicos e respostas são exibidos somente quando existem no banco de dados.</p>

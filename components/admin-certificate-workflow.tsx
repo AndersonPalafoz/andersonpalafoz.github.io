@@ -15,6 +15,7 @@ import { CertificateLaboratoryManager } from "@/components/certificate-laborator
 import { CertificateTemplateManager } from "@/components/certificate-template-manager";
 import { CertificateSignatureManager } from "@/components/certificate-signature-manager";
 import { CertificateStandardManager } from "@/components/certificate-standard-manager";
+import { CertificateFlowSteps } from "@/components/certificate-flow-steps";
 
 type WorkflowStage = "issue" | "templates" | "signatures" | "laboratory";
 
@@ -69,6 +70,11 @@ export function AdminCertificateWorkflow() {
         </Link>
       </div>
 
+      <CertificateFlowSteps
+        role="admin"
+        activeStep={stage === "signatures" ? "validate" : stage === "issue" ? "create" : "download"}
+      />
+
       <div className="surface-card rounded-3xl border border-border/70 p-3 shadow-sm sm:p-4">
         <div className="grid gap-2 md:grid-cols-4">
           {stages.map((item, index) => {
@@ -87,7 +93,7 @@ export function AdminCertificateWorkflow() {
 
       {stage === "issue" && <CertificateStandardManager />}
       {stage === "templates" && <CertificateTemplateManager />}
-      {stage === "signatures" && <CertificateSignatureManager />}
+      {stage === "signatures" && <CertificateSignatureManager audience="admin" />}
       {stage === "laboratory" && <CertificateLaboratoryManager />}
     </section>
   );

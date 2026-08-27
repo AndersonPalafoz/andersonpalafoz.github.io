@@ -16,6 +16,7 @@ import {
 } from "@/lib/learning-storage";
 import crypto from "node:crypto";
 import { loadOfficialPrincipalLogoBytes } from "@/lib/brand-assets-server";
+import { parseCertificateComposition } from "@/lib/certificate-composition";
 
 export async function getCourseCompletion(userId: number, courseId: number) {
   const modules = await getModulesByCourse(courseId);
@@ -123,14 +124,9 @@ export async function issueCertificateIfEligible(
       ? loadOfficialPrincipalLogoBytes().catch(() => undefined)
       : Promise.resolve(undefined),
   ]);
-  let fieldMappings: Parameters<typeof buildCertificatePdf>[0]["fieldMappings"];
-  if (template?.fieldMappings) {
-    try {
-      fieldMappings = JSON.parse(template.fieldMappings);
-    } catch {
-      throw new Error("O mapeamento de campos do modelo é inválido.");
-    }
-  }
+  // A emissão automática usa o mesmo contrato da prévia e da emissão manual.
+  // A normalização também mantém compatibilidade com os mapeamentos legados.
+  const composition = parseCertificateComposition(template?.fieldMappings || null);
 
   const certificateCode = `AP-CERT-${courseId}-${userId}-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
   const bytes = await buildCertificatePdf({
@@ -144,7 +140,7 @@ export async function issueCertificateIfEligible(
     logoBytes,
     institutionName: template?.institution || undefined,
     templateBackgroundBytes,
-    fieldMappings,
+    composition,
   });
   const uploaded = await uploadCertificatePdf(userId, courseId, bytes);
   const certificate = await createCertificate({

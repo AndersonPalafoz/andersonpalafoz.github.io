@@ -38,6 +38,7 @@ import { RolePreviewToolbar, useRolePreview } from "@/components/role-preview";
 type NavigationItem = {
   href: string;
   label: string;
+  mobileLabel?: string;
   icon: typeof BookOpen;
   exact?: boolean;
 };
@@ -66,21 +67,21 @@ const teacherNavItems: NavigationItem[] = [
 ];
 
 const adminNavItems: NavigationItem[] = [
-  { href: "/admin", label: "Visão administrativa", icon: Shield, exact: true },
-  { href: "/admin/usuarios", label: "Pessoas e acessos", icon: Users },
+  { href: "/admin", label: "Visão administrativa", mobileLabel: "Admin", icon: Shield, exact: true },
+  { href: "/admin/usuarios", label: "Pessoas e acessos", mobileLabel: "Pessoas", icon: Users },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
   { href: "/admin/materiais", label: "Materiais", icon: Library },
   { href: "/admin/atividades", label: "Atividades", icon: CheckSquare },
   { href: "/admin/blog", label: "Conteúdo e blog", icon: FileText },
   { href: "/admin/mensagens", label: "Mensagens", icon: MessageSquare },
-  { href: "/admin/certificados", label: "Certificados", icon: FileSignature },
-  { href: "/admin/relatorios-academicos", label: "Relatórios", icon: BarChart3 },
+  { href: "/admin/certificados", label: "Certificados", mobileLabel: "Certifs.", icon: FileSignature },
+  { href: "/admin/relatorios-academicos", label: "Relatórios", mobileLabel: "Relatórios", icon: BarChart3 },
 ];
 
 const superadminNavItems: NavigationItem[] = [
-  { href: "/admin/cms", label: "CMS e marca", icon: Settings },
-  { href: "/admin/cupons", label: "Stripe e cupons", icon: WalletCards },
-  { href: "/admin/auditoria", label: "Auditoria", icon: Shield },
+  { href: "/admin/cms", label: "CMS e marca", mobileLabel: "CMS", icon: Settings },
+  { href: "/admin/cupons", label: "Stripe e cupons", mobileLabel: "Cupons", icon: WalletCards },
+  { href: "/admin/auditoria", label: "Auditoria", mobileLabel: "Auditoria", icon: Shield },
 ];
 
 function getInitials(name?: string | null) {
@@ -119,6 +120,7 @@ function cacheAvatarUrl(email: string | null | undefined, url: string | null) {
     // O avatar continua funcional quando o armazenamento local não está disponível.
   }
 }
+
 export default function DashboardLayout({
   children,
   initialAvatarUrl = null,
@@ -242,7 +244,7 @@ export default function DashboardLayout({
       cacheAvatarUrl(session?.user?.email, nextAvatarUrl);
       setAvatarUrl(nextAvatarUrl);
       setAvatarLoadFailed(false);
-      setAvatarLoading(!payload.user?.avatarUrl);
+      setAvatarLoading(false);
       toast.success("Foto de perfil atualizada.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao atualizar a foto.");
@@ -273,8 +275,10 @@ export default function DashboardLayout({
   const allNavItems = sections.flatMap((section) => section.items);
   const activeTitle = allNavItems.find(item => isActive(item.href, item.exact))?.label || "Minha Área";
   const roleBadgeColor = visibleRole === "superadmin" ? "bg-violet-600 text-white" : visibleRole === "admin" ? "bg-red-600 text-white" : visibleRole === "professor" ? "bg-amber-500 text-white" : "bg-emerald-600 text-white";
-  const mobileNavItems = visibleRole === "superadmin" || visibleRole === "admin"
-    ? [adminNavItems[0], adminNavItems[1], adminNavItems[2], adminNavItems[7], adminNavItems[8]]
+  const mobileNavItems = visibleRole === "superadmin"
+    ? [adminNavItems[0], superadminNavItems[0], superadminNavItems[1], superadminNavItems[2], adminNavItems[1]]
+    : visibleRole === "admin"
+      ? [adminNavItems[0], adminNavItems[1], adminNavItems[2], adminNavItems[7], adminNavItems[8]]
     : visibleRole === "professor"
       ? [teacherNavItems[0], teacherNavItems[1], teacherNavItems[2], teacherNavItems[3], teacherNavItems[5]]
       : [studentNavItems[0], studentNavItems[1], studentNavItems[3], studentNavItems[7], studentNavItems[10]];
@@ -339,7 +343,10 @@ export default function DashboardLayout({
             <section key={section.label} className="space-y-1.5" aria-label={section.label}>
               <div className="flex items-center justify-between px-3">
                 <p className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">{section.label}</p>
-                {section.label === "Docência" && <button type="button" onClick={() => setShowTour(true)} className="text-muted-foreground transition hover:text-foreground" title="Ver orientação da navegação"><HelpCircle size={14} /></button>}
+                <span className="flex items-center gap-2">
+                  {section.label === "Superadministração" && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[8px] font-black uppercase tracking-wide text-violet-700 dark:bg-violet-950/50 dark:text-violet-200">Exclusivo</span>}
+                  {section.label === "Docência" && <button type="button" onClick={() => setShowTour(true)} className="text-muted-foreground transition hover:text-foreground" title="Ver orientação da navegação"><HelpCircle size={14} /></button>}
+                </span>
               </div>
               {section.items.map((item) => {
                 const Icon = item.icon;
@@ -408,7 +415,7 @@ export default function DashboardLayout({
               className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-black transition ${active ? "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
             >
               <Icon size={17} />
-              <span className="max-w-full truncate">{item.label}</span>
+              <span className="max-w-full truncate">{item.mobileLabel || item.label}</span>
             </Link>
           );
         })}

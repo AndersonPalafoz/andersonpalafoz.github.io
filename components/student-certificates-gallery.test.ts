@@ -21,4 +21,12 @@ describe("student certificate gallery integration", () => {
     expect(componentSource).toContain("/verificar/");
     expect(componentSource).toContain("includeSiteBranding");
   });
+
+  it("apresenta a mesma jornada de validação e download usada pelas áreas de gestão", () => {
+    expect(componentSource).toContain("CertificateFlowSteps");
+    expect(componentSource).toContain("resolveCertificateFlowStep(cert)");
+    expect(componentSource).toContain("downloadUrl");
+    expect(componentSource).toContain("Validar autenticidade");
+    expect(componentSource).toContain("Baixar PDF oficial");
+  });
 });

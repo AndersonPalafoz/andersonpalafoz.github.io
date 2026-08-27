@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db, getLessonById, getModuleById, getCourseById } from "@/lib/db";
+import { getLessonBody, getLessonPedagogy } from "@/lib/lesson-pedagogy";
 import { activities, coursePurchases as schemaCoursePurchases, enrollments as schemaEnrollments, materials, lessonProgress, userActivityProgress, users } from "@/drizzle/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -64,7 +65,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       : [];
 
     return NextResponse.json({
-      lesson,
+      lesson: { ...lesson, content: getLessonBody(lesson.content), pedagogy: getLessonPedagogy(lesson.content) },
       module,
       course,
       materials: lessonMaterials,

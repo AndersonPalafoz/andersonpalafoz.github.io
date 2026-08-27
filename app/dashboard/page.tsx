@@ -15,7 +15,9 @@ import { OnboardingModal } from "@/components/onboarding-modal";
 import { ClassroomImportAction } from "@/components/classroom-import-action";
 import { WeeklyProgressChart } from "@/components/weekly-progress-chart";
 import { StreakCelebrationModal } from "@/components/streak-celebration-modal";
+import { MedalNotificationAlert } from "@/components/medal-notification-alert";
 import { DashboardPdfExport } from "./dashboard-pdf-export";
+import { isLearnerVisibleCourse } from "@/lib/course-visibility";
 
 export const dynamic = "force-dynamic";
 
@@ -63,8 +65,9 @@ export default async function DashboardPage() {
     }
   }
 
+  const learnerEnrollments = enrollments.filter((enrollment) => enrollment.course && isLearnerVisibleCourse(enrollment.course));
   const cursosAtivos = await Promise.all(
-    enrollments
+    learnerEnrollments
       .filter((enrollment) => enrollment.status === "active")
       .map(async (enrollment) => ({
         ...enrollment,
@@ -87,6 +90,7 @@ export default async function DashboardPage() {
     <div className="space-y-10 pb-16">
       <StreakCelebrationModal />
       <OnboardingModal />
+      <MedalNotificationAlert />
 
       <header className="dashboard-hero flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7">
         <div>
@@ -100,10 +104,10 @@ export default async function DashboardPage() {
           </div>
           <DashboardPdfExport
             userName={session?.user?.name || "Aluno(a)"}
-            enrollmentsCount={enrollments.length}
+            enrollmentsCount={learnerEnrollments.length}
             certificatesCount={certificates.length}
             pendingActivitiesCount={atividadesPendentes.length}
-            coursesData={enrollments.map((e) => ({
+            coursesData={learnerEnrollments.map((e) => ({
               title: e.course?.title || `Curso #${e.courseId}`,
               level: e.course?.level || "Geral",
               progress: e.progress ?? 0,
@@ -192,13 +196,21 @@ export default async function DashboardPage() {
           <p className="mt-1 text-sm text-muted-foreground">Linha do tempo completa de todos os cursos em que você se matriculou ou teve acesso.</p>
         </div>
 
-        {enrollments.length === 0 ? (
+        {learnerEnrollments.length === 0 ? (
           <div className="surface-card p-6 text-center text-sm text-muted-foreground">
             Nenhum histórico de curso registrado até o momento.
           </div>
         ) : (
           <div className="surface-card overflow-hidden rounded-3xl">
-            <div className="overflow-x-auto">
+            <div className="space-y-3 p-4 md:hidden">
+              {learnerEnrollments.map((enr) => {
+                const pct = enr.progress ?? 0;
+                const isCompleted = pct >= 100 || enr.status === "completed";
+                const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
+                return <article key={enr.id} className="rounded-2xl border border-border/70 bg-background p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-black text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p><p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{enr.course?.level || "Geral"} · Matrícula em {formattedDate}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{isCompleted ? "Concluído" : "Em andamento"}</span></div><div className="mt-4"><div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{pct}%</span></div><div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div></div><Button asChild variant="outline" className="mt-4 min-h-11 w-full"><Link href={`/cursos/${enr.courseId}`}>Acessar curso</Link></Button></article>;
+              })}
+            </div>
+            <div className="hidden overflow-x-auto md:block">
               <table className="dashboard-history-table w-full text-left text-sm">
                 <thead className="bg-muted/55 text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
@@ -210,7 +222,7 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
-                  {enrollments.map((enr) => {
+                  {learnerEnrollments.map((enr) => {
                     const pct = enr.progress ?? 0;
                     const isCompleted = pct >= 100 || enr.status === "completed";
                     const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";

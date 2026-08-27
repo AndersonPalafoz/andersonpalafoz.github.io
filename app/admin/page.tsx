@@ -12,6 +12,7 @@ import { AdminActionCenter } from "@/components/admin-action-center";
 import { AdminModerationHub } from "@/components/admin-moderation-hub";
 import { AdminCapabilityMap } from "@/components/admin-capability-map";
 import { useRolePreview } from "@/components/role-preview";
+import { SuperadminControlCenter } from "@/components/superadmin-control-center";
 
 interface Stats {
   totalCourses: number;
@@ -30,7 +31,7 @@ interface Stats {
     activeUsers: number;
     coursesCreated?: number;
   }>;
-  commerce: AdminCommerceData;
+  commerce: AdminCommerceData | null;
 }
 
 function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
@@ -156,12 +157,16 @@ export default function AdminDashboardPage() {
   const effectiveRole = getEffectiveRole({ email: user?.email, role: user?.role });
   const superadmin = visibleRole === "superadmin";
   const quickActions = [
-    { href: "/admin/usuarios", label: "Pessoas e acessos", tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" },
-    { href: "/admin/relatorios-academicos", label: "Relatórios acadêmicos", tone: "border-slate-200 bg-card text-foreground dark:border-border" },
-    { href: "/professor/turmas-externas", label: "Turmas e avaliações", tone: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300" },
-    { href: "/admin/certificados", label: "Certificados", tone: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300" },
-    ...(superadmin ? [{ href: "/admin/cms", label: "CMS e marca", tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" }] : []),
-    { href: "/admin/cursos", label: "Gerenciar cursos", tone: "border-transparent bg-primary text-primary-foreground shadow-sm shadow-red-600/20" },
+    { href: "/admin/usuarios", label: "Pessoas e acessos", mobile: true, tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" },
+    { href: "/admin/relatorios-academicos", label: "Relatórios acadêmicos", mobile: true, tone: "border-slate-200 bg-card text-foreground dark:border-border" },
+    { href: "/professor/turmas-externas", label: "Turmas e avaliações", mobile: true, tone: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300" },
+    { href: "/admin/certificados", label: "Certificados", mobile: true, tone: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300" },
+    ...(superadmin ? [
+      { href: "/admin/cms", label: "CMS e marca", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
+      { href: "/admin/cupons", label: "Stripe e cupons", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
+      { href: "/admin/auditoria", label: "Auditoria", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
+    ] : []),
+    { href: "/admin/cursos", label: "Gerenciar cursos", mobile: true, wideMobile: true, tone: "border-transparent bg-primary text-primary-foreground shadow-sm shadow-red-600/20" },
   ];
 
   if (previewRole === "professor") {
@@ -187,30 +192,31 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
-      <div className="page-container space-y-8">
+    <div className="site-shell admin-dashboard-page px-3 py-4 sm:px-6 sm:py-8 lg:px-8">
+      <div className="page-container min-w-0 space-y-6 sm:space-y-8">
         {/* Header Harmonizado com o Painel do Professor */}
-        <section className="dashboard-hero grid gap-6 rounded-3xl p-6 sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+        <section className="dashboard-hero admin-dashboard-hero grid min-w-0 gap-5 rounded-2xl p-4 sm:gap-6 sm:rounded-3xl sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
+          <div className="min-w-0 space-y-2">
+            <div className="inline-flex max-w-full items-center gap-2 whitespace-normal break-words rounded-xl bg-red-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-red-600 dark:bg-red-950/40 dark:text-red-400 sm:text-xs sm:tracking-[0.2em]">
               <ShieldCheck size={16} />
               {superadmin ? "Superadministração Global" : "Governança Administrativa"}
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground sm:text-4xl">Painel do {roleLabel(visibleRole)}</h1>
+            <h1 className="max-w-full break-words text-[clamp(1.85rem,8.4vw,2.5rem)] font-black leading-[1.05] tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-4xl">Painel do {roleLabel(visibleRole)}</h1>
             <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               {superadmin ? "Controle global de identidade, CMS, integração financeira e todas as operações acadêmicas." : "Gestão ampla de pessoas, cursos, turmas, avaliações, certificados, moderação e auditoria."}
             </p>
           </div>
-          <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
+          <div className="relative z-[1] min-w-0 rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
             <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
-            <div className="admin-action-grid grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
-              {quickActions.map((action, index) => <Link key={action.href} href={action.href} className={`${index > 3 ? "hidden md:flex" : "flex"} min-h-12 min-w-0 items-center rounded-xl border px-3 py-3 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}><span className="truncate">{action.label}</span></Link>)}
+            <div className="admin-action-grid grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-2">
+              {quickActions.map((action) => <Link key={action.href} href={action.href} className={`${action.mobile ? "flex" : "hidden sm:flex"} ${action.wideMobile ? "col-span-2 sm:col-span-1" : ""} min-h-12 min-w-0 items-center rounded-xl border px-3 py-3 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}><span className="truncate">{action.label}</span></Link>)}
             </div>
           </div>
         </section>
 
         <AdminActionCenter />
-        <AdminCapabilityMap />
+        {superadmin && <SuperadminControlCenter />}
+        <AdminCapabilityMap isSuperadmin={superadmin} />
         <AdminModerationHub />
 
         {/* Cards de KPIs em estilo alinhado com a área do aluno */}
@@ -225,8 +231,8 @@ export default function AdminDashboardPage() {
         />
 
         {/* Monitor de Vendas / Stripe & Matrículas */}
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
+          <div className="order-2 space-y-4 rounded-3xl p-4 surface-card sm:p-8 lg:order-1 lg:col-span-2">
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               <BarChart3 className="text-red-600" size={22} />
               Evolução de Matrículas e Cursos Criados
@@ -237,7 +243,7 @@ export default function AdminDashboardPage() {
             <MonthlyActivityChart data={stats?.monthlyActivity || []} />
           </div>
 
-          <div className="surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+          <div className="order-1 space-y-4 rounded-3xl p-4 surface-card sm:p-8 lg:order-2">
             <h2 className="text-xl font-black text-foreground flex items-center gap-2">
               <Users className="text-red-600" size={22} />
               Busca Administrativa Rápida
@@ -249,23 +255,18 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* Monitor de Comércio (Stripe & Pedidos) */}
-        <div className="surface-card p-6 sm:p-8 rounded-3xl space-y-4">
-          <h2 className="text-xl font-black text-foreground flex items-center gap-2">
-            <Award className="text-red-600" size={22} />
-            Monitor de Comércio e Faturamento
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Acompanhe o status do Stripe, faturamento consolidado, cupons ativos e transações recentes.
-          </p>
+        {superadmin && <div className="surface-card p-6 sm:p-8 rounded-3xl space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-xl font-black text-foreground flex items-center gap-2"><Award className="text-violet-600" size={22} /> Monitor de Comércio e Faturamento</h2>
+            <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-violet-700 dark:bg-violet-950/40 dark:text-violet-200">Exclusivo</span>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground">Acompanhe o status do Stripe, faturamento consolidado, cupons ativos e transações recentes.</p>
           <AdminCommerceMonitor data={stats?.commerce || {
             commerceAvailable: false,
             salesSummary: { totalPurchases: 0, totalRevenue: 0, currency: "BRL", revenueBasis: "unavailable", uniqueBuyers: 0, totalEnrollments: 0 },
-            topSellingCourses: [],
-            recentPurchases: [],
-            recentEnrollments: []
+            topSellingCourses: [], recentPurchases: [], recentEnrollments: []
           }} />
-        </div>
+        </div>}
       </div>
     </div>
   );

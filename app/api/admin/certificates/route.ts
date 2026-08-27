@@ -45,7 +45,7 @@ async function resolveAdminUser(
   return db.query.users.findFirst({ where: eq(users.email, email) });
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await requireTeacherOrAdmin();
     if (!session) {
@@ -69,6 +69,25 @@ export async function GET() {
       }));
     }
 
+    const requestedView = new URL(request.url).searchParams.get("view");
+    const isTeacher = session.user.role === "professor";
+    if (isTeacher) {
+      const managementChecks = await Promise.all(
+        items.map(async certificate => ({
+          certificate,
+          canManage: await canManageCourse(session, certificate.courseId),
+        }))
+      );
+      items = managementChecks
+        .filter(({ canManage }) => canManage)
+        .map(({ certificate }) => certificate);
+    }
+    // Cursos usados para validar documentos e templates permanecem
+    // administráveis, mas não integram a fila pedagógica de professores.
+    if (requestedView === "teacher") {
+      items = items.filter(certificate => !isTechnicalCourse({ title: certificate.course?.title }));
+    }
+
     return NextResponse.json({
       success: true,
       certificates: (items || []).map(certificate => {
@@ -90,6 +109,16 @@ export async function GET() {
           signatureType: certificate.signatureType || "none",
           signedAt: certificate.signedAt || null,
           hasSignedPdf: Boolean(certificate.signedPdfUrl),
+          certificateUrl: certificate.certificateUrl
+            ? `/api/certificates/${certificate.id}/download`
+            : null,
+          signedPdfUrl: certificate.signedPdfUrl
+            ? `/api/certificates/${certificate.id}/download`
+            : null,
+          downloadUrl:
+            certificate.signedPdfUrl || certificate.certificateUrl
+              ? `/api/certificates/${certificate.id}/download`
+              : null,
           certificateTemplateId: certificate.certificateTemplateId ?? null,
           includeSiteBranding: certificate.includeSiteBranding ?? true,
         };

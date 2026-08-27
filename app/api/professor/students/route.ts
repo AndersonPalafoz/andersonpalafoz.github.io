@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
+import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
 import { and, eq } from "drizzle-orm";
 
 async function authorizeTeacher() {
@@ -31,7 +32,9 @@ export async function GET() {
       orderBy: (table, { asc }) => asc(table.createdAt),
     });
 
-    return NextResponse.json({ students: pendingStudents });
+    return NextResponse.json({
+      students: pendingStudents.filter(student => !isTechnicalLearnerIdentity(student)),
+    });
   } catch (error) {
     console.error("Error listing pending students:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
