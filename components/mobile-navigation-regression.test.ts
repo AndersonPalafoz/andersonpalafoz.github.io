@@ -26,5 +26,17 @@ describe("navegação em smartphones", () => {
     expect(shell).toContain('id="dashboard-mobile-navigation"');
     expect(styles).toContain("bottom: max(0.75rem, env(safe-area-inset-bottom));");
     expect(styles).toContain("padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));");
+    expect(shell).toContain("overflow-visible md:overflow-hidden");
+    expect(shell).toContain("min-h-0 flex-1 overflow-visible");
+    expect(styles).toContain("overscroll-behavior-y: auto;");
+  });
+
+  it("mantém o hero administrativo e suas ações dentro da largura móvel", () => {
+    const adminPage = read("app/admin/page.tsx");
+    const styles = read("app/globals.css");
+
+    expect(adminPage).toContain('index > 3 ? "hidden md:flex" : "flex"');
+    expect(styles).toContain(".admin-dashboard-hero {");
+    expect(styles).toContain("grid-template-columns: minmax(0, 1fr);");
   });
 });

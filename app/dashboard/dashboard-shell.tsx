@@ -179,7 +179,7 @@ export default function DashboardLayout({
   }, [session?.user?.role]);
 
   useEffect(() => {
-    if (!sidebarOpen) return;
+    if (!sidebarOpen || !window.matchMedia("(max-width: 767px)").matches) return;
     const previousBodyOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -370,7 +370,7 @@ export default function DashboardLayout({
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-visible md:overflow-hidden">
         <header className="dashboard-panel-topbar hidden min-h-[4.75rem] items-center justify-between border-b border-border/70 px-6 py-3 text-card-foreground md:flex lg:px-8">
           <div className="min-w-0">
             <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Área protegida</p>
@@ -390,7 +390,7 @@ export default function DashboardLayout({
           </button>
         </header>
 
-        <main className="dashboard-content flex-1 overflow-auto p-4 pb-24 sm:p-6 sm:pb-24 lg:p-8 lg:pb-8">
+        <main className="dashboard-content min-h-0 flex-1 overflow-visible p-3 pb-28 sm:p-6 sm:pb-24 md:overflow-y-auto lg:p-8 lg:pb-8">
           <div className="mx-auto min-w-0 max-w-7xl">{children}</div>
         </main>
       </div>

@@ -84,7 +84,7 @@ function MonthlyActivityChart({ data }: { data: Stats["monthlyActivity"] }) {
             );
           })}
         </svg>
-        <div className="flex items-center justify-center gap-8 mt-6 text-xs font-bold text-muted-foreground">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-center text-xs font-bold text-muted-foreground sm:gap-x-8">
           <div className="flex items-center gap-2">
             <span className="w-3.5 h-3.5 rounded-md bg-red-600 inline-block shadow-xs" /> Matrículas Realizadas
           </div>
@@ -203,8 +203,8 @@ export default function AdminDashboardPage() {
           </div>
           <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
             <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
-            <div className="admin-action-grid grid grid-cols-2 gap-2">
-              {quickActions.map((action) => <Link key={action.href} href={action.href} className={`flex min-h-11 items-center rounded-xl border px-3 py-2.5 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}>{action.label}</Link>)}
+            <div className="admin-action-grid grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
+              {quickActions.map((action, index) => <Link key={action.href} href={action.href} className={`${index > 3 ? "hidden md:flex" : "flex"} min-h-12 min-w-0 items-center rounded-xl border px-3 py-3 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}><span className="truncate">{action.label}</span></Link>)}
             </div>
           </div>
         </section>
