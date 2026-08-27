@@ -24,7 +24,8 @@ describe("external class deletion safeguards", () => {
     expect(route).toContain('action === "deleteClass"');
     expect(route).toContain('action === "restoreClass"');
     expect(route).toContain('action === "permanentDeleteClass"');
-    expect(route).toContain("existingClass.teacherId !== teacher?.id");
+    expect(route).toContain("const canManageClass = (classId: number, ownerId: number)");
+    expect(route).toContain("ownerId === teacher.id || delegatedClassIds.has(classId)");
     expect(route).toContain("deletedAt");
   });
 });
