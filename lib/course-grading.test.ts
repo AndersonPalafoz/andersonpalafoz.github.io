@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateCourseGrade, parseGradeNumber, parseUnitPassingAverages } from "./course-grading";
+import { calculateCourseGrade, normalizeGradeInput, parseGradeNumber, parseUnitPassingAverages } from "./course-grading";
 
 describe("course grading configuration", () => {
   it("calculates a whole-course average with a configurable threshold", () => {
@@ -27,5 +27,16 @@ describe("course grading configuration", () => {
     expect(parseGradeNumber("0")).toBe(0);
     expect(parseGradeNumber("7,5")).toBe(7.5);
     expect(parseGradeNumber("não é nota")).toBeNull();
+    expect(parseGradeNumber("   ")).toBeNull();
+  });
+
+  it("serializes decimal input consistently for persistence", () => {
+    expect(normalizeGradeInput("0")).toBe("0");
+    expect(normalizeGradeInput("7,50")).toBe("7.5");
+    expect(normalizeGradeInput("1.25")).toBe("1.25");
+    expect(normalizeGradeInput(",75")).toBe("0.75");
+    expect(normalizeGradeInput(".5")).toBe("0.5");
+    expect(normalizeGradeInput(2.75)).toBe("2.75");
+    expect(normalizeGradeInput("abc")).toBeNull();
   });
 });

@@ -13,6 +13,7 @@ import {
   notifications,
 } from "@/drizzle/schema";
 import { eq, desc, and, or, isNull, isNotNull, inArray } from "drizzle-orm";
+import { normalizeGradeInput } from "@/lib/course-grading";
 
 type ExternalClassesDbError = Error & {
   code?: string;
@@ -30,8 +31,10 @@ function logExternalClassesError(operation: string, error: unknown) {
 }
 
 function validateGrade(score: unknown, maxScore: unknown) {
-  const scoreNumber = Number(String(score ?? "").trim().replace(",", "."));
-  const maxNumber = Number(String(maxScore ?? "10").trim().replace(",", "."));
+  const normalizedScore = normalizeGradeInput(score);
+  const normalizedMaxScore = normalizeGradeInput(maxScore ?? "10");
+  const scoreNumber = normalizedScore === null ? Number.NaN : Number(normalizedScore);
+  const maxNumber = normalizedMaxScore === null ? Number.NaN : Number(normalizedMaxScore);
   if (!Number.isFinite(scoreNumber) || !Number.isFinite(maxNumber) || maxNumber <= 0) return "A nota e o valor máximo devem ser numéricos.";
   if (scoreNumber < 0 || scoreNumber > maxNumber) return `A nota deve estar entre 0 e ${maxNumber}.`;
   return null;
@@ -40,6 +43,7 @@ function validateGrade(score: unknown, maxScore: unknown) {
 const MAX_IMPORTED_STUDENT_ROWS = 1_000;
 const MAX_ATTENDANCE_RECORDS_PER_IMPORTED_STUDENT = 160;
 const MAX_IMPORTED_TEXT_LENGTH = 500;
+const MAX_STUDENT_NOTES_LENGTH = 2_000;
 const VALID_ATTENDANCE_STATUSES = new Set(["present", "absent", "late", "excused"]);
 
 const firstImportedText = (row: Record<string, unknown>, ...keys: string[]) => {
@@ -249,6 +253,10 @@ export async function POST(request: NextRequest) {
       materialId,
       teacherIds,
     } = body;
+
+    if (studentNotes !== undefined && studentNotes !== null && (typeof studentNotes !== "string" || studentNotes.length > MAX_STUDENT_NOTES_LENGTH)) {
+      return NextResponse.json({ error: `As anotações do professor devem ter no máximo ${MAX_STUDENT_NOTES_LENGTH} caracteres.` }, { status: 400 });
+    }
 
     if (action === "setTeacherAssignments") {
       if (!isGlobalAdmin) return NextResponse.json({ error: "Somente administradores podem atribuir professores a uma turma." }, { status: 403 });
@@ -465,7 +473,7 @@ export async function POST(request: NextRequest) {
         university: studentUniversity ? studentUniversity.trim() : null,
         component: studentComponent ? studentComponent.trim() : null,
         status: studentStatus ? studentStatus.trim() : "active",
-        notes: studentNotes ? studentNotes.trim() : null,
+        notes: typeof studentNotes === "string" && studentNotes.trim() ? studentNotes.trim() : null,
       }).returning();
 
       return NextResponse.json({ success: true, student: inserted[0] });
@@ -494,7 +502,7 @@ export async function POST(request: NextRequest) {
           university: studentUniversity !== undefined ? (studentUniversity ? studentUniversity.trim() : null) : student.university,
           component: studentComponent !== undefined ? (studentComponent ? studentComponent.trim() : null) : student.component,
           status: studentStatus ? studentStatus.trim() : student.status,
-          notes: studentNotes !== undefined ? studentNotes.trim() : student.notes,
+          notes: studentNotes !== undefined ? (typeof studentNotes === "string" && studentNotes.trim() ? studentNotes.trim() : null) : student.notes,
           updatedAt: new Date(),
         })
         .where(eq(externalStudents.id, Number(studentId)))
@@ -835,6 +843,8 @@ export async function POST(request: NextRequest) {
     // Ações em Lote para Notas (Batch Grades)
     if (action === "saveBatchGrades") {
       const { assessmentTitle, maxScore, gradesList } = body;
+      const normalizedBatchMaxScore = normalizeGradeInput(maxScore || "10.0");
+      if (normalizedBatchMaxScore === null) return NextResponse.json({ error: "O valor máximo deve ser um número decimal válido." }, { status: 400 });
       if (!classId || !assessmentTitle || !Array.isArray(gradesList) || gradesList.length === 0) {
         return NextResponse.json({ error: "Turma, título da avaliação e lista de notas são obrigatórios." }, { status: 400 });
       }
@@ -855,15 +865,17 @@ export async function POST(request: NextRequest) {
 
       for (const item of gradesList) {
         const studentIdNum = Number(item.studentId);
-        const scoreVal = String(item.score ?? "").trim();
+        const scoreVal = normalizeGradeInput(item.score);
         if (!validStudentIds.has(studentIdNum)) {
           errors.push(`Aluno ID ${studentIdNum} não pertence a esta turma.`);
           continue;
         }
-        if (!scoreVal) {
-          continue; // Pular notas vazias
+        if (scoreVal === null) {
+          if (String(item.score ?? "").trim() === "") continue; // Pular notas vazias
+          errors.push(`Aluno ID ${studentIdNum}: informe uma nota decimal válida.`);
+          continue;
         }
-        const gradeError = validateGrade(scoreVal, maxScore || "10.0");
+        const gradeError = validateGrade(scoreVal, normalizedBatchMaxScore);
         if (gradeError) {
           errors.push(`Aluno ID ${studentIdNum}: ${gradeError}`);
           continue;
@@ -877,7 +889,7 @@ export async function POST(request: NextRequest) {
           assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
           assessmentComponent: assessmentComponent ? String(assessmentComponent).trim() : null,
           score: scoreVal,
-          maxScore: maxScore ? String(maxScore).trim() : "10.0",
+          maxScore: normalizedBatchMaxScore,
           rubricScores: item.rubricScores ? JSON.stringify(item.rubricScores) : (rubricScores ? String(rubricScores) : null),
           assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
           unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
@@ -913,7 +925,9 @@ export async function POST(request: NextRequest) {
       if (!targetStudent || targetStudent.externalClassId !== Number(classId)) {
         return NextResponse.json({ error: "O aluno selecionado não pertence a esta turma." }, { status: 400 });
       }
-      const gradeError = validateGrade(score, maxScore || "10.0");
+      const normalizedScore = normalizeGradeInput(score);
+      const normalizedMaxScore = normalizeGradeInput(maxScore || "10.0");
+      const gradeError = validateGrade(normalizedScore, normalizedMaxScore);
       if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
         const inserted = await db.insert(externalClassGrades).values({
           externalClassId: Number(classId),
@@ -922,8 +936,8 @@ export async function POST(request: NextRequest) {
         assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
         assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
         assessmentComponent: assessmentComponent ? String(assessmentComponent).trim() : null,
-        score: String(score).trim(),
-        maxScore: maxScore ? String(maxScore).trim() : "10.0",
+        score: normalizedScore as string,
+        maxScore: normalizedMaxScore as string,
         rubricScores: rubricScores ? String(rubricScores) : null,
         assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
         unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
@@ -962,15 +976,17 @@ export async function POST(request: NextRequest) {
       if (existingClass.gradeStatus === "closed") {
         return NextResponse.json({ error: "As notas desta turma estão fechadas. Reabra o lançamento antes de editar avaliações." }, { status: 409 });
       }
-      const gradeError = validateGrade(score, maxScore || existingGrade.maxScore || "10.0");
+      const normalizedScore = normalizeGradeInput(score);
+      const normalizedMaxScore = normalizeGradeInput(maxScore || existingGrade.maxScore || "10.0");
+      const gradeError = validateGrade(normalizedScore, normalizedMaxScore);
       if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
       const [updated] = await db.update(externalClassGrades).set({
         assessmentTitle: String(assessmentTitle).trim(),
         assessmentType: assessmentType ? String(assessmentType).trim() : existingGrade.assessmentType,
         assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
         assessmentComponent: assessmentComponent ? String(assessmentComponent).trim() : null,
-        score: String(score).trim(),
-        maxScore: maxScore ? String(maxScore).trim() : existingGrade.maxScore,
+        score: normalizedScore as string,
+        maxScore: normalizedMaxScore as string,
         rubricScores: rubricScores ? String(rubricScores) : null,
         assessmentDate: assessmentDate ? String(assessmentDate).trim() : null,
         unitNumber: unitNumber !== undefined && unitNumber !== null && unitNumber !== "" ? Number(unitNumber) : null,
