@@ -13,6 +13,16 @@ describe("Enrollment Policy for Free and Paid Courses", () => {
     expect(source).toContain("Este curso é pago. É necessário concluir o pagamento via Stripe ou aguardar a liberação manual pelo administrador.");
   });
 
+  it("accepts an optional offer context without removing legacy enrollment", () => {
+    const routePath = path.join(process.cwd(), "app/api/enrollments/route.ts");
+    const source = fs.readFileSync(routePath, "utf8");
+
+    expect(source).toContain("const offerId");
+    expect(source).toContain("courseOfferStudents");
+    expect(source).toContain("Oferta não encontrada ou indisponível para matrícula.");
+    expect(source).toContain("offerIds");
+  });
+
   it("allows public viewing of course details and catalog information", () => {
     const detailPath = path.join(process.cwd(), "app/cursos/[id]/page.tsx");
     const source = fs.readFileSync(detailPath, "utf8");

@@ -6,6 +6,9 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { CheckCircle2, ChevronDown, Loader2, PlayCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { enrollInCourse, startCourseCheckout } from "@/lib/course-offer-client";
+import { CourseOfferApiError } from "@/lib/course-offer-types";
+import { isCourseOffersEnabled } from "@/lib/course-offer-feature";
 
 type CourseOfferOption = {
   id: number;
@@ -23,6 +26,7 @@ type EnrollmentRecord = {
   courseId?: number | null;
   offerId?: number | null;
   courseOfferId?: number | null;
+  offerIds?: number[];
   status?: string | null;
   course?: { id?: number | null } | null;
 };
@@ -55,9 +59,12 @@ export function EnrollButton({
   const [message, setMessage] = useState<string | null>(null);
   const [selectedOfferId, setSelectedOfferId] = useState<number | null>(initialOfferId);
 
+  const offersEnabled = isCourseOffersEnabled({ hasOffers: offers.length > 0 });
   const availableOffers = useMemo(
-    () => offers.filter((offer) => !offer.deletedAt && !["archived", "closed", "cancelled"].includes(String(offer.status ?? "").toLowerCase())),
-    [offers]
+    () => offersEnabled
+      ? offers.filter((offer) => !offer.deletedAt && !["archived", "closed", "cancelled"].includes(String(offer.status ?? "").toLowerCase()))
+      : [],
+    [offers, offersEnabled]
   );
   const selectedOffer = availableOffers.find((offer) => offer.id === selectedOfferId) ?? null;
   const hasOfferContext = availableOffers.length > 0;
@@ -85,7 +92,7 @@ export function EnrollButton({
             const sameCourse = item.courseId === courseId || item.course?.id === courseId;
             if (!sameCourse) return false;
             if (!selectedOfferId) return true;
-            return item.offerId === selectedOfferId || item.courseOfferId === selectedOfferId;
+            return item.offerId === selectedOfferId || item.courseOfferId === selectedOfferId || item.offerIds?.includes(selectedOfferId) === true;
           });
           setIsEnrolled(Boolean(found));
         }
@@ -119,18 +126,12 @@ export function EnrollButton({
       setLoading(true);
       setMessage(null);
       if (!isFree) {
-        const response = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(enrollmentPayload),
-        });
-        const data = await response.json();
-        if (response.status === 409 && data.enrolled) {
+        const data = await startCourseCheckout(enrollmentPayload);
+        if (data.enrolled) {
           setIsEnrolled(true);
           toast.info("Você já tem acesso a este curso.");
           return;
         }
-        if (!response.ok) throw new Error(data.error || "Não foi possível iniciar o pagamento.");
         if (data.checkoutUrl) {
           toast.success("Abrindo checkout seguro do Stripe...");
           window.open(data.checkoutUrl, "_blank", "noopener,noreferrer");
@@ -138,26 +139,16 @@ export function EnrollButton({
         return;
       }
 
-      const response = await fetch("/api/enrollments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(enrollmentPayload),
-      });
-
-      if (response.status === 409) {
-        setIsEnrolled(true);
-        toast.info("Você já está matriculado nesta oferta.");
-        return;
-      }
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Falha ao se inscrever");
-      }
-
+      await enrollInCourse(enrollmentPayload);
       setIsEnrolled(true);
       toast.success(selectedOffer ? "Matrícula realizada na oferta com sucesso!" : "Inscrição realizada com sucesso!");
       router.refresh();
     } catch (err) {
+      if (err instanceof CourseOfferApiError && err.status === 409) {
+        setIsEnrolled(true);
+        toast.info(isFree ? "Você já está matriculado nesta oferta." : "Você já tem acesso a este curso.");
+        return;
+      }
       toast.error(err instanceof Error ? err.message : "Erro ao se inscrever");
     } finally {
       setLoading(false);
