@@ -12,7 +12,8 @@ function temporaryPassword() {
 
 export async function POST(request: NextRequest) {
   const session = await requireTeacherOrAdmin();
-  if (!session) return NextResponse.json({ error: "Acesso restrito a professores e administradores." }, { status: 403 });
+  const isAdmin = session?.user?.role === "admin";
+  if (!session) return NextResponse.json({ error: `Acesso restrito a ${isAdmin ? "administradores" : "professores e administradores"}.` }, { status: 403 });
   const body = await request.json().catch(() => ({}));
   const classId = Number(body.classId);
   const resend = body.action === "resend";
