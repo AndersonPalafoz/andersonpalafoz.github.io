@@ -1796,7 +1796,7 @@ export default function TurmasExternasPage() {
               >
                 <option value="all">Todos os alunos</option>
                 <option value="grade">Reprovados por nota (&lt; 6,0)</option>
-                <option value="attendance">Reprovados por falta (&lt; 75%)</option>
+                <option value="attendance">Reprovados por falta (regra da turma)</option>
                 <option value="any">Qualquer reprovação</option>
               </select>
             </div>
@@ -2110,9 +2110,15 @@ export default function TurmasExternasPage() {
                           <input type="number" min={0} max={10} step={0.1} value={unitPassingAverages[unit] ?? passingAverage} onChange={(e) => {
                             const value = Number(e.target.value);
                             if (Number.isFinite(value)) setUnitPassingAverages((current) => ({ ...current, [unit]: Math.max(0, Math.min(10, value)) }));
-                          }} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
+                          }} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                         </label>)}</div>}
                       </div>}
+                      {!hasUnits && <label className="mt-3 block text-[11px] font-bold text-gray-700 dark:text-gray-300">Média mínima geral
+                        <input type="number" min={0} max={10} step={0.1} value={passingAverage} onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setPassingAverage(Number.isFinite(value) ? Math.max(0, Math.min(10, value)) : 5);
+                        }} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-slate-800 dark:bg-slate-800 dark:text-white" />
+                      </label>}
                       <p className="mt-2 text-[10px] text-red-800 dark:text-red-200">A média mínima e a frequência mínima ficam registradas na turma e são usadas no painel, nos relatórios acadêmicos e na classificação de aprovação. Notas e chamadas já lançadas não são alteradas.</p>
                     </div>
                     <div>
