@@ -2678,3 +2678,27 @@
 - [x] Mapear os atalhos de navegação móvel de professor, administrador e superadministrador e identificar operações autorizadas pouco visíveis.
 - [x] Reorganizar a barra móvel e os acessos ao menu completo sem expor funções fora do escopo de permissão.
 - [x] Validar navegação, acessibilidade, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Matriz completa de responsividade e usabilidade móvel — 27/08/2026
+- [x] Mapear as rotas públicas, do aluno, do professor e da administração prioritárias para inspeção em 320px, 375px e 414px.
+- [x] Verificar largura, rolagem, hierarquia, toques, estados vazios e navegação nas três resoluções e corrigir falhas confirmadas.
+- [x] Revalidar visualmente, executar testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Gestão administrativa de medalhas — 27/08/2026
+- [x] Auditar catálogo, filtros, criação manual, concessões e estados vazios da página administrativa de medalhas.
+- [x] Melhorar a hierarquia, controles e responsividade da gestão de medalhas, sem criar avaliações ou reconhecimentos fictícios.
+- [x] Validar permissões, acessibilidade, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Validação integral de responsividade e usabilidade móvel — 27/08/2026
+- [x] Auditar rotas e interações prioritárias nas larguras de 320px, 375px e 414px.
+- [x] Corrigir somente quebras reproduzíveis de layout, rolagem, contraste, toque, formulários, filtros ou navegação.
+- [x] Revalidar visualmente, executar testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Revisão da página de cadastro — 27/08/2026
+- [x] Auditar a página de cadastro atualizada, seu fluxo de autenticação e seus estados de carregamento, erro e sucesso.
+- [x] Aperfeiçoar campos, textos de orientação, acessibilidade e responsividade sem alterar permissões ou dados de usuários.
+- [x] Validar o fluxo, testes, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Reconciliação segura da revisão de cadastro com a main — 27/08/2026
+- [x] Preservar as alterações locais validadas e alinhar o histórico à referência atual da branch main remota.
+- [x] Reaplicar somente a revisão de cadastro, confirmar a integridade do diff e enviar o checkpoint para main.
