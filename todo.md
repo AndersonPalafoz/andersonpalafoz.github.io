@@ -2572,3 +2572,8 @@
 - [x] Auditar a fonte, a prioridade e as requisições da foto de perfil exibida na navegação do dashboard.
 - [x] Otimizar o carregamento com cache seguro, prioridade visual e fallback acessível, sem expor URL privada da imagem.
 - [x] Cobrir a resolução do avatar, estados de carregamento/erro, responsividade, TypeScript e build.
+
+## Navegação e responsividade em smartphones — 27/08/2026
+- [x] Auditar as superfícies móveis compartilhadas, incluindo menu público, navegação do dashboard e páginas protegidas prioritárias.
+- [x] Melhorar a descoberta de rotas, a área de toque, os estados ativos e a contenção contra rolagem lateral em smartphones.
+- [x] Validar os fluxos em viewport mobile, acessibilidade, testes, TypeScript e build de produção.

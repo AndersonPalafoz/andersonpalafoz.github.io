@@ -41,6 +41,25 @@ export function Navbar() {
   }, [pathname]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -144,7 +163,7 @@ export function Navbar() {
   }, [session]);
 
   const isActive = (href: string) => href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
-  const linkClass = (href: string) => `relative rounded-full px-3.5 py-2 text-[13px] font-bold transition-all hover:-translate-y-0.5 ${isActive(href) ? "bg-red-50 text-red-700 shadow-sm ring-1 ring-red-200/70 dark:bg-red-950/60 dark:text-red-300 dark:ring-red-900/40" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"}`;
+  const linkClass = (href: string) => `relative flex min-h-11 items-center rounded-full px-3.5 py-2 text-[13px] font-bold transition-all hover:-translate-y-0.5 ${isActive(href) ? "bg-red-50 text-red-700 shadow-sm ring-1 ring-red-200/70 dark:bg-red-950/60 dark:text-red-300 dark:ring-red-900/40" : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-red-600 dark:hover:text-red-400"}`;
 
   return (
     <>
@@ -155,6 +174,7 @@ export function Navbar() {
         </aside>
       )}
 
+      {isOpen && <button type="button" tabIndex={-1} aria-label="Fechar menu de navegação" onClick={() => setIsOpen(false)} className="fixed inset-0 top-[4.75rem] z-40 cursor-default bg-slate-950/25 backdrop-blur-[1px] lg:hidden" />}
       <nav className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/90" : "border-slate-200/60 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/95"}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
@@ -300,7 +320,8 @@ export function Navbar() {
             </div>
           </div>
 
-          {isOpen && <div id="mobile-navigation" className="my-2 rounded-3xl border border-slate-200/80 bg-white/95 px-2 py-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
+          {isOpen && <div id="mobile-navigation" aria-label="Menu de navegação" className="my-2 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain rounded-3xl border border-slate-200/80 bg-white/95 px-2 py-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
+            {session && <Link href="/dashboard" onClick={() => setIsOpen(false)} className="mb-3 flex min-h-12 items-center justify-between rounded-2xl bg-red-600 px-3.5 py-3 text-sm font-black text-white shadow-sm shadow-red-600/20"><span className="flex items-center gap-2"><LayoutDashboard size={18} /> Minha Área</span><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-red-100">Painel</span></Link>}
             <div className="grid gap-1">
               {navLinks.map((link) => <Link key={link.href} href={link.href} className={linkClass(link.href)} onClick={() => setIsOpen(false)}>{link.label}</Link>)}
             </div>
@@ -308,8 +329,6 @@ export function Navbar() {
               {session ? <>
                 <Link href="/dashboard/desejos" onClick={() => setIsOpen(false)} className="flex items-center justify-between rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><span className="flex items-center gap-2"><Heart size={17} className={wishlistCount > 0 ? "fill-red-500 text-red-500" : ""} /> Lista de Desejos</span>{wishlistCount > 0 && <span className="rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-black text-white">{wishlistCount}</span>}</Link>
                 <Link href="/dashboard/perfil" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-600"><User size={17} /> Meu Perfil e Faturamento</Link>
-                {/* Links de Professor e Admin movidos estritamente para o dashboard */}
-                <Link href="/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-sm font-black text-white"><LayoutDashboard size={17} /> Minha Área</Link>
                 <button type="button" onClick={() => signOut()} className="flex items-center gap-2 rounded-xl px-3 py-3 text-left text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40"><LogOut size={17} /> Sair</button>
               </> : <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-xl bg-red-600 px-3 py-3 text-sm font-black text-white"><LogIn size={17} /> Entrar</Link>}
             </div>

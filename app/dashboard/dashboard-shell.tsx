@@ -179,6 +179,25 @@ export default function DashboardLayout({
   }, [session?.user?.role]);
 
   useEffect(() => {
+    if (!sidebarOpen) return;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSidebarOpen(false);
+    };
+
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [sidebarOpen]);
+
+  useEffect(() => {
     if (!session?.user?.email) { setAvatarLoading(false); return; }
     let active = true;
     const sessionEmail = session.user.email;
@@ -292,8 +311,9 @@ export default function DashboardLayout({
         </div>
       )}
 
-      <aside
-        className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky md:top-0 z-40 flex h-[100dvh] w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
+          <aside
+            id="dashboard-mobile-navigation"
+            className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky md:top-0 z-40 flex h-[100dvh] w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
       >
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
@@ -365,7 +385,7 @@ export default function DashboardLayout({
         </header>
         <header className="dashboard-topbar flex items-center justify-between border-b border-border/70 p-4 text-card-foreground shadow-sm md:hidden">
           <div className="min-w-0"><p className="truncate font-bold text-foreground">{activeTitle}</p><p className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">{roleLabel(visibleRole)}</p></div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen} aria-controls="dashboard-mobile-navigation">
             {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </header>
@@ -385,7 +405,7 @@ export default function DashboardLayout({
               href={item.href}
               onClick={() => setSidebarOpen(false)}
               aria-current={active ? "page" : undefined}
-              className={`flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-[9px] font-black transition ${active ? "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+              className={`flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 text-[9px] font-black transition ${active ? "bg-red-50 text-red-700 dark:bg-red-950/50 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
             >
               <Icon size={17} />
               <span className="max-w-full truncate">{item.label}</span>
@@ -394,7 +414,7 @@ export default function DashboardLayout({
         })}
       </nav>
 
-      {sidebarOpen && <div className="fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-[2px] md:hidden" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <button type="button" tabIndex={-1} aria-label="Fechar menu de navegação" className="fixed inset-0 z-30 cursor-default bg-slate-950/40 backdrop-blur-[2px] md:hidden" onClick={() => setSidebarOpen(false)} />}
     </div>
   );
 }
