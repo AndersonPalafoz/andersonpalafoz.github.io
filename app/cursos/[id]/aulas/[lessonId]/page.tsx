@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, CheckCircle2, Download, Eye, ExternalLink, TrendingUp, Mic, Square, Loader2, FileText, Video, PartyPopper, Share2, ShieldAlert, Trash2, Target, ClipboardCheck, RotateCcw, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,10 @@ export default function LessonPageClient() {
   const params = useParams();
   const courseId = params.id as string;
   const lessonId = params.lessonId as string;
+  const searchParams = useSearchParams();
+  const offerId = searchParams.get("offerId");
+  const offerQuery = offerId ? `&offerId=${encodeURIComponent(offerId)}` : "";
+  const courseContextQuery = offerId ? `?offerId=${encodeURIComponent(offerId)}` : "";
 
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [lesson, setLesson] = useState<LessonData | null>(null);
@@ -79,7 +83,7 @@ export default function LessonPageClient() {
     const loadLesson = async () => {
       try {
         setLoadingInitial(true);
-        const res = await fetch(`/api/lessons/${lessonId}/detail`);
+        const res = await fetch(`/api/lessons/${lessonId}/detail${courseContextQuery}`);
         if (!res.ok) throw new Error("Não foi possível carregar os dados da aula.");
         const json = await res.json();
         setLesson(json.lesson);
@@ -87,7 +91,7 @@ export default function LessonPageClient() {
         setCourseAudioUrl(json.course?.audioUrl || null);
         setMaterials(json.materials || []);
         setCompleted(json.completed);
-        const noteRes = await fetch(`/api/notes?lessonId=${lessonId}`);
+        const noteRes = await fetch(`/api/notes?lessonId=${lessonId}${offerQuery}`);
         if (noteRes.ok) {
           const noteJson = await noteRes.json();
           const savedNote = noteJson.note;
@@ -131,12 +135,12 @@ export default function LessonPageClient() {
       }
     };
     void loadLesson();
-  }, [lessonId]);
+  }, [lessonId, courseContextQuery, offerQuery]);
 
   const savePersonalNote = async () => {
     setSavingNote(true);
     try {
-      const response = await fetch("/api/notes", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lessonId: Number(lessonId), note: personalNote }) });
+      const response = await fetch("/api/notes", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lessonId: Number(lessonId), offerId: offerId ? Number(offerId) : undefined, note: personalNote }) });
       if (!response.ok) throw new Error("Não foi possível salvar sua anotação.");
       toast.success("Anotação salva para esta aula.");
     } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao salvar anotação."); } finally { setSavingNote(false); }
@@ -146,7 +150,7 @@ export default function LessonPageClient() {
     if (deletingNote) return;
     setDeletingNote(true);
     try {
-      const response = await fetch(`/api/notes?lessonId=${Number(lessonId)}`, { method: "DELETE" });
+      const response = await fetch(`/api/notes?lessonId=${Number(lessonId)}${offerQuery}`, { method: "DELETE" });
       const data = await response.json().catch(() => null);
       if (!response.ok) throw new Error(data?.error || "Não foi possível excluir sua anotação.");
       setPersonalNote("");
@@ -162,7 +166,7 @@ export default function LessonPageClient() {
   const handleToggleComplete = async () => {
     setLoadingProgress(true);
     try {
-      const res = await fetch(`/api/lessons/${lessonId}/progress`, {
+      const res = await fetch(`/api/lessons/${lessonId}/progress${courseContextQuery}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: !completed }),
@@ -313,7 +317,7 @@ export default function LessonPageClient() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href={`/cursos/${courseId}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold transition">
+          <Link href={`/cursos/${courseId}${courseContextQuery}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold transition">
             <ChevronLeft size={20} /> Voltar ao Curso ({courseTitle})
           </Link>
           <span className="text-xs font-mono font-bold text-gray-400">Aula #{lessonId}</span>

@@ -17,7 +17,7 @@ import { getCourseTypeDefinition, getSyncModalityLabel } from "@/lib/course-type
 import { listPublishedCourseOffers } from "@/lib/course-offer-service";
 import { ExternalCourseCta } from "@/components/external-course-cta";
 
-async function CourseModulesList({ courseId, userId }: { courseId: number; userId?: number }) {
+async function CourseModulesList({ courseId, userId, offerId }: { courseId: number; userId?: number; offerId?: number | null }) {
   let modules: any[] = [];
   try {
     modules = await getModulesByCourse(courseId);
@@ -98,7 +98,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
                   return (
                     <Link
                       key={lesson.id}
-                      href={`/cursos/${courseId}/aulas/${lesson.id}`}
+                      href={`/cursos/${courseId}/aulas/${lesson.id}${offerId ? `?offerId=${offerId}` : ""}`}
                       className="flex items-center justify-between py-3 px-3 rounded-xl hover:bg-red-50/50 transition group"
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -147,7 +147,7 @@ async function CourseModulesList({ courseId, userId }: { courseId: number; userI
   );
 }
 
-async function CourseDetail({ courseId }: { courseId: number }) {
+async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?: number | null }) {
   const session = await getServerSession(authOptions);
   const user = session?.user as any;
   const course = await getCourseById(courseId);
@@ -387,6 +387,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
               isFree={course.isFree ?? true}
               price={course.price}
               resumeLessonId={resumeLesson?.lesson.id ?? null}
+              offerId={offerId}
               offers={offers.map((offer) => ({
                 id: offer.id,
                 offerName: offer.offerName,
@@ -402,7 +403,7 @@ async function CourseDetail({ courseId }: { courseId: number }) {
             <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>
 
-          <div className="pt-6 border-t border-gray-200 dark:border-border"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} /></div>
+          <div className="pt-6 border-t border-gray-200 dark:border-border"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} offerId={offerId} /></div>
           <CourseEngagement courseId={course.id} />
         </div>
       </div>
@@ -412,10 +413,15 @@ async function CourseDetail({ courseId }: { courseId: number }) {
 
 export default async function CoursePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ offerId?: string }>;
 }) {
   const { id } = await params;
+  const query = await searchParams;
+  const parsedOfferId = query?.offerId ? Number(query.offerId) : null;
+  const validOfferId = parsedOfferId !== null && Number.isInteger(parsedOfferId) && parsedOfferId > 0 ? parsedOfferId : null;
 
   return (
     <Suspense
@@ -425,7 +431,7 @@ export default async function CoursePage({
         </div>
       }
     >
-      <CourseDetail courseId={parseInt(id)} />
+      <CourseDetail courseId={parseInt(id)} offerId={validOfferId} />
     </Suspense>
   );
 }

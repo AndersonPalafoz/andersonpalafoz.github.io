@@ -183,12 +183,27 @@ export async function updateUserProfile(
 }
 
 export async function getUserEnrollments(userId: number) {
-  return await db.query.enrollments.findMany({
+  const enrollments = await db.query.enrollments.findMany({
     where: eq(schema.enrollments.userId, userId),
     with: {
       course: true,
     },
   });
+  const contextualRows = await db
+    .select({ courseId: schema.courseOffers.courseId, offerId: schema.courseOfferStudents.offerId })
+    .from(schema.courseOfferStudents)
+    .innerJoin(schema.courseOffers, eq(schema.courseOfferStudents.offerId, schema.courseOffers.id))
+    .where(eq(schema.courseOfferStudents.userId, userId));
+  const offerIdsByCourse = new Map<number, number[]>();
+  for (const row of contextualRows) {
+    const current = offerIdsByCourse.get(row.courseId) ?? [];
+    current.push(row.offerId);
+    offerIdsByCourse.set(row.courseId, current);
+  }
+  return enrollments.map((enrollment) => ({
+    ...enrollment,
+    offerIds: offerIdsByCourse.get(enrollment.courseId) ?? [],
+  }));
 }
 
 export async function enrollUser(userId: number, courseId: number) {

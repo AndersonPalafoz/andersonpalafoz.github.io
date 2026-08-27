@@ -210,7 +210,7 @@ export default async function DashboardPage() {
                 const pct = enr.progress ?? 0;
                 const isCompleted = pct >= 100 || enr.status === "completed";
                 const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
-                return <article key={enr.id} className="rounded-2xl border border-border/70 bg-background p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-black text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p><p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{enr.course?.level || "Geral"} · Matrícula em {formattedDate}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{isCompleted ? "Concluído" : "Em andamento"}</span></div><div className="mt-4"><div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{pct}%</span></div><div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div></div><Button asChild variant="outline" className="mt-4 min-h-11 w-full"><Link href={`/cursos/${enr.courseId}`}>Acessar curso</Link></Button></article>;
+                return <article key={enr.id} className="rounded-2xl border border-border/70 bg-background p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-black text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p><p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{enr.course?.level || "Geral"} · Matrícula em {formattedDate}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{isCompleted ? "Concluído" : "Em andamento"}</span></div><div className="mt-4"><div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{pct}%</span></div><div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div></div><Button asChild variant="outline" className="mt-4 min-h-11 w-full"><Link href={`/cursos/${enr.courseId}${enr.offerIds?.[0] ? `?offerId=${enr.offerIds[0]}` : ""}`}>Acessar curso</Link></Button></article>;
               })}
             </div>
             <div className="hidden overflow-x-auto md:block">
@@ -253,7 +253,7 @@ export default async function DashboardPage() {
                         </td>
                         <td data-label="Ação" className="px-5 py-4 text-right">
                           <Button asChild size="sm" variant="outline">
-                            <Link href={`/cursos/${enr.courseId}`}>Acessar</Link>
+                            <Link href={`/cursos/${enr.courseId}${enr.offerIds?.[0] ? `?offerId=${enr.offerIds[0]}` : ""}`}>Acessar</Link>
                           </Button>
                         </td>
                       </tr>
