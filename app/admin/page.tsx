@@ -159,7 +159,6 @@ export default function AdminDashboardPage() {
   const quickActions = [
     { href: "/admin/usuarios", label: "Pessoas e acessos", mobile: true, tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" },
     { href: "/admin/relatorios-academicos", label: "Relatórios acadêmicos", mobile: true, tone: "border-slate-200 bg-card text-foreground dark:border-border" },
-    { href: "/professor/turmas-externas", label: "Turmas e avaliações", mobile: true, tone: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300" },
     { href: "/admin/certificados", label: "Certificados", mobile: true, tone: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300" },
     ...(superadmin ? [
       { href: "/admin/cms", label: "CMS e marca", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
@@ -210,6 +209,7 @@ export default function AdminDashboardPage() {
             <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
             <div className="admin-action-grid grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-2">
               {quickActions.map((action) => <Link key={action.href} href={action.href} className={`${action.mobile ? "flex" : "hidden sm:flex"} ${action.wideMobile ? "col-span-2 sm:col-span-1" : ""} min-h-12 min-w-0 items-center rounded-xl border px-3 py-3 text-xs font-bold leading-tight transition hover:-translate-y-0.5 hover:shadow-sm ${action.tone}`}><span className="truncate">{action.label}</span></Link>)}
+              <Link href="/professor/turmas-externas?tab=students" className="flex min-h-12 min-w-0 items-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs font-bold leading-tight text-emerald-800 transition hover:-translate-y-0.5 hover:shadow-sm dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300"><span className="truncate">Turmas e avaliações</span></Link>
             </div>
           </div>
         </section>

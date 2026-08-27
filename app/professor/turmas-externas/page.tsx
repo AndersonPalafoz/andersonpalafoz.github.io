@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { calculateSimalComposite } from "@/lib/simal-grading";
 import { calculateCourseGrade } from "@/lib/course-grading";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
+import { useRolePreview } from "@/components/role-preview";
 
 interface ExternalStudentItem {
   id: number;
@@ -244,7 +245,10 @@ const SIMAL_COMPONENTS = [
 
 export default function TurmasExternasPage() {
   const { data: session } = useSession();
-  const canManage = canAccessAdminPortal({ email: session?.user?.email, role: session?.user?.role });
+  const { previewRole } = useRolePreview();
+  const actualCanManage = canAccessAdminPortal({ email: session?.user?.email, role: session?.user?.role }) || session?.user?.role === "professor";
+  // A prévia de professor é deliberadamente somente leitura; a API continua protegendo as mutações reais.
+  const canManage = !previewRole || previewRole === "admin" ? actualCanManage : false;
   const [classes, setClasses] = useState<ExternalClassItem[]>([]);
   const [availableTeachers, setAvailableTeachers] = useState<TeacherOption[]>([]);
   const [assignmentDrafts, setAssignmentDrafts] = useState<Record<number, number[]>>({});
@@ -1451,7 +1455,7 @@ export default function TurmasExternasPage() {
   };
 
   return (
-    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-3 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white sm:p-6 lg:p-10">
+    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-4 sm:p-6 lg:p-10 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto max-w-[1500px] min-w-0 space-y-6 sm:space-y-8">
         {/* Cabeçalho */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-5 rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 px-5 py-5 md:px-7 md:py-6 shadow-[0_12px_36px_rgba(15,23,42,0.06)] dark:shadow-none backdrop-blur">
@@ -1622,7 +1626,7 @@ export default function TurmasExternasPage() {
               autoComplete="off"
               aria-label="Busca rápida de turmas e alunos"
               aria-describedby="external-class-search-hint"
-              className="min-h-12 w-full rounded-2xl border border-gray-200 bg-gray-100/70 py-3 pl-10 pr-11 text-sm font-semibold text-gray-900 transition placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800/80 dark:text-white dark:placeholder:text-slate-400 dark:focus:ring-offset-slate-900"
+              className="min-h-12 w-full rounded-2xl border border-gray-200 bg-gray-100/70 py-3 pl-10 pr-11 text-sm font-semibold text-gray-900 transition placeholder:text-gray-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 dark:border-slate-700 dark:bg-slate-800/80 dark:text-white dark:focus:ring-offset-slate-900"
             />
             {searchTerm && <button type="button" onClick={() => { setSearchTerm(""); quickSearchInputRef.current?.focus(); }} className="absolute right-2 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-xl text-gray-500 transition hover:bg-white hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-600 dark:hover:bg-slate-700" aria-label="Limpar busca"><X size={16} aria-hidden="true" /></button>}
             </div>
