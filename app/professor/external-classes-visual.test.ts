@@ -15,6 +15,15 @@ describe("contrato visual da página de cursos externos", () => {
     expect(source).toContain("external-attendance-toolbar flex w-full flex-col");
   });
 
+  it("exibe o comparativo de distribuição acadêmica por turma", () => {
+    expect(source).toContain("comparisonChartData");
+    expect(source).toContain("Distribuição de notas e frequência");
+    expect(source).toContain("Médias (0–10)");
+    expect(source).toContain("Abaixo de 75%");
+    expect(source).toContain("style={{ width:");
+    expect(source).toContain("xl:grid-cols-2");
+  });
+
   it("preserva superfícies, estados e cards com suporte ao modo escuro", () => {
     expect(source).toContain("bg-white/95 dark:bg-slate-900");
     expect(source).toContain("dark:border-slate-800");
