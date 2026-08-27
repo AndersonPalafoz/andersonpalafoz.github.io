@@ -2702,3 +2702,8 @@
 ## Reconciliação segura da revisão de cadastro com a main — 27/08/2026
 - [x] Preservar as alterações locais validadas e alinhar o histórico à referência atual da branch main remota.
 - [x] Reaplicar somente a revisão de cadastro, confirmar a integridade do diff e enviar o checkpoint para main.
+
+## Validação da prévia após reconciliação da main — 27/08/2026
+- [x] Comparar a base reconciliada com o último estado local validado e confirmar que nenhum arquivo de estilo estava ausente.
+- [x] Reiniciar a prévia para recuperar os estilos transitórios, sem alterar dados, permissões ou fluxos de autenticação.
+- [x] Revalidar formulário, responsividade móvel, testes, TypeScript, build, integridade do diff e referência da main.
