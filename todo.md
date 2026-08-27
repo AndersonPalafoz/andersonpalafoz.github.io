@@ -2567,3 +2567,8 @@
 - [x] Remover a versão assinada anterior somente após a atualização do certificado, sem afetar PDFs originais ou caminhos externos.
 - [x] Cobrir sucesso, ausência de arquivo anterior, falha de remoção e continuidade do reenvio com testes, TypeScript e build.
 - [x] Salvar checkpoint e sincronizar somente esta implementação validada com a branch `main` oficial.
+
+## Otimização do avatar no dashboard — 27/08/2026
+- [x] Auditar a fonte, a prioridade e as requisições da foto de perfil exibida na navegação do dashboard.
+- [x] Otimizar o carregamento com cache seguro, prioridade visual e fallback acessível, sem expor URL privada da imagem.
+- [x] Cobrir a resolução do avatar, estados de carregamento/erro, responsividade, TypeScript e build.
