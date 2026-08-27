@@ -12,14 +12,16 @@ describe("admin certificate deletion contract", () => {
     "utf8",
   );
 
-  it("deletes every certificate status through the same database path and reports actual ids", () => {
+  it("deletes every certificate status and cleans its recognized storage files", () => {
     expect(route).toContain('export async function DELETE(request: NextRequest)');
     expect(route).toContain("existingCertificates");
     expect(route).toContain("await db.delete(certificates).where(inArray(certificates.id, existingIds))");
+    expect(route).toContain("deleteCertificatePdfFiles");
+    expect(route).toContain("storageCleanup");
     expect(route).toContain("deletedIds: existingIds");
     expect(route).toContain('status: 404');
     expect(route).not.toContain("signatureType");
-    expect(route).not.toContain("signedPdfUrl");
+    expect(route).toContain("signedPdfUrl: certificates.signedPdfUrl");
   });
 
   it("keeps a confirmation and success/error feedback in the admin UI", () => {

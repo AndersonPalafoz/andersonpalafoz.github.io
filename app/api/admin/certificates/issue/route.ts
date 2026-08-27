@@ -7,6 +7,7 @@ import { and, eq, inArray } from "drizzle-orm";
 import { buildCertificatePdf } from "@/lib/certificate-pdf";
 import { parseCertificateComposition } from "@/lib/certificate-composition";
 import {
+  deleteCertificatePdfFiles,
   downloadCertificateTemplate,
   uploadCertificatePdf,
 } from "@/lib/learning-storage";
@@ -341,7 +342,11 @@ export async function DELETE(request: NextRequest) {
     }
 
     const existingCertificates = await db
-      .select({ id: certificates.id })
+      .select({
+        id: certificates.id,
+        certificateUrl: certificates.certificateUrl,
+        signedPdfUrl: certificates.signedPdfUrl,
+      })
       .from(certificates)
       .where(inArray(certificates.id, idsToDelete));
 
@@ -354,11 +359,39 @@ export async function DELETE(request: NextRequest) {
 
     const existingIds = existingCertificates.map(certificate => certificate.id);
     await db.delete(certificates).where(inArray(certificates.id, existingIds));
+    const cleanupResults = await Promise.all(
+      existingCertificates.map(certificate =>
+        deleteCertificatePdfFiles({
+          certificateUrl: certificate.certificateUrl,
+          signedPdfUrl: certificate.signedPdfUrl,
+        })
+      )
+    );
+    const storageCleanup = cleanupResults.reduce(
+      (summary, result) => ({
+        attempted: summary.attempted + result.attempted,
+        removed: summary.removed + result.removed,
+        failed: summary.failed + result.failed,
+      }),
+      { attempted: 0, removed: 0, failed: 0 }
+    );
+
+    if (storageCleanup.failed > 0) {
+      console.warn("Certificate PDF storage cleanup incomplete", {
+        certificateIds: existingIds,
+        attempted: storageCleanup.attempted,
+        failed: storageCleanup.failed,
+      });
+    }
 
     return NextResponse.json({
       success: true,
       deletedIds: existingIds,
-      message: `${existingIds.length} certificado(s) excluído(s) com sucesso.`,
+      storageCleanup,
+      message:
+        storageCleanup.failed > 0
+          ? `${existingIds.length} certificado(s) excluído(s). Um arquivo legado não pôde ser removido automaticamente.`
+          : `${existingIds.length} certificado(s) excluído(s) com sucesso.`,
     });
   } catch (error: any) {
     console.error("API Error deleting certificate(s):", error);
