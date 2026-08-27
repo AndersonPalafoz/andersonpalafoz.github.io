@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { useSession } from "next-auth/react";
 import Papa from "papaparse";
 import Link from "next/link";
-import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
+import { AcademicReportFilter, REPORT_MIN_GRADE, REPORT_MIN_ATTENDANCE, academicReportFilterLabel, filterAcademicReportRows, getMaxAbsenceFromMinimumAttendance, getMinimumAttendanceFromMaxAbsence, hasFailedByGrade, hasFailedByAttendance, summarizeAcademicReportRows } from "@/lib/external-academic-report";
 import { ArrowLeft, BookOpen, Building2, Plus, Trash2, Users, Loader2, AlertCircle, Search, Edit3, X, FileSpreadsheet, BarChart3, CheckCircle2, Award, FileText, Calendar, Mail, MoreVertical, Clock3, ClipboardCheck, AlertTriangle, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { calculateSimalComposite } from "@/lib/simal-grading";
@@ -356,7 +356,7 @@ export default function TurmasExternasPage() {
   const [durationUnit, setDurationUnit] = useState("year");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [maxAbsencePercent, setMaxAbsencePercent] = useState(25);
+  const [minimumAttendancePercent, setMinimumAttendancePercent] = useState(REPORT_MIN_ATTENDANCE);
   const [hasUnits, setHasUnits] = useState(false);
   const [unitCount, setUnitCount] = useState(1);
   const [gradingScope, setGradingScope] = useState<"course" | "unit">("course");
@@ -762,8 +762,8 @@ export default function TurmasExternasPage() {
       setSubmitting(true);
       const action = editingClassId ? "updateClass" : "createClass";
       const body = editingClassId
-        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent, hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level }
-        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent, hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level };
+        ? { action, classId: editingClassId, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent: getMaxAbsenceFromMinimumAttendance(minimumAttendancePercent), hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level }
+        : { action, institution: finalInstitution, className, courseName, academicTerm, description, classDays, classTime, workloadHours, durationType, durationValue, durationUnit, startDate, endDate, maxAbsencePercent: getMaxAbsenceFromMinimumAttendance(minimumAttendancePercent), hasUnits, unitCount, gradingScope, passingAverage, unitPassingAverages: hasUnits && gradingScope === "unit" ? JSON.stringify(unitPassingAverages) : null, modality, meetingLink, classroomLocation, level };
 
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
@@ -807,11 +807,11 @@ export default function TurmasExternasPage() {
     setDurationUnit((cls as any).durationUnit || "semester");
     setStartDate((cls as any).startDate ? new Date((cls as any).startDate).toISOString().split('T')[0] : "");
     setEndDate((cls as any).endDate ? new Date((cls as any).endDate).toISOString().split('T')[0] : "");
-    setMaxAbsencePercent((cls as any).maxAbsencePercent || 25);
+    setMinimumAttendancePercent(getMinimumAttendanceFromMaxAbsence((cls as any).maxAbsencePercent));
     setHasUnits(Boolean((cls as any).hasUnits));
     setUnitCount(Math.max(1, Number((cls as any).unitCount) || 1));
     setGradingScope((cls as any).gradingScope === "unit" ? "unit" : "course");
-    setPassingAverage(Number((cls as any).passingAverage) || 5);
+    setPassingAverage(parseGradeNumber((cls as any).passingAverage) ?? 5);
     try { setUnitPassingAverages(JSON.parse((cls as any).unitPassingAverages || "{}")); } catch { setUnitPassingAverages({}); }
     setModality((cls as any).modality || "Remota");
     setMeetingLink((cls as any).meetingLink || "");
@@ -837,7 +837,7 @@ export default function TurmasExternasPage() {
     setDurationUnit("year");
     setStartDate("");
     setEndDate("");
-    setMaxAbsencePercent(25);
+    setMinimumAttendancePercent(REPORT_MIN_ATTENDANCE);
     setHasUnits(false);
     setUnitCount(1);
     setGradingScope("course");
@@ -1231,6 +1231,7 @@ export default function TurmasExternasPage() {
     .replace(/'/g, "&#039;");
 
   const getAcademicReportRows = (cls: ExternalClassItem) => {
+    const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
     const attendanceByStudent = new Map<number, { present: number; absent: number; late: number; excused: number; total: number }>();
     for (const attendance of cls.attendance || []) {
       try {
@@ -1257,10 +1258,11 @@ export default function TurmasExternasPage() {
       const simalGrade = calculateSimalComposite(studentGrades);
           const configuredGrade = calculateCourseGrade({ hasUnits: cls.hasUnits, unitCount: cls.unitCount, gradingScope: cls.gradingScope, passingAverage: cls.passingAverage, unitPassingAverages: cls.unitPassingAverages }, studentGrades.map((grade) => { const score = parseGradeNumber(grade.score); const max = parseGradeNumber(grade.maxScore); return { score: max !== null && max > 0 && score !== null ? (score / max) * 10 : null, unit: grade.unitNumber }; }));
       const averageGrade = simalGrade.isSimal ? simalGrade.finalScore : configuredGrade.average;
-      const attendancePercent = attendance.total > 0 ? (attendance.present / attendance.total) * 100 : null;
+      const countedAttendance = attendance.present + attendance.late + attendance.absent;
+      const attendancePercent = countedAttendance > 0 ? ((attendance.present + attendance.late) / countedAttendance) * 100 : null;
       const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
       const failedByGrade = hasFailedByGrade({ averageGrade, attendancePercent }, minimumGrade) || (configuredGrade.scope === "unit" && configuredGrade.passed === false);
-      const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent });
+      const failedByAttendance = hasFailedByAttendance({ averageGrade, attendancePercent }, minimumAttendance);
       return {
         student,
         attendance,
@@ -1285,7 +1287,8 @@ export default function TurmasExternasPage() {
 
   const exportAcademicCsv = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
     const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
-    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
+    const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
+    const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade, minimumAttendance);
     const csvRows = [
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
       ["Instituição", cls.institution],
@@ -1295,7 +1298,8 @@ export default function TurmasExternasPage() {
       ["Nível", (cls as any).level || "Não informado"],
       ["Modalidade", (cls as any).modality || "Não informada"],
       ["Gerado em", new Date().toLocaleString("pt-BR")],
-      ["Filtro aplicado", academicReportFilterLabel(filter)],
+      ["Filtro aplicado", academicReportFilterLabel(filter, minimumAttendance, minimumGrade)],
+      ["Frequência mínima (%)", formatReportNumber(minimumAttendance)],
       ["Alunos incluídos", rows.length],
       [],
       ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
@@ -1330,15 +1334,14 @@ export default function TurmasExternasPage() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    notifySuccess(`Relatório CSV exportado com o filtro: ${academicReportFilterLabel(filter)}.`);
+    notifySuccess(`Relatório CSV exportado com o filtro: ${academicReportFilterLabel(filter, minimumAttendance, minimumGrade)}.`);
   };
 
   const exportAcademicPdf = (cls: ExternalClassItem, filter: AcademicReportFilter = reportFilter) => {
     const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
-    const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade);
-    const reportSummary = minimumGrade === REPORT_MIN_GRADE
-      ? summarizeAcademicReportRows(reportRows)
-      : summarizeAcademicReportRows(reportRows, minimumGrade);
+    const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
+    const reportRows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade, minimumAttendance);
+    const reportSummary = summarizeAcademicReportRows(reportRows, minimumGrade, minimumAttendance);
     const generatedAt = new Date().toLocaleString("pt-BR");
     const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, failedByGrade, failedByAttendance }) => `
       <tr>
@@ -1375,14 +1378,14 @@ export default function TurmasExternasPage() {
       @page { size: A4 landscape; margin: 14mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; } header { border-bottom: 3px solid #d62828; padding-bottom: 12px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 20px; } h2 { margin: 0 0 12px; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f3f4f6; border-radius: 6px; padding: 7px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; } th { background: #374151; color: white; text-align: left; padding: 7px 5px; font-size: 7px; } td { border-bottom: 1px solid #e5e7eb; padding: 5px 4px; vertical-align: top; font-size: 8px; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 14px; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
       ${reportSummaryHtml}
-      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter))}</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
+      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter, minimumAttendance, minimumGrade))}</div><div><b>Frequência mínima</b>${formatReportNumber(minimumAttendance)}%</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
       <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Prova SIMAL</th><th>Apresentação</th><th>Nota SIMAL</th><th>Média final</th><th>Situação</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="14">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
-      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${minimumGrade.toFixed(1)} ou frequência inferior a ${REPORT_MIN_ATTENDANCE}% quando aplicáveis.</footer>
+      <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${minimumGrade.toFixed(1)} ou frequência inferior a ${minimumAttendance.toFixed(1)}% quando aplicáveis.</footer>
       </body></html>`);
     printWindow.document.close();
     printWindow.focus();
     window.setTimeout(() => printWindow.print(), 250);
-    notifySuccess(`Pré-visualização PDF aberta com o filtro: ${academicReportFilterLabel(filter)}.`);
+    notifySuccess(`Pré-visualização PDF aberta com o filtro: ${academicReportFilterLabel(filter, minimumAttendance, minimumGrade)}.`);
   };
 
   const downloadStudentTemplate = async () => {
@@ -2066,15 +2069,21 @@ export default function TurmasExternasPage() {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Máx. Faltas (%)</label>
+                      <label htmlFor="external-minimum-attendance" className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Frequência mínima para aprovação (%)</label>
                       <input
+                        id="external-minimum-attendance"
                         type="number"
-                        min={5}
-                        max={50}
-                        value={maxAbsencePercent}
-                        onChange={(e) => setMaxAbsencePercent(parseInt(e.target.value) || 25)}
+                        min={0}
+                        max={100}
+                        step={0.1}
+                        value={minimumAttendancePercent}
+                        onChange={(e) => {
+                          const value = Number(e.target.value);
+                          setMinimumAttendancePercent(Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : REPORT_MIN_ATTENDANCE);
+                        }}
                         className="w-full rounded-xl border border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-800 p-2.5 text-xs font-semibold text-gray-900 dark:text-white"
                       />
+                      <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">O valor é salvo como limite máximo de faltas. Ex.: 75% de frequência permite até 25% de faltas.</p>
                     </div>
                     <div className="sm:col-span-2 rounded-xl border border-red-200 bg-red-50/60 p-3 dark:border-red-900/50 dark:bg-red-950/20">
                       <label className="flex items-center gap-2 text-xs font-bold text-gray-800 dark:text-gray-200">
@@ -2092,15 +2101,19 @@ export default function TurmasExternasPage() {
                           </select>
                         </label>
                         <label className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Média mínima geral
-                          <select value={passingAverage} onChange={(e) => setPassingAverage(Number(e.target.value))} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white">
-                            <option value={5}>5,0</option><option value={6}>6,0</option><option value={7}>7,0</option>
-                          </select>
+                          <input type="number" min={0} max={10} step={0.1} value={passingAverage} onChange={(e) => {
+                            const value = Number(e.target.value);
+                            setPassingAverage(Number.isFinite(value) ? Math.max(0, Math.min(10, value)) : 5);
+                          }} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
                         </label>
                         {gradingScope === "unit" && <div className="sm:col-span-3 grid grid-cols-2 gap-2 md:grid-cols-4">{Array.from({ length: unitCount }, (_, index) => index + 1).map((unit) => <label key={unit} className="text-[11px] font-bold text-gray-700 dark:text-gray-300">Unidade {unit}
-                          <select value={unitPassingAverages[unit] ?? passingAverage} onChange={(e) => setUnitPassingAverages((current) => ({ ...current, [unit]: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white"><option value={5}>5,0</option><option value={6}>6,0</option><option value={7}>7,0</option></select>
+                          <input type="number" min={0} max={10} step={0.1} value={unitPassingAverages[unit] ?? passingAverage} onChange={(e) => {
+                            const value = Number(e.target.value);
+                            if (Number.isFinite(value)) setUnitPassingAverages((current) => ({ ...current, [unit]: Math.max(0, Math.min(10, value)) }));
+                          }} className="mt-1 w-full rounded-lg border border-red-200 bg-white p-2 text-xs dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
                         </label>)}</div>}
                       </div>}
-                      <p className="mt-2 text-[10px] text-red-800 dark:text-red-200">A regra fica registrada na turma e poderá ser usada nos relatórios acadêmicos. Notas já lançadas não são alteradas.</p>
+                      <p className="mt-2 text-[10px] text-red-800 dark:text-red-200">A média mínima e a frequência mínima ficam registradas na turma e são usadas no painel, nos relatórios acadêmicos e na classificação de aprovação. Notas e chamadas já lançadas não são alteradas.</p>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Início</label>
@@ -2385,6 +2398,8 @@ export default function TurmasExternasPage() {
                 const currentStatuses = attendanceStatuses[cls.id] || {};
                 const gradesClosed = cls.gradeStatus === "closed";
                 const assignmentState = assignmentFeedback[cls.id];
+                const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
+                const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
                 const academicRows = getAcademicReportRows(cls);
 
                 return (
@@ -3004,13 +3019,15 @@ export default function TurmasExternasPage() {
                             <div>
                               <h4 className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200">Resumo calculado por aluno</h4>
                               <p className="mt-1 text-[11px] text-blue-800/80 dark:text-blue-200/80">As notas decimais são convertidas para uma escala de 0 a 10 antes da média. No SIMAL, a nota final combina prova escrita e apresentação.</p>
+                              <p className="mt-1 text-[11px] font-bold text-blue-900 dark:text-blue-100">Regra desta turma: média mínima {minimumGrade.toFixed(1)} e frequência mínima {minimumAttendance.toFixed(1)}%.</p>
                             </div>
                             <span className="rounded-full bg-white/80 px-2 py-1 text-[10px] font-black text-blue-800 dark:bg-slate-900/70 dark:text-blue-200">{academicRows.filter((row) => row.averageGrade !== null).length}/{academicRows.length} com média</span>
                           </div>
                           <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                            {academicRows.map(({ student, averageGrade, simalGrade }) => {
+                            {academicRows.map(({ student, averageGrade, simalGrade, failedByGrade, failedByAttendance, attendancePercent }) => {
                               const hasGrade = averageGrade !== null;
-                              const passed = hasGrade && averageGrade >= (parseGradeNumber(cls.passingAverage) ?? 5);
+                              const passed = hasGrade && averageGrade >= (parseGradeNumber(cls.passingAverage) ?? 5) && !failedByAttendance;
+                              const statusLabel = academicStatusLabel({ student, attendance: { present: 0, absent: 0, late: 0, excused: 0, total: 0 }, attendancePercent, grades: [], simalGrade, averageGrade, failedByGrade, failedByAttendance });
                               return (
                                 <div key={student.id} className="rounded-xl border border-blue-100 bg-white/80 px-3 py-2.5 dark:border-blue-900/50 dark:bg-slate-900/60">
                                   <div className="flex items-center justify-between gap-2">
@@ -3018,6 +3035,7 @@ export default function TurmasExternasPage() {
                                     <span className={`shrink-0 text-sm font-black ${passed ? "text-emerald-700 dark:text-emerald-300" : hasGrade ? "text-amber-700 dark:text-amber-300" : "text-gray-400"}`}>{hasGrade ? `${averageGrade.toFixed(1)} / 10` : "—"}</span>
                                   </div>
                                   <p className="mt-1 text-[10px] text-gray-500 dark:text-gray-400">{simalGrade.isSimal ? `SIMAL: prova ${simalGrade.proofScore?.toFixed(1) ?? "—"}/8 + apresentação ${simalGrade.presentationScore?.toFixed(1) ?? "—"}/2` : hasGrade ? (passed ? "Média mínima atingida" : `Mínimo: ${(parseGradeNumber(cls.passingAverage) ?? 5).toFixed(1)}`) : "Aguardando avaliações"}</p>
+                                  <p className={`mt-1 text-[10px] font-bold ${statusLabel.startsWith("Aprovado") ? "text-emerald-700 dark:text-emerald-300" : statusLabel.startsWith("Reprovado") ? "text-red-700 dark:text-red-300" : "text-amber-700 dark:text-amber-300"}`}>{statusLabel}</p>
                                 </div>
                               );
                             })}

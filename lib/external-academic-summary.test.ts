@@ -18,6 +18,18 @@ describe("external academic summary", () => {
     expect(summary.attendanceRate).toBe(66.7);
   });
 
+  it("respeita o limite de faltas específico da turma", () => {
+    const result = calculateCourseGrade({ hasUnits: false, passingAverage: "5" }, [{ score: 8 }]);
+    const attendance = summarizeStudentAttendance([
+      { date: "2026-08-01", attendanceData: JSON.stringify({ "10": "absent" }) },
+      { date: "2026-08-08", attendanceData: JSON.stringify({ "10": "present" }) },
+      { date: "2026-08-15", attendanceData: JSON.stringify({ "10": "present" }) },
+      { date: "2026-08-22", attendanceData: JSON.stringify({ "10": "present" }) },
+    ], 10);
+    expect(getAcademicStatus(result, attendance, 25)).toBe("approved");
+    expect(getAcademicStatus(result, attendance, 10)).toBe("failed");
+  });
+
   it("marca o aluno como reprovado quando excede o limite de faltas", () => {
     const result = calculateCourseGrade({ hasUnits: false, passingAverage: "5" }, [{ score: 8 }]);
     const attendance = summarizeStudentAttendance([

@@ -42,6 +42,14 @@ describe("contrato da API de turmas externas", () => {
     expect(routeContent).toContain("Há um status de frequência inválido");
   });
 
+  it("valida e normaliza as regras acadêmicas configuráveis por turma", () => {
+    expect(routeContent).toContain("parseDecimalInput");
+    expect(routeContent).toContain("maxAbsenceValue");
+    expect(routeContent).toContain("passingAverageValue");
+    expect(routeContent).toContain("O limite máximo de faltas deve ser um percentual entre 0% e 100%.");
+    expect(routeContent).toContain("A média mínima deve ser um número entre 0 e 10.");
+  });
+
   it("mantém edição de avaliação e fechamento protegidos por turma", () => {
     expect(routeContent).toContain('action === "updateGrade"');
     expect(routeContent).toContain('action === "setGradeStatus"');

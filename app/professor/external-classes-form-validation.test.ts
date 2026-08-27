@@ -21,6 +21,14 @@ describe("validação em tempo real do formulário de turmas externas", () => {
     expect(source).toContain("aria-describedby");
   });
 
+  it("expõe regras acadêmicas configuráveis com casas decimais", () => {
+    expect(source).toContain("Frequência mínima para aprovação (%)");
+    expect(source).toContain("external-minimum-attendance");
+    expect(source).toContain("getMaxAbsenceFromMinimumAttendance");
+    expect(source).toContain('step={0.1}');
+    expect(source).toContain("Média mínima geral");
+  });
+
   it("impede envio inválido e oferece limite visível para descrição", () => {
     expect(source).toContain("classFormIsValid");
     expect(source).toContain("disabled={submitting ||");

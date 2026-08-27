@@ -3,6 +3,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   filterAcademicReportRows,
+  getMaxAbsenceFromMinimumAttendance,
+  getMinimumAttendanceFromMaxAbsence,
   hasFailedByAttendance,
   hasFailedByGrade,
   summarizeAcademicReportRows,
@@ -33,6 +35,15 @@ describe("critérios de reprovação dos relatórios acadêmicos", () => {
     expect(filterAcademicReportRows(rows, "any").map((row) => row.id)).toEqual(["nota", "falta", "ambos"]);
   });
 
+  it("converte limite de faltas em frequência mínima e aceita percentuais decimais", () => {
+    expect(getMinimumAttendanceFromMaxAbsence(25)).toBe(75);
+    expect(getMinimumAttendanceFromMaxAbsence("12,5")).toBe(87.5);
+    expect(getMaxAbsenceFromMinimumAttendance(80)).toBe(20);
+    expect(getMaxAbsenceFromMinimumAttendance("82,5")).toBe(17.5);
+    expect(hasFailedByAttendance({ averageGrade: 8, attendancePercent: 79.9 }, 80)).toBe(true);
+    expect(hasFailedByAttendance({ averageGrade: 8, attendancePercent: 80 }, 80)).toBe(false);
+  });
+
   it("calcula proporções reais de aprovados, reprovados e dados insuficientes", () => {
     expect(summarizeAcademicReportRows(rows)).toMatchObject({
       total: 5,
@@ -43,6 +54,13 @@ describe("critérios de reprovação dos relatórios acadêmicos", () => {
       failedPercent: 60,
       insufficientDataPercent: 20,
       failedByGrade: 2,
+      failedByAttendance: 2,
+    });
+    expect(summarizeAcademicReportRows(rows, 6, 80)).toMatchObject({
+      total: 5,
+      approved: 1,
+      failed: 3,
+      insufficientData: 1,
       failedByAttendance: 2,
     });
     expect(summarizeAcademicReportRows([])).toMatchObject({
@@ -75,6 +93,8 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(utilitySource).toContain("export const REPORT_MIN_ATTENDANCE = 75");
     expect(source).toContain("failedByGrade");
     expect(source).toContain("failedByAttendance");
+    expect(source).toContain("getMinimumAttendanceFromMaxAbsence");
+    expect(source).toContain("Frequência mínima para aprovação (%)");
     expect(source).toContain("filterAcademicReportRows");
   });
 
@@ -96,9 +116,11 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("window.open(\"\", \"_blank\"");
     expect(source).toContain("@page { size: A4 landscape");
     expect(source).toContain("Relatório acadêmico PDF");
-    expect(source).toContain("academicReportFilterLabel(filter)");
+    expect(source).toContain("academicReportFilterLabel(filter, minimumAttendance, minimumGrade)");
     expect(source).toContain("Critérios de reprovação");
-    expect(source).toContain("summarizeAcademicReportRows(reportRows)");
+    expect(source).toContain("Frequência mínima");
+    expect(source).toContain("minimumAttendance");
+    expect(source).toContain("summarizeAcademicReportRows(reportRows, minimumGrade, minimumAttendance)");
     expect(source).toContain("Resumo do desempenho acadêmico");
     expect(source).toContain("bar-approved");
     expect(source).toContain("bar-failed");
