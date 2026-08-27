@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Filter, Layers, Search, BookOpen } from "lucide-react";
 import { WishlistToggle } from "@/components/course-engagement";
 import { COURSE_TYPE_OPTIONS, getCourseTypeDefinition, getSyncModalityLabel, normalizeCourseType } from "@/lib/course-types";
+import { CalendarDays, GraduationCap } from "lucide-react";
 
 type CatalogCourse = {
   id: number;
@@ -19,6 +20,15 @@ type CatalogCourse = {
   courseType?: number | null;
   externalRedirectUrl?: string | null;
   syncModality?: string | null;
+  publishedOffers?: Array<{
+    id: number;
+    offerName: string;
+    academicTerm: string;
+    institution?: string | null;
+    modality?: string | null;
+    classDays?: string | null;
+    classTime?: string | null;
+  }>;
 };
 
 export function CourseCatalog({
@@ -186,6 +196,22 @@ export function CourseCatalog({
                     <span className="rounded-full border border-border px-2.5 py-1">{courseType.shortLabel}</span>
                     {courseType.supportsSync && <span className="rounded-full border border-border px-2.5 py-1">{syncLabel}</span>}
                   </div>
+                  {course.publishedOffers && course.publishedOffers.length > 0 && (
+                    <div className="rounded-2xl border border-red-100 bg-red-50/70 p-3 text-xs text-red-950 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-100">
+                      <div className="flex items-center gap-2 font-black">
+                        <GraduationCap size={15} aria-hidden="true" />
+                        {course.publishedOffers.length} {course.publishedOffers.length === 1 ? "oferta publicada" : "ofertas publicadas"}
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        {course.publishedOffers.slice(0, 2).map((offer) => (
+                          <div key={offer.id} className="flex min-w-0 items-center gap-2">
+                            <CalendarDays size={13} className="shrink-0" aria-hidden="true" />
+                            <span className="truncate font-semibold">{offer.offerName} · {offer.academicTerm}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-3 border-t border-border/70 pt-6">
                     <div className="flex items-center justify-between gap-3"><span className={`text-sm font-black ${course.isFree ? "text-emerald-700" : "text-amber-700"}`}>{course.isFree ? "Acesso gratuito" : `R$ ${Number(course.price || 0).toFixed(2).replace(".", ",")}`}</span>{hasAccess && <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-black text-emerald-700">{wasPurchased ? "Comprado" : "Acesso liberado"}</span>}</div>
                     <Link href={`/cursos/${course.id}`} className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-bold text-white transition hover:bg-red-700">{hasAccess ? "Continuar curso" : "Ver Curso"}<ArrowRight size={18} /></Link>
