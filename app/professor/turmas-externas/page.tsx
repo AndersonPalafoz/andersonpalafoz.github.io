@@ -105,6 +105,7 @@ interface ExternalClassItem {
   materials?: ExternalClassMaterialItem[];
   stats?: ExternalClassStats;
   assignedTeachers?: AssignedTeacher[];
+  offerId?: number | null;
 }
 
 type ClassFormField = "institution" | "className" | "courseName" | "academicTerm" | "description";
@@ -442,10 +443,18 @@ export default function TurmasExternasPage() {
   // Tab view per class: 'students' | 'attendance' | 'grades' | 'materials'
   const [activeTabByClass, setActiveTabByClass] = useState<Record<number, string>>({});
 
+  const getAcademicContextPayload = (classId: number) => {
+    const offerId = classes.find((item) => item.id === classId)?.offerId;
+    return { classId, ...(offerId ? { offerId } : {}) };
+  };
+
   const setClassWorkspaceTab = (classId: number, tab: string) => {
     setActiveTabByClass((current) => ({ ...current, [classId]: tab }));
+    const selectedClass = classes.find((item) => item.id === classId);
     const url = new URL(window.location.href);
     url.searchParams.set("classId", String(classId));
+    if (selectedClass?.offerId) url.searchParams.set("offerId", String(selectedClass.offerId));
+    else url.searchParams.delete("offerId");
     url.searchParams.set("tab", tab);
     window.history.replaceState({}, "", `${url.pathname}?${url.searchParams.toString()}`);
   };
@@ -524,7 +533,7 @@ export default function TurmasExternasPage() {
       const response = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "setTeacherAssignments", classId: cls.id, teacherIds: assignmentIdsForClass(cls) }),
+        body: JSON.stringify({ action: "setTeacherAssignments", ...getAcademicContextPayload(cls.id), teacherIds: assignmentIdsForClass(cls) }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível atualizar os professores atribuídos.");
@@ -596,6 +605,7 @@ export default function TurmasExternasPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const classId = Number(params.get("classId"));
+    const offerId = Number(params.get("offerId"));
     const tab = params.get("tab");
     if (Number.isInteger(classId) && classId > 0 && tab) {
       setActiveTabByClass({ [classId]: tab });
@@ -603,6 +613,20 @@ export default function TurmasExternasPage() {
     void loadClasses();
     void loadTrash();
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const offerId = Number(params.get("offerId"));
+    const tab = params.get("tab");
+    if (!Number.isInteger(offerId) || offerId <= 0 || !tab) return;
+    const selectedClass = classes.find((item) => item.offerId === offerId);
+    if (selectedClass) {
+      setActiveTabByClass((current) => ({ ...current, [selectedClass.id]: tab }));
+      const url = new URL(window.location.href);
+      url.searchParams.set("classId", String(selectedClass.id));
+      window.history.replaceState({}, "", `${url.pathname}?${url.searchParams.toString()}`);
+    }
+  }, [classes]);
 
   // Visão consolidada por instituição
   const institutionSummary = useMemo(() => {
@@ -1046,7 +1070,7 @@ export default function TurmasExternasPage() {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "saveAttendance", classId, date, attendanceData: finalMap }),
+        body: JSON.stringify({ action: "saveAttendance", ...getAcademicContextPayload(classId), date, attendanceData: finalMap }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao salvar chamada.");
@@ -1087,8 +1111,8 @@ export default function TurmasExternasPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: editingGradeId ? "updateGrade" : "saveGrade",
+          ...getAcademicContextPayload(classId),
           gradeId: editingGradeId || undefined,
-          classId,
           studentId: sId,
           assessmentTitle: title,
           assessmentType: preset?.type || "custom",
@@ -1134,7 +1158,7 @@ export default function TurmasExternasPage() {
     }
     try {
       setSubmitting(true);
-      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", classId, assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component,                                       maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || new Date().toISOString().slice(0, 10), unitNumber: (document.getElementById(`simal_unit_${classId}`) as HTMLSelectElement)?.value || null, gradesList }) });
+      const res = await fetch("/api/professor/external-classes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "saveBatchGrades", ...getAcademicContextPayload(classId), assessmentTitle: preset.label, assessmentType: preset.type, assessmentVersion: preset.version, assessmentComponent: component,                                       maxScore: componentPreset?.maxScore || preset.maxScore, assessmentDate: simalBatchDate[classId] || new Date().toISOString().slice(0, 10), unitNumber: (document.getElementById(`simal_unit_${classId}`) as HTMLSelectElement)?.value || null, gradesList }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Não foi possível salvar as notas SIMAL.");
       notifySuccess(`${data.processedCount || gradesList.length} nota(s) SIMAL registrada(s) com sucesso.`);
@@ -1203,7 +1227,7 @@ export default function TurmasExternasPage() {
       const response = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "setManualAverage", studentId: student.id, manualAverage: draft || null, manualAverageReason: draft ? reason : null }),
+        body: JSON.stringify({ action: "setManualAverage", ...getAcademicContextPayload(classId), studentId: student.id, manualAverage: draft || null, manualAverageReason: draft ? reason : null }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível ajustar a média.");
@@ -1224,7 +1248,7 @@ export default function TurmasExternasPage() {
       const response = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "setGradeStatus", classId, gradeStatus: status }),
+        body: JSON.stringify({ action: "setGradeStatus", ...getAcademicContextPayload(classId), gradeStatus: status }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Não foi possível alterar o estado das notas.");
@@ -1271,7 +1295,7 @@ export default function TurmasExternasPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addMaterial",
-          classId,
+          ...getAcademicContextPayload(classId),
           materialTitle: title,
           fileUrl: url,
           materialDescription: desc,
@@ -1662,7 +1686,7 @@ export default function TurmasExternasPage() {
       const res = await fetch("/api/professor/external-classes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "importCsvStudents", classId, csvData, classMetadata }),
+        body: JSON.stringify({ action: "importCsvStudents", ...getAcademicContextPayload(classId), csvData, classMetadata }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao importar alunos.");
