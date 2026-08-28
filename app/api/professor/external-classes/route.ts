@@ -11,6 +11,7 @@ import {
   externalClassTeacherAssignments,
   users,
   notifications,
+  courseOffers,
 } from "@/drizzle/schema";
 import { eq, desc, and, or, isNull, isNotNull, inArray } from "drizzle-orm";
 import { normalizeGradeInput } from "@/lib/course-grading";
@@ -109,6 +110,15 @@ export async function GET(request: NextRequest) {
       : await db.select().from(externalClasses).where(and(visibilityFilter, lifecycleFilter)).orderBy(mode === "trash" ? desc(externalClasses.deletedAt) : desc(externalClasses.createdAt));
 
     const classIds = classes.map((item) => item.id);
+    const offersByExternalClassId = new Map<number, typeof courseOffers.$inferSelect>();
+    if (classIds.length > 0) {
+      const linkedOffers = await db.query.courseOffers.findMany({
+        where: and(inArray(courseOffers.sourceExternalClassId, classIds), isNull(courseOffers.deletedAt)),
+      });
+      for (const offer of linkedOffers) {
+        if (offer.sourceExternalClassId) offersByExternalClassId.set(offer.sourceExternalClassId, offer);
+      }
+    }
     const assignmentRows = classIds.length
       ? await db.select({
         externalClassId: externalClassTeacherAssignments.externalClassId,
@@ -149,6 +159,7 @@ export async function GET(request: NextRequest) {
 
       result.push({
         ...cls,
+        offerId: offersByExternalClassId.get(cls.id)?.id ?? null,
         students: studentsWithAccess,
         assignedTeachers: assignmentsByClass.get(cls.id) ?? [],
         attendance,
