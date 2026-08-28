@@ -5,6 +5,8 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { redirect } from "next/navigation";
 import { CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, Download, BarChart3, Eye, X } from "lucide-react";
 import Link from "next/link";
+import { getCourseOffers } from "@/lib/course-offer-client";
+import type { CourseOffer } from "@/lib/course-offer-types";
 
 interface ReportItem {
   id: number;
@@ -42,6 +44,7 @@ interface ReportData {
     total: number;
     totalPages: number;
   };
+  context?: { id: number; offerName: string; academicTerm: string; courseId: number } | null;
 }
 
 interface StudentDetail {
@@ -63,6 +66,8 @@ export default function AcademicReportsPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [sourceFilter, setSourceFilter] = useState<"all" | "classroom" | "local">("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [offerFilter, setOfferFilter] = useState("all");
+  const [offers, setOffers] = useState<CourseOffer[]>([]);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [page, setPage] = useState(1);
@@ -82,6 +87,7 @@ export default function AcademicReportsPage() {
         source: sourceFilter,
         status: statusFilter,
         page: page.toString(),
+        ...(offerFilter !== "all" ? { offerId: offerFilter } : {}),
       });
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
@@ -105,13 +111,17 @@ export default function AcademicReportsPage() {
   };
 
   useEffect(() => {
+    void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar as ofertas para o filtro de relatórios.", error));
+  }, []);
+
+  useEffect(() => {
     if (isLoading) return;
     if (!user || user.role !== "admin") {
       redirect("/");
       return;
     }
     fetchReports();
-  }, [user, isLoading, sourceFilter, statusFilter, startDate, endDate, page]);
+  }, [user, isLoading, sourceFilter, statusFilter, offerFilter, startDate, endDate, page]);
 
   const handleOpenStudentModal = async (studentId: number) => {
     setSelectedStudentId(studentId);
@@ -158,6 +168,7 @@ export default function AcademicReportsPage() {
   const handleExportCSV = () => {
     if (!data?.reports) return;
     const headers = ["Estudante", "Email", "Cursos", "Média", "Frequência", "Origem", "Detalhes"];
+    const selectedOffer = offers.find((offer) => String(offer.id) === offerFilter);
     const rows = data.reports.map((r) => [
       `"${r.studentName}"`,
       `"${r.studentEmail || ""}"`,
@@ -171,7 +182,7 @@ export default function AcademicReportsPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `relatorio_academico_real_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `relatorio_academico_${selectedOffer ? `oferta-${selectedOffer.id}-` : ""}${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -404,7 +415,15 @@ export default function AcademicReportsPage() {
 
         {/* Filters and Table Section with Skeleton Loader */}
         <div className="surface-card p-6 sm:p-8 space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {data?.context && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">Oferta: {data.context.offerName} · {data.context.academicTerm}</div>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label htmlFor="academic-report-offer" className="block text-xs font-bold text-muted-foreground mb-1">Oferta / Coorte</label>
+              <select id="academic-report-offer" value={offerFilter} onChange={(e) => { setOfferFilter(e.target.value); setPage(1); }} className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-bold text-foreground focus:ring-2 focus:ring-red-600">
+                <option value="all">Todas as ofertas</option>
+                {offers.filter((offer) => !offer.deletedAt).map((offer) => <option key={offer.id} value={offer.id}>{offer.offerName} · {offer.academicTerm}</option>)}
+              </select>
+            </div>
             <div>
               <label className="block text-xs font-bold text-muted-foreground mb-1">Origem dos Dados</label>
               <select

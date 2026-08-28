@@ -27,6 +27,7 @@ interface Activity {
   targetEmail: string | null;
   details: string | null;
   createdAt: string;
+  offerId?: number | null;
 }
 
 const actionLabels: Record<ActivityAction, string> = {
@@ -136,6 +137,7 @@ export default function AdminActivitiesPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start"><div><p className="font-semibold text-foreground">{actionLabels[activity.action]}</p><p className="mt-1 text-sm text-muted-foreground">{activity.targetName || "Usuário sem nome"}{activity.targetEmail ? ` · ${activity.targetEmail}` : ""}</p></div><time className="inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground" dateTime={activity.createdAt}><Clock3 size={13} />{formatDate(activity.createdAt)}</time></div>
                     {activity.details && <p className="mt-3 rounded-xl border border-border/70 bg-muted/60 px-3 py-2 text-sm text-muted-foreground">{activity.details}</p>}
+                    {activity.offerId && <Link href={`/admin/relatorios-academicos?offerId=${activity.offerId}`} className="mt-3 inline-flex rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-blue-700 hover:bg-blue-100 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">Oferta #{activity.offerId}</Link>}
                     <p className="mt-3 text-xs text-muted-foreground">Executado por {activity.adminEmail}</p>
                   </div>
                 </li>

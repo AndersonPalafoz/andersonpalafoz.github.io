@@ -5,6 +5,8 @@ import { Trash2, Edit2, Plus, Download, ArrowLeft, Loader2, FileText } from "luc
 import Link from "next/link";
 import { toast } from "sonner";
 import { describeHttpError, type HttpErrorDescription } from "@/lib/error-codes";
+import { getCourseOffers } from "@/lib/course-offer-client";
+import type { CourseOffer } from "@/lib/course-offer-types";
 
 interface Material {
   id: number;
@@ -20,6 +22,8 @@ interface Material {
 
 export default function AdminMateriaisReal() {
   const [materials, setMaterials] = useState<Material[]>([]);
+  const [offers, setOffers] = useState<CourseOffer[]>([]);
+  const [offerFilter, setOfferFilter] = useState("all");
   const [trashMaterials, setTrashMaterials] = useState<Material[]>([]);
   const [activeTab, setActiveTab] = useState<"materials" | "trash">("materials");
   const [loading, setLoading] = useState(true);
@@ -45,14 +49,19 @@ export default function AdminMateriaisReal() {
   const [deletingPermanent, setDeletingPermanent] = useState(false);
 
   useEffect(() => {
+    void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar as ofertas para filtrar materiais.", error));
+  }, []);
+
+  useEffect(() => {
     fetchMaterials();
     fetchTrash();
-  }, []);
+  }, [offerFilter]);
 
   const fetchMaterials = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin/materials", { cache: "no-store" });
+      const query = offerFilter !== "all" ? `?offerId=${encodeURIComponent(offerFilter)}` : "";
+      const res = await fetch(`/api/admin/materials${query}`, { cache: "no-store" });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         const details = describeHttpError(res.status, data.error);
@@ -75,7 +84,7 @@ export default function AdminMateriaisReal() {
       const res = await fetch("/api/admin/materials?mode=trash", { cache: "no-store" });
       const data = await res.json().catch(() => ([]));
       if (res.ok) {
-        setTrashMaterials(Array.isArray(data) ? data : []);
+        setTrashMaterials(Array.isArray(data) ? data : data.materials || []);
       }
     } catch (err) {
       console.error("Erro ao carregar lixeira de materiais:", err);
@@ -393,6 +402,12 @@ export default function AdminMateriaisReal() {
               <h2 className="text-xl font-bold text-foreground">{activeTab === "materials" ? "Biblioteca de Materiais" : "Lixeira de Materiais"}</h2>
               <p className="text-xs text-muted-foreground mt-1">{activeTab === "materials" ? "Gerencie os recursos de apoio para os alunos." : "Materiais arquivados que podem ser restaurados ou excluídos permanentemente."}</p>
             </div>
+            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground" htmlFor="materials-offer-filter">Oferta / Coorte
+              <select id="materials-offer-filter" value={offerFilter} onChange={(event) => setOfferFilter(event.target.value)} className="h-10 max-w-full rounded-xl border border-border bg-background px-3 text-xs font-bold text-foreground">
+                <option value="all">Todos os contextos</option>
+                {offers.filter((offer) => !offer.deletedAt).map((offer) => <option key={offer.id} value={offer.id}>{offer.offerName} · {offer.academicTerm}</option>)}
+              </select>
+            </label>
             <div className="flex items-center gap-3">
               <div className="flex rounded-xl bg-muted p-1 border border-border">
                 <button

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { courseOffers } from "@/drizzle/schema";
 import {
   getMaterials,
   getTrashMaterials,
@@ -31,8 +34,16 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode");
+    const parsedOfferId = Number(searchParams.get("offerId"));
+    const offerId = Number.isInteger(parsedOfferId) && parsedOfferId > 0 ? parsedOfferId : null;
+    const selectedOffer = offerId ? await db.query.courseOffers.findFirst({
+      where: and(eq(courseOffers.id, offerId), isNull(courseOffers.deletedAt)),
+      columns: { courseId: true },
+    }) : null;
+    if (offerId && !selectedOffer) return NextResponse.json({ error: "Oferta não encontrada ou arquivada." }, { status: 404 });
     const materials = mode === "trash" ? await getTrashMaterials(scopeId) : await getMaterials(scopeId);
-    return NextResponse.json(materials);
+    const scopedMaterials = selectedOffer ? materials.filter((material: { courseId?: number | null }) => material.courseId === selectedOffer.courseId) : materials;
+    return NextResponse.json(scopedMaterials);
   } catch (error) {
     console.error("Error fetching materials:", error);
     return NextResponse.json({ error: "Failed to fetch materials" }, { status: 500 });
