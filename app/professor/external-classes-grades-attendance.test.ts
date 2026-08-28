@@ -11,6 +11,8 @@ describe("External Classes Grades and Attendance Feature Contract", () => {
     expect(content).toContain('action === "saveGrade"');
     expect(content).toContain("externalClassGrades");
     expect(content).toContain("notifications");
+    expect(content).toContain("courseOfferStudentId: contextualOfferStudent?.id ?? null");
+    expect(content).toContain("offerId: resolvedOfferId");
   });
 
   it("normalizes decimal score input before validation and persistence", () => {
@@ -37,6 +39,7 @@ describe("External Classes Grades and Attendance Feature Contract", () => {
     expect(content).toContain('action === "saveAttendance"');
     expect(content).toContain("externalClassAttendance");
     expect(content).toContain("attendanceData");
+    expect(content).toContain("courseOfferStudents");
   });
 
   it("renders attendance and grades management UI in the teacher turmas-externas page", () => {

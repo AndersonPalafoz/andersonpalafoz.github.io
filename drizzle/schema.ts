@@ -1019,6 +1019,8 @@ export const externalClassGrades = pgTable("external_class_grades", {
   studentId: integer("studentId")
     .notNull()
     .references(() => externalStudents.id, { onDelete: "cascade" }),
+  offerId: integer("offerId").references(() => courseOffers.id, { onDelete: "set null" }),
+  courseOfferStudentId: integer("courseOfferStudentId").references(() => courseOfferStudents.id, { onDelete: "set null" }),
   assessmentTitle: varchar("assessmentTitle", { length: 180 }).notNull(), // ex: "SIMAL Units 1, 2 & 4"
   assessmentType: varchar("assessmentType", { length: 32 }).notNull().default("custom"), // written, oral, presentation, custom
   assessmentVersion: varchar("assessmentVersion", { length: 16 }), // A, B ou outra versão

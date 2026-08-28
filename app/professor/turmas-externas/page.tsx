@@ -14,6 +14,7 @@ import { useRolePreview } from "@/components/role-preview";
 
 interface ExternalStudentItem {
   id: number;
+  courseOfferStudentId?: number | null;
   name: string;
   email: string | null;
   studentIdNumber: string | null;
@@ -39,6 +40,8 @@ interface ExternalClassAttendanceItem {
 interface ExternalClassGradeItem {
   id: number;
   studentId: number;
+  offerId?: number | null;
+  courseOfferStudentId?: number | null;
   assessmentTitle: string;
   assessmentType?: string | null;
   assessmentVersion?: string | null;
@@ -1114,6 +1117,7 @@ export default function TurmasExternasPage() {
           ...getAcademicContextPayload(classId),
           gradeId: editingGradeId || undefined,
           studentId: sId,
+          courseOfferStudentId: classes.find((item) => item.id === classId)?.students.find((student) => student.id === sId)?.courseOfferStudentId ?? undefined,
           assessmentTitle: title,
           assessmentType: preset?.type || "custom",
           assessmentVersion: preset?.version || null,
@@ -1151,7 +1155,7 @@ export default function TurmasExternasPage() {
     const component = simalBatchComponent[classId] || (preset?.type === "presentation" ? "presentation" : "total");
     const componentPreset = SIMAL_COMPONENTS.find((item) => item.value === component);
     const scores = simalBatchScores[classId] || {};
-    const gradesList = classItem.students.filter((student) => String(scores[student.id] || "").trim()).map((student) => ({ studentId: student.id, score: String(scores[student.id]).trim() }));
+    const gradesList = classItem.students.filter((student) => String(scores[student.id] || "").trim()).map((student) => ({ studentId: student.id, courseOfferStudentId: student.courseOfferStudentId ?? undefined, score: String(scores[student.id]).trim() }));
     if (!preset || gradesList.length === 0) {
       notifyError("Selecione uma avaliação SIMAL e informe ao menos uma nota.");
       return;

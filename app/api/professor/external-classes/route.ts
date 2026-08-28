@@ -9,6 +9,7 @@ import {
   externalClassGrades,
   externalClassMaterials,
   externalClassTeacherAssignments,
+  courseOfferStudents,
   users,
   notifications,
   courseOffers,
@@ -145,10 +146,15 @@ export async function GET(request: NextRequest) {
     const result = [];
     for (const cls of classes) {
       const students = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, cls.id));
+      const linkedOffer = offersByExternalClassId.get(cls.id);
+      const offerStudents = linkedOffer
+        ? await db.select({ id: courseOfferStudents.id, externalStudentId: courseOfferStudents.externalStudentId }).from(courseOfferStudents).where(eq(courseOfferStudents.offerId, linkedOffer.id))
+        : [];
+      const offerStudentIdByExternalStudentId = new Map(offerStudents.filter((student) => student.externalStudentId !== null).map((student) => [student.externalStudentId!, student.id]));
       const linkedUserIds = students.map((student) => student.userId).filter((id): id is number => Number.isInteger(id));
       const linkedUsers = linkedUserIds.length ? await db.select({ id: users.id, lastSignedIn: users.lastSignedIn, mustChangePassword: users.mustChangePassword }).from(users).where(inArray(users.id, linkedUserIds)) : [];
       const lastAccessByUserId = new Map(linkedUsers.map((user) => [user.id, user.mustChangePassword ? null : user.lastSignedIn]));
-      const studentsWithAccess = students.map((student) => ({ ...student, lastSignedIn: student.userId ? lastAccessByUserId.get(student.userId) || null : null }));
+      const studentsWithAccess = students.map((student) => ({ ...student, courseOfferStudentId: offerStudentIdByExternalStudentId.get(student.id) ?? null, lastSignedIn: student.userId ? lastAccessByUserId.get(student.userId) || null : null }));
       const attendance = await db.select().from(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, cls.id)).orderBy(desc(externalClassAttendance.createdAt));
       const grades = await db.select().from(externalClassGrades).where(eq(externalClassGrades.externalClassId, cls.id)).orderBy(desc(externalClassGrades.createdAt));
       const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
@@ -223,6 +229,19 @@ export async function POST(request: NextRequest) {
     };
 
     const body = await request.json();
+    let resolvedContextClassId: number | string | undefined = body.classId;
+    const requestedOfferId = Number(body.offerId);
+    let resolvedOfferId: number | null = Number.isInteger(requestedOfferId) && requestedOfferId > 0 ? requestedOfferId : null;
+    if (resolvedOfferId) {
+      const linkedOffer = await db.query.courseOffers.findFirst({
+        where: and(eq(courseOffers.id, resolvedOfferId), isNull(courseOffers.deletedAt)),
+      });
+      if (!linkedOffer) return NextResponse.json({ error: "Oferta não encontrada ou arquivada." }, { status: 404 });
+      if (body.classId && linkedOffer.sourceExternalClassId && Number(body.classId) !== linkedOffer.sourceExternalClassId) {
+        return NextResponse.json({ error: "A oferta e a turma informadas não correspondem." }, { status: 409 });
+      }
+      if (!body.classId && linkedOffer.sourceExternalClassId) resolvedContextClassId = linkedOffer.sourceExternalClassId;
+    }
     const maxAbsenceValue = parseDecimalInput(body.maxAbsencePercent);
     const passingAverageValue = parseDecimalInput(body.passingAverage);
       const {
@@ -252,7 +271,8 @@ export async function POST(request: NextRequest) {
       level,
       instructorName,
       monitors,
-      classId,
+      classId: requestedClassId,
+      offerId,
       studentName,
       studentEmail,
       studentIdNumber,
@@ -263,6 +283,7 @@ export async function POST(request: NextRequest) {
       studentNotes,
       studentStatus,
       studentId,
+      courseOfferStudentId,
       csvData,
       classMetadata,
       // Attendance, Grades, Materials fields
@@ -287,6 +308,13 @@ export async function POST(request: NextRequest) {
       materialId,
       teacherIds,
     } = body;
+    const classId = resolvedContextClassId ?? requestedClassId;
+    if (!resolvedOfferId && classId) {
+      const classOffer = await db.query.courseOffers.findFirst({
+        where: and(eq(courseOffers.sourceExternalClassId, Number(classId)), isNull(courseOffers.deletedAt)),
+      });
+      resolvedOfferId = classOffer?.id ?? null;
+    }
 
     if (studentNotes !== undefined && studentNotes !== null && (typeof studentNotes !== "string" || studentNotes.length > MAX_STUDENT_NOTES_LENGTH)) {
       return NextResponse.json({ error: `As anotações do professor devem ter no máximo ${MAX_STUDENT_NOTES_LENGTH} caracteres.` }, { status: 400 });
@@ -936,13 +964,19 @@ export async function POST(request: NextRequest) {
       }
       const classStudents = await db.select().from(externalStudents).where(eq(externalStudents.externalClassId, Number(classId)));
       const validStudentIds = new Set(classStudents.map(s => s.id));
+      const offerStudents = resolvedOfferId
+        ? await db.select().from(courseOfferStudents).where(eq(courseOfferStudents.offerId, resolvedOfferId))
+        : [];
+      const offerStudentById = new Map(offerStudents.map((student) => [student.id, student]));
       let processedCount = 0;
       const errors = [];
 
       for (const item of gradesList) {
-        const studentIdNum = Number(item.studentId);
+        const offerStudentIdNum = Number(item.courseOfferStudentId);
+        const offerStudent = Number.isInteger(offerStudentIdNum) ? offerStudentById.get(offerStudentIdNum) : undefined;
+        const studentIdNum = Number(item.studentId ?? offerStudent?.externalStudentId);
         const scoreVal = normalizeGradeInput(item.score);
-        if (!validStudentIds.has(studentIdNum)) {
+        if (!validStudentIds.has(studentIdNum) || (resolvedOfferId && (!offerStudent || offerStudent.externalStudentId !== studentIdNum))) {
           errors.push(`Aluno ID ${studentIdNum} não pertence a esta turma.`);
           continue;
         }
@@ -960,6 +994,8 @@ export async function POST(request: NextRequest) {
         const [savedGrade] = await db.insert(externalClassGrades).values({
           externalClassId: Number(classId),
           studentId: studentIdNum,
+          offerId: resolvedOfferId,
+          courseOfferStudentId: offerStudent?.id ?? null,
           assessmentTitle: String(assessmentTitle).trim(),
           assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
           assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
@@ -986,7 +1022,7 @@ export async function POST(request: NextRequest) {
 
     // Ações de Notas (Grades)
     if (action === "saveGrade") {
-      if (!classId || !studentId || !assessmentTitle || score === undefined || score === null || String(score).trim() === "") {
+      if (!classId || (!studentId && !courseOfferStudentId) || !assessmentTitle || score === undefined || score === null || String(score).trim() === "") {
         return NextResponse.json({ error: "Turma, aluno, título da avaliação e nota são obrigatórios." }, { status: 400 });
       }
       const existingClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, Number(classId)) });
@@ -997,7 +1033,15 @@ export async function POST(request: NextRequest) {
       if (existingClass.gradeStatus === "closed") {
         return NextResponse.json({ error: "As notas desta turma estão fechadas. Reabra o lançamento antes de alterar avaliações." }, { status: 409 });
       }
-      const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(studentId)) });
+      const requestedOfferStudentId = Number(courseOfferStudentId);
+      const contextualOfferStudent = resolvedOfferId && Number.isInteger(requestedOfferStudentId)
+        ? await db.query.courseOfferStudents.findFirst({ where: and(eq(courseOfferStudents.id, requestedOfferStudentId), eq(courseOfferStudents.offerId, resolvedOfferId)) })
+        : resolvedOfferId && studentId
+          ? await db.query.courseOfferStudents.findFirst({ where: and(eq(courseOfferStudents.offerId, resolvedOfferId), eq(courseOfferStudents.externalStudentId, Number(studentId))) })
+          : undefined;
+      if (resolvedOfferId && !contextualOfferStudent) return NextResponse.json({ error: "A matrícula acadêmica não pertence a esta oferta." }, { status: 400 });
+      const resolvedStudentId = contextualOfferStudent?.externalStudentId ?? Number(studentId);
+      const targetStudent = await db.query.externalStudents.findFirst({ where: eq(externalStudents.id, Number(resolvedStudentId)) });
       if (!targetStudent || targetStudent.externalClassId !== Number(classId)) {
         return NextResponse.json({ error: "O aluno selecionado não pertence a esta turma." }, { status: 400 });
       }
@@ -1007,7 +1051,9 @@ export async function POST(request: NextRequest) {
       if (gradeError) return NextResponse.json({ error: gradeError }, { status: 400 });
         const inserted = await db.insert(externalClassGrades).values({
           externalClassId: Number(classId),
-        studentId: Number(studentId),
+        studentId: Number(resolvedStudentId),
+        offerId: resolvedOfferId,
+        courseOfferStudentId: contextualOfferStudent?.id ?? null,
         assessmentTitle: String(assessmentTitle).trim(),
         assessmentType: assessmentType ? String(assessmentType).trim() : "custom",
         assessmentVersion: assessmentVersion ? String(assessmentVersion).trim() : null,
