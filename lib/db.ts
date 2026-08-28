@@ -189,11 +189,23 @@ export async function getUserEnrollments(userId: number) {
       course: true,
     },
   });
-  const contextualRows = await db
-    .select({ courseId: schema.courseOffers.courseId, offerId: schema.courseOfferStudents.offerId })
-    .from(schema.courseOfferStudents)
-    .innerJoin(schema.courseOffers, eq(schema.courseOfferStudents.offerId, schema.courseOffers.id))
-    .where(eq(schema.courseOfferStudents.userId, userId));
+  // A camada de ofertas/coortes é opcional durante a migração progressiva.
+  // Se a migration 0079 ainda não estiver aplicada, não podemos bloquear o
+  // dashboard legado: as matrículas principais continuam sendo suficientes
+  // para renderizar os cursos do aluno.
+  let contextualRows: Array<{ courseId: number; offerId: number }> = [];
+  try {
+    contextualRows = await db
+      .select({ courseId: schema.courseOffers.courseId, offerId: schema.courseOfferStudents.offerId })
+      .from(schema.courseOfferStudents)
+      .innerJoin(schema.courseOffers, eq(schema.courseOfferStudents.offerId, schema.courseOffers.id))
+      .where(eq(schema.courseOfferStudents.userId, userId));
+  } catch (error) {
+    console.warn(
+      "[DB] Contexto de ofertas indisponível; usando matrículas legadas.",
+      error instanceof Error ? error.message : "erro desconhecido",
+    );
+  }
   const offerIdsByCourse = new Map<number, number[]>();
   for (const row of contextualRows) {
     const current = offerIdsByCourse.get(row.courseId) ?? [];
