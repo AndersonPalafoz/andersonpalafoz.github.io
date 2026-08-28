@@ -1,0 +1,55 @@
+name: Daily course offers consistency audit
+
+on:
+  schedule:
+    # 06:00 UTC = 03:00 in Brasília during the standard local offset.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: course-offers-audit
+  cancel-in-progress: false
+
+jobs:
+  audit-course-offers:
+    name: Audit legacy classes against course offers
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run read-only audit
+        env:
+          DATABASE_URL: ${{ secrets.COURSE_AUDIT_DATABASE_URL }}
+        run: |
+          mkdir -p audit-results
+          set -o pipefail
+          pnpm audit:course-offers -- --json --fail-on-warning | tee audit-results/course-offers.json
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: course-offers-audit-${{ github.run_number }}
+          path: audit-results/course-offers.json
+          if-no-files-found: warn
+          retention-days: 30
