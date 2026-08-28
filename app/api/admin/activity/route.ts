@@ -9,6 +9,12 @@ const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
 
 const ACTIONS = ["approve", "reject", "role_change", "soft_delete", "restore", "create"] as const;
 
+function extractOfferId(details: string | null) {
+  if (!details) return null;
+  const match = details.match(/(?:offerId|oferta)\D+(\d+)/i);
+  return match ? Number(match[1]) : null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -32,7 +38,8 @@ export async function GET(request: NextRequest) {
       offset,
     });
 
-    return NextResponse.json({ activities, pagination: { limit, offset, hasMore: activities.length === limit }, actions: ACTIONS });
+    const contextualActivities = activities.map((activity) => ({ ...activity, offerId: extractOfferId(activity.details) }));
+    return NextResponse.json({ activities: contextualActivities, pagination: { limit, offset, hasMore: activities.length === limit }, actions: ACTIONS });
   } catch (error) {
     console.error("Error fetching admin activity:", error);
     return NextResponse.json({ error: "Não foi possível carregar o histórico." }, { status: 500 });

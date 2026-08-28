@@ -2,9 +2,9 @@ import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { db } from "@/lib/db";
-import { users, enrollments, progress, externalClassGrades } from "@/drizzle/schema";
+import { users, enrollments, progress, externalClassGrades, courseOffers, courseOfferStudents } from "@/drizzle/schema";
 import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
-import { desc, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { exec } from "child_process";
 import { promisify } from "util";
 
@@ -19,12 +19,30 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const sourceFilter = searchParams.get("source") || "all";
+    const offerIdParam = Number(searchParams.get("offerId"));
+    const offerId = Number.isInteger(offerIdParam) && offerIdParam > 0 ? offerIdParam : null;
     const statusFilter = searchParams.get("status") || "all";
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageSize = 10;
     const offset = (page - 1) * pageSize;
+
+    let offerContext: { id: number; offerName: string; academicTerm: string; courseId: number } | null = null;
+    let offerStudentIds: number[] | null = null;
+    if (offerId) {
+      const offer = await db.query.courseOffers.findFirst({
+        where: and(eq(courseOffers.id, offerId), isNull(courseOffers.deletedAt)),
+        columns: { id: true, offerName: true, academicTerm: true, courseId: true },
+      });
+      if (!offer) return NextResponse.json({ error: "Oferta não encontrada ou arquivada." }, { status: 404 });
+      offerContext = offer;
+      const enrollmentsForOffer = await db.query.courseOfferStudents.findMany({
+        where: eq(courseOfferStudents.offerId, offerId),
+        columns: { userId: true },
+      });
+      offerStudentIds = enrollmentsForOffer.map((row) => row.userId).filter((id): id is number => Number.isInteger(id));
+    }
 
     let classroomConnected = false;
     let classroomSyncTimestamp = new Date().toISOString();
@@ -58,7 +76,8 @@ export async function GET(request: Request) {
 
     let students = allUsers.filter((u: any) =>
       (u.role === "user" || u.role === "student" || u.role === "aluno") &&
-      !isTechnicalLearnerIdentity(u)
+      !isTechnicalLearnerIdentity(u) &&
+      (!offerStudentIds || offerStudentIds.includes(u.id))
     );
 
     const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
@@ -151,6 +170,8 @@ export async function GET(request: Request) {
         total: totalStudents,
         totalPages: Math.ceil(totalStudents / pageSize) || 1,
       },
+      context: offerContext,
+      filters: { source: sourceFilter, status: statusFilter, offerId },
     });
   } catch (error) {
     console.error("Error fetching academic reports:", error);

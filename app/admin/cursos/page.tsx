@@ -6,6 +6,8 @@ import { Plus, Edit2, Trash2, ArrowLeft, Loader2, BookOpen, Layers, User, FileTe
 import { toast } from "sonner";
 import { describeHttpError, type HttpErrorDescription } from "@/lib/error-codes";
 import { COURSE_TYPE_OPTIONS, getCourseTypeDefinition, getSyncModalityLabel, validateCourseTypeFields, type SyncModality } from "@/lib/course-types";
+import { getCourseOffers } from "@/lib/course-offer-client";
+import type { CourseOffer } from "@/lib/course-offer-types";
 
 interface Course {
   id: number;
@@ -28,6 +30,8 @@ interface Course {
 
 export default function AdminCursos() {
   const [courses, setCourses] = useState<Course[]>([]);
+  const [offers, setOffers] = useState<CourseOffer[]>([]);
+  const [offersLoading, setOffersLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [errorDetails, setErrorDetails] = useState<HttpErrorDescription | null>(null);
@@ -79,6 +83,7 @@ export default function AdminCursos() {
   useEffect(() => {
     fetchCourses();
     fetchTrash();
+    void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar o resumo de ofertas do catálogo.", error)).finally(() => setOffersLoading(false));
   }, []);
 
   const fetchCourses = async () => {
@@ -169,6 +174,11 @@ export default function AdminCursos() {
       setDeletingCourse(false);
     }
   };
+
+  const offersByCourse = useMemo(() => offers.reduce<Record<number, CourseOffer[]>>((accumulator, offer) => {
+    (accumulator[offer.courseId] ||= []).push(offer);
+    return accumulator;
+  }, {}), [offers]);
 
   const filteredCourses = useMemo(() => {
     const query = searchTerm.trim().toLocaleLowerCase("pt-BR");
@@ -907,6 +917,13 @@ export default function AdminCursos() {
                       <h3 className="text-lg font-bold text-foreground">{course.title}</h3>
                       <p className="text-sm text-muted-foreground line-clamp-2">{course.description || "Sem descrição informada."}</p>
                       <p className="text-xs font-semibold text-muted-foreground">{getSyncModalityLabel(course.syncModality)}{course.externalRedirectUrl ? " • Ambiente externo vinculado" : ""}</p>
+                      <div className="flex flex-wrap items-center gap-2 pt-1" aria-label={`Ofertas do curso ${course.title}`}>
+                        <span className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-black text-blue-700 dark:border-blue-900/50 dark:bg-blue-950/30 dark:text-blue-200">
+                          {offersLoading ? "Ofertas…" : `${offersByCourse[course.id]?.filter((offer) => !offer.deletedAt).length || 0} oferta(s) ativa(s)`}
+                        </span>
+                        {!offersLoading && (offersByCourse[course.id]?.filter((offer) => offer.status === "published" && !offer.deletedAt).length || 0) > 0 && <span className="text-[11px] font-bold text-emerald-600">Catálogo publicado</span>}
+                        {!offersLoading && (offersByCourse[course.id]?.filter((offer) => offer.status === "draft" && !offer.deletedAt).length || 0) > 0 && <span className="text-[11px] font-bold text-amber-600">Rascunho operacional</span>}
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-3">

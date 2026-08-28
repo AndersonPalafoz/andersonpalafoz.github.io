@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { deleteUserPermanently } from "@/lib/db";
-import { users } from "@/drizzle/schema";
+import { users, courseOfferStudents } from "@/drizzle/schema";
 import { and, desc, eq, ilike, isNull, ne, not, or } from "drizzle-orm";
 import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -18,7 +18,7 @@ function parseUserId(value: unknown) {
   return Number.isInteger(userId) && userId > 0 ? userId : null;
 }
 
-function serializeUser(user: typeof users.$inferSelect) {
+function serializeUser(user: typeof users.$inferSelect, offerCount = 0) {
   return {
     id: user.id,
     name: user.name,
@@ -34,6 +34,7 @@ function serializeUser(user: typeof users.$inferSelect) {
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
     lastSignedIn: user.lastSignedIn,
+    offerCount,
   };
 }
 
@@ -55,10 +56,15 @@ export async function GET() {
       orderBy: [desc(users.createdAt)],
     });
 
+    const offerMemberships = await db.select({ userId: courseOfferStudents.userId }).from(courseOfferStudents);
+    const offerCounts = offerMemberships.reduce<Map<number, number>>((counts, membership) => {
+      if (membership.userId) counts.set(membership.userId, (counts.get(membership.userId) || 0) + 1);
+      return counts;
+    }, new Map());
     const visibleUsers = hasGlobalGovernance
       ? allUsers
       : allUsers.filter((user) => user.role !== "admin" && user.email?.toLowerCase() !== SUPER_ADMIN_EMAIL);
-    return NextResponse.json({ users: visibleUsers.map(serializeUser) });
+    return NextResponse.json({ users: visibleUsers.map((user) => serializeUser(user, offerCounts.get(user.id) || 0)) });
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json({ error: "Não foi possível carregar os usuários." }, { status: 500 });
