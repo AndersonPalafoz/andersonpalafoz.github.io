@@ -519,6 +519,13 @@
       "when": 1787870037643,
       "tag": "0079_course_offers_and_cohorts",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1787883455612,
+      "tag": "0080_activity_offer_context",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckSquare, Calendar, Loader2, Filter, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, FileText, CheckCircle2, Circle, Link2, Paperclip, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface Activity {
   description: string | null;
   type: string;
   dueDate: string | null;
+  offerId?: number | null;
   tag?: string;
   status?: "pending" | "completed" | null;
   order?: number;
@@ -42,6 +44,15 @@ interface Course {
   title: string;
 }
 
+interface CourseOffer {
+  id: number;
+  courseId: number;
+  offerName: string;
+  academicTerm: string;
+  status: string;
+  sourceExternalClassId?: number | null;
+}
+
 const AVAILABLE_TAGS = [
   { name: "Urgente", color: "bg-red-100 text-red-700 border-red-300 hover:bg-red-200" },
   { name: "Gramática", color: "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" },
@@ -51,8 +62,22 @@ const AVAILABLE_TAGS = [
 ];
 
 export default function TeacherTasksPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const offerId = searchParams.get("offerId");
+  const classId = searchParams.get("classId");
+  const taskEndpoint = useMemo(() => {
+    const params = new URLSearchParams();
+    if (offerId) params.set("offerId", offerId);
+    if (classId) params.set("classId", classId);
+    const query = params.toString();
+    return query ? `/api/professor/tarefas?${query}` : "/api/professor/tarefas";
+  }, [offerId, classId]);
+  const taskContextPayload = useMemo(() => ({ ...(offerId ? { offerId } : {}), ...(classId ? { classId } : {}) }), [offerId, classId]);
+  const taskMutationEndpoint = useMemo(() => `${taskEndpoint}${taskEndpoint.includes("?") ? "&" : "?"}`, [taskEndpoint]);
   const [activitiesList, setActivitiesList] = useState<Activity[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [offers, setOffers] = useState<CourseOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -94,10 +119,12 @@ export default function TeacherTasksPage() {
     try {
       setLoading(true);
       setLoadError(null);
-      const [coursesRes, actRes] = await Promise.all([fetch("/api/professor/courses"), fetch("/api/admin/atividades")]);
+      const [coursesRes, actRes, offersRes] = await Promise.all([fetch("/api/professor/courses"), fetch(taskEndpoint, { cache: "no-store" }), fetch("/api/course-offers", { cache: "no-store" })]);
       const coursesJson = await coursesRes.json();
+      const offersJson = await offersRes.json().catch(() => ({}));
       if (!coursesRes.ok) throw new Error(coursesJson.error || "Não foi possível carregar os cursos.");
       setCourses(Array.isArray(coursesJson) ? coursesJson : coursesJson.courses || []);
+      if (offersRes.ok) setOffers(Array.isArray(offersJson) ? offersJson : offersJson.offers || []);
       if (actRes.ok) {
         const actJson = await actRes.json();
         const list = (actJson.activities || actJson || []).map((a: any) => ({
@@ -127,7 +154,13 @@ export default function TeacherTasksPage() {
 
   useEffect(() => {
     void fetchData();
-  }, []);
+  }, [taskEndpoint]);
+
+  useEffect(() => {
+    if (!offerId) return;
+    const selectedOffer = offers.find((offer) => String(offer.id) === offerId);
+    if (selectedOffer) setFormData((current) => ({ ...current, courseId: String(selectedOffer.courseId) }));
+  }, [offerId, offers]);
 
   const toggleCardExpand = (id: number) => {
     setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }));
@@ -159,7 +192,7 @@ export default function TeacherTasksPage() {
 
   const handleCreateActivity = async (e: FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.courseId || !formData.type) {
+    if (!formData.title || ((!offerId && !classId) && !formData.courseId) || !formData.type) {
       toast.error("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -168,6 +201,7 @@ export default function TeacherTasksPage() {
       setSubmitting(true);
       const payload = {
         ...formData,
+        ...taskContextPayload,
         subtasks: formSubtasks,
         attachments: formAttachments,
       };
@@ -199,7 +233,7 @@ export default function TeacherTasksPage() {
     const subtasks = (current.subtasks || []).map((s) => s.id === subtaskId ? { ...s, completed: !s.completed } : s);
     setActivitiesList((items) => items.map((act) => act.id === activityId ? { ...act, subtasks } : act));
     try {
-      const res = await fetch("/api/admin/atividades", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activityId, subtasks }) });
+      const res = await fetch(taskEndpoint, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activityId, ...taskContextPayload, subtasks }) });
       if (!res.ok) throw new Error("Falha ao salvar checklist");
       toast.success("Checklist atualizado!");
     } catch {
@@ -225,6 +259,7 @@ export default function TeacherTasksPage() {
           title: `Cópia — ${activity.title}`,
           description: activity.description,
           courseId: activity.course?.id,
+          ...taskContextPayload,
           type: activity.type,
           dueDate: activity.dueDate,
           tag: activity.tag,
@@ -242,10 +277,10 @@ export default function TeacherTasksPage() {
 
   const saveEdit = async (id: number) => {
     try {
-      const res = await fetch("/api/admin/atividades", {
+      const res = await fetch(taskEndpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, title: editTitle, dueDate: editDueDate, tag: editTag, status: editStatus }),
+        body: JSON.stringify({ id, ...taskContextPayload, title: editTitle, dueDate: editDueDate, tag: editTag, status: editStatus }),
       });
       if (!res.ok) throw new Error("Falha ao atualizar");
       toast.success("Tarefa atualizada com sucesso!");
@@ -264,7 +299,7 @@ export default function TeacherTasksPage() {
   const executeDelete = async () => {
     if (!activityToDelete) return;
     try {
-      const res = await fetch(`/api/admin/atividades?id=${activityToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`${taskMutationEndpoint}id=${activityToDelete.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Falha ao excluir tarefa");
       toast.success("Tarefa excluída com sucesso.");
       setActivitiesList((current) => current.filter((a) => a.id !== activityToDelete.id));
@@ -339,7 +374,7 @@ export default function TeacherTasksPage() {
   const handleDragEnd = async () => {
     setDraggedIndex(null);
     try {
-      await Promise.all(activitiesList.map((activity, index) => fetch("/api/admin/atividades", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activity.id, order: index }) })));
+      await Promise.all(activitiesList.map((activity, index) => fetch(taskEndpoint, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: activity.id, ...taskContextPayload, order: index }) })));
       toast.success("Ordem das tarefas atualizada e salva!");
     } catch {
       toast.error("Não foi possível salvar a nova ordem.");
@@ -413,6 +448,10 @@ export default function TeacherTasksPage() {
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
               Organize prazos, checklists e materiais de apoio em um único fluxo de acompanhamento.
             </p>
+            <div className={`mt-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold ${darkMode ? "border-blue-800 bg-blue-950/50 text-blue-200" : "border-blue-200 bg-blue-50 text-blue-800"}`}>
+              <span className="h-2 w-2 rounded-full bg-blue-500" aria-hidden="true" />
+              {offerId ? `Contexto da oferta #${offerId}` : classId ? `Contexto da turma legada #${classId}` : "Conteúdo geral por curso"}
+            </div>
             <p className={`mt-3 text-xs font-semibold ${darkMode ? "text-gray-500" : "text-gray-400"}`}>{filteredActivities.length} resultado(s) visível(is) de {totalCount} tarefa(s)</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -469,10 +508,30 @@ export default function TeacherTasksPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Curso Vinculado *</label>
+                <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Oferta / Coorte</label>
                 <select
-                  required
-                  value={formData.courseId}
+                  value={offerId || ""}
+                  disabled={Boolean(offerId || classId)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    router.push(value ? `/professor/tarefas?offerId=${value}` : "/professor/tarefas");
+                  }}
+                  className={`w-full h-11 px-4 rounded-xl border text-sm outline-none ${darkMode ? "bg-gray-900 border-gray-700 text-white" : "bg-gray-50 border-gray-300"}`}
+                >
+                  <option value="">Tarefa geral do curso</option>
+                  {offers.map((offer) => (
+                    <option key={offer.id} value={offer.id}>{offer.offerName} · {offer.academicTerm}</option>
+                  ))}
+                </select>
+                <p className="mt-1 text-[11px] text-gray-500">Selecione uma oferta para isolar a tarefa na coorte correta.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase text-gray-500 mb-1">Curso Vinculado *</label>
+                  <select
+                    required
+                    disabled={Boolean(offerId || classId)}
+                    value={formData.courseId}
                   onChange={(e) => setFormData({ ...formData, courseId: e.target.value })}
                   className={`w-full h-11 px-4 rounded-xl border text-sm outline-none ${darkMode ? "bg-gray-900 border-gray-700 text-white" : "bg-gray-50 border-gray-300"}`}
                 >
