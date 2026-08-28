@@ -324,6 +324,7 @@ export type InsertCertificate = typeof certificates.$inferInsert;
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   courseId: serial("courseId").notNull(),
+  offerId: integer("offerId").references(() => courseOffers.id, { onDelete: "set null" }),
   title: varchar("title", { length: 255 }).notNull(),
   description: text("description"),
   type: activityTypeEnum("type").notNull(),
