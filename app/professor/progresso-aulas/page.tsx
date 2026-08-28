@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare, Search, Users, Activity, RotateCcw, ListChecks } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function ProfessorProgressSpeakingPage() {
-  const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[]; interventions?: any[] } | null>(null);
+  const searchParams = useSearchParams();
+  const offerId = searchParams.get("offerId");
+  const classId = searchParams.get("classId");
+  const contextQuery = offerId || classId ? `?${new URLSearchParams({ ...(offerId ? { offerId } : {}), ...(classId ? { classId } : {}) }).toString()}` : "";
+  const [data, setData] = useState<{ students: any[]; lessonProgress: any[]; activityProgress: any[]; speakingAttempts?: any[]; interventions?: any[]; context?: { kind: string; offerId: number | null; classId: number | null; courseId: number | null } | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [evaluatingId, setEvaluatingId] = useState<string | null>(null);
@@ -24,7 +29,7 @@ export default function ProfessorProgressSpeakingPage() {
     try {
       setLoading(true);
       setErrorMessage(null);
-      const res = await fetch("/api/professor/progress-speaking");
+      const res = await fetch(`/api/professor/progress-speaking${contextQuery}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Erro HTTP ${res.status}: falha ao carregar progresso`);
       const json = await res.json();
       setData(json);
@@ -39,8 +44,8 @@ export default function ProfessorProgressSpeakingPage() {
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+  }, [offerId, classId]);
 
   const handleEvaluate = async (activityProgressId: string) => {
     try {
@@ -52,6 +57,8 @@ export default function ProfessorProgressSpeakingPage() {
       payload.append("teacherFeedback", feedbackText);
       if (requestRevision) payload.append("requestRevision", "true");
       if (feedbackAudio) payload.append("teacherAudio", feedbackAudio);
+      if (offerId) payload.append("offerId", offerId);
+      if (classId) payload.append("classId", classId);
 
       const res = await fetch("/api/professor/progress-speaking", {
         method: "POST",
@@ -64,7 +71,7 @@ export default function ProfessorProgressSpeakingPage() {
       setFeedbackAudio(null);
       setRequestRevision(false);
 
-      const refreshRes = await fetch("/api/professor/progress-speaking");
+      const refreshRes = await fetch(`/api/professor/progress-speaking${contextQuery}`, { cache: "no-store" });
       if (refreshRes.ok) {
         const json = await refreshRes.json();
         setData(json);
@@ -147,6 +154,13 @@ export default function ProfessorProgressSpeakingPage() {
             <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
               Acompanhe o andamento das aulas e avalie as gravações de áudio enviadas pelos alunos com feedback personalizado.
             </p>
+            {data?.context?.offerId ? (
+              <p className="mt-3 inline-flex rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-bold text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+                Contexto da oferta #{data.context.offerId}{data.context.classId ? ` · legado #${data.context.classId}` : ""}
+              </p>
+            ) : classId ? (
+              <p className="mt-3 inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">Contexto legado da turma #{classId}</p>
+            ) : null}
           </div>
         </header>
 
