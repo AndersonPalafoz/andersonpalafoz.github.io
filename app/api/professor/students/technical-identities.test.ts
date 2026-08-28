@@ -10,6 +10,6 @@ const routeSource = fs.readFileSync(
 describe("API de alunos docentes", () => {
   it("filtra identidades técnicas antes de devolver solicitações pendentes", () => {
     expect(routeSource).toContain('import { isTechnicalLearnerIdentity } from "@/lib/technical-identities"');
-    expect(routeSource).toContain("students: pendingStudents.filter(student => !isTechnicalLearnerIdentity(student))");
+    expect(routeSource).toContain("pendingStudents.filter((student) => !isTechnicalLearnerIdentity(student))");
   });
 });
