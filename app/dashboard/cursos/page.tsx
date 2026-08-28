@@ -11,7 +11,19 @@ export default async function CursosPage() {
   const session = await getServerSession(authOptions);
   const userId = parseInt(session?.user?.id ?? "");
   const enrollments = !isNaN(userId) && userId > 0 ? await getUserEnrollments(userId) : [];
-  const enrichedEnrollments = await Promise.all(enrollments.map(async (enrollment) => ({ ...enrollment, resume: enrollment.course ? await getResumeLesson(userId, enrollment.course.id) : null })));
+  const enrichedEnrollments = await Promise.all(
+    enrollments.map(async (enrollment) => {
+      if (!enrollment.course) return { ...enrollment, resume: null };
+      try {
+        return { ...enrollment, resume: await getResumeLesson(userId, enrollment.course.id) };
+      } catch (error) {
+        // O progresso é complementar: uma falha pontual não deve esconder
+        // todos os cursos que o aluno ainda pode acessar.
+        console.error("[Dashboard/Cursos] Falha ao carregar retomada do curso:", error);
+        return { ...enrollment, resume: null };
+      }
+    }),
+  );
 
   return (
     <div className="space-y-8">
