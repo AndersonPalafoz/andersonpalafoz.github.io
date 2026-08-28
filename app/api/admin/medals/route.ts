@@ -6,6 +6,7 @@ import { medalsCatalog, notifications, userMedals, users } from "@/drizzle/schem
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { getPilotMedal, PILOT_MEDALS } from "@/lib/medal-pilot-catalog";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
+import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
 
 const MEDAL_CATEGORIES = new Set(["achievement", "academic", "manual", "streak"]);
 const MAX_JUSTIFICATION_LENGTH = 500;
@@ -23,7 +24,7 @@ export async function GET() {
       ...storedCatalog,
       ...PILOT_MEDALS.filter((medal) => !storedCodes.has(medal.code)).map((medal) => ({ ...medal, id: -1, createdAt: new Date(0) })),
     ].sort((a, b) => a.title.localeCompare(b.title, "pt-BR"));
-    const grantedList = await db
+    const grantedList = (await db
       .select({
         id: userMedals.id,
         userId: userMedals.userId,
@@ -37,9 +38,9 @@ export async function GET() {
       .from(userMedals)
       .leftJoin(users, eq(userMedals.userId, users.id))
       .orderBy(desc(userMedals.createdAt))
-      .limit(100);
+      .limit(100)).filter((grant) => !isTechnicalLearnerIdentity({ name: grant.userName, email: grant.userEmail }));
 
-    const allUsers = await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt))).orderBy(users.name);
+    const allUsers = (await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt))).orderBy(users.name)).filter((student) => !isTechnicalLearnerIdentity(student));
 
     return NextResponse.json({ catalog, grantedList, allUsers });
   } catch (error) {
@@ -82,6 +83,7 @@ export async function POST(request: Request) {
       let awarded = 0;
       for (const userId of Array.from(new Set<number>(batchUserIds))) {
         const targetUser = await db.query.users.findFirst({ where: and(eq(users.id, userId), eq(users.role, "user"), eq(users.approvalStatus, "approved"), isNull(users.deletedAt)) });
+        if (targetUser && isTechnicalLearnerIdentity(targetUser)) continue;
         const existingGrant = await db.query.userMedals.findFirst({ where: and(eq(userMedals.userId, userId), eq(userMedals.medalCode, medalCode)) });
         if (!targetUser || existingGrant) continue;
         await db.insert(userMedals).values({ userId, medalCode, awardedBy: adminId, grantType: "manual", notes });
@@ -101,7 +103,7 @@ export async function POST(request: Request) {
       db.query.userMedals.findFirst({ where: and(eq(userMedals.userId, userId), eq(userMedals.medalCode, medalCode)) }),
     ]);
 
-    if (!targetUser) return NextResponse.json({ error: "Aluno não encontrado ou não aprovado." }, { status: 404 });
+    if (!targetUser || isTechnicalLearnerIdentity(targetUser)) return NextResponse.json({ error: "Aluno não encontrado ou não elegível no sistema atual de alunos." }, { status: 404 });
     const medalMeta = (await db.query.medalsCatalog.findFirst({ where: eq(medalsCatalog.code, medalCode) })) ?? getPilotMedal(medalCode);
     if (!medalMeta) return NextResponse.json({ error: "Medalha não encontrada no catálogo." }, { status: 404 });
     if (existingGrant) return NextResponse.json({ error: "Esta medalha já foi concedida a este aluno." }, { status: 409 });
