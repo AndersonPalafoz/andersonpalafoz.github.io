@@ -6,7 +6,7 @@ import { analyzeSpeakingAudio } from "@/lib/ai-pronunciation";
 import { createSpeakingAttempt, db, getSpeakingAttempts } from "@/lib/db";
 import { activities, eventLogs, userActivityProgress, users } from "@/drizzle/schema";
 import { uploadLearningAudio } from "@/lib/learning-storage";
-import { ACTIVITY_COMPLETION_XP, awardCompletionXp } from "@/lib/gamification";
+import { ACTIVITY_COMPLETION_XP, awardCompletionXp, checkAndAwardStreakBonus } from "@/lib/gamification";
 import { awardMedalIfEligible } from "@/lib/medal-awards";
 
 export async function GET(request: NextRequest) {
@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
     if (shouldAwardCompletionXp) {
       await awardCompletionXp(user.id, ACTIVITY_COMPLETION_XP);
       pointsAwarded = ACTIVITY_COMPLETION_XP;
+      await checkAndAwardStreakBonus(user.id);
       await db.insert(eventLogs).values({
         userId: user.id,
         userEmail: user.email,

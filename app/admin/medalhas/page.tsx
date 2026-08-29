@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Award, ArrowLeft, PlusCircle, ShieldCheck, Sparkles, Loader, Search, X, CheckCircle2, CircleAlert, Copy, Eye, FileText, ListChecks, UsersRound, WandSparkles } from "lucide-react";
+import { Award, ArrowLeft, PlusCircle, ShieldCheck, Sparkles, Loader, Search, X, CheckCircle2, CircleAlert, Copy, Eye, FileText, ListChecks, Trash2, UsersRound, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/hooks/useAuth";
@@ -151,6 +151,23 @@ export default function AdminMedalsPage() {
       toast.error("Erro ao carregar o gerenciador de medalhas.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const [revokingId, setRevokingId] = useState<number | null>(null);
+  const handleRevoke = async (grant: GrantedMedalRecord) => {
+    if (!window.confirm(`Revogar esta medalha de ${grant.userName || grant.userEmail}? Ela poderá ser concedida novamente no futuro.`)) return;
+    setRevokingId(grant.id);
+    try {
+      const res = await fetch(`/api/admin/medals?grantId=${grant.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Não foi possível revogar a medalha.");
+      setGrantedList((current) => current.filter((item) => item.id !== grant.id));
+      toast.success("Medalha revogada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível revogar a medalha.");
+    } finally {
+      setRevokingId(null);
     }
   };
 
@@ -448,12 +465,13 @@ export default function AdminMedalsPage() {
                     <th className="p-4">Tipo</th>
                     <th className="p-4">Justificativa</th>
                     <th className="p-4">Data</th>
+                    <th className="p-4 text-right">Ação</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {grantedList.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-8 text-center text-sm text-muted-foreground">
+                      <td colSpan={6} className="p-8 text-center text-sm text-muted-foreground">
                         Nenhuma medalha registrada no histórico ainda.
                       </td>
                     </tr>
@@ -476,6 +494,17 @@ export default function AdminMedalsPage() {
                           </td>
                           <td className="p-4 text-xs text-muted-foreground">{item.notes || "—"}</td>
                           <td className="p-4 text-xs text-muted-foreground">{new Date(item.createdAt).toLocaleDateString("pt-BR")}</td>
+                          <td className="p-4 text-right">
+                            <button
+                              onClick={() => void handleRevoke(item)}
+                              disabled={revokingId === item.id}
+                              aria-label={`Revogar medalha de ${item.userName || item.userEmail}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-60 dark:text-red-400 dark:hover:bg-red-950/30"
+                            >
+                              {revokingId === item.id ? <Loader className="animate-spin" size={14} /> : <Trash2 size={14} />}
+                              Revogar
+                            </button>
+                          </td>
                         </tr>
                       );
                     })

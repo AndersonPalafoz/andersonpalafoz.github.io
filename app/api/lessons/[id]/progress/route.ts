@@ -4,7 +4,7 @@ import { getLessonById, getModuleById, getUserLessonProgress, updateLessonProgre
 import { issueCertificateIfEligible } from "@/lib/certificate-service";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { awardLessonCompletionXp, LESSON_COMPLETION_XP } from "@/lib/gamification";
+import { awardLessonCompletionXp, checkAndAwardStreakBonus, LESSON_COMPLETION_XP } from "@/lib/gamification";
 import { eventLogs, lessonProgress, lessons, modules } from "@/drizzle/schema";
 import { awardMedalIfEligible } from "@/lib/medal-awards";
 
@@ -42,6 +42,7 @@ export async function POST(
     if (completed && previousProgress?.completed !== 1 && !existingCompletionEvent) {
       await awardLessonCompletionXp(userId);
       pointsAwarded = LESSON_COMPLETION_XP;
+      await checkAndAwardStreakBonus(userId);
       await db.insert(eventLogs).values({
         userId,
         userEmail: session.user.email ?? null,
