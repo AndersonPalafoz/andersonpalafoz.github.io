@@ -1432,6 +1432,7 @@ export default function TurmasExternasPage() {
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
       ["Instituição", cls.institution],
       ["Turma", cls.className],
+      ["Oferta / contexto", cls.offerId ?? "Legada"],
       ["Curso / Disciplina", cls.courseName],
       ["Período", cls.academicTerm],
       ["Nível", (cls as any).level || "Não informado"],
@@ -1441,9 +1442,10 @@ export default function TurmasExternasPage() {
       ["Frequência mínima (%)", formatReportNumber(minimumAttendance)],
       ["Alunos incluídos", rows.length],
       [],
-      ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
+      ["Aluno", "Matrícula acadêmica", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"],
       ...rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => [
         student.name,
+        student.courseOfferStudentId ?? "",
         student.cpf || "",
         student.email || "",
         student.category || "",
@@ -1469,7 +1471,7 @@ export default function TurmasExternasPage() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `relatorio_academico_${cls.id}_${filter}.csv`;
+    link.download = `relatorio_academico_${cls.offerId ?? `legado-${cls.id}`}_${filter}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -1482,9 +1484,10 @@ export default function TurmasExternasPage() {
     const minimumGrade = parseGradeNumber(cls.passingAverage) ?? REPORT_MIN_GRADE;
     const minimumAttendance = getMinimumAttendanceFromMaxAbsence(cls.maxAbsencePercent);
     const rows = filterAcademicReportRows(getAcademicReportRows(cls), filter, minimumGrade, minimumAttendance);
-    const headers = ["Aluno", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"];
+    const headers = ["Aluno", "Matrícula acadêmica", "CPF", "E-mail", "Categoria", "Universidade", "Componente", "Status do aluno", "Situação acadêmica", "Presenças", "Faltas", "Atrasos", "Justificadas", "Total de chamadas", "Frequência (%)", "Notas", "Prova SIMAL (0–8)", "Apresentação (0–2)", "Nota SIMAL (0–10)", "Média (0–10)"];
     const dataRows = rows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => [
       student.name,
+      student.courseOfferStudentId ?? "",
       student.cpf || "",
       student.email || "",
       student.category || "",
@@ -1506,7 +1509,7 @@ export default function TurmasExternasPage() {
     ]);
     const worksheet = XLSX.utils.aoa_to_sheet([
       ["RELATÓRIO ACADÊMICO — NOTAS E PRESENÇAS"],
-      ["Instituição", cls.institution, "Turma", cls.className, "Curso / Disciplina", cls.courseName],
+      ["Instituição", cls.institution, "Turma", cls.className, "Oferta / contexto", cls.offerId ?? "Legada", "Curso / Disciplina", cls.courseName],
       ["Período", cls.academicTerm, "Nível", (cls as any).level || "Não informado", "Modalidade", (cls as any).modality || "Não informada"],
       ["Gerado em", new Date().toLocaleString("pt-BR"), "Filtro aplicado", academicReportFilterLabel(filter, minimumAttendance, minimumGrade)],
       ["Frequência mínima (%)", formatReportNumber(minimumAttendance), "Média mínima", formatReportNumber(minimumGrade), "Alunos incluídos", rows.length],
@@ -1515,12 +1518,12 @@ export default function TurmasExternasPage() {
       ...dataRows,
     ]);
     worksheet["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } }];
-    worksheet["!cols"] = [24, 16, 30, 18, 18, 18, 16, 26, 12, 10, 10, 13, 17, 16, 42, 17, 18, 17, 14].map((wch) => ({ wch }));
-    worksheet["!autofilter"] = { ref: `A7:S${7 + dataRows.length}` };
+    worksheet["!cols"] = [24, 18, 16, 30, 18, 18, 18, 16, 26, 12, 10, 10, 13, 17, 16, 42, 17, 18, 17, 14].map((wch) => ({ wch }));
+    worksheet["!autofilter"] = { ref: `A7:T${7 + dataRows.length}` };
     worksheet["!freeze"] = { xSplit: 0, ySplit: 7 };
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Relatório acadêmico");
-    XLSX.writeFile(workbook, `relatorio_academico_${cls.id}_${filter}.xlsx`);
+    XLSX.writeFile(workbook, `relatorio_academico_${cls.offerId ?? `legado-${cls.id}`}_${filter}.xlsx`);
     notifySuccess(`Relatório Excel exportado com o filtro: ${academicReportFilterLabel(filter, minimumAttendance, minimumGrade)}.`);
   };
 
@@ -1533,6 +1536,7 @@ export default function TurmasExternasPage() {
     const rowsHtml = reportRows.map(({ student, attendance, attendancePercent, grades, simalGrade, averageGrade, gradePassed, failedByGrade, failedByAttendance }) => `
       <tr>
         <td><strong>${escapeReportHtml(student.name)}</strong><br><small>${escapeReportHtml(student.email || "E-mail não informado")}</small></td>
+        <td>${escapeReportHtml(student.courseOfferStudentId ?? "Legada")}</td>
         <td>${escapeReportHtml(student.cpf || "—")}</td>
         <td>${attendance.present}</td>
         <td>${attendance.absent}</td>
@@ -1565,8 +1569,8 @@ export default function TurmasExternasPage() {
       @page { size: A4 landscape; margin: 12mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; line-height: 1.35; } header { border-bottom: 4px solid #dc2626; padding: 0 0 13px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 22px; letter-spacing: -0.02em; } h2 { margin: 0 0 7px; color: #111827; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; table-layout: fixed; } thead { display: table-header-group; } tr { page-break-inside: avoid; } th { background: #991b1b; color: white; text-align: left; padding: 7px 5px; font-size: 7px; letter-spacing: 0.02em; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; vertical-align: top; font-size: 8px; overflow-wrap: anywhere; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
       ${reportSummaryHtml}
-      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter, minimumAttendance, minimumGrade))}</div><div><b>Frequência mínima</b>${formatReportNumber(minimumAttendance)}%</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
-      <table><thead><tr><th>Aluno / e-mail</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Prova SIMAL</th><th>Apresentação</th><th>Nota SIMAL</th><th>Média final</th><th>Situação</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="14">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
+      <div class="meta"><div><b>Instituição</b>${escapeReportHtml(cls.institution)}</div><div><b>Oferta / contexto</b>${escapeReportHtml(cls.offerId ?? `Legada — turma ${cls.id}`)}</div><div><b>Período</b>${escapeReportHtml(cls.academicTerm)}</div><div><b>Nível</b>${escapeReportHtml((cls as any).level || "Não informado")}</div><div><b>Modalidade</b>${escapeReportHtml((cls as any).modality || "Não informada")}</div><div><b>Filtro aplicado</b>${escapeReportHtml(academicReportFilterLabel(filter, minimumAttendance, minimumGrade))}</div><div><b>Frequência mínima</b>${formatReportNumber(minimumAttendance)}%</div><div><b>Alunos incluídos</b>${reportRows.length}</div></div>
+      <table><thead><tr><th>Aluno / e-mail</th><th>Matrícula acadêmica</th><th>CPF</th><th>Pres.</th><th>Faltas</th><th>Atrasos</th><th>Just.</th><th>Total</th><th>Freq. %</th><th>Notas</th><th>Prova SIMAL</th><th>Apresentação</th><th>Nota SIMAL</th><th>Média final</th><th>Situação</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="15">Nenhum aluno cadastrado nesta turma.</td></tr>'}</tbody></table>
       <footer>Relatório acadêmico interno. Os dados apresentados correspondem aos registros persistidos da turma no momento da exportação. Critérios de reprovação: média inferior a ${minimumGrade.toFixed(1)} ou frequência inferior a ${minimumAttendance.toFixed(1)}% quando aplicáveis.</footer>
       </body></html>`);
     printWindow.document.close();
