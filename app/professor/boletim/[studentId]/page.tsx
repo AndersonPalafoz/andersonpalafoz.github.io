@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Award, Building2, Calendar, FileText, Loader2, Mail, ShieldAlert, User } from "lucide-react";
 import { toast } from "sonner";
@@ -9,7 +9,9 @@ import { toast } from "sonner";
 interface GradeItem { id: number; assessmentTitle: string; score: string; maxScore: string; feedback: string | null; createdAt: string | Date; }
 interface AttendanceItem { date: string; status: string; }
 interface EnrollmentItem {
-  classId: number;
+  classId: number | null;
+  offerId: number | null;
+  courseOfferStudentId: number | null;
   institution: string;
   className: string;
   courseName: string;
@@ -32,8 +34,11 @@ interface EnrollmentItem {
 }
 
 interface StudentReport {
+  context?: { offerId: number | null; classId: number | null; courseId: number | null };
   studentInfo: {
     id: number;
+    courseOfferStudentId: number | null;
+    userId: number | null;
     name: string;
     email: string | null;
     studentIdNumber: string | null;
@@ -43,7 +48,10 @@ interface StudentReport {
 
 export default function StudentReportPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const studentId = params?.studentId as string;
+  const offerId = searchParams.get("offerId");
+  const courseOfferStudentId = searchParams.get("courseOfferStudentId");
 
   const [report, setReport] = useState<StudentReport | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +62,10 @@ export default function StudentReportPage() {
     const fetchReport = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/professor/external-student-report?studentId=${studentId}`);
+        const query = new URLSearchParams({ studentId });
+        if (offerId) query.set("offerId", offerId);
+        if (courseOfferStudentId) query.set("courseOfferStudentId", courseOfferStudentId);
+        const res = await fetch(`/api/professor/external-student-report?${query.toString()}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Erro ao carregar boletim.");
         setReport(data.report);
@@ -66,7 +77,7 @@ export default function StudentReportPage() {
       }
     };
     void fetchReport();
-  }, [studentId]);
+  }, [studentId, offerId, courseOfferStudentId]);
 
   if (loading) {
     return (
@@ -133,6 +144,10 @@ export default function StudentReportPage() {
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
               <Award size={14} className="text-red-600" />
               <span>Matrícula / ID: <strong className="text-gray-900 dark:text-white">{report.studentInfo.studentIdNumber || "Não informada"}</strong></span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Building2 size={14} className="text-red-600" />
+              <span>Oferta: <strong className="text-gray-900 dark:text-white">{report.context?.offerId ? `#${report.context.offerId}` : "Legada"}</strong> · Matrícula acadêmica: <strong className="text-gray-900 dark:text-white">{report.studentInfo.courseOfferStudentId ?? "legada"}</strong></span>
             </div>
           </div>
         </section>
