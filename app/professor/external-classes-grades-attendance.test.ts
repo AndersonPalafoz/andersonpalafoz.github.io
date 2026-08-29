@@ -40,6 +40,8 @@ describe("External Classes Grades and Attendance Feature Contract", () => {
     expect(content).toContain("externalClassAttendance");
     expect(content).toContain("attendanceData");
     expect(content).toContain("courseOfferStudents");
+    expect(content).toContain("courseOfferAttendance");
+    expect(content).toContain("contextualAttendanceData");
   });
 
   it("renders attendance and grades management UI in the teacher turmas-externas page", () => {
