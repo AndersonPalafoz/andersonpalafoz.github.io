@@ -1,6 +1,7 @@
-import { sql } from "drizzle-orm";
+import { sql, and, eq, gte, isNotNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { userGamificationPoints } from "@/drizzle/schema";
+import { lessonProgress, userActivityProgress, userGamificationPoints } from "@/drizzle/schema";
+import { awardMedalIfEligible } from "@/lib/medal-awards";
 
 export const LESSON_COMPLETION_XP = 10;
 export const ACTIVITY_COMPLETION_XP = 10;
@@ -12,6 +13,30 @@ const STREAK_BONUSES = new Map<number, number>([
   [60, 500],
   [100, 1000],
 ]);
+
+const STREAK_MILESTONES = [...STREAK_BONUSES.keys()].sort((a, b) => a - b);
+
+/**
+ * Faixas de nível por pontos acumulados, no estilo CEFR usado no restante da
+ * plataforma. Os limites são deliberadamente amplos no início (onde XP por
+ * aula/atividade domina) e mais espaçados depois (onde bônus de sequência
+ * passam a pesar mais).
+ */
+const LEVEL_TIERS: ReadonlyArray<{ minPoints: number; level: string }> = [
+  { minPoints: 3000, level: "Master (C2)" },
+  { minPoints: 1500, level: "Advanced (C1)" },
+  { minPoints: 700, level: "Upper Intermediate (B2)" },
+  { minPoints: 300, level: "Intermediate (B1)" },
+  { minPoints: 100, level: "Beginner (A2)" },
+  { minPoints: 0, level: "Explorer (A1)" },
+];
+
+export function computeLevelForPoints(points: number): string {
+  const tier = LEVEL_TIERS.find((t) => points >= t.minPoints);
+  return tier?.level ?? "Explorer (A1)";
+}
+
+const LOOKBACK_DAYS = 365;
 
 function utcDateKey(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -48,7 +73,7 @@ export async function awardCompletionXp(userId: number, amount: number) {
     .values({
       userId,
       points: amount,
-      level: "Explorer (A1)",
+      level: computeLevelForPoints(amount),
       streakDays: 0,
       updatedAt: new Date(),
     })
@@ -61,10 +86,60 @@ export async function awardCompletionXp(userId: number, amount: number) {
     })
     .returning({ points: userGamificationPoints.points });
 
-  return record?.points ?? amount;
+  const totalPoints = record?.points ?? amount;
+  const level = computeLevelForPoints(totalPoints);
+  await db
+    .update(userGamificationPoints)
+    .set({ level })
+    .where(and(eq(userGamificationPoints.userId, userId)));
+
+  return totalPoints;
 }
 
 export const awardLessonCompletionXp = (userId: number) => awardCompletionXp(userId, LESSON_COMPLETION_XP);
+
+/**
+ * Recalcula a sequência atual de estudos do aluno e concede, de forma
+ * idempotente, o bônus de qualquer marco (7/14/30/60/100 dias) que ele
+ * tenha alcançado desde a última verificação. A coluna `streakDays` de
+ * `user_gamification_points` guarda o maior marco já verificado/premiado
+ * para este usuário, evitando conceder o mesmo bônus duas vezes.
+ */
+export async function checkAndAwardStreakBonus(userId: number): Promise<{ streakDays: number; bonusAwarded: number }> {
+  const lookbackStart = new Date();
+  lookbackStart.setUTCDate(lookbackStart.getUTCDate() - LOOKBACK_DAYS);
+
+  const [lessonDates, activityDates, pointsRecord] = await Promise.all([
+    db.select({ completedAt: lessonProgress.completedAt })
+      .from(lessonProgress)
+      .where(and(eq(lessonProgress.userId, userId), eq(lessonProgress.completed, 1), isNotNull(lessonProgress.completedAt), gte(lessonProgress.completedAt, lookbackStart))),
+    db.select({ completedAt: userActivityProgress.completedAt })
+      .from(userActivityProgress)
+      .where(and(eq(userActivityProgress.userId, userId), eq(userActivityProgress.status, "completed"), isNotNull(userActivityProgress.completedAt), gte(userActivityProgress.completedAt, lookbackStart))),
+    db.query.userGamificationPoints.findFirst({ where: eq(userGamificationPoints.userId, userId) }),
+  ]);
+
+  const currentStreak = calculateStreakDays([
+    ...lessonDates.map((row) => row.completedAt).filter((d): d is Date => d instanceof Date),
+    ...activityDates.map((row) => row.completedAt).filter((d): d is Date => d instanceof Date),
+  ]);
+
+  const previouslyCheckedStreak = pointsRecord?.streakDays ?? 0;
+  const newlyReachedMilestones = STREAK_MILESTONES.filter((m) => m > previouslyCheckedStreak && m <= currentStreak);
+  const bonusAwarded = newlyReachedMilestones.reduce((sum, m) => sum + getStreakBonus(m), 0);
+
+  if (bonusAwarded > 0) {
+    await awardCompletionXp(userId, bonusAwarded);
+  }
+  if (currentStreak >= 7 && previouslyCheckedStreak < 7) {
+    await awardMedalIfEligible({ userId, medalCode: "constancia-na-trilha" });
+  }
+  if (currentStreak !== previouslyCheckedStreak) {
+    await db.update(userGamificationPoints).set({ streakDays: currentStreak }).where(eq(userGamificationPoints.userId, userId));
+  }
+
+  return { streakDays: currentStreak, bonusAwarded };
+}
 
 export function isApprovedStudentSession(session: { user?: { approvalStatus?: string | null; role?: string | null } } | null | undefined) {
   if (!session?.user) return false;

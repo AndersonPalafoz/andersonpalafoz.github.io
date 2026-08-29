@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
-import { ACTIVITY_COMPLETION_XP, awardCompletionXp } from "@/lib/gamification";
+import { ACTIVITY_COMPLETION_XP, awardCompletionXp, checkAndAwardStreakBonus } from "@/lib/gamification";
 import { db } from "@/lib/db";
 import { activities, eventLogs, userActivityProgress, users } from "@/drizzle/schema";
 
@@ -75,6 +75,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     if (!existingCompletionEvent) {
       await awardCompletionXp(user.id, ACTIVITY_COMPLETION_XP);
       pointsAwarded = ACTIVITY_COMPLETION_XP;
+      await checkAndAwardStreakBonus(user.id);
       await db.insert(eventLogs).values({
         userId: user.id,
         userEmail: user.email,

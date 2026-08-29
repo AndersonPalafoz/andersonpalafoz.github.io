@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -7,6 +7,7 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { getPilotMedal, PILOT_MEDALS } from "@/lib/medal-pilot-catalog";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
 import { isTechnicalLearnerIdentity } from "@/lib/technical-identities";
+import { ADMIN_AUDIT_ACTIONS, logAdminActivity } from "@/lib/admin-audit";
 
 const MEDAL_CATEGORIES = new Set(["achievement", "academic", "manual", "streak"]);
 const MAX_JUSTIFICATION_LENGTH = 500;
@@ -128,6 +129,49 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: true, message: "Medalha concedida e notificação enviada ao aluno com sucesso." });
   } catch (error) {
     console.error("Error granting medal manually:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+// DELETE /api/admin/medals?grantId=123 - Revoga uma medalha concedida por engano.
+// Diferente da concessão (que é única por aluno+código e não pode ser refeita),
+// a revogação libera o código para ser concedido novamente no futuro se fizer sentido.
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || !canAccessAdminPortal({ email: session.user.email, role: session.user.role })) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const grantId = Number(new URL(request.url).searchParams.get("grantId"));
+    if (!Number.isInteger(grantId) || grantId <= 0) {
+      return NextResponse.json({ error: "grantId inválido." }, { status: 400 });
+    }
+
+    const grantRows = await db
+      .select({ id: userMedals.id, medalCode: userMedals.medalCode, userName: users.name, userEmail: users.email })
+      .from(userMedals)
+      .leftJoin(users, eq(userMedals.userId, users.id))
+      .where(eq(userMedals.id, grantId))
+      .limit(1);
+    const grant = grantRows[0];
+    if (!grant) return NextResponse.json({ error: "Concessão não encontrada." }, { status: 404 });
+
+    const medalMeta = (await db.query.medalsCatalog.findFirst({ where: eq(medalsCatalog.code, grant.medalCode) })) ?? getPilotMedal(grant.medalCode);
+
+    await db.delete(userMedals).where(eq(userMedals.id, grantId));
+
+    await logAdminActivity({
+      adminEmail: session.user.email ?? "admin",
+      action: ADMIN_AUDIT_ACTIONS.SOFT_DELETE,
+      targetName: grant.userName ?? undefined,
+      targetEmail: grant.userEmail ?? undefined,
+      details: `Medalha "${medalMeta?.title ?? grant.medalCode}" revogada.`,
+    });
+
+    return NextResponse.json({ success: true, message: "Medalha revogada com sucesso." });
+  } catch (error) {
+    console.error("Error revoking medal:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
