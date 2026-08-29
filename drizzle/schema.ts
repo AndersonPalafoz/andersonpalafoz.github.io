@@ -1006,6 +1006,7 @@ export const externalClassAttendance = pgTable("external_class_attendance", {
   externalClassId: integer("externalClassId")
     .notNull()
     .references(() => externalClasses.id, { onDelete: "cascade" }),
+  offerId: integer("offerId").references(() => courseOffers.id, { onDelete: "set null" }),
   date: varchar("date", { length: 32 }).notNull(), // ex: "2026-08-17"
   attendanceData: text("attendanceData").notNull(), // JSON string map of studentId -> status ("present", "absent", "late")
   createdAt: timestamp("createdAt").defaultNow().notNull(),

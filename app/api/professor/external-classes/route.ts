@@ -6,6 +6,7 @@ import {
   externalClasses,
   externalStudents,
   externalClassAttendance,
+  courseOfferAttendance,
   externalClassGrades,
   externalClassMaterials,
   externalClassTeacherAssignments,
@@ -932,17 +933,44 @@ export async function POST(request: NextRequest) {
 
       if (existingAtt) {
         await db.update(externalClassAttendance)
-          .set({ attendanceData: JSON.stringify(attendanceData) })
+          .set({ attendanceData: JSON.stringify(attendanceData), offerId: resolvedOfferId })
           .where(eq(externalClassAttendance.id, existingAtt.id));
       } else {
         await db.insert(externalClassAttendance).values({
           externalClassId: Number(classId),
+          offerId: resolvedOfferId,
           date: String(date).trim(),
           attendanceData: JSON.stringify(attendanceData),
         });
       }
 
-      return NextResponse.json({ success: true, message: "Chamada salva com sucesso!" });
+      if (resolvedOfferId) {
+        const contextualStudents = await db.select({ id: courseOfferStudents.id, externalStudentId: courseOfferStudents.externalStudentId })
+          .from(courseOfferStudents)
+          .where(eq(courseOfferStudents.offerId, resolvedOfferId));
+        const contextualIdByExternalId = new Map(contextualStudents.filter((student) => student.externalStudentId !== null).map((student) => [student.externalStudentId!, student.id]));
+        const contextualAttendanceData = Object.fromEntries(
+          Object.entries(attendanceData as Record<string, string>)
+            .filter(([externalId]) => contextualIdByExternalId.has(Number(externalId)))
+            .map(([externalId, status]) => [String(contextualIdByExternalId.get(Number(externalId))), status])
+        );
+        const existingOfferAttendance = await db.query.courseOfferAttendance.findFirst({
+          where: and(eq(courseOfferAttendance.offerId, resolvedOfferId), eq(courseOfferAttendance.date, String(date).trim())),
+        });
+        if (existingOfferAttendance) {
+          await db.update(courseOfferAttendance)
+            .set({ attendanceData: JSON.stringify(contextualAttendanceData), updatedAt: new Date() })
+            .where(eq(courseOfferAttendance.id, existingOfferAttendance.id));
+        } else {
+          await db.insert(courseOfferAttendance).values({
+            offerId: resolvedOfferId,
+            date: String(date).trim(),
+            attendanceData: JSON.stringify(contextualAttendanceData),
+          });
+        }
+      }
+
+      return NextResponse.json({ success: true, message: "Chamada salva com sucesso!", offerId: resolvedOfferId });
     }
 
     // Ações em Lote para Notas (Batch Grades)
