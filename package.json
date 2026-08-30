@@ -17,7 +17,8 @@
     "migrate:external-classes": "tsx scripts/migrate-external-classes-to-offers.mts",
     "migrate:external-students": "tsx scripts/migrate-external-students-to-offers.mts",
     "validate:course-offers:staging": "tsx scripts/validate-course-offers-staging.mts",
-    "audit:course-offers": "tsx scripts/audit-course-offer-consistency.mts"
+    "audit:course-offers": "tsx scripts/audit-course-offer-consistency.mts",
+    "audit:legacy-decommission": "tsx scripts/audit-legacy-table-decommission.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
