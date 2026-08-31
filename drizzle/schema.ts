@@ -567,6 +567,7 @@ export const eventTypeEnum = pgEnum("event_type", [
   "activity_complete",
   "course_enroll",
   "role_change",
+  "legacy_fallback_read",
 ]);
 export const attendanceStatusEnum = pgEnum("attendance_status", [
   "present",
