@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { eventLogs } from "@/drizzle/schema";
 import { requireSuperAdmin } from "@/lib/admin-auth";
 
-const EVENT_TYPES = ["login", "material_submission", "activity_complete", "course_enroll", "role_change"] as const;
+const EVENT_TYPES = ["login", "material_submission", "activity_complete", "course_enroll", "role_change", "legacy_fallback_read"] as const;
 const MAX_LIMIT = 100;
 
 function parseInteger(value: string | null, fallback: number) {
