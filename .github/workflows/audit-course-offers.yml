@@ -51,3 +51,19 @@ jobs:
           path: audit-results/course-offers.json
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Run fallback usage audit
+        env:
+          DATABASE_URL: ${{ secrets.COURSE_AUDIT_DATABASE_URL }}
+        run: |
+          set -o pipefail
+          pnpm audit:legacy-fallback -- --json --fail-on-event | tee audit-results/legacy-fallback.json
+
+      - name: Upload fallback audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: legacy-fallback-audit-${{ github.run_number }}
+          path: audit-results/legacy-fallback.json
+          if-no-files-found: warn
+          retention-days: 30

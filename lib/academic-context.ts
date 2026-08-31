@@ -12,6 +12,7 @@ import {
   type AdminAuthSession,
 } from "@/lib/admin-auth";
 import { db } from "@/lib/db";
+import { recordLegacyFallbackRead } from "@/lib/legacy-fallback-monitoring";
 
 export type AcademicContextInput = {
   offerId?: number | string | null;
@@ -105,11 +106,13 @@ export async function resolveAcademicContext(input: AcademicContextInput): Promi
     where: and(eq(courseOffers.sourceExternalClassId, legacyClassId), isNull(courseOffers.deletedAt)),
   });
   if (offer) {
+    recordLegacyFallbackRead({ classId: legacyClassId, reason: "class-id-compatibility" });
     const externalClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, legacyClassId) });
     return buildAcademicContextFromOffer(offer, externalClass ?? null);
   }
 
   const externalClass = await db.query.externalClasses.findFirst({ where: eq(externalClasses.id, legacyClassId) });
+  if (externalClass) recordLegacyFallbackRead({ classId: legacyClassId, reason: "legacy-only-fallback" });
   return externalClass ? buildAcademicContextFromLegacyClass(externalClass) : null;
 }
 
