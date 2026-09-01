@@ -1521,3 +1521,39 @@ export const googleClassroomCoursework = pgTable(
 
 export type GoogleClassroomCoursework = typeof googleClassroomCoursework.$inferSelect;
 export type InsertGoogleClassroomCoursework = typeof googleClassroomCoursework.$inferInsert;
+
+/**
+ * Entregas e notas dos estudantes importadas do Google Classroom em modo somente leitura.
+ */
+export const googleClassroomSubmissions = pgTable(
+  "google_classroom_submissions",
+  {
+    id: serial("id").primaryKey(),
+    courseworkId: integer("courseworkId")
+      .notNull()
+      .references(() => googleClassroomCoursework.id, { onDelete: "cascade" }),
+    classroomSubmissionId: varchar("classroomSubmissionId", { length: 255 }).notNull(),
+    studentGoogleUserId: varchar("studentGoogleUserId", { length: 255 }).notNull(),
+    localUserId: integer("localUserId").references(() => users.id, { onDelete: "set null" }),
+    state: varchar("state", { length: 32 }).notNull().default("NEW"),
+    late: boolean("late").notNull().default(false),
+    draftGrade: numeric("draftGrade", { precision: 10, scale: 2 }),
+    assignedGrade: numeric("assignedGrade", { precision: 10, scale: 2 }),
+    alternateLink: text("alternateLink"),
+    creationTime: timestamp("creationTime"),
+    updateTime: timestamp("updateTime"),
+    submissionHistory: jsonb("submissionHistory"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalSubmissionUnique: uniqueIndex("google_classroom_submissions_external_idx").on(
+      table.courseworkId,
+      table.classroomSubmissionId
+    ),
+  })
+);
+
+export type GoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferSelect;
+export type InsertGoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferInsert;
