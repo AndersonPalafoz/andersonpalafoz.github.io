@@ -6,16 +6,18 @@ import { db } from "@/lib/db";
 import { googleClassroomConnections, googleClassroomCourses } from "@/drizzle/schema";
 import { listGoogleClassroomCourses, GoogleClassroomApiError, markClassroomConnectionError } from "@/lib/google-classroom-api";
 import { filterPlatformClassroomCourses } from "@/lib/google-classroom-filter";
+import { cronUserId } from "@/lib/classroom-cron-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || session.user.role !== "admin") {
+export async function POST(request: Request) {
+  const scheduledUserId = cronUserId(request);
+  const session = scheduledUserId ? null : await getServerSession(authOptions);
+  if (!scheduledUserId && (!session?.user || session.user.role !== "admin")) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = Number(session.user.id);
+  const userId = scheduledUserId ?? Number(session?.user?.id);
   if (!Number.isInteger(userId) || userId <= 0) {
     return NextResponse.json({ error: "Sessão administrativa inválida" }, { status: 401 });
   }
