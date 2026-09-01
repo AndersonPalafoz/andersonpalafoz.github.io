@@ -547,6 +547,13 @@
       "when": 1788270932712,
       "tag": "0083_legacy_fallback_monitoring",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1788272353785,
+      "tag": "0084_google_classroom_foundation",
+      "breakpoints": true
     }
   ]
 }

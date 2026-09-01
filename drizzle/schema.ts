@@ -1418,3 +1418,70 @@ export const articleCommentReplies = pgTable("article_comment_replies", {
 });
 export type ArticleCommentReply = typeof articleCommentReplies.$inferSelect;
 export type InsertArticleCommentReply = typeof articleCommentReplies.$inferInsert;
+
+/**
+ * Conexões OAuth explícitas com o Google Classroom.
+ * Os tokens devem ser criptografados pela camada de aplicação antes de serem persistidos.
+ */
+export const googleClassroomConnections = pgTable(
+  "google_classroom_connections",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    googleAccountId: varchar("googleAccountId", { length: 255 }).notNull(),
+    googleEmail: varchar("googleEmail", { length: 320 }).notNull(),
+    accessTokenEncrypted: text("accessTokenEncrypted"),
+    refreshTokenEncrypted: text("refreshTokenEncrypted"),
+    tokenExpiresAt: timestamp("tokenExpiresAt"),
+    scopes: text("scopes").notNull().default(""),
+    status: varchar("status", { length: 32 }).notNull().default("active"),
+    lastError: text("lastError"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    googleAccountUnique: uniqueIndex("google_classroom_connections_account_idx").on(table.googleAccountId),
+    userUnique: uniqueIndex("google_classroom_connections_user_idx").on(table.userId),
+  })
+);
+
+export type GoogleClassroomConnection = typeof googleClassroomConnections.$inferSelect;
+export type InsertGoogleClassroomConnection = typeof googleClassroomConnections.$inferInsert;
+
+/**
+ * Cursos importados do Google Classroom. O vínculo com cursos locais é opcional
+ * até que o administrador confirme a correspondência.
+ */
+export const googleClassroomCourses = pgTable(
+  "google_classroom_courses",
+  {
+    id: serial("id").primaryKey(),
+    connectionId: integer("connectionId")
+      .notNull()
+      .references(() => googleClassroomConnections.id, { onDelete: "cascade" }),
+    localCourseId: integer("localCourseId").references(() => courses.id, { onDelete: "set null" }),
+    classroomCourseId: varchar("classroomCourseId", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    section: varchar("section", { length: 255 }),
+    description: text("description"),
+    state: varchar("state", { length: 32 }).notNull().default("ACTIVE"),
+    ownerGoogleUserId: varchar("ownerGoogleUserId", { length: 255 }),
+    enrollmentCode: varchar("enrollmentCode", { length: 128 }),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    archivedAt: timestamp("archivedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalCourseUnique: uniqueIndex("google_classroom_courses_external_idx").on(
+      table.connectionId,
+      table.classroomCourseId
+    ),
+    localCourseIdx: uniqueIndex("google_classroom_courses_local_idx").on(table.localCourseId),
+  })
+);
+
+export type GoogleClassroomCourse = typeof googleClassroomCourses.$inferSelect;
+export type InsertGoogleClassroomCourse = typeof googleClassroomCourses.$inferInsert;
