@@ -1485,3 +1485,39 @@ export const googleClassroomCourses = pgTable(
 
 export type GoogleClassroomCourse = typeof googleClassroomCourses.$inferSelect;
 export type InsertGoogleClassroomCourse = typeof googleClassroomCourses.$inferInsert;
+
+/**
+ * Atividades courseWork importadas do Google Classroom em modo somente leitura.
+ */
+export const googleClassroomCoursework = pgTable(
+  "google_classroom_coursework",
+  {
+    id: serial("id").primaryKey(),
+    classroomCourseId: integer("classroomCourseId")
+      .notNull()
+      .references(() => googleClassroomCourses.id, { onDelete: "cascade" }),
+    classroomCourseworkId: varchar("classroomCourseworkId", { length: 255 }).notNull(),
+    title: varchar("title", { length: 500 }).notNull(),
+    description: text("description"),
+    workType: varchar("workType", { length: 32 }),
+    state: varchar("state", { length: 32 }).notNull().default("PUBLISHED"),
+    dueDate: timestamp("dueDate"),
+    maxPoints: numeric("maxPoints", { precision: 10, scale: 2 }),
+    topicId: varchar("topicId", { length: 255 }),
+    alternateLink: text("alternateLink"),
+    materials: jsonb("materials"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    archivedAt: timestamp("archivedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalCourseworkUnique: uniqueIndex("google_classroom_coursework_external_idx").on(
+      table.classroomCourseId,
+      table.classroomCourseworkId
+    ),
+  })
+);
+
+export type GoogleClassroomCoursework = typeof googleClassroomCoursework.$inferSelect;
+export type InsertGoogleClassroomCoursework = typeof googleClassroomCoursework.$inferInsert;
