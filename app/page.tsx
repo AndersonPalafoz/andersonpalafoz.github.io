@@ -4,6 +4,7 @@ import { getCmsContent } from "@/lib/public-cms";
 import { db } from "@/lib/db";
 import { lessons } from "@/drizzle/schema";
 import { Sparkles, ArrowRight, BookOpen, Award } from "lucide-react";
+import { GoogleReviewsSection } from "@/components/google-reviews-section";
 
 async function getPublishedLessonCount() {
   try {
@@ -146,6 +147,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <GoogleReviewsSection compact limit={3} />
     </div>
   );
 }
