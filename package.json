@@ -21,7 +21,8 @@
     "audit:legacy-decommission": "tsx scripts/audit-legacy-table-decommission.mts",
     "reconcile:external-grades": "tsx scripts/reconcile-external-grades-to-offers.mts",
     "audit:legacy-fallback": "tsx scripts/audit-legacy-fallback.mts",
-    "archive:legacy-academic": "tsx scripts/archive-legacy-academic-records.mts"
+    "archive:legacy-academic": "tsx scripts/archive-legacy-academic-records.mts",
+    "archive:legacy-classes-students": "tsx scripts/archive-legacy-classes-and-students.mts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
