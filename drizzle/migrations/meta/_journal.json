@@ -568,6 +568,13 @@
       "when": 1788273419494,
       "tag": "0086_google_classroom_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1788274066369,
+      "tag": "0087_google_classroom_rosters",
+      "breakpoints": true
     }
   ]
 }
