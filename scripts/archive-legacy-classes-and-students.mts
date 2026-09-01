@@ -31,7 +31,7 @@ async function archive() {
       WHERE NOT EXISTS (
         SELECT 1 FROM course_offers o
         WHERE o."sourceExternalClassId" = c.id
-          AND o."deletedAt" IS NULL
+          AND o.deleted_at IS NULL
       )
       LIMIT 1
     `),
@@ -41,7 +41,7 @@ async function archive() {
       WHERE NOT EXISTS (
         SELECT 1
         FROM course_offer_students cos
-        JOIN course_offers o ON o.id = cos."offerId" AND o."deletedAt" IS NULL
+        JOIN course_offers o ON o.id = cos."offerId" AND o.deleted_at IS NULL
         WHERE cos."externalStudentId" = s.id
           AND o."sourceExternalClassId" = s."externalClassId"
       )
@@ -100,7 +100,7 @@ async function archive() {
       `));
       await tx.execute(sql.raw(`
         INSERT INTO legacy_external_classes_archive
-        SELECT c.*, (SELECT MIN(o.id) FROM course_offers o WHERE o."sourceExternalClassId" = c.id AND o."deletedAt" IS NULL), NOW()::timestamp, 'pre-decommission'
+        SELECT c.*, (SELECT MIN(o.id) FROM course_offers o WHERE o."sourceExternalClassId" = c.id AND o.deleted_at IS NULL), NOW()::timestamp, 'pre-decommission'
         FROM external_classes c
         WHERE NOT EXISTS (SELECT 1 FROM legacy_external_classes_archive a WHERE a.id = c.id)
       `));
