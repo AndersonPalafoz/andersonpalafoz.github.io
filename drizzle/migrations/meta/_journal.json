@@ -540,6 +540,13 @@
       "when": 1787977330102,
       "tag": "0082_attendance_offer_context",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1788270932712,
+      "tag": "0083_legacy_fallback_monitoring",
+      "breakpoints": true
     }
   ]
 }
