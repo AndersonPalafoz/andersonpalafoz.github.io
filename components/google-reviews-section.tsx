@@ -71,11 +71,11 @@ function Stars({ rating, small = false }: { rating: number; small?: boolean }) {
   );
 }
 
-function ReviewCard({ review }: { review: GoogleReview }) {
+function ReviewCard({ review, featured = false }: { review: GoogleReview; featured?: boolean }) {
   const date = formatReviewDate(review.publishTime);
 
   return (
-    <article className="group flex h-full flex-col rounded-[1.75rem] border border-slate-200/80 bg-white p-6 shadow-[0_16px_45px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_55px_rgba(15,23,42,0.1)] dark:border-slate-800 dark:bg-slate-900/80 dark:shadow-none">
+    <article className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border bg-white/95 p-6 backdrop-blur-sm transition duration-200 hover:-translate-y-1 dark:bg-slate-900/85 dark:shadow-none ${featured ? "border-red-200/90 shadow-[0_20px_55px_rgba(127,29,29,0.11)] dark:border-red-900/70" : "border-slate-200/80 shadow-[0_16px_45px_rgba(15,23,42,0.06)] dark:border-slate-800"}`}>\n      {featured && <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-red-600 via-red-500 to-amber-400" />}
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           {review.authorPhotoUri ? (
@@ -86,12 +86,12 @@ function ReviewCard({ review }: { review: GoogleReview }) {
               width={44}
               height={44}
               referrerPolicy="no-referrer"
-              className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-red-50 dark:ring-red-950/50"
+              className="h-11 w-11 shrink-0 rounded-full object-cover shadow-sm ring-2 ring-red-50 dark:ring-red-950/50"
             />
           ) : (
             <div
               aria-hidden="true"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-sm font-black text-red-700 dark:bg-red-950/60 dark:text-red-300"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-sm font-black text-red-700 shadow-sm ring-2 ring-red-100/80 dark:bg-red-950/60 dark:text-red-300 dark:ring-red-900/60"
             >
               {review.authorName.trim().charAt(0).toUpperCase() || "G"}
             </div>
@@ -105,7 +105,7 @@ function ReviewCard({ review }: { review: GoogleReview }) {
             </p>
           </div>
         </div>
-        <Quote className="shrink-0 text-red-200 transition group-hover:text-red-400 dark:text-red-900 dark:group-hover:text-red-500" size={24} />
+        <Quote className="shrink-0 text-red-200 transition duration-200 group-hover:text-red-400 dark:text-red-900 dark:group-hover:text-red-500" size={24} />
       </div>
 
       <div className="mt-5 flex items-center gap-2">
@@ -113,11 +113,11 @@ function ReviewCard({ review }: { review: GoogleReview }) {
         <span className="sr-only">Nota {review.rating} de 5 estrelas</span>
       </div>
 
-      <p className="mt-4 flex-1 text-sm leading-7 text-slate-600 dark:text-slate-300">
+      <p className="mt-4 flex-1 text-[0.95rem] leading-7 text-slate-600 dark:text-slate-300">
         {review.comment || "Este avaliador deixou uma nota no Google."}
       </p>
 
-      <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-100/90 pt-4 dark:border-slate-800/90">
         <span className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
           Google Maps
         </span>
@@ -249,7 +249,7 @@ export function GoogleReviewsSection({
 
         {!loading && !error && hasReviews && (
           <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {reviews.map((review) => <ReviewCard key={review.id} review={review} />)}
+            {reviews.map((review, index) => <ReviewCard key={review.id} review={review} featured={compact && index === 0} />)}
           </div>
         )}
 
