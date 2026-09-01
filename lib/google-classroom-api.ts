@@ -6,6 +6,20 @@ import { decryptClassroomToken, encryptClassroomToken } from "@/lib/google-class
 const CLASSROOM_API = "https://classroom.googleapis.com/v1";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
+export type ClassroomCoursework = {
+  id?: string;
+  title?: string;
+  description?: string;
+  workType?: string;
+  state?: string;
+  dueDate?: { year?: number; month?: number; day?: number };
+  dueTime?: { hours?: number; minutes?: number; seconds?: number; nanos?: number };
+  maxPoints?: number;
+  topicId?: string;
+  alternateLink?: string;
+  materials?: unknown[];
+};
+
 type ClassroomCourse = {
   id?: string;
   name?: string;
@@ -93,6 +107,37 @@ async function classroomRequest<T>(accessToken: string, path: string) {
   if (response.status === 401) throw new GoogleClassroomApiError("A autorização do Classroom expirou.", "TOKEN_EXPIRED", 401);
   if (response.status === 403) throw new GoogleClassroomApiError("A conta não possui os escopos ou permissões necessários para ler o Classroom.", "INSUFFICIENT_SCOPE", 403);
   throw new GoogleClassroomApiError(`A API do Google Classroom retornou ${response.status}: ${body.slice(0, 240)}`, "API_ERROR", 502);
+}
+
+export async function listGoogleClassroomCoursework(
+  connection: typeof googleClassroomConnections.$inferSelect,
+  classroomCourseId: string,
+) {
+  const accessToken = await getAccessToken(connection);
+  const coursework: ClassroomCoursework[] = [];
+  let pageToken: string | undefined;
+
+  do {
+    const params = new URLSearchParams({ pageSize: "100", courseWorkStates: "ACTIVE" });
+    params.append("courseWorkStates", "DRAFT");
+    params.append("courseWorkStates", "DELETED");
+    if (pageToken) params.set("pageToken", pageToken);
+    const page = await classroomRequest<{ courseWork?: ClassroomCoursework[]; nextPageToken?: string }>(
+      accessToken,
+      `/courses/${encodeURIComponent(classroomCourseId)}/courseWork?${params.toString()}`,
+    );
+    coursework.push(...(page.courseWork || []));
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+
+  return coursework.filter((item): item is ClassroomCoursework & { id: string; title: string } => Boolean(item.id && item.title));
+}
+
+export function classroomDueDate(coursework: ClassroomCoursework) {
+  const date = coursework.dueDate;
+  if (!date?.year || !date.month || !date.day) return null;
+  const time = coursework.dueTime || {};
+  return new Date(Date.UTC(date.year, date.month - 1, date.day, time.hours || 0, time.minutes || 0, time.seconds || 0));
 }
 
 export async function listGoogleClassroomCourses(connection: typeof googleClassroomConnections.$inferSelect) {
