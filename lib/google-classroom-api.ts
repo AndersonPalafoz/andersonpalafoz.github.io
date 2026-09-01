@@ -6,6 +6,21 @@ import { decryptClassroomToken, encryptClassroomToken } from "@/lib/google-class
 const CLASSROOM_API = "https://classroom.googleapis.com/v1";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
+export type ClassroomStudentSubmission = {
+  id?: string;
+  courseId?: string;
+  courseWorkId?: string;
+  userId?: string;
+  creationTime?: string;
+  updateTime?: string;
+  state?: string;
+  late?: boolean;
+  draftGrade?: number;
+  assignedGrade?: number;
+  alternateLink?: string;
+  submissionHistory?: unknown[];
+};
+
 export type ClassroomCoursework = {
   id?: string;
   title?: string;
@@ -107,6 +122,26 @@ async function classroomRequest<T>(accessToken: string, path: string) {
   if (response.status === 401) throw new GoogleClassroomApiError("A autorização do Classroom expirou.", "TOKEN_EXPIRED", 401);
   if (response.status === 403) throw new GoogleClassroomApiError("A conta não possui os escopos ou permissões necessários para ler o Classroom.", "INSUFFICIENT_SCOPE", 403);
   throw new GoogleClassroomApiError(`A API do Google Classroom retornou ${response.status}: ${body.slice(0, 240)}`, "API_ERROR", 502);
+}
+
+export async function listGoogleClassroomStudentSubmissions(
+  connection: typeof googleClassroomConnections.$inferSelect,
+  classroomCourseId: string,
+) {
+  const accessToken = await getAccessToken(connection);
+  const submissions: ClassroomStudentSubmission[] = [];
+  let pageToken: string | undefined;
+  do {
+    const params = new URLSearchParams({ pageSize: "100" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const page = await classroomRequest<{ studentSubmissions?: ClassroomStudentSubmission[]; nextPageToken?: string }>(
+      accessToken,
+      `/courses/${encodeURIComponent(classroomCourseId)}/courseWork/-/studentSubmissions?${params.toString()}`,
+    );
+    submissions.push(...(page.studentSubmissions || []));
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+  return submissions.filter((item): item is ClassroomStudentSubmission & { id: string; courseWorkId: string; userId: string } => Boolean(item.id && item.courseWorkId && item.userId));
 }
 
 export async function listGoogleClassroomCoursework(
