@@ -117,7 +117,7 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
 
   it("oferece relatório Excel estruturado com filtros e colunas dimensionadas", () => {
     expect(source).toContain("exportAcademicXlsx");
-    expect(source).toContain("relatorio_academico_${cls.id}_${filter}.xlsx");
+    expect(source).toContain("relatorio_academico_${cls.offerId ?? `legado-${cls.id}`}_${filter}.xlsx");
     expect(source).toContain("Relatório acadêmico");
     expect(source).toContain('worksheet["!cols"]');
     expect(source).toContain('worksheet["!autofilter"]');
