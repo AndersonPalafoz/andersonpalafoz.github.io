@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   findFirst: vi.fn(),
   update: vi.fn(),
   insert: vi.fn(),
+  select: vi.fn(),
 }));
 
 vi.mock("next-auth/next", () => ({ getServerSession: mocks.getServerSession }));
@@ -20,6 +21,7 @@ vi.mock("@/lib/db", () => ({
     },
     update: mocks.update,
     insert: mocks.insert,
+    select: mocks.select,
   },
 }));
 
@@ -68,6 +70,7 @@ describe("Admin users API", () => {
     mocks.findMany.mockResolvedValue([]);
     mocks.findFirst.mockResolvedValue(undefined);
     mocks.insert.mockReturnValue({ values: vi.fn().mockResolvedValue([]) });
+    mocks.select.mockReturnValue({ from: vi.fn().mockResolvedValue([]) });
   });
 
   it("rejects unauthenticated access", async () => {
