@@ -1557,3 +1557,33 @@ export const googleClassroomSubmissions = pgTable(
 
 export type GoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferSelect;
 export type InsertGoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferInsert;
+
+/**
+ * Participantes estudantes importados do roster do Google Classroom.
+ */
+export const googleClassroomRosters = pgTable(
+  "google_classroom_rosters",
+  {
+    id: serial("id").primaryKey(),
+    classroomCourseId: integer("classroomCourseId")
+      .notNull()
+      .references(() => googleClassroomCourses.id, { onDelete: "cascade" }),
+    studentGoogleUserId: varchar("studentGoogleUserId", { length: 255 }).notNull(),
+    googleEmail: varchar("googleEmail", { length: 320 }),
+    studentName: varchar("studentName", { length: 255 }),
+    localUserId: integer("localUserId").references(() => users.id, { onDelete: "set null" }),
+    state: varchar("state", { length: 32 }).notNull().default("ACTIVE"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalRosterUnique: uniqueIndex("google_classroom_rosters_external_idx").on(
+      table.classroomCourseId,
+      table.studentGoogleUserId
+    ),
+  })
+);
+
+export type GoogleClassroomRoster = typeof googleClassroomRosters.$inferSelect;
+export type InsertGoogleClassroomRoster = typeof googleClassroomRosters.$inferInsert;

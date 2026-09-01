@@ -6,6 +6,15 @@ import { decryptClassroomToken, encryptClassroomToken } from "@/lib/google-class
 const CLASSROOM_API = "https://classroom.googleapis.com/v1";
 const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
+export type ClassroomStudent = {
+  userId?: string;
+  profile?: {
+    id?: string;
+    name?: { fullName?: string };
+    emailAddress?: string;
+  };
+};
+
 export type ClassroomStudentSubmission = {
   id?: string;
   courseId?: string;
@@ -122,6 +131,26 @@ async function classroomRequest<T>(accessToken: string, path: string) {
   if (response.status === 401) throw new GoogleClassroomApiError("A autorização do Classroom expirou.", "TOKEN_EXPIRED", 401);
   if (response.status === 403) throw new GoogleClassroomApiError("A conta não possui os escopos ou permissões necessários para ler o Classroom.", "INSUFFICIENT_SCOPE", 403);
   throw new GoogleClassroomApiError(`A API do Google Classroom retornou ${response.status}: ${body.slice(0, 240)}`, "API_ERROR", 502);
+}
+
+export async function listGoogleClassroomStudents(
+  connection: typeof googleClassroomConnections.$inferSelect,
+  classroomCourseId: string,
+) {
+  const accessToken = await getAccessToken(connection);
+  const students: ClassroomStudent[] = [];
+  let pageToken: string | undefined;
+  do {
+    const params = new URLSearchParams({ pageSize: "100" });
+    if (pageToken) params.set("pageToken", pageToken);
+    const page = await classroomRequest<{ students?: ClassroomStudent[]; nextPageToken?: string }>(
+      accessToken,
+      `/courses/${encodeURIComponent(classroomCourseId)}/students?${params.toString()}`,
+    );
+    students.push(...(page.students || []));
+    pageToken = page.nextPageToken;
+  } while (pageToken);
+  return students.filter((item): item is ClassroomStudent & { userId: string } => Boolean(item.userId));
 }
 
 export async function listGoogleClassroomStudentSubmissions(
