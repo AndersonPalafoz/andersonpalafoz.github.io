@@ -5,9 +5,9 @@ import { join } from "node:path";
 const config = readFileSync(join(process.cwd(), "next.config.ts"), "utf8");
 
 describe("Next preview stability contract", () => {
-  it("disables the unstable development segment devtools indicator", () => {
+  it("keeps the supported development indicator disabled", () => {
     expect(config).toContain("devIndicators: false");
-    expect(config).toContain("devtoolSegmentExplorer: false");
+    expect(config).not.toContain("devtoolSegmentExplorer");
   });
 });
 
