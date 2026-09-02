@@ -31,6 +31,7 @@ import {
   Settings,
   WalletCards,
   Users,
+  Layers3,
 } from "lucide-react";
 import { getEffectiveRole, roleLabel } from "@/lib/role-capabilities";
 import { RolePreviewToolbar, useRolePreview } from "@/components/role-preview";
@@ -46,6 +47,7 @@ type NavigationItem = {
 const studentNavItems: NavigationItem[] = [
   { href: "/dashboard", label: "Início", icon: BookOpen, exact: true },
   { href: "/dashboard/cursos", label: "Cursos", icon: BookOpen },
+  { href: "/dashboard/turmas-internas", label: "Minhas turmas", icon: Layers3 },
   { href: "/dashboard/aluno-externo", label: "Área externa", icon: GraduationCap },
   { href: "/dashboard/atividades", label: "Atividades", icon: CheckSquare },
   { href: "/dashboard/biblioteca", label: "Biblioteca", icon: Library },
@@ -60,6 +62,7 @@ const studentNavItems: NavigationItem[] = [
 
 const teacherNavItems: NavigationItem[] = [
   { href: "/professor", label: "Visão docente", icon: GraduationCap, exact: true },
+  { href: "/professor/turmas-internas", label: "Turmas internas", icon: Layers3 },
   { href: "/professor/turmas-externas", label: "Turmas externas", icon: FolderKanban },
   { href: "/professor/alunos", label: "Alunos", icon: Users },
   { href: "/professor/tarefas", label: "Tarefas", icon: ClipboardCheck },
@@ -71,6 +74,7 @@ const adminNavItems: NavigationItem[] = [
   { href: "/admin", label: "Visão administrativa", mobileLabel: "Admin", icon: Shield, exact: true },
   { href: "/admin/usuarios", label: "Pessoas e acessos", mobileLabel: "Pessoas", icon: Users },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
+  { href: "/professor/turmas-internas", label: "Turmas internas", icon: Layers3 },
   { href: "/admin/materiais", label: "Materiais", icon: Library },
   { href: "/admin/atividades", label: "Atividades", icon: CheckSquare },
   { href: "/admin/blog", label: "Conteúdo e blog", icon: FileText },
