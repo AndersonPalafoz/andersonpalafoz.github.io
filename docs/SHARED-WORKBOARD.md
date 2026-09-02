@@ -56,7 +56,31 @@ Nenhuma tarefa está registrada como ativa neste momento. Ao iniciar uma ativida
 
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
-- [ ] Criar uma tarefa com identificador `TASK-000` antes de iniciar qualquer atividade nova.
+### TASK-001 — Auditar e otimizar o desempenho do site
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta Manus que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/performance-optimization` |
+| Commit base | `c746fd4` |
+| Arquivos principais | A identificar após o diagnóstico; priorizar `app/`, `components/`, `next.config.ts` e assets públicos |
+| Serviços afetados | GitHub e Vercel; Neon somente se o diagnóstico apontar consultas lentas |
+| Confirmação necessária | Não para auditoria; sim antes de alterar produção, cache, banco ou infraestrutura |
+
+**Objetivo:** medir e melhorar o desempenho das páginas públicas e das áreas de maior uso, reduzindo tempo de carregamento e custo de execução sem comprometer acessibilidade, SEO, responsividade ou funcionalidades existentes.
+
+**Escopo inicial:** estabelecer uma linha de base com Lighthouse/PageSpeed e métricas Core Web Vitals (LCP, INP e CLS); identificar bundles, imagens, fontes, chamadas de API e consultas de banco com maior impacto; corrigir as maiores oportunidades; e comparar os resultados antes e depois nas rotas públicas prioritárias e nas páginas acadêmicas mais acessadas.
+
+**Estado atual:** tarefa criada no quadro. Nenhum diagnóstico ou alteração de desempenho foi executado nesta atividade.
+
+**Bloqueios:** não há bloqueio conhecido. As credenciais e os ambientes de produção não devem ser alterados durante a fase de diagnóstico.
+
+**Próximo passo exato:** executar um diagnóstico somente leitura das rotas `/`, `/sobre`, `/cursos`, `/materiais`, `/blog`, `/contato` e `/depoimentos`, registrar as métricas de referência e anexar os principais gargalos ao quadro.
+
+**Critério de conclusão:** apresentar comparação antes/depois das métricas de desempenho, registrar os arquivos e configurações alterados, passar nos testes e no build, confirmar o deployment da Vercel e documentar qualquer impacto residual.
+
 - [ ] Registrar alterações de produção que não estejam representadas por migration ou commit.
 
 ## Bloqueadas
