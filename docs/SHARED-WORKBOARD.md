@@ -23,7 +23,30 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
-Nenhuma tarefa está registrada como ativa neste momento. Ao iniciar uma atividade, substitua esta frase por uma entrada com o formato abaixo.
+### TASK-001 — Auditar e otimizar o desempenho do site
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | Conta Manus que iniciou a implementação |
+| Iniciada em | 2026-09-02 |
+| Branch | `feature/performance-optimization` |
+| Commit base | `654ae10` |
+| Arquivos principais | `app/layout.tsx`, `app/globals.css`, `app/page.tsx`, `components/navbar.tsx`, `components/footer.tsx`, `next.config.ts` |
+| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon nesta etapa |
+| Confirmação necessária | Não para auditoria e build; sim antes de alterar configurações externas de produção |
+
+**Estado atual:** iniciada a primeira etapa focada em imagens e fontes. A fonte externa duplicada foi removida do CSS global; Poppins e Inter passaram a ser carregadas via `next/font`; a imagem principal da home e os logos do cabeçalho e rodapé passaram a usar `next/image`; e o Next.js foi configurado para servir AVIF/WebP com cache de 30 dias.
+
+**Validação realizada:** os testes de contrato de desempenho, integração de depoimentos e rotas públicas passaram, totalizando 9 testes aprovados; `git diff --check` também passou. A compilação do Next.js chegou à etapa de compilação otimizada sem erro de código e foi interrompida apenas na coleta de rotas porque o sandbox não possui `NEON_DATABASE_URL` nem `DATABASE_URL` local.
+
+**Bloqueios:** o build local completo depende das variáveis de ambiente de produção, que não devem ser copiadas para o repositório. O deployment da Vercel deve ser a validação definitiva do build quando a branch for publicada.
+
+**Próximo passo exato:** publicar ou abrir a branch para revisão e executar o diagnóstico de desempenho nas rotas prioritárias, registrando métricas antes/depois e verificando o deployment da Vercel.
+
+**Critério de conclusão:** confirmar build e testes, verificar que as imagens mantêm proporção e qualidade, medir as rotas prioritárias e registrar os resultados antes/depois.
+
+Ao concluir ou transferir esta tarefa, atualize o status e mova o registro para “Concluídas recentemente” apenas após documentar as evidências.
 
 ### Modelo de tarefa
 
