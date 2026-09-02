@@ -6,6 +6,7 @@ import { db } from "./db";
 import { eventLogs, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { getAuthSecret } from "./auth-secret";
+import { hasClassroomReadonlyScope, persistClassroomConnection } from "./google-classroom-oauth";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
 
@@ -78,6 +79,22 @@ export const authOptions: NextAuthOptions = {
                 .set({ role: "admin", approvalStatus: "approved", deletedAt: null })
                 .where(eq(users.email, ADMIN_EMAIL));
             }
+          }
+        }
+
+        if (account?.provider === "google" && account.scope && hasClassroomReadonlyScope(account.scope)) {
+          const classroomUser = await db.query.users.findFirst({
+            where: eq(users.email, user.email),
+            columns: { id: true },
+          });
+          if (classroomUser?.id && account.providerAccountId) {
+            await persistClassroomConnection({
+              userId: classroomUser.id,
+              googleAccountId: account.providerAccountId,
+              googleEmail: user.email,
+              account,
+              authorizedRole: existingUser?.role === "admin" ? "admin" : existingUser?.role === "professor" ? "teacher" : "student",
+            });
           }
         }
 

@@ -3,6 +3,10 @@ export interface ClassroomCourseItem {
   name: string;
   section?: string | null;
   descriptionHeading?: string | null;
+  description?: string | null;
+  courseState?: string | null;
+  ownerId?: string | null;
+  enrollmentCode?: string | null;
 }
 
 /**

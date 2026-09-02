@@ -8,6 +8,7 @@ const navigation = [
   ["Cursos", "/cursos"],
   ["Materiais", "/materiais"],
   ["Blog", "/blog"],
+  ["Sobre e depoimentos", "/sobre#depoimentos"],
 ] as const;
 
 const resources = [

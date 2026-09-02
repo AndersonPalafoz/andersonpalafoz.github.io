@@ -1418,3 +1418,178 @@ export const articleCommentReplies = pgTable("article_comment_replies", {
 });
 export type ArticleCommentReply = typeof articleCommentReplies.$inferSelect;
 export type InsertArticleCommentReply = typeof articleCommentReplies.$inferInsert;
+
+/**
+ * Conexões OAuth explícitas com o Google Classroom.
+ * Os tokens devem ser criptografados pela camada de aplicação antes de serem persistidos.
+ */
+export const googleClassroomConnections = pgTable(
+  "google_classroom_connections",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    googleAccountId: varchar("googleAccountId", { length: 255 }).notNull(),
+    googleEmail: varchar("googleEmail", { length: 320 }).notNull(),
+    accessTokenEncrypted: text("accessTokenEncrypted"),
+    refreshTokenEncrypted: text("refreshTokenEncrypted"),
+    tokenExpiresAt: timestamp("tokenExpiresAt"),
+    scopes: text("scopes").notNull().default(""),
+    /** Papel efetivamente autorizado no Classroom, não apenas o role local do usuário. */
+    authorizedRole: varchar("authorizedRole", { length: 32 }).notNull().default("teacher"),
+    status: varchar("status", { length: 32 }).notNull().default("active"),
+    lastError: text("lastError"),
+    lastSyncStatus: varchar("lastSyncStatus", { length: 32 }),
+    lastSyncAt: timestamp("lastSyncAt"),
+    consentedAt: timestamp("consentedAt"),
+    revokedAt: timestamp("revokedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    googleAccountUnique: uniqueIndex("google_classroom_connections_account_idx").on(table.googleAccountId),
+    userUnique: uniqueIndex("google_classroom_connections_user_idx").on(table.userId),
+  })
+);
+
+export type GoogleClassroomConnection = typeof googleClassroomConnections.$inferSelect;
+export type InsertGoogleClassroomConnection = typeof googleClassroomConnections.$inferInsert;
+
+/**
+ * Cursos importados do Google Classroom. O vínculo com cursos locais é opcional
+ * até que o administrador confirme a correspondência.
+ */
+export const googleClassroomCourses = pgTable(
+  "google_classroom_courses",
+  {
+    id: serial("id").primaryKey(),
+    connectionId: integer("connectionId")
+      .notNull()
+      .references(() => googleClassroomConnections.id, { onDelete: "cascade" }),
+    localCourseId: integer("localCourseId").references(() => courses.id, { onDelete: "set null" }),
+    classroomCourseId: varchar("classroomCourseId", { length: 255 }).notNull(),
+    name: varchar("name", { length: 255 }).notNull(),
+    section: varchar("section", { length: 255 }),
+    description: text("description"),
+    state: varchar("state", { length: 32 }).notNull().default("ACTIVE"),
+    ownerGoogleUserId: varchar("ownerGoogleUserId", { length: 255 }),
+    enrollmentCode: varchar("enrollmentCode", { length: 128 }),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    archivedAt: timestamp("archivedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalCourseUnique: uniqueIndex("google_classroom_courses_external_idx").on(
+      table.connectionId,
+      table.classroomCourseId
+    ),
+    localCourseIdx: uniqueIndex("google_classroom_courses_local_idx").on(table.localCourseId),
+  })
+);
+
+export type GoogleClassroomCourse = typeof googleClassroomCourses.$inferSelect;
+export type InsertGoogleClassroomCourse = typeof googleClassroomCourses.$inferInsert;
+
+/**
+ * Atividades courseWork importadas do Google Classroom em modo somente leitura.
+ */
+export const googleClassroomCoursework = pgTable(
+  "google_classroom_coursework",
+  {
+    id: serial("id").primaryKey(),
+    classroomCourseId: integer("classroomCourseId")
+      .notNull()
+      .references(() => googleClassroomCourses.id, { onDelete: "cascade" }),
+    classroomCourseworkId: varchar("classroomCourseworkId", { length: 255 }).notNull(),
+    title: varchar("title", { length: 500 }).notNull(),
+    description: text("description"),
+    workType: varchar("workType", { length: 32 }),
+    state: varchar("state", { length: 32 }).notNull().default("PUBLISHED"),
+    dueDate: timestamp("dueDate"),
+    maxPoints: numeric("maxPoints", { precision: 10, scale: 2 }),
+    topicId: varchar("topicId", { length: 255 }),
+    alternateLink: text("alternateLink"),
+    materials: jsonb("materials"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    archivedAt: timestamp("archivedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalCourseworkUnique: uniqueIndex("google_classroom_coursework_external_idx").on(
+      table.classroomCourseId,
+      table.classroomCourseworkId
+    ),
+  })
+);
+
+export type GoogleClassroomCoursework = typeof googleClassroomCoursework.$inferSelect;
+export type InsertGoogleClassroomCoursework = typeof googleClassroomCoursework.$inferInsert;
+
+/**
+ * Entregas e notas dos estudantes importadas do Google Classroom em modo somente leitura.
+ */
+export const googleClassroomSubmissions = pgTable(
+  "google_classroom_submissions",
+  {
+    id: serial("id").primaryKey(),
+    courseworkId: integer("courseworkId")
+      .notNull()
+      .references(() => googleClassroomCoursework.id, { onDelete: "cascade" }),
+    classroomSubmissionId: varchar("classroomSubmissionId", { length: 255 }).notNull(),
+    studentGoogleUserId: varchar("studentGoogleUserId", { length: 255 }).notNull(),
+    localUserId: integer("localUserId").references(() => users.id, { onDelete: "set null" }),
+    state: varchar("state", { length: 32 }).notNull().default("NEW"),
+    late: boolean("late").notNull().default(false),
+    draftGrade: numeric("draftGrade", { precision: 10, scale: 2 }),
+    assignedGrade: numeric("assignedGrade", { precision: 10, scale: 2 }),
+    alternateLink: text("alternateLink"),
+    creationTime: timestamp("creationTime"),
+    updateTime: timestamp("updateTime"),
+    submissionHistory: jsonb("submissionHistory"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalSubmissionUnique: uniqueIndex("google_classroom_submissions_external_idx").on(
+      table.courseworkId,
+      table.classroomSubmissionId
+    ),
+  })
+);
+
+export type GoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferSelect;
+export type InsertGoogleClassroomSubmission = typeof googleClassroomSubmissions.$inferInsert;
+
+/**
+ * Participantes estudantes importados do roster do Google Classroom.
+ */
+export const googleClassroomRosters = pgTable(
+  "google_classroom_rosters",
+  {
+    id: serial("id").primaryKey(),
+    classroomCourseId: integer("classroomCourseId")
+      .notNull()
+      .references(() => googleClassroomCourses.id, { onDelete: "cascade" }),
+    studentGoogleUserId: varchar("studentGoogleUserId", { length: 255 }).notNull(),
+    googleEmail: varchar("googleEmail", { length: 320 }),
+    studentName: varchar("studentName", { length: 255 }),
+    localUserId: integer("localUserId").references(() => users.id, { onDelete: "set null" }),
+    state: varchar("state", { length: 32 }).notNull().default("ACTIVE"),
+    lastSyncedAt: timestamp("lastSyncedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  table => ({
+    externalRosterUnique: uniqueIndex("google_classroom_rosters_external_idx").on(
+      table.classroomCourseId,
+      table.studentGoogleUserId
+    ),
+  })
+);
+
+export type GoogleClassroomRoster = typeof googleClassroomRosters.$inferSelect;
+export type InsertGoogleClassroomRoster = typeof googleClassroomRosters.$inferInsert;
