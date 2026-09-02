@@ -27,7 +27,7 @@ describe("Google reviews integration contract", () => {
     expect(page).toContain("Avaliar no Google");
     expect(page).toContain("GoogleReviewsSection");
     expect(home).toContain("<GoogleReviewsSection compact limit={3} />");
-    expect(footer).toContain('["Depoimentos", "/depoimentos"]');
+    expect(footer).toContain('["Sobre e depoimentos", "/sobre#depoimentos"]');
   });
 
   it("provides accessible loading, error, empty, and retry states", () => {
