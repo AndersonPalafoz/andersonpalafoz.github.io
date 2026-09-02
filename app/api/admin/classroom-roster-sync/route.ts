@@ -1,25 +1,22 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import { and, eq, inArray } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { googleClassroomConnections, googleClassroomCourses, googleClassroomRosters, googleClassroomCoursework, googleClassroomSubmissions, users } from "@/drizzle/schema";
 import { GoogleClassroomApiError, listGoogleClassroomStudents, markClassroomConnectionError } from "@/lib/google-classroom-api";
-import { cronUserId } from "@/lib/classroom-cron-auth";
+import { getClassroomRouteIdentity, canSyncClassroomRole, unauthorizedClassroomResponse } from "@/lib/classroom-route-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const scheduledUserId = cronUserId(request);
-  const session = scheduledUserId ? null : await getServerSession(authOptions);
-  if (!scheduledUserId && (!session?.user || session.user.role !== "admin")) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const userId = scheduledUserId ?? Number(session?.user?.id);
-  if (!Number.isInteger(userId) || userId <= 0) return NextResponse.json({ error: "Sessão administrativa inválida" }, { status: 401 });
+  const identity = await getClassroomRouteIdentity(request);
+  if (!identity) return unauthorizedClassroomResponse();
+  const userId = identity.userId;
 
   const connection = await db.query.googleClassroomConnections.findFirst({
     where: and(eq(googleClassroomConnections.userId, userId), eq(googleClassroomConnections.status, "active")),
   });
-  if (!connection) return NextResponse.json({ success: false, code: "NOT_CONNECTED", error: "Conecte o Google Classroom antes de sincronizar os alunos." }, { status: 409 });
+  if (!connection || !canSyncClassroomRole(identity.role, connection.authorizedRole, "roster")) return NextResponse.json({ success: false, code: "ROSTER_FORBIDDEN", error: "A sincronização de participantes está disponível somente para conexões de professor." }, { status: 403 });
 
   const courses = await db.query.googleClassroomCourses.findMany({
     where: and(eq(googleClassroomCourses.connectionId, connection.id), eq(googleClassroomCourses.state, "ACTIVE")),

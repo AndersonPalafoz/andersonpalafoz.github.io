@@ -575,6 +575,13 @@
       "when": 1788274066369,
       "tag": "0087_google_classroom_rosters",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1788276568227,
+      "tag": "0088_classroom_connection_roles",
+      "breakpoints": true
     }
   ]
 }

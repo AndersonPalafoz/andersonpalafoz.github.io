@@ -19,7 +19,8 @@ describe("Painel Administrativo: integridade de dados reais", () => {
   });
 
   it("sincroniza turmas e tarefas reais do Classroom sem contagens fixas", () => {
-    expect(classroomSyncRoute).toContain("gws classroom courses list");
+    expect(classroomSyncRoute).toContain("listGoogleClassroomCourses");
+    expect(classroomSyncRoute).toContain("googleClassroomConnections");
     expect(classroomSyncRoute).not.toContain("syncedCourses = 3");
   });
 

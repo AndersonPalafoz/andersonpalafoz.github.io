@@ -93,6 +93,7 @@ export const authOptions: NextAuthOptions = {
               googleAccountId: account.providerAccountId,
               googleEmail: user.email,
               account,
+              authorizedRole: existingUser?.role === "admin" ? "admin" : existingUser?.role === "professor" ? "teacher" : "student",
             });
           }
         }

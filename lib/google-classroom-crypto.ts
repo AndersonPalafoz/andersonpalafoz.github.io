@@ -3,7 +3,7 @@ import { getAuthSecret } from "@/lib/auth-secret";
 
 const TOKEN_PREFIX = "v1";
 
-export const GOOGLE_CLASSROOM_READONLY_SCOPES = [
+export const GOOGLE_CLASSROOM_TEACHER_SCOPES = [
   "https://www.googleapis.com/auth/classroom.courses.readonly",
   "https://www.googleapis.com/auth/classroom.coursework.students.readonly",
   "https://www.googleapis.com/auth/classroom.student-submissions.students.readonly",
@@ -11,10 +11,29 @@ export const GOOGLE_CLASSROOM_READONLY_SCOPES = [
   "https://www.googleapis.com/auth/classroom.profile.emails",
 ] as const;
 
+export const GOOGLE_CLASSROOM_STUDENT_SCOPES = [
+  "https://www.googleapis.com/auth/classroom.courses.readonly",
+  "https://www.googleapis.com/auth/classroom.coursework.me.readonly",
+  "https://www.googleapis.com/auth/classroom.student-submissions.me.readonly",
+  "https://www.googleapis.com/auth/classroom.profile.emails",
+] as const;
+
+export const GOOGLE_CLASSROOM_READONLY_SCOPES = GOOGLE_CLASSROOM_TEACHER_SCOPES;
+export type ClassroomAuthorizedRole = "teacher" | "student" | "admin";
+
+function grantedScopes(scope?: string | null) {
+  return new Set((scope || "").split(/\s+/).filter(Boolean));
+}
+
 export function hasClassroomReadonlyScope(scope?: string | null) {
-  if (!scope) return false;
-  const granted = new Set(scope.split(/\s+/).filter(Boolean));
-  return GOOGLE_CLASSROOM_READONLY_SCOPES.some((required) => granted.has(required));
+  return Boolean(scope && [...GOOGLE_CLASSROOM_TEACHER_SCOPES, ...GOOGLE_CLASSROOM_STUDENT_SCOPES].some((required) => grantedScopes(scope).has(required)));
+}
+
+export function getClassroomAuthorizedRole(scope?: string | null): "teacher" | "student" | null {
+  const granted = grantedScopes(scope);
+  if (GOOGLE_CLASSROOM_TEACHER_SCOPES.every((required) => granted.has(required))) return "teacher";
+  if (GOOGLE_CLASSROOM_STUDENT_SCOPES.every((required) => granted.has(required))) return "student";
+  return null;
 }
 
 function encryptionKey() {
