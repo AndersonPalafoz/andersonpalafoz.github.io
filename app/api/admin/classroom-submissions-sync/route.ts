@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import { and, eq, inArray } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { googleClassroomConnections, googleClassroomCourses, googleClassroomCoursework, googleClassroomSubmissions } from "@/drizzle/schema";
 import { GoogleClassroomApiError, listGoogleClassroomStudentSubmissions, markClassroomConnectionError } from "@/lib/google-classroom-api";
-import { cronUserId } from "@/lib/classroom-cron-auth";
+import { getClassroomRouteIdentity, canSyncClassroomRole, unauthorizedClassroomResponse, isStudentClassroomConnection } from "@/lib/classroom-route-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -16,21 +15,14 @@ function googleTimestamp(value?: string) {
 }
 
 export async function POST(request: Request) {
-  const scheduledUserId = cronUserId(request);
-  const session = scheduledUserId ? null : await getServerSession(authOptions);
-  if (!scheduledUserId && (!session?.user || session.user.role !== "admin")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = scheduledUserId ?? Number(session?.user?.id);
-  if (!Number.isInteger(userId) || userId <= 0) {
-    return NextResponse.json({ error: "Sessão administrativa inválida" }, { status: 401 });
-  }
+  const identity = await getClassroomRouteIdentity(request);
+  if (!identity) return unauthorizedClassroomResponse();
+  const userId = identity.userId;
 
   const connection = await db.query.googleClassroomConnections.findFirst({
     where: and(eq(googleClassroomConnections.userId, userId), eq(googleClassroomConnections.status, "active")),
   });
-  if (!connection) {
+  if (!connection || !canSyncClassroomRole(identity.role, connection.authorizedRole, "read")) {
     return NextResponse.json({ success: false, code: "NOT_CONNECTED", error: "Conecte o Google Classroom antes de importar entregas." }, { status: 409 });
   }
 
@@ -55,7 +47,7 @@ export async function POST(request: Request) {
       const courseworkByExternalId = new Map(coursework.map(item => [item.classroomCourseworkId, item]));
       if (!coursework.length) continue;
 
-      const submissions = await listGoogleClassroomStudentSubmissions(connection, course.classroomCourseId);
+      const submissions = await listGoogleClassroomStudentSubmissions(connection, course.classroomCourseId, isStudentClassroomConnection(connection.authorizedRole));
       fetchedSubmissions += submissions.length;
       const localCourseworkIds = submissions
         .map(item => courseworkByExternalId.get(item.courseWorkId)?.id)

@@ -1,31 +1,23 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
 import { and, eq, inArray } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { googleClassroomConnections, googleClassroomCourses } from "@/drizzle/schema";
 import { listGoogleClassroomCourses, GoogleClassroomApiError, markClassroomConnectionError } from "@/lib/google-classroom-api";
 import { filterPlatformClassroomCourses } from "@/lib/google-classroom-filter";
-import { cronUserId } from "@/lib/classroom-cron-auth";
+import { getClassroomRouteIdentity, canSyncClassroomRole, unauthorizedClassroomResponse } from "@/lib/classroom-route-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const scheduledUserId = cronUserId(request);
-  const session = scheduledUserId ? null : await getServerSession(authOptions);
-  if (!scheduledUserId && (!session?.user || session.user.role !== "admin")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = scheduledUserId ?? Number(session?.user?.id);
-  if (!Number.isInteger(userId) || userId <= 0) {
-    return NextResponse.json({ error: "Sessão administrativa inválida" }, { status: 401 });
-  }
+  const identity = await getClassroomRouteIdentity(request);
+  if (!identity) return unauthorizedClassroomResponse();
+  const userId = identity.userId;
 
   const connection = await db.query.googleClassroomConnections.findFirst({
     where: and(eq(googleClassroomConnections.userId, userId), eq(googleClassroomConnections.status, "active")),
   });
-  if (!connection) {
+  if (!connection || !canSyncClassroomRole(identity.role, connection.authorizedRole, "read")) {
     return NextResponse.json({
       success: false,
       code: "NOT_CONNECTED",

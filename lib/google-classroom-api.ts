@@ -156,12 +156,14 @@ export async function listGoogleClassroomStudents(
 export async function listGoogleClassroomStudentSubmissions(
   connection: typeof googleClassroomConnections.$inferSelect,
   classroomCourseId: string,
+  ownSubmissionsOnly = false,
 ) {
   const accessToken = await getAccessToken(connection);
   const submissions: ClassroomStudentSubmission[] = [];
   let pageToken: string | undefined;
   do {
     const params = new URLSearchParams({ pageSize: "100" });
+    if (ownSubmissionsOnly) params.set("userId", "me");
     if (pageToken) params.set("pageToken", pageToken);
     const page = await classroomRequest<{ studentSubmissions?: ClassroomStudentSubmission[]; nextPageToken?: string }>(
       accessToken,
