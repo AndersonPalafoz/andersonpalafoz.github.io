@@ -1,59 +1,95 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
+import { and, eq, inArray } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
-import { exec } from "child_process";
-import { promisify } from "util";
-
-const execAsync = promisify(exec);
+import { db } from "@/lib/db";
+import { googleClassroomConnections, googleClassroomCourses } from "@/drizzle/schema";
+import { listGoogleClassroomCourses, GoogleClassroomApiError, markClassroomConnectionError } from "@/lib/google-classroom-api";
+import { filterPlatformClassroomCourses } from "@/lib/google-classroom-filter";
+import { getClassroomRouteIdentity, canSyncClassroomRole, unauthorizedClassroomResponse } from "@/lib/classroom-route-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request: Request) {
+  const identity = await getClassroomRouteIdentity(request);
+  if (!identity) return unauthorizedClassroomResponse();
+  const userId = identity.userId;
+
+  const connection = await db.query.googleClassroomConnections.findFirst({
+    where: and(eq(googleClassroomConnections.userId, userId), eq(googleClassroomConnections.status, "active")),
+  });
+  if (!connection || !canSyncClassroomRole(identity.role, connection.authorizedRole, "read")) {
+    return NextResponse.json({
+      success: false,
+      code: "NOT_CONNECTED",
+      error: "Conecte uma conta do Google Classroom antes de importar cursos.",
+    }, { status: 409 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user || session.user.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const fetchedCourses = await listGoogleClassroomCourses(connection);
+    const courses = filterPlatformClassroomCourses(fetchedCourses);
+    const externalIds = courses.map(course => course.id);
+    const existing = externalIds.length
+      ? await db.select({ classroomCourseId: googleClassroomCourses.classroomCourseId })
+        .from(googleClassroomCourses)
+        .where(and(eq(googleClassroomCourses.connectionId, connection.id), inArray(googleClassroomCourses.classroomCourseId, externalIds)))
+      : [];
+    const existingIds = new Set(existing.map(course => course.classroomCourseId));
+    const now = new Date();
+
+    for (const course of courses) {
+      const state = course.courseState || "ACTIVE";
+      await db.insert(googleClassroomCourses).values({
+        connectionId: connection.id,
+        classroomCourseId: course.id,
+        name: course.name,
+        section: course.section || null,
+        description: course.description || null,
+        state,
+        ownerGoogleUserId: course.ownerId || null,
+        enrollmentCode: course.enrollmentCode || null,
+        lastSyncedAt: now,
+        archivedAt: state === "ARCHIVED" ? now : null,
+        createdAt: now,
+        updatedAt: now,
+      }).onConflictDoUpdate({
+        target: [googleClassroomCourses.connectionId, googleClassroomCourses.classroomCourseId],
+        set: {
+          name: course.name,
+          section: course.section || null,
+          description: course.description || null,
+          state,
+          ownerGoogleUserId: course.ownerId || null,
+          enrollmentCode: course.enrollmentCode || null,
+          lastSyncedAt: now,
+          archivedAt: state === "ARCHIVED" ? now : null,
+          updatedAt: now,
+        },
+      });
     }
 
-    let syncedCourses = 0;
-    let syncedAssignments = 0;
-
-    try {
-      const { stdout } = await execAsync("gws classroom courses list --params '{\"pageSize\":20}'");
-      if (stdout) {
-        const parsed = JSON.parse(stdout);
-        const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed?.courses) ? parsed.courses : [];
-        syncedCourses = list.length;
-        syncedAssignments = list.reduce((acc: number, c: any) => acc + (c?.courseWorkCount || 0), 0);
-      }
-    } catch (err: any) {
-      try {
-        const { stdout: driveOut } = await execAsync("gws drive files list --pageSize 1");
-        if (driveOut) {
-          syncedCourses = 0;
-          syncedAssignments = 0;
-        }
-      } catch (driveErr: any) {
-        // Fallback dinâmico para ambiente de produção sem CLI gws local
-        syncedCourses = 0;
-        syncedAssignments = 0;
-      }
-    }
+    await db.update(googleClassroomConnections)
+      .set({ status: "active", lastError: null, updatedAt: now })
+      .where(eq(googleClassroomConnections.id, connection.id));
 
     return NextResponse.json({
       success: true,
-      message: "Sincronização com o Google Classroom realizada com sucesso!",
+      message: "Cursos do Google Classroom importados com sucesso.",
       stats: {
-        syncedCourses,
-        syncedAssignments,
-        timestamp: new Date().toISOString(),
+        fetchedCourses: fetchedCourses.length,
+        importedCourses: courses.length,
+        createdCourses: courses.filter(course => !existingIds.has(course.id)).length,
+        updatedCourses: courses.filter(course => existingIds.has(course.id)).length,
+        filteredCourses: fetchedCourses.length - courses.length,
+        timestamp: now.toISOString(),
       },
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    console.error("Error during manual Classroom sync:", error);
-    return NextResponse.json(
-      { success: false, error: "Erro interno ao processar sincronização com o Google Classroom." },
-      { status: 500 }
-    );
+    await markClassroomConnectionError(connection.id, error);
+    if (error instanceof GoogleClassroomApiError) {
+      return NextResponse.json({ success: false, code: error.code, error: error.message }, { status: error.status });
+    }
+    console.error("Erro ao importar cursos do Google Classroom:", error);
+    return NextResponse.json({ success: false, code: "SYNC_ERROR", error: "Não foi possível importar os cursos do Classroom." }, { status: 502 });
   }
 }

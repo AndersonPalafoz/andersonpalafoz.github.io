@@ -32,10 +32,10 @@ jobs:
       - name: Run tests
         run: pnpm test
         env:
-          # Configurar NEON_DATABASE_URL em Settings > Secrets and variables > Actions.
-          # O valor nunca é gravado no repositório; sem a secret, os testes de integração
-          # permanecem identificados como indisponíveis por falta de ambiente.
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          # Usa o secret específico do CI quando disponível e reaproveita o
+          # secret já usado pela auditoria como fallback. A credencial nunca é
+          # gravada no repositório.
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
 
       - name: Build
         run: pnpm run build

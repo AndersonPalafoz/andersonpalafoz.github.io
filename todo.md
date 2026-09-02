@@ -1,3 +1,27 @@
+# Índice do projeto — Anderson Palafoz Platform
+
+> Este arquivo funciona como **índice e histórico acumulado** do projeto. O acompanhamento operacional entre contas Manus deve ser feito no [Quadro compartilhado](./docs/SHARED-WORKBOARD.md).
+
+## Pontos de entrada
+
+| Necessidade | Documento |
+|---|---|
+| Ver o que está sendo executado agora | [Quadro compartilhado](./docs/SHARED-WORKBOARD.md) |
+| Assumir uma tarefa de outra conta | [Checklist de handoff](./docs/SHARED-WORKBOARD.md#checklist-de-handoff) |
+| Consultar decisões e alterações em produção | [Decisões e registro de produção](./docs/SHARED-WORKBOARD.md#decisoes-compartilhadas) |
+| Consultar o histórico completo de tarefas | Este arquivo, a partir de [Fase 1](#fase-1-estrutura-base--core-academic-framework-) |
+| Consultar a desativação das tabelas legadas | [Plano de desativação](./docs/legacy-tables-decommission-plan.md) |
+| Consultar a integração de avaliações do Google | [Configuração dos depoimentos](./docs/google-reviews-setup.md) |
+| Consultar auditorias anteriores do TODO | [Auditoria do TODO](./docs/auditoria-todo-2026-08-26.md) e [reconciliação](./docs/todo-reconciliation-2026-08-19.md) |
+
+## Regra de continuidade
+
+Antes de iniciar uma atividade, leia o [Quadro compartilhado](./docs/SHARED-WORKBOARD.md), confirme o commit base e registre o próximo passo. Ao concluir ou transferir uma atividade, atualize o quadro com os testes, a branch, o commit e o estado dos serviços externos. Não use este arquivo histórico como substituto do quadro operacional.
+
+---
+
+## Histórico acumulado
+
 # Anderson Palafoz Platform - Master TODO (Next.js + Neon)
 
 ## Fase 1: Estrutura Base & Core Academic Framework ✅
