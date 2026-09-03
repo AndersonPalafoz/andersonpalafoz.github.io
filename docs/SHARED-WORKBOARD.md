@@ -23,7 +23,32 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
-Nenhuma tarefa está registrada como ativa neste momento. Ao iniciar uma atividade, substitua esta frase por uma entrada com o formato abaixo.
+### TASK-001 — Auditar e otimizar o desempenho do site
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | Conta Manus que iniciou a implementação |
+| Iniciada em | 2026-09-02 |
+| Branch | `feature/performance-optimization` |
+| Commit base | `654ae10` |
+| Arquivos principais | `app/layout.tsx`, `app/globals.css`, `app/page.tsx`, `components/navbar.tsx`, `components/footer.tsx`, `next.config.ts` |
+| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon nesta etapa |
+| Confirmação necessária | Não para auditoria e build; sim antes de alterar configurações externas de produção |
+
+**Estado atual:** iniciada a primeira etapa focada em imagens e fontes. A fonte externa duplicada foi removida do CSS global; Poppins e Inter passaram a ser carregadas via `next/font`; a imagem principal da home e os logos do cabeçalho e rodapé passaram a usar `next/image`; e o Next.js foi configurado para servir AVIF/WebP com cache de 30 dias.
+
+**Validação realizada:** os testes de contrato de desempenho, integração de depoimentos e rotas públicas passaram, totalizando 9 testes aprovados; `git diff --check` também passou. A compilação do Next.js chegou à etapa de compilação otimizada sem erro de código e foi interrompida apenas na coleta de rotas porque o sandbox não possui `NEON_DATABASE_URL` nem `DATABASE_URL` local. O Lighthouse foi executado em produção e no preview autenticado da Vercel; os resultados estão em [`docs/performance-optimization-baseline-2026-09-02.md`](./performance-optimization-baseline-2026-09-02.md).
+
+**Resultado before/after:** nas sete rotas avaliadas, o score médio de Performance passou de 74,0 para 89,3; o LCP médio caiu de 4,58 s para 2,65 s; e a transferência média caiu de 586,2 KB para 372,3 KB. O maior ponto de atenção restante é `/materiais`, com score 83 e LCP de 3,68 s no preview.
+
+**Bloqueios:** o build local completo depende das variáveis de ambiente de produção, que não devem ser copiadas para o repositório. O deployment da Vercel deve ser a validação definitiva do build quando a branch for publicada.
+
+**Próximo passo exato:** revisar visualmente o preview, repetir pelo menos três medições por rota em condições equivalentes e, se não houver regressões, abrir o pull request para a `main`.
+
+**Critério de conclusão:** confirmar build e testes, verificar que as imagens mantêm proporção e qualidade, medir as rotas prioritárias e registrar os resultados antes/depois.
+
+Ao concluir ou transferir esta tarefa, atualize o status e mova o registro para “Concluídas recentemente” apenas após documentar as evidências.
 
 ### Modelo de tarefa
 

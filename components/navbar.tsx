@@ -179,7 +179,16 @@ export function Navbar() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
             <Link href="/" className="group shrink-0 rounded-2xl border border-slate-200/70 bg-white/95 px-2.5 py-1.5 shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-red-600 dark:border-slate-700 dark:bg-slate-100" aria-label="Anderson Palafoz — página inicial">
-              <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain sm:h-10" fetchPriority="high" />
+              <Image
+                src={BRAND_ASSETS.horizontal}
+                alt="Anderson Palafoz — Professor de Inglês"
+                width={1809}
+                height={555}
+                sizes="(max-width: 640px) 180px, 220px"
+                quality={85}
+                priority
+                className="h-9 w-auto max-w-full object-contain sm:h-10"
+              />
             </Link>
 
             <div className="hidden items-center gap-1.5 lg:flex">
