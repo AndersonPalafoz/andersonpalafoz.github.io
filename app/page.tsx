@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { count } from "drizzle-orm";
 import { getCmsContent } from "@/lib/public-cms";
@@ -93,11 +94,15 @@ export default async function HomePage() {
             <div className="relative w-full max-w-md">
               <div className="absolute -inset-1.5 bg-gradient-to-r from-red-600 to-amber-500 rounded-3xl blur-xl opacity-25 animate-pulse" />
               <div className="relative aspect-square bg-white dark:bg-slate-900 rounded-3xl p-4 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex items-center justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src="/principal.png"
                   alt="Anderson Palafoz"
-                  className="w-full h-full object-cover rounded-2xl"
+                  width={800}
+                  height={800}
+                  sizes="(max-width: 1024px) 80vw, 32rem"
+                  quality={85}
+                  priority
+                  className="h-full w-full rounded-2xl object-cover"
                 />
               </div>
             </div>
