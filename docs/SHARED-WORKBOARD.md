@@ -83,30 +83,80 @@ Ao concluir ou transferir esta tarefa, atualize o status e mova o registro para 
 
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
-### TASK-001 — Auditar e otimizar o desempenho do site
+### TASK-002 — Otimizar especificamente a rota `/materiais`
 
 | Campo | Valor |
 |---|---|
 | Status | `backlog` |
 | Responsável | Conta Manus que assumir a tarefa |
 | Iniciada em | — |
-| Branch | `feature/performance-optimization` |
-| Commit base | `c746fd4` |
-| Arquivos principais | A identificar após o diagnóstico; priorizar `app/`, `components/`, `next.config.ts` e assets públicos |
-| Serviços afetados | GitHub e Vercel; Neon somente se o diagnóstico apontar consultas lentas |
-| Confirmação necessária | Não para auditoria; sim antes de alterar produção, cache, banco ou infraestrutura |
+| Branch | `feature/performance-materiais` |
+| Commit base | `704e1ac` |
+| Arquivos principais | A identificar após auditoria da rota `/materiais` |
+| Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
+| Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
 
-**Objetivo:** medir e melhorar o desempenho das páginas públicas e das áreas de maior uso, reduzindo tempo de carregamento e custo de execução sem comprometer acessibilidade, SEO, responsividade ou funcionalidades existentes.
+**Objetivo:** reduzir o tempo de carregamento e o custo de execução da rota `/materiais`, que apresentou o menor score relativo no diagnóstico anterior.
 
-**Escopo inicial:** estabelecer uma linha de base com Lighthouse/PageSpeed e métricas Core Web Vitals (LCP, INP e CLS); identificar bundles, imagens, fontes, chamadas de API e consultas de banco com maior impacto; corrigir as maiores oportunidades; e comparar os resultados antes e depois nas rotas públicas prioritárias e nas páginas acadêmicas mais acessadas.
+**Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
 
-**Estado atual:** tarefa criada no quadro. Nenhum diagnóstico ou alteração de desempenho foi executado nesta atividade.
+**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado.
 
-**Bloqueios:** não há bloqueio conhecido. As credenciais e os ambientes de produção não devem ser alterados durante a fase de diagnóstico.
+**Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
 
-**Próximo passo exato:** executar um diagnóstico somente leitura das rotas `/`, `/sobre`, `/cursos`, `/materiais`, `/blog`, `/contato` e `/depoimentos`, registrar as métricas de referência e anexar os principais gargalos ao quadro.
+**Próximo passo exato:** executar Lighthouse e inspeção de rede na rota `/materiais`, identificar os três maiores recursos ou operações responsáveis pelo custo e registrar as evidências.
 
-**Critério de conclusão:** apresentar comparação antes/depois das métricas de desempenho, registrar os arquivos e configurações alterados, passar nos testes e no build, confirmar o deployment da Vercel e documentar qualquer impacto residual.
+**Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
+
+### TASK-003 — Monitorar Core Web Vitals continuamente
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta Manus que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/core-web-vitals-monitoring` |
+| Commit base | `704e1ac` |
+| Arquivos principais | A identificar após definir a fonte de métricas e o formato de relatório |
+| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon previsto |
+| Confirmação necessária | Sim antes de habilitar serviços pagos ou alterar coleta de analytics |
+
+**Objetivo:** criar acompanhamento repetível de LCP, INP, CLS, score de Performance, erros e regressões nas rotas públicas prioritárias.
+
+**Escopo:** definir periodicidade, dispositivo e rede de referência; executar pelo menos três medições por rota; armazenar resultados versionados ou em artefato de CI; estabelecer limites de alerta; e documentar o procedimento de comparação.
+
+**Estado atual:** existe apenas o diagnóstico pontual registrado em [`docs/performance-optimization-baseline-2026-09-02.md`](./performance-optimization-baseline-2026-09-02.md).
+
+**Bloqueios:** ainda é necessário decidir se o monitoramento será baseado em GitHub Actions, Web Analytics, CrUX ou combinação dessas fontes.
+
+**Próximo passo exato:** propor o formato do relatório e executar três medições controladas das sete rotas públicas para estimar a variabilidade dos resultados.
+
+**Critério de conclusão:** relatório automatizado ou reproduzível, limites definidos, evidência de execução e documentação de resposta a regressões.
+
+### TASK-004 — Repetir e consolidar as medições de desempenho
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta Manus que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/performance-measurement-series` |
+| Commit base | `704e1ac` |
+| Arquivos principais | `docs/performance-optimization-baseline-2026-09-02.md` e novos artefatos de medição |
+| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon previsto |
+| Confirmação necessária | Não para medições somente leitura |
+
+**Objetivo:** transformar a comparação inicial before/after em uma série de medições estatisticamente mais confiável antes de novas decisões de otimização.
+
+**Escopo:** repetir pelo menos três execuções por rota em condições equivalentes, descartar execuções redirecionadas ou protegidas, calcular médias e variação, e registrar as limitações do método.
+
+**Estado atual:** há uma rodada válida comparando produção e preview, com melhora média de Performance de 74,0 para 89,3.
+
+**Bloqueios:** a série deve usar um preview acessível e um protocolo fixo para evitar misturar métricas de páginas protegidas, cold starts ou condições de rede diferentes.
+
+**Próximo passo exato:** executar as três rodadas no mesmo deployment e atualizar o relatório com média, mediana e faixa observada por rota.
+
+**Critério de conclusão:** relatório atualizado, artefatos brutos preservados, metodologia documentada e recomendação de merge ou nova rodada baseada nos dados.
 
 - [ ] Registrar alterações de produção que não estejam representadas por migration ou commit.
 
@@ -122,7 +172,7 @@ Nenhuma tarefa aguardando confirmação registrada.
 
 | Data | Tarefa | Evidência |
 |---|---|---|
-| 2026-09-02 | Criação do quadro compartilhado e transformação do `todo.md` em índice | Commit a ser registrado após a publicação |
+| 2026-09-02 | Criação do quadro compartilhado e transformação do `todo.md` em índice | Commit [`c746fd4`](https://github.com/AndersonPalafoz/andersonpalafoz.github.io/commit/c746fd4) |
 
 ## Decisões compartilhadas
 
