@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Award, BookOpen, CheckSquare, GraduationCap, LayoutDashboard, Mic2, Users } from "lucide-react";
+import { Award, BookOpen, CheckSquare, Layers3, LayoutDashboard, Mic2, Users } from "lucide-react";
 
 const teacherNavItems = [
   { href: "/professor", label: "Início", icon: LayoutDashboard, exact: true },
-  { href: "/professor/turmas-externas", label: "Turmas", icon: BookOpen },
+  { href: "/professor/turmas-internas", label: "Internas", icon: Layers3 },
+  { href: "/professor/turmas-externas", label: "Externas", icon: BookOpen },
   { href: "/professor/alunos", label: "Alunos", icon: Users },
   { href: "/professor/tarefas", label: "Tarefas", icon: CheckSquare },
   { href: "/professor/progresso-aulas", label: "Speaking", icon: Mic2 },
@@ -18,7 +19,7 @@ export function ProfessorMobileNav() {
   const isActive = (href: string, exact?: boolean) => exact ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-6 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-xl md:hidden" aria-label="Navegação do professor mobile">
+    <nav className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-7 gap-1 rounded-2xl border border-border/80 bg-card/95 p-1.5 shadow-[0_18px_50px_rgba(15,23,42,0.18)] backdrop-blur-xl md:hidden" aria-label="Navegação do professor mobile">
       {teacherNavItems.map(item => {
         const Icon = item.icon;
         const active = isActive(item.href, item.exact);
