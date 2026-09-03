@@ -27,7 +27,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` |
+| Status | `concluída` |
 | Responsável | Conta Manus que iniciou a implementação |
 | Iniciada em | 2026-09-02 |
 | Branch | `feature/performance-optimization` |
@@ -42,9 +42,11 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Resultado before/after:** nas sete rotas avaliadas, o score médio de Performance passou de 74,0 para 89,3; o LCP médio caiu de 4,58 s para 2,65 s; e a transferência média caiu de 586,2 KB para 372,3 KB. O maior ponto de atenção restante é `/materiais`, com score 83 e LCP de 3,68 s no preview.
 
-**Bloqueios:** o build local completo depende das variáveis de ambiente de produção, que não devem ser copiadas para o repositório. O deployment da Vercel deve ser a validação definitiva do build quando a branch for publicada.
+**Bloqueios:** nenhum bloqueio funcional conhecido. O build de produção da Vercel foi concluído com estado `READY`; o build local permanece condicionado às variáveis de ambiente do Neon, que não devem ser copiadas para o repositório.
 
-**Próximo passo exato:** revisar visualmente o preview, repetir pelo menos três medições por rota em condições equivalentes e, se não houver regressões, abrir o pull request para a `main`.
+**Resultado final:** a branch foi sincronizada com a main, mesclada pelo pull request [#29](https://github.com/AndersonPalafoz/andersonpalafoz.github.io/pull/29) e publicada no deployment de produção [`dpl_2spZwXyeXk6epDs3vjTKka9TVfb5`](https://vercel.com/palafozanderson-2076s-projects/andersonpalafoz/2spZwXyeXk6epDs3vjTKka9TVfb5), com aliases `andersonpalafoz.vercel.app` e `andersonpalafoz-git-main-palafozanderson-2076s-projects.vercel.app`.
+
+**Próximo passo exato:** iniciar uma nova tarefa para otimização de `/materiais` ou para monitoramento contínuo dos Core Web Vitals; não fazer alterações adicionais nesta tarefa concluída.
 
 **Critério de conclusão:** confirmar build e testes, verificar que as imagens mantêm proporção e qualidade, medir as rotas prioritárias e registrar os resultados antes/depois.
 
