@@ -59,6 +59,12 @@ export default async function TeacherDashboardPage() {
               Tarefas & Deadlines
             </Link>
             <Link
+              href="/professor/turmas-internas"
+              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+            >
+              Turmas Internas
+            </Link>
+            <Link
               href="/professor/turmas-externas"
               className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
             >

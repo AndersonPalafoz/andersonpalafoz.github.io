@@ -23,7 +23,57 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
-Nenhuma tarefa está registrada como ativa neste momento. Ao iniciar uma atividade, substitua esta frase por uma entrada com o formato abaixo.
+### TASK-002 — Atualizar painéis administrativos e docentes
+
+| Campo | Valor |
+|---|---|
+| Status | `concluída` |
+| Responsável | v0 |
+| Iniciada em | 2026-09-04 |
+| Branch | `v0/github-para-v0-bf0d37b9` |
+| Commit base | `654ae100` |
+| Arquivos principais | `app/professor/page.tsx`, `components/admin-mobile-nav.tsx`, `docs/SHARED-WORKBOARD.md` |
+| Serviços afetados | GitHub e Vercel; nenhum serviço externo alterado |
+| Confirmação necessária | Não |
+
+**Objetivo:** melhorar a descoberta e a consistência dos painéis admin e docente, destacando Turmas Internas sem duplicar Turmas Externas.
+
+**Estado atual:** link de Turmas Internas adicionado às ações rápidas do dashboard docente e à navegação administrativa mobile. Turmas Externas permanece como fluxo separado.
+
+**Bloqueios:** Nenhum.
+
+**Próximo passo exato:** executar typecheck, testes relacionados à navegação e verificar o preview em desktop/mobile.
+
+**Critério de conclusão:** validações verdes, preview verificado e alterações sincronizadas na branch de trabalho.
+
+Ao iniciar uma nova atividade, substitua ou mova esta entrada conforme o estado real.
+
+### Modelo de tarefa
+
+```md
+### TASK-000 — Título curto da atividade
+
+| Campo | Valor |
+|---|---|
+| Status | `em andamento` |
+| Responsável | Conta Manus ou pessoa responsável |
+| Iniciada em | AAAA-MM-DD |
+| Branch | `feature/nome-da-tarefa` |
+| Commit base | `abcdef1` |
+| Arquivos principais | `caminho/arquivo.tsx`, `docs/arquivo.md` |
+| Serviços afetados | GitHub, Vercel, Neon ou nenhum |
+| Confirmação necessária | Sim/Não |
+
+**Objetivo:** descreva o resultado esperado.
+
+**Estado atual:** descreva o que já foi feito e o que foi verificado.
+
+**Bloqueios:** registre dependências, erros ou informações pendentes. Use “Nenhum” quando não houver.
+
+**Próximo passo exato:** escreva uma ação única e verificável para a próxima conta executar.
+
+**Critério de conclusão:** descreva quais testes, consultas, deployment ou evidências encerram a tarefa.
+```
 
 ### Modelo de tarefa
 

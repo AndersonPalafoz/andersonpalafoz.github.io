@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { BarChart3, BookOpen, FileSignature, Globe, LayoutDashboard, Users, CalendarDays, Mic2, GraduationCap } from "lucide-react";
+import { BarChart3, BookOpen, FileSignature, Globe, LayoutDashboard, Users, CalendarDays, Mic2, GraduationCap, Layers3 } from "lucide-react";
 import { isSuperadmin } from "@/lib/role-capabilities";
 
 const adminNavItems = [
   { href: "/admin", label: "Início", icon: LayoutDashboard, exact: true },
   { href: "/admin/usuarios", label: "Usuários", icon: Users },
   { href: "/admin/cursos", label: "Cursos", icon: BookOpen },
+  { href: "/professor/turmas-internas", label: "Turmas internas", icon: Layers3 },
   { href: "/admin/cms", label: "Conteúdo", icon: Globe, superadminOnly: true },
   { href: "/admin/certificados", label: "Certificados", icon: FileSignature },
   { href: "/admin/relatorios-academicos", label: "Relatórios", icon: BarChart3 },
