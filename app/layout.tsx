@@ -6,6 +6,23 @@ import { InactivityMonitor } from "@/components/inactivity-monitor";
 import { SiteFrame } from "@/components/site-frame";
 import type { Metadata } from "next";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
+import { Inter, Poppins } from "next/font/google";
+import { PrivacyAwareSpeedInsights } from "@/components/speed-insights";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  preload: false,
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "900"],
+  variable: "--font-poppins",
+  display: "swap",
+  preload: true,
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || "https://andersonpalafoz.vercel.app"),
@@ -49,12 +66,6 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href={BRAND_ASSETS.faviconLight} type="image/png" />
         <link rel="alternate icon" href={BRAND_ASSETS.faviconDark} type="image/png" media="(prefers-color-scheme: dark)" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;900&display=swap"
-          rel="stylesheet"
-        />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -78,12 +89,13 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="site-shell font-sans text-slate-900 antialiased">
+      <body className={`${poppins.variable} ${inter.variable} site-shell font-sans text-slate-900 antialiased`}>
         <SessionProviderWrapper>
           <ThemeProvider>
             <SiteFrame>{children}</SiteFrame>
             <ToastProvider />
             <InactivityMonitor />
+            <PrivacyAwareSpeedInsights />
           </ThemeProvider>
         </SessionProviderWrapper>
       </body>
