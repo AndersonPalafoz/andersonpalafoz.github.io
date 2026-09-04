@@ -44,7 +44,13 @@ export async function GET(request: NextRequest) {
     const where = and(...filters);
 
     const [rows, [{ total }], levels, categories] = await Promise.all([
-      db.select().from(materials).where(where).orderBy(asc(materials.title), asc(materials.id)).limit(pageSize + 1).offset((page - 1) * pageSize),
+      db.select({
+        id: materials.id,
+        title: materials.title,
+        description: materials.description,
+        category: materials.category,
+        level: materials.level,
+      }).from(materials).where(where).orderBy(asc(materials.title), asc(materials.id)).limit(pageSize + 1).offset((page - 1) * pageSize),
       db.select({ total: count() }).from(materials).where(where),
       db.select({ value: materials.level }).from(materials).where(accessFilter).groupBy(materials.level).orderBy(asc(materials.level)),
       db.select({ value: materials.category }).from(materials).where(accessFilter).groupBy(materials.category).orderBy(asc(materials.category)),
