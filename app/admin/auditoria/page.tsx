@@ -60,7 +60,10 @@ export default function AdminAccessAuditPage() {
     }
   }, [eventType, from, offset, to, userSearch]);
 
-  useEffect(() => { void loadEvents(); }, [loadEvents]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadEvents(), 0);
+    return () => window.clearTimeout(timer);
+  }, [loadEvents]);
 
   function applyFilters(event: React.FormEvent) {
     event.preventDefault();
