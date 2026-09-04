@@ -80,12 +80,6 @@ export default function AdminCursos() {
     syncModality: "none" as SyncModality,
   });
 
-  useEffect(() => {
-    fetchCourses();
-    fetchTrash();
-    void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar o resumo de ofertas do catálogo.", error)).finally(() => setOffersLoading(false));
-  }, []);
-
   const fetchCourses = async () => {
     try {
       setLoading(true);
@@ -120,6 +114,14 @@ export default function AdminCursos() {
       setLoadingTrash(false);
     }
   };
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void fetchCourses();
+      void fetchTrash();
+      void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar o resumo de ofertas do catálogo.", error)).finally(() => setOffersLoading(false));
+    });
+  }, []);
 
   const handleRestore = async (id: number) => {
     try {

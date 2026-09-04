@@ -61,11 +61,11 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Objetivo:** confirmar que o modelo de turmas internas, a sincronização Google Classroom, as migrations e o role PostgreSQL restrito permanecem seguros e funcionais na `main` atual.
 
-**Estado atual:** o typecheck passou com heap ampliado; o lint foi executado e retornou 96 erros e 44 avisos, principalmente 70 ocorrências de `react-hooks/set-state-in-effect`; as migrations do Google Classroom estão presentes até `0088_classroom_connection_roles.sql`; o workflow do CI já aceita `NEON_DATABASE_URL`, `DATABASE_URL` ou `COURSE_AUDIT_DATABASE_URL`. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
+**Estado atual:** o typecheck passou com heap ampliado; o lint completo retornou 96 erros e 44 avisos, principalmente ocorrências de `react-hooks/set-state-in-effect`. Neste ciclo, `app/admin/blog/page.tsx` e `app/admin/cursos/page.tsx` foram corrigidos quanto ao acesso de funções antes da declaração e ao disparo imediato dos carregamentos; o lint focalizado passou sem erros (resta 1 aviso de navegação interna em cursos). As migrations do Google Classroom estão presentes até `0088_classroom_connection_roles.sql`; o workflow do CI já aceita `NEON_DATABASE_URL`, `DATABASE_URL` ou `COURSE_AUDIT_DATABASE_URL`. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
 
-**Bloqueios:** o CI do GitHub continua sem um secret Neon/staging disponível; o lint permanece vermelho; ainda não foi possível comparar o inventário real da branch Neon de produção, e nenhuma alteração de produção foi feita.
+**Bloqueios:** o CI do GitHub continua sem um secret Neon/staging disponível; o lint completo permanece vermelho; ainda não foi possível comparar o inventário real da branch Neon de produção, e nenhuma alteração de produção foi feita.
 
-**Próximo passo exato:** configurar um secret de staging no CI, corrigir os erros de lint por grupos começando por `set-state-in-effect` nas áreas admin/docente, e então comparar a branch Neon de produção com as migrations até `0088` antes de qualquer promoção do `app_runtime` ou alteração do role restrito.
+**Próximo passo exato:** configurar um secret de staging no CI, continuar corrigindo os erros de lint por grupos nas áreas admin/docente, e então comparar a branch Neon de produção com as migrations até `0088` antes de qualquer promoção do `app_runtime` ou alteração do role restrito.
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
 
@@ -267,7 +267,7 @@ Registre nesta seção mudanças aplicadas diretamente em serviços externos.
 
 ## Checklist de handoff
 
-Antes de entregar uma tarefa a outra conta, confirme que o quadro informa o objetivo, o status, a branch, o commit base, os arquivos alterados, os testes executados, os serviços afetados, os bloqueios e o próximo passo exato. Se houver operação no Neon ou na Vercel, registre também se ela foi apenas preparada, executada ou verificada.
+Antes de entregar uma tarefa a outra conta, confirme que o quadro informa o objetivo, o status, a branch, o commit base, os arquivos alterados, os testes executados, os servi��os afetados, os bloqueios e o próximo passo exato. Se houver operação no Neon ou na Vercel, registre também se ela foi apenas preparada, executada ou verificada.
 
 ## Relação com outros documentos
 
