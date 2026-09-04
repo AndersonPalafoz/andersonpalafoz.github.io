@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -70,7 +70,7 @@ export default function AdminActivitiesPage() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(false);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({ limit: "25", offset: String(offset) });
@@ -86,11 +86,12 @@ export default function AdminActivitiesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, offset]);
 
   useEffect(() => {
-    void fetchActivities();
-  }, [filter, offset]);
+    const timer = window.setTimeout(() => void fetchActivities(), 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchActivities]);
 
   const filteredActivities = useMemo(() => activities, [activities]);
 

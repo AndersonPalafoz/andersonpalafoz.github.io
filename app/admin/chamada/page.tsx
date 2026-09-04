@@ -62,7 +62,10 @@ export default function AdminChamadaPage() {
   };
 
   useEffect(() => {
-    if (!authLoading && user) void loadRecords();
+    if (!authLoading && user) {
+      const timer = window.setTimeout(() => void loadRecords(), 0);
+      return () => window.clearTimeout(timer);
+    }
   }, [authLoading, user]);
 
   const availableCourses = useMemo(() => {
