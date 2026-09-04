@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      HAS_NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
 
     steps:
       - name: Checkout
@@ -33,7 +35,7 @@ jobs:
         run: pnpm run test:unit
 
       - name: Run Neon integration tests
-        if: ${{ secrets.NEON_DATABASE_URL != '' || secrets.DATABASE_URL != '' || secrets.COURSE_AUDIT_DATABASE_URL != '' }}
+        if: ${{ env.HAS_NEON_DATABASE_URL != '' }}
         run: pnpm run test:integration
         env:
           # Usa o secret específico do CI quando disponível e reaproveita o
@@ -42,7 +44,7 @@ jobs:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
 
       - name: Report skipped Neon integration tests
-        if: ${{ secrets.NEON_DATABASE_URL == '' && secrets.DATABASE_URL == '' && secrets.COURSE_AUDIT_DATABASE_URL == '' }}
+        if: ${{ env.HAS_NEON_DATABASE_URL == '' }}
         run: echo "Neon integration tests skipped because no database secret is configured."
 
       - name: Build
