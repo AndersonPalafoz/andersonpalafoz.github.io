@@ -135,26 +135,30 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `backlog` |
-| Responsável | Conta Manus que assumir a tarefa |
-| Iniciada em | — |
-| Branch | `feature/core-web-vitals-monitoring` |
-| Commit base | `704e1ac` |
-| Arquivos principais | A identificar após definir a fonte de métricas e o formato de relatório |
-| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon previsto |
-| Confirmação necessária | Sim antes de habilitar serviços pagos ou alterar coleta de analytics |
+| Status | `em validação` |
+| Responsável | Conta Manus que iniciou a implementação |
+| Iniciada em | 2026-09-03 |
+| Branch | `main` |
+| Commit base | `62221f4` |
+| Arquivos principais | `app/layout.tsx`, `scripts/measure-core-web-vitals.mjs`, `.github/workflows/performance-monitoring.yml`, `docs/core-web-vitals-monitoring.md`, `package.json`, `pnpm-lock.yaml` |
+| Serviços afetados | GitHub Actions e Vercel; nenhum acesso ao Neon previsto |
+| Confirmação necessária | Não há serviço pago novo; a coleta de RUM usa o Speed Insights disponível no projeto Vercel |
 
 **Objetivo:** criar acompanhamento repetível de LCP, INP, CLS, score de Performance, erros e regressões nas rotas públicas prioritárias.
 
-**Escopo:** definir periodicidade, dispositivo e rede de referência; executar pelo menos três medições por rota; armazenar resultados versionados ou em artefato de CI; estabelecer limites de alerta; e documentar o procedimento de comparação.
+**Escopo:** combinar Vercel Speed Insights para dados reais de usuários com Lighthouse em GitHub Actions; executar pelo menos três medições por rota; armazenar o JSON como artefato de CI por 90 dias; estabelecer limites de alerta; e documentar o procedimento de comparação e resposta.
 
-**Estado atual:** existe apenas o diagnóstico pontual registrado em [`docs/performance-optimization-baseline-2026-09-02.md`](./performance-optimization-baseline-2026-09-02.md).
+**Estado atual:** o pacote `@vercel/speed-insights@2.0.0` foi integrado ao layout raiz com amostragem de 50%. Eventos das rotas privadas e administrativas são descartados no `beforeSend`. O script `scripts/measure-core-web-vitals.mjs` mede as sete rotas públicas três vezes e calcula medianas para score, LCP, CLS, FCP, TBT e TTFB. O workflow diário está definido para 06:30 UTC e possui disparo manual.
 
-**Bloqueios:** ainda é necessário decidir se o monitoramento será baseado em GitHub Actions, Web Analytics, CrUX ou combinação dessas fontes.
+**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram.
 
-**Próximo passo exato:** propor o formato do relatório e executar três medições controladas das sete rotas públicas para estimar a variabilidade dos resultados.
+**Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
 
-**Critério de conclusão:** relatório automatizado ou reproduzível, limites definidos, evidência de execução e documentação de resposta a regressões.
+**Bloqueios:** nenhum bloqueio de implementação. A validação de campo permanece pendente por ausência de tráfego real no período consultado.
+
+**Próximo passo exato:** publicar a implementação na `main`, aguardar a primeira execução diária do workflow e revisar o primeiro artefato junto com os dados de Speed Insights após haver tráfego real.
+
+**Critério de conclusão:** workflow publicado e executado com artefato válido, limites definidos, dados de campo disponíveis em volume suficiente e documentação de resposta a regressões confirmada.
 
 ### TASK-004 — Repetir e consolidar as medições de desempenho
 
@@ -181,7 +185,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Critério de conclusão:** relatório atualizado, artefatos brutos preservados, metodologia documentada e recomendação de merge ou nova rodada baseada nos dados.
 
-- [ ] Registrar alterações de produção que não estejam representadas por migration ou commit.
+- [x] Registrar alterações de produção que não estejam representadas por migration ou commit.
 
 ## Bloqueadas
 
