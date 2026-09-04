@@ -4,7 +4,7 @@
 
 A TASK-003 combina duas fontes complementares: medições de laboratório executadas por Lighthouse e dados reais de usuários coletados pelo Vercel Speed Insights. O laboratório detecta regressões reproduzíveis no deployment; o campo mostra a experiência efetiva de visitantes em dispositivos, redes e geografias diferentes.
 
-O componente `SpeedInsights` está instalado no layout raiz e usa `sampleRate={0.5}`. Eventos de rotas privadas ou sensíveis são descartados antes do envio: `/admin`, `/api`, `/dashboard`, `/professor`, `/aluno`, `/login`, `/cadastro`, `/primeiro-acesso` e `/redefinir-senha`. A coleta de RUM deve ser consultada no projeto Vercel, em **Speed Insights**. O Vercel documenta que Speed Insights usa dados reais de dispositivos dos usuários e que os valores de campo são analisados principalmente por percentis, não por médias [1] [2].
+O componente `PrivacyAwareSpeedInsights` está instalado no layout raiz e encapsula o SDK em um Client Component, usando `sampleRate={0.5}`. Eventos de rotas privadas ou sensíveis são descartados antes do envio: `/admin`, `/api`, `/dashboard`, `/professor`, `/aluno`, `/login`, `/cadastro`, `/primeiro-acesso` e `/redefinir-senha`. O encapsulamento no Client Component é necessário porque o callback `beforeSend` é uma função e não pode ser passado diretamente de um Server Component do App Router. A coleta de RUM deve ser consultada no projeto Vercel, em **Speed Insights**. O Vercel documenta que Speed Insights usa dados reais de dispositivos dos usuários e que os valores de campo são analisados principalmente por percentis, não por médias [1] [2].
 
 ## Rotas e protocolo
 

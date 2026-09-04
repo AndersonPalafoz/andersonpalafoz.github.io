@@ -140,7 +140,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 | Iniciada em | 2026-09-03 |
 | Branch | `main` |
 | Commit base | `62221f4` |
-| Arquivos principais | `app/layout.tsx`, `scripts/measure-core-web-vitals.mjs`, `.github/workflows/performance-monitoring.yml`, `docs/core-web-vitals-monitoring.md`, `package.json`, `pnpm-lock.yaml` |
+| Arquivos principais | `app/layout.tsx`, `components/speed-insights.tsx`, `scripts/measure-core-web-vitals.mjs`, `.github/workflows/performance-monitoring.yml`, `docs/core-web-vitals-monitoring.md`, `package.json`, `pnpm-lock.yaml` |
 | Serviços afetados | GitHub Actions e Vercel; nenhum acesso ao Neon previsto |
 | Confirmação necessária | Não há serviço pago novo; a coleta de RUM usa o Speed Insights disponível no projeto Vercel |
 
