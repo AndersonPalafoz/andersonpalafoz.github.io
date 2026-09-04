@@ -51,21 +51,21 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Campo | Valor |
 |---|---|
 | Status | `em validação` |
-| Responsável | Conta Manus que iniciou a auditoria |
+| Responsável | v0 |
 | Iniciada em | 2026-09-04 |
-| Branch | `main` |
-| Commit base | `62221f4` |
+| Branch | `v0/restrict-external-class-enrollment` |
+| Commit base | `38f4226` |
 | Arquivos principais | `drizzle/schema.ts`, `lib/academic-context.ts`, `lib/admin-auth.ts`, `lib/google-classroom-api.ts`, `app/api/classroom/`, `app/api/cron/classroom-sync/`, `app/api/health/`, `docs/SHARED-WORKBOARD.md` |
 | Serviços afetados | GitHub, Vercel e Neon; nenhuma alteração de produção feita nesta etapa |
 | Confirmação necessária | Sim antes de promover o `app_runtime` ou alterar a branch Neon de produção |
 
 **Objetivo:** confirmar que o modelo de turmas internas, a sincronização Google Classroom, as migrations e o role PostgreSQL restrito permanecem seguros e funcionais na `main` atual.
 
-**Estado atual:** o TypeScript e o build passam quando uma `DATABASE_URL` válida é fornecida; a deployment de produção do Vercel para `62221f4` está `READY`; a auditoria diária de ofertas está verde; o `app_runtime` e a migration de `offerId`/unicidade foram validados anteriormente em branch Neon de teste. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
+**Estado atual:** o typecheck passou com heap ampliado; o lint foi executado e retornou 96 erros e 44 avisos, principalmente 70 ocorrências de `react-hooks/set-state-in-effect`; as migrations do Google Classroom estão presentes até `0088_classroom_connection_roles.sql`; o workflow do CI já aceita `NEON_DATABASE_URL`, `DATABASE_URL` ou `COURSE_AUDIT_DATABASE_URL`. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
 
-**Bloqueios:** o CI do GitHub falha porque o job não recebe `NEON_DATABASE_URL`/`DATABASE_URL`; o lint ainda tem 96 erros e 44 avisos; é necessário confirmar que a branch Neon de produção contém todas as migrations usadas pela `main` antes de promover o role restrito.
+**Bloqueios:** o CI do GitHub continua sem um secret Neon/staging disponível; o lint permanece vermelho; ainda não foi possível comparar o inventário real da branch Neon de produção, e nenhuma alteração de produção foi feita.
 
-**Próximo passo exato:** configurar o CI para usar uma URL Neon de staging, corrigir os erros de lint prioritários e comparar o inventário de migrations de produção com o último arquivo Drizzle antes de executar qualquer mudança no Neon de produção.
+**Próximo passo exato:** configurar um secret de staging no CI, corrigir os erros de lint por grupos começando por `set-state-in-effect` nas áreas admin/docente, e então comparar a branch Neon de produção com as migrations até `0088` antes de qualquer promoção do `app_runtime` ou alteração do role restrito.
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
 
