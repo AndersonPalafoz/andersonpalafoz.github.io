@@ -23,6 +23,29 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-006 — Restringir acesso a Turmas Externas
+
+| Campo | Valor |
+|---|---|
+| Status | `concluída` |
+| Responsável | v0 |
+| Iniciada em | 2026-09-04 |
+| Branch | `main` |
+| Commit base | `33e1c960` |
+| Arquivos principais | `app/api/enrollments/route.ts`, `app/api/enrollments/external-enrollment.test.ts`, `docs/SHARED-WORKBOARD.md` |
+| Serviços afetados | GitHub e Vercel; nenhum serviço externo alterado |
+| Confirmação necessária | Não |
+
+**Objetivo:** garantir que Turmas Externas sejam acessíveis apenas a professores/administradores e a alunos previamente cadastrados, sem autoinscrição ou solicitação de matrícula.
+
+**Estado atual:** o endpoint de matrículas rejeita alunos que tentem se matricular em ofertas com `sourceExternalClassId`; professores e administradores permanecem autorizados. O catálogo interno continua excluindo cursos externos. TypeScript passou com heap ampliado, 12 testes de contrato passaram e a API sem sessão respondeu `401 Não autenticado`.
+
+**Bloqueios:** Nenhum.
+
+**Próximo passo exato:** nenhuma ação pendente; manter a regra em revisões futuras de matrícula e acesso externo.
+
+**Critério de conclusão:** validações verdes, proteção server-side confirmada, preview/API verificados e alterações sincronizadas na branch.
+
 ### TASK-005 — Auditar segurança, banco e integração Classroom
 
 | Campo | Valor |
