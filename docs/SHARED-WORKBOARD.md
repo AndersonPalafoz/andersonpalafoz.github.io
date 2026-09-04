@@ -32,7 +32,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Iniciada em | 2026-09-04 |
 | Branch | `v0/github-para-v0-bf0d37b9` |
 | Commit base | `654ae100` |
-| Arquivos principais | `app/professor/page.tsx`, `components/admin-mobile-nav.tsx`, `docs/SHARED-WORKBOARD.md` |
+| Arquivos principais | `app/admin/page.tsx`, `app/professor/page.tsx`, `components/admin-mobile-nav.tsx`, `docs/SHARED-WORKBOARD.md` |
 | Serviços afetados | GitHub e Vercel; nenhum serviço externo alterado |
 | Confirmação necessária | Não |
 
