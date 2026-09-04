@@ -12,6 +12,8 @@
     "check": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:unit": "vitest run --exclude=lib/db.connection.test.ts --exclude=lib/gamification.test.ts --exclude=lib/system-resilience.test.ts --exclude=lib/stripe.test.ts --exclude=app/contato/page.render.test.tsx --exclude=app/professor/professor.test.ts",
+    "test:integration": "vitest run lib/db.connection.test.ts lib/gamification.test.ts lib/system-resilience.test.ts lib/stripe.test.ts app/contato/page.render.test.tsx app/professor/professor.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "migrate:external-classes": "tsx scripts/migrate-external-classes-to-offers.mts",
