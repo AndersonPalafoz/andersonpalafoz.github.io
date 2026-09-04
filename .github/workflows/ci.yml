@@ -29,13 +29,21 @@ jobs:
       - name: Type check
         run: pnpm run check
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run unit tests
+        run: pnpm run test:unit
+
+      - name: Run Neon integration tests
+        if: ${{ secrets.NEON_DATABASE_URL != '' || secrets.DATABASE_URL != '' || secrets.COURSE_AUDIT_DATABASE_URL != '' }}
+        run: pnpm run test:integration
         env:
           # Usa o secret específico do CI quando disponível e reaproveita o
           # secret DATABASE_URL ou o secret já usado pela auditoria como fallback. A credencial nunca é
           # gravada no repositório.
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
+
+      - name: Report skipped Neon integration tests
+        if: ${{ secrets.NEON_DATABASE_URL == '' && secrets.DATABASE_URL == '' && secrets.COURSE_AUDIT_DATABASE_URL == '' }}
+        run: echo "Neon integration tests skipped because no database secret is configured."
 
       - name: Build
         run: pnpm run build
