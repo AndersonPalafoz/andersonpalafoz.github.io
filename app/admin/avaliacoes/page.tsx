@@ -49,7 +49,10 @@ export default function AdminAvaliacoesPage() {
     }
   };
 
-  useEffect(() => { void loadData(); }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadData(), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const applyCommand = (command: string) => { editorRef.current?.focus(); document.execCommand(command, false); };
   const applyHeading = () => { editorRef.current?.focus(); document.execCommand("formatBlock", false, "h3"); };
