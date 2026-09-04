@@ -32,10 +32,6 @@ export default function BlogPage() {
   });
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
   const fetchPosts = async () => {
     try {
       setLoading(true);
@@ -54,6 +50,10 @@ export default function BlogPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    queueMicrotask(() => void fetchPosts());
+  }, []);
 
   const handleTitleChange = (val: string) => {
     const slug = val
