@@ -7,6 +7,7 @@ import { SiteFrame } from "@/components/site-frame";
 import type { Metadata } from "next";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 import { Inter, Poppins } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -94,6 +95,23 @@ export default function RootLayout({
             <SiteFrame>{children}</SiteFrame>
             <ToastProvider />
             <InactivityMonitor />
+            <SpeedInsights
+              sampleRate={0.5}
+              beforeSend={(event) => {
+                const pathname = new URL(event.url, "https://andersonpalafoz.com.br").pathname;
+                const isPrivateRoute =
+                  pathname.startsWith("/admin") ||
+                  pathname.startsWith("/api") ||
+                  pathname.startsWith("/dashboard") ||
+                  pathname.startsWith("/professor") ||
+                  pathname.startsWith("/aluno") ||
+                  pathname.startsWith("/login") ||
+                  pathname.startsWith("/cadastro") ||
+                  pathname.startsWith("/primeiro-acesso") ||
+                  pathname.startsWith("/redefinir-senha");
+                return isPrivateRoute ? null : event;
+              }}
+            />
           </ThemeProvider>
         </SessionProviderWrapper>
       </body>
