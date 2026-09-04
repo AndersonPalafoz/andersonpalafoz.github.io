@@ -70,6 +70,10 @@ export async function POST(request: Request) {
       if (!offerRecord || offerRecord.deletedAt || offerRecord.status !== "published") {
         return NextResponse.json({ error: "Oferta não encontrada ou indisponível para matrícula." }, { status: 404 });
       }
+      const isPrivileged = session.user.role === "admin" || session.user.role === "super_admin" || session.user.email === "palafozanderson@gmail.com";
+      if (offerRecord.sourceExternalClassId !== null && !isPrivileged) {
+        return NextResponse.json({ error: "Turmas externas não aceitam autoinscrição. O aluno precisa ser cadastrado por um professor ou administrador." }, { status: 403 });
+      }
     }
     const isCourseFree = courseRecord.isFree === true || Number(courseRecord.price || 0) <= 0;
 
