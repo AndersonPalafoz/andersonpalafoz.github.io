@@ -1,0 +1,61 @@
+name: Continuous Core Web Vitals monitoring
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Public URL to measure"
+        required: false
+        default: "https://andersonpalafoz.vercel.app"
+        type: string
+      runs:
+        description: "Runs per route (3-5)"
+        required: false
+        default: "3"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-web-vitals-monitoring
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    name: Measure public Core Web Vitals
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      PERFORMANCE_BASE_URL: ${{ inputs.base_url || 'https://andersonpalafoz.vercel.app' }}
+      PERFORMANCE_RUNS: ${{ inputs.runs || '3' }}
+      PERFORMANCE_OUTPUT_DIR: performance-results
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run three measurements per route
+        run: pnpm performance:measure
+
+      - name: Upload Lighthouse and summary results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-web-vitals-${{ github.run_number }}
+          path: performance-results/core-web-vitals.json
+          if-no-files-found: error
+          retention-days: 90

@@ -23,6 +23,29 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-005 — Auditar segurança, banco e integração Classroom
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | Conta Manus que iniciou a auditoria |
+| Iniciada em | 2026-09-04 |
+| Branch | `main` |
+| Commit base | `62221f4` |
+| Arquivos principais | `drizzle/schema.ts`, `lib/academic-context.ts`, `lib/admin-auth.ts`, `lib/google-classroom-api.ts`, `app/api/classroom/`, `app/api/cron/classroom-sync/`, `app/api/health/`, `docs/SHARED-WORKBOARD.md` |
+| Serviços afetados | GitHub, Vercel e Neon; nenhuma alteração de produção feita nesta etapa |
+| Confirmação necessária | Sim antes de promover o `app_runtime` ou alterar a branch Neon de produção |
+
+**Objetivo:** confirmar que o modelo de turmas internas, a sincronização Google Classroom, as migrations e o role PostgreSQL restrito permanecem seguros e funcionais na `main` atual.
+
+**Estado atual:** o TypeScript e o build passam quando uma `DATABASE_URL` válida é fornecida; a deployment de produção do Vercel para `62221f4` está `READY`; a auditoria diária de ofertas está verde; o `app_runtime` e a migration de `offerId`/unicidade foram validados anteriormente em branch Neon de teste. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
+
+**Bloqueios:** o CI do GitHub falha porque o job não recebe `NEON_DATABASE_URL`/`DATABASE_URL`; o lint ainda tem 96 erros e 44 avisos; é necessário confirmar que a branch Neon de produção contém todas as migrations usadas pela `main` antes de promover o role restrito.
+
+**Próximo passo exato:** configurar o CI para usar uma URL Neon de staging, corrigir os erros de lint prioritários e comparar o inventário de migrations de produção com o último arquivo Drizzle antes de executar qualquer mudança no Neon de produção.
+
+**Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
+
 ### TASK-002 — Atualizar painéis administrativos e docentes
 
 | Campo | Valor |
@@ -106,32 +129,86 @@ Ao iniciar uma nova atividade, substitua ou mova esta entrada conforme o estado 
 
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
-### TASK-001 — Auditar e otimizar o desempenho do site
+### TASK-002 — Otimizar especificamente a rota `/materiais`
 
 | Campo | Valor |
 |---|---|
 | Status | `backlog` |
 | Responsável | Conta Manus que assumir a tarefa |
 | Iniciada em | — |
-| Branch | `feature/performance-optimization` |
-| Commit base | `c746fd4` |
-| Arquivos principais | A identificar após o diagnóstico; priorizar `app/`, `components/`, `next.config.ts` e assets públicos |
-| Serviços afetados | GitHub e Vercel; Neon somente se o diagnóstico apontar consultas lentas |
-| Confirmação necessária | Não para auditoria; sim antes de alterar produção, cache, banco ou infraestrutura |
+| Branch | `feature/performance-materiais` |
+| Commit base | `704e1ac` |
+| Arquivos principais | A identificar após auditoria da rota `/materiais` |
+| Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
+| Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
 
-**Objetivo:** medir e melhorar o desempenho das páginas públicas e das áreas de maior uso, reduzindo tempo de carregamento e custo de execução sem comprometer acessibilidade, SEO, responsividade ou funcionalidades existentes.
+**Objetivo:** reduzir o tempo de carregamento e o custo de execução da rota `/materiais`, que apresentou o menor score relativo no diagnóstico anterior.
 
-**Escopo inicial:** estabelecer uma linha de base com Lighthouse/PageSpeed e métricas Core Web Vitals (LCP, INP e CLS); identificar bundles, imagens, fontes, chamadas de API e consultas de banco com maior impacto; corrigir as maiores oportunidades; e comparar os resultados antes e depois nas rotas públicas prioritárias e nas páginas acadêmicas mais acessadas.
+**Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
 
-**Estado atual:** tarefa criada no quadro. Nenhum diagnóstico ou alteração de desempenho foi executado nesta atividade.
+**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado.
 
-**Bloqueios:** não há bloqueio conhecido. As credenciais e os ambientes de produção não devem ser alterados durante a fase de diagnóstico.
+**Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
 
-**Próximo passo exato:** executar um diagnóstico somente leitura das rotas `/`, `/sobre`, `/cursos`, `/materiais`, `/blog`, `/contato` e `/depoimentos`, registrar as métricas de referência e anexar os principais gargalos ao quadro.
+**Próximo passo exato:** executar Lighthouse e inspeção de rede na rota `/materiais`, identificar os três maiores recursos ou operações responsáveis pelo custo e registrar as evidências.
 
-**Critério de conclusão:** apresentar comparação antes/depois das métricas de desempenho, registrar os arquivos e configurações alterados, passar nos testes e no build, confirmar o deployment da Vercel e documentar qualquer impacto residual.
+**Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
 
-- [ ] Registrar alterações de produção que não estejam representadas por migration ou commit.
+### TASK-003 — Monitorar Core Web Vitals continuamente
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | Conta Manus que iniciou a implementação |
+| Iniciada em | 2026-09-03 |
+| Branch | `main` |
+| Commit base | `62221f4` |
+| Arquivos principais | `app/layout.tsx`, `components/speed-insights.tsx`, `scripts/measure-core-web-vitals.mjs`, `.github/workflows/performance-monitoring.yml`, `docs/core-web-vitals-monitoring.md`, `package.json`, `pnpm-lock.yaml` |
+| Serviços afetados | GitHub Actions e Vercel; nenhum acesso ao Neon previsto |
+| Confirmação necessária | Não há serviço pago novo; a coleta de RUM usa o Speed Insights disponível no projeto Vercel |
+
+**Objetivo:** criar acompanhamento repetível de LCP, INP, CLS, score de Performance, erros e regressões nas rotas públicas prioritárias.
+
+**Escopo:** combinar Vercel Speed Insights para dados reais de usuários com Lighthouse em GitHub Actions; executar pelo menos três medições por rota; armazenar o JSON como artefato de CI por 90 dias; estabelecer limites de alerta; e documentar o procedimento de comparação e resposta.
+
+**Estado atual:** o pacote `@vercel/speed-insights@2.0.0` foi integrado ao layout raiz com amostragem de 50%. Eventos das rotas privadas e administrativas são descartados no `beforeSend`. O script `scripts/measure-core-web-vitals.mjs` mede as sete rotas públicas três vezes e calcula medianas para score, LCP, CLS, FCP, TBT e TTFB. O workflow diário está definido para 06:30 UTC e possui disparo manual.
+
+**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram.
+
+**Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
+
+**Bloqueios:** nenhum bloqueio de implementação. A validação de campo permanece pendente por ausência de tráfego real no período consultado.
+
+**Próximo passo exato:** publicar a implementação na `main`, aguardar a primeira execução diária do workflow e revisar o primeiro artefato junto com os dados de Speed Insights após haver tráfego real.
+
+**Critério de conclusão:** workflow publicado e executado com artefato válido, limites definidos, dados de campo disponíveis em volume suficiente e documentação de resposta a regressões confirmada.
+
+### TASK-004 — Repetir e consolidar as medições de desempenho
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta Manus que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/performance-measurement-series` |
+| Commit base | `704e1ac` |
+| Arquivos principais | `docs/performance-optimization-baseline-2026-09-02.md` e novos artefatos de medição |
+| Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon previsto |
+| Confirmação necessária | Não para medições somente leitura |
+
+**Objetivo:** transformar a comparação inicial before/after em uma série de medições estatisticamente mais confiável antes de novas decisões de otimização.
+
+**Escopo:** repetir pelo menos três execuções por rota em condições equivalentes, descartar execuções redirecionadas ou protegidas, calcular médias e variação, e registrar as limitações do método.
+
+**Estado atual:** há uma rodada válida comparando produção e preview, com melhora média de Performance de 74,0 para 89,3.
+
+**Bloqueios:** a série deve usar um preview acessível e um protocolo fixo para evitar misturar métricas de páginas protegidas, cold starts ou condições de rede diferentes.
+
+**Próximo passo exato:** executar as três rodadas no mesmo deployment e atualizar o relatório com média, mediana e faixa observada por rota.
+
+**Critério de conclusão:** relatório atualizado, artefatos brutos preservados, metodologia documentada e recomendação de merge ou nova rodada baseada nos dados.
+
+- [x] Registrar alterações de produção que não estejam representadas por migration ou commit.
 
 ## Bloqueadas
 
@@ -145,7 +222,7 @@ Nenhuma tarefa aguardando confirmação registrada.
 
 | Data | Tarefa | Evidência |
 |---|---|---|
-| 2026-09-02 | Criação do quadro compartilhado e transformação do `todo.md` em índice | Commit a ser registrado após a publicação |
+| 2026-09-02 | Criação do quadro compartilhado e transformação do `todo.md` em índice | Commit [`c746fd4`](https://github.com/AndersonPalafoz/andersonpalafoz.github.io/commit/c746fd4) |
 
 ## Decisões compartilhadas
 
@@ -153,6 +230,7 @@ Nenhuma tarefa aguardando confirmação registrada.
 |---|---|---|
 | 2026-09-02 | `todo.md` será o índice e histórico; este arquivo será o quadro operacional | Separar histórico extenso de estado atual e facilitar handoff |
 | 2026-09-02 | `main` é a branch de publicação; tarefas maiores devem usar branch própria | Reduzir conflitos e manter rastreabilidade |
+| 2026-09-04 | `docs/SHARED-WORKBOARD.md` deve ser lido no início de cada atividade e atualizado ao iniciar, pausar, concluir ou transferir uma tarefa | Manter um estado operacional único entre contas Manus |
 | 2026-09-02 | Mudanças destrutivas no Neon exigem confirmação explícita e rollback documentado | Preservar dados e auditabilidade |
 | 2026-09-02 | Código, migration, testes e estado de produção devem ser registrados separadamente | GitHub não representa sozinho o estado de serviços externos |
 

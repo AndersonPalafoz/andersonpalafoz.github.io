@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowUpRight } from "lucide-react";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
@@ -27,7 +28,15 @@ export function Footer() {
         <div className="grid gap-10 lg:grid-cols-[1.35fr_0.8fr_0.9fr_1.2fr] lg:gap-14">
           <div className="max-w-sm space-y-5">
             <Link href="/" className="footer-logo-badge inline-flex rounded-2xl border border-white/10 bg-white px-3 py-2 shadow-[0_10px_30px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-lg" aria-label="Anderson Palafoz — início">
-              <img src={BRAND_ASSETS.horizontal} alt="Anderson Palafoz — Professor de Inglês" width={1809} height={555} className="h-9 w-auto max-w-full object-contain" loading="lazy" />
+              <Image
+                src={BRAND_ASSETS.horizontal}
+                alt="Anderson Palafoz — Professor de Inglês"
+                width={1809}
+                height={555}
+                sizes="(max-width: 640px) 180px, 220px"
+                quality={80}
+                className="h-9 w-auto max-w-full object-contain"
+              />
             </Link>
             <p className="text-sm leading-7 text-slate-300">Ensino de inglês, materiais autorais e formação acadêmica para aprender com clareza, prática e propósito.</p>
             <div className="flex items-center gap-2 pt-1">
