@@ -160,6 +160,7 @@ export default function AdminDashboardPage() {
     { href: "/admin/usuarios", label: "Pessoas e acessos", mobile: true, tone: "border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300" },
     { href: "/admin/relatorios-academicos", label: "Relatórios acadêmicos", mobile: true, tone: "border-slate-200 bg-card text-foreground dark:border-border" },
     { href: "/admin/certificados", label: "Certificados", mobile: true, tone: "border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300" },
+    { href: "/professor/turmas-internas", label: "Turmas internas", mobile: true, tone: "border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300" },
     ...(superadmin ? [
       { href: "/admin/cms", label: "CMS e marca", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
       { href: "/admin/cupons", label: "Stripe e cupons", mobile: false, tone: "border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-900/60 dark:bg-violet-950/30 dark:text-violet-300" },
