@@ -33,9 +33,9 @@ jobs:
         run: pnpm test
         env:
           # Usa o secret específico do CI quando disponível e reaproveita o
-          # secret já usado pela auditoria como fallback. A credencial nunca é
+          # secret DATABASE_URL ou o secret já usado pela auditoria como fallback. A credencial nunca é
           # gravada no repositório.
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || secrets.DATABASE_URL || secrets.COURSE_AUDIT_DATABASE_URL }}
 
       - name: Build
         run: pnpm run build
