@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, ChevronLeft, GraduationCap, Loader2, Search, UserPlus, UserRound, XCircle, AlertTriangle } from "lucide-react";
@@ -71,7 +71,7 @@ export default function AdminEnrollmentsPage() {
     }
   }, [authLoading, router, user]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/admin/enrollments", { cache: "no-store" });
@@ -83,11 +83,14 @@ export default function AdminEnrollmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (!authLoading && user?.role === "admin") void loadData();
-  }, [authLoading, user]);
+    if (authLoading || user?.role !== "admin") return;
+
+    const timer = window.setTimeout(() => void loadData(), 0);
+    return () => window.clearTimeout(timer);
+  }, [authLoading, loadData, user]);
 
   const filteredEnrollments = useMemo(() => {
     if (!data) return [];
