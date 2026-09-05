@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Trash2, Edit2, Plus, Download, ArrowLeft, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -52,12 +52,7 @@ export default function AdminMateriaisReal() {
     void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar as ofertas para filtrar materiais.", error));
   }, []);
 
-  useEffect(() => {
-    fetchMaterials();
-    fetchTrash();
-  }, [offerFilter]);
-
-  const fetchMaterials = async () => {
+  const fetchMaterials = useCallback(async () => {
     try {
       setLoading(true);
       const query = offerFilter !== "all" ? `?offerId=${encodeURIComponent(offerFilter)}` : "";
@@ -76,9 +71,9 @@ export default function AdminMateriaisReal() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [offerFilter]);
 
-  const fetchTrash = async () => {
+  const fetchTrash = useCallback(async () => {
     try {
       setLoadingTrash(true);
       const res = await fetch("/api/admin/materials?mode=trash", { cache: "no-store" });
@@ -91,7 +86,16 @@ export default function AdminMateriaisReal() {
     } finally {
       setLoadingTrash(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchMaterials();
+      void fetchTrash();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [fetchMaterials, fetchTrash]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
