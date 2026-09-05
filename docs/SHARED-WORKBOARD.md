@@ -27,8 +27,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em andamento` |
-| Responsável | Conta Manus que iniciou a auditoria; correções de lint iniciadas no v0 |
+| Status | `em andamento` — correções de lint iniciadas no v0 |
+| Responsável | Conta Manus que iniciou a auditoria; execução corretiva em andamento no v0 |
 | Iniciada em | 2026-09-04 |
 | Branch | `main` para o estado auditado; trabalho corretivo em andamento no v0 |
 | Commit base | `62221f4` |
