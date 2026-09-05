@@ -74,10 +74,34 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 ```
 
 ## Próximas atividades
-
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
+### TASK-006 — Completar fluxo e gestão de Turmas Internas
+| Campo | Valor |
+|---|---|
+| Status | `em andamento` |
+| Responsável | Conta Manus que iniciou a implementação, a partir da auditoria fornecida |
+| Iniciada em | 2026-09-05 |
+| Branch | `feature/internal-classes-management` |
+| Commit base | `e815461` — referência da auditoria fornecida; a main remota consultada está em `64bf582` |
+| Arquivos principais | `app/professor/turmas-internas/`, `app/dashboard/turmas-internas/`, `components/internal-classes-workspace.tsx`, `components/student-internal-classes.tsx`, `app/api/course-offers/`, `lib/course-offer-service.ts`, `docs/SHARED-WORKBOARD.md` |
+| Serviços afetados | GitHub e Vercel; Neon somente após validação explícita de consultas ou migrations |
+| Confirmação necessária | Não para diagnóstico e implementação local; sim antes de alterar dados, permissões ou produção |
+
+**Objetivo:** transformar a auditoria das Turmas Internas em um fluxo único e completo de criação e gestão de ofertas, sem alterar dados ou permissões antes da validação.
+
+**Escopo inicial:** corrigir o botão **Nova turma** para levar ao fluxo correto de criação de oferta; completar o detalhe com abas responsivas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso; calcular o progresso real do aluno a partir dos registros existentes; reorganizar filtros e ações para telas de 320–375 px; separar visualmente ações de professor, administrador e superadministrador; e reduzir consultas sequenciais no dashboard do aluno.
+
+**Estado atual:** a auditoria fornecida informa que a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. O diagnóstico também informa que a implementação auditada não alterou dados, permissões ou a main. A referência declarada da auditoria é `e815461`, enquanto a main remota consultada neste ambiente está em `64bf582`; essa divergência deve ser reconciliada antes da publicação.
+
+**Bloqueios:** nenhum bloqueio funcional conhecido. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
+
+**Próximo passo exato:** reconciliar a referência `e815461` com a `main` remota e mapear as rotas, consultas e contratos de API usados pelo detalhe de Turmas Internas antes de implementar o primeiro lote.
+
+**Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
+
 ### TASK-002 — Otimizar especificamente a rota `/materiais`
+
 
 | Campo | Valor |
 |---|---|
