@@ -27,10 +27,10 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` |
-| Responsável | Conta Manus que iniciou a auditoria |
+| Status | `em andamento` |
+| Responsável | Conta Manus que iniciou a auditoria; correções de lint iniciadas no v0 |
 | Iniciada em | 2026-09-04 |
-| Branch | `main` |
+| Branch | `main` para o estado auditado; trabalho corretivo em andamento no v0 |
 | Commit base | `62221f4` |
 | Arquivos principais | `drizzle/schema.ts`, `lib/academic-context.ts`, `lib/admin-auth.ts`, `lib/google-classroom-api.ts`, `app/api/classroom/`, `app/api/cron/classroom-sync/`, `app/api/health/`, `docs/SHARED-WORKBOARD.md` |
 | Serviços afetados | GitHub, Vercel e Neon; nenhuma alteração de produção feita nesta etapa |
@@ -38,11 +38,11 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Objetivo:** confirmar que o modelo de turmas internas, a sincronização Google Classroom, as migrations e o role PostgreSQL restrito permanecem seguros e funcionais na `main` atual.
 
-**Estado atual:** o TypeScript e o build passam quando uma `DATABASE_URL` válida é fornecida; a deployment de produção do Vercel para `62221f4` está `READY`; a auditoria diária de ofertas está verde; o `app_runtime` e a migration de `offerId`/unicidade foram validados anteriormente em branch Neon de teste. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito.
+**Estado atual:** o TypeScript e o build passam quando uma `DATABASE_URL` válida é fornecida; a deployment de produção do Vercel para `62221f4` está `READY`; a auditoria diária de ofertas está verde; o `app_runtime` e a migration de `offerId`/unicidade foram validados anteriormente em branch Neon de teste. O modelo usa `course_offers` como turma, `enrollments` como matrícula e `class_sessions.offerId` como vínculo explícito. As correções dos erros de lint foram iniciadas no v0; o identificador de branch, PR ou commit correspondente ainda não foi informado e não foi localizado entre as referências Git remotas disponíveis.
 
 **Bloqueios:** o CI já foi ajustado para separar testes unitários e integração Neon, mas a execução de integração continua condicionada à existência de um secret de banco. O lint ainda falha com 96 erros e 44 avisos. A contagem detalhada da execução na `main` é: 70 ocorrências de `react-hooks/set-state-in-effect` (erro), 21 de `react-hooks/exhaustive-deps` (aviso), 14 de `@next/next/no-img-element` (aviso), 7 de `@next/next/no-location-assign-relative-destination` (erro), 6 de `react-hooks/immutability` (erro), 6 de `@next/next/no-assign-module-variable` (erro), 3 de `react-hooks/purity` (erro), 1 de `react-hooks/preserve-manual-memoization` (erro), 1 de `jsx-a11y/alt-text` (aviso) e 1 de `@next/next/no-html-link-for-pages` (aviso). As prioridades são corrigir primeiro os 70 efeitos com atualização síncrona de estado, depois os 13 erros de regras de navegação/mutabilidade e, por fim, os avisos de imagens, dependências de effects e acessibilidade. Também é necessário confirmar que a branch Neon de produção contém todas as migrations usadas pela `main` antes de promover o role restrito.
 
-**Próximo passo exato:** gerar uma lista de arquivos e linhas para os 70 erros `react-hooks/set-state-in-effect`, corrigir um lote pequeno e representativo, executar o lint novamente e comparar a contagem antes de avançar para os demais grupos.
+**Próximo passo exato:** registrar no quadro o primeiro commit ou PR gerado no v0, depois comparar a lista de arquivos e linhas corrigidos com os 70 erros `react-hooks/set-state-in-effect` da `main` e executar o lint novamente.
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
 
