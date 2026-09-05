@@ -120,9 +120,9 @@ export default function AdminCmsPage() {
   };
 
   useEffect(() => {
-    if (canUseCms) {
-      void fetchBlocks();
-    }
+    if (!canUseCms) return;
+    const timer = window.setTimeout(() => void fetchBlocks(), 0);
+    return () => window.clearTimeout(timer);
   }, [canUseCms]);
 
   const recordHistory = (newContent: string) => {
