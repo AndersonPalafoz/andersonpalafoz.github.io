@@ -60,7 +60,8 @@ export default function AdminCouponsPage() {
       window.location.href = "/";
       return;
     }
-    void loadCoupons();
+    const timer = window.setTimeout(() => void loadCoupons(), 0);
+    return () => window.clearTimeout(timer);
   }, [authLoading, user, isSuperadmin, page, search, status]);
 
   const resetForm = () => {
