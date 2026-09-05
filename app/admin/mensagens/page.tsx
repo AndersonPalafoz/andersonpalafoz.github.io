@@ -27,10 +27,6 @@ export default function AdminMessagesPage() {
   const [filterStatus, setFilterStatus] = useState<"all" | "unread" | "read">("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
   const fetchMessages = async () => {
     try {
       setLoading(true);
@@ -48,6 +44,14 @@ export default function AdminMessagesPage() {
     }
   };
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchMessages();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const handleToggleRead = async (id: number, currentRead: boolean) => {
     try {
       const res = await fetch("/api/admin/messages", {
@@ -56,7 +60,7 @@ export default function AdminMessagesPage() {
         body: JSON.stringify({ id, isRead: !currentRead }),
       });
       if (res.ok) {
-        setMessages(messages.map(m => m.id === id ? { ...m, isRead: !currentRead, readAt: !currentRead ? new Date().toISOString() : null } : m));
+        setMessages((currentMessages) => currentMessages.map((m) => m.id === id ? { ...m, isRead: !currentRead, readAt: !currentRead ? new Date().toISOString() : null } : m));
         if (selectedMessage?.id === id) {
           setSelectedMessage(prev => prev ? { ...prev, isRead: !currentRead, readAt: !currentRead ? new Date().toISOString() : null } : null);
         }

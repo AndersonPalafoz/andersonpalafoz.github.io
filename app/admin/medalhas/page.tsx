@@ -177,7 +177,8 @@ export default function AdminMedalsPage() {
       window.location.href = "/";
       return;
     }
-    fetchData();
+    const timer = window.setTimeout(() => void fetchData(), 0);
+    return () => window.clearTimeout(timer);
   }, [user, authLoading]);
 
   const handleGrantMedal = async (e: React.FormEvent) => {
