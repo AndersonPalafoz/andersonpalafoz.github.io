@@ -231,28 +231,30 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `em andamento` |
+| Status | `concluída` |
 | Responsável | Conta Manus que iniciou a implementação |
 | Iniciada em | 2026-09-03 |
+| Concluída em | 2026-09-05 |
 | Branch | `feature/optimize-materiais` |
-| Commit base | `704e1ac` |
+| Commit de implementação | `1989823` |
+| Merge commit | `32071c0` |
 | Arquivos principais | `app/materiais/page.tsx`, `app/api/materials/route.ts`, `app/materials-pagination.test.ts` |
-| Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
-| Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
+| Serviços afetados | GitHub e Vercel; Neon não alterado |
+| Confirmação necessária | Não |
 
 **Objetivo:** reduzir o tempo de carregamento e o custo de execução da rota `/materiais`, que apresentou o menor score relativo no diagnóstico anterior.
 
-**Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
+**Estado atual:** a API retorna somente `id`, `title`, `description`, `category` e `level` na listagem pública; a busca aguarda 250 ms após a última digitação; e o progresso só é consultado quando a sessão está autenticada. Nenhuma tabela ou dado do Neon foi alterado.
 
-**Estado atual:** a implementação começou na branch `feature/optimize-materiais`. A API agora retorna somente `id`, `title`, `description`, `category` e `level` na listagem pública; a busca foi ajustada para aguardar 250 ms após a última digitação; e o progresso só é consultado quando a sessão está autenticada. Nenhuma tabela ou dado do Neon foi alterado.
+**Validação realizada:** o preview da branch foi medido com Lighthouse. Em comparação com o baseline, o score de Performance passou de 64 para 94, o LCP caiu de 5,02 s para 2,27 s, o FCP ficou em 1,08 s, o CLS em 0 e a transferência caiu de 553,2 KB para 366,4 KB. Os testes direcionados pós-sincronização passaram, totalizando 8 testes aprovados; `git diff --check` também passou.
 
-**Validação realizada:** os testes de paginação, contrato de assets e desempenho passaram, totalizando 7 testes aprovados; `git diff --check` também passou.
+**Merge e produção:** o [PR #34](https://github.com/AndersonPalafoz/andersonpalafoz.github.io/pull/34) foi mesclado na `main` em `2026-09-05`. O deployment de produção da Vercel ficou `READY` no commit `32071c0`, com alias `andersonpalafoz.vercel.app`.
 
-**Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
+**Bloqueios:** nenhum. A branch foi preservada para auditoria.
 
-**Próximo passo exato:** medir o preview da branch com o mesmo protocolo Lighthouse usado no baseline e comparar a rota `/materiais` com a produção, registrando LCP, INP, CLS, score e transferência.
+**Próximo passo exato:** acompanhar os Core Web Vitals em produção e iniciar a TASK-003, sem reabrir esta tarefa salvo surgimento de regressão.
 
-**Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
+**Critério de conclusão:** melhoria mensurável, testes verdes, preview validado, merge realizado, deployment de produção `READY` e evidências registradas no quadro.
 
 ### TASK-003 — Monitorar Core Web Vitals continuamente
 
