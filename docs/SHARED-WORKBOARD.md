@@ -231,12 +231,12 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `backlog` |
-| Responsável | Conta Manus que assumir a tarefa |
-| Iniciada em | — |
-| Branch | `feature/performance-materiais` |
+| Status | `em andamento` |
+| Responsável | Conta Manus que iniciou a implementação |
+| Iniciada em | 2026-09-03 |
+| Branch | `feature/optimize-materiais` |
 | Commit base | `704e1ac` |
-| Arquivos principais | A identificar após auditoria da rota `/materiais` |
+| Arquivos principais | `app/materiais/page.tsx`, `app/api/materials/route.ts`, `app/materials-pagination.test.ts` |
 | Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
 | Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
 
@@ -244,11 +244,13 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
 
-**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado.
+**Estado atual:** a implementação começou na branch `feature/optimize-materiais`. A API agora retorna somente `id`, `title`, `description`, `category` e `level` na listagem pública; a busca foi ajustada para aguardar 250 ms após a última digitação; e o progresso só é consultado quando a sessão está autenticada. Nenhuma tabela ou dado do Neon foi alterado.
+
+**Validação realizada:** os testes de paginação, contrato de assets e desempenho passaram, totalizando 7 testes aprovados; `git diff --check` também passou.
 
 **Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
 
-**Próximo passo exato:** executar Lighthouse e inspeção de rede na rota `/materiais`, identificar os três maiores recursos ou operações responsáveis pelo custo e registrar as evidências.
+**Próximo passo exato:** medir o preview da branch com o mesmo protocolo Lighthouse usado no baseline e comparar a rota `/materiais` com a produção, registrando LCP, INP, CLS, score e transferência.
 
 **Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
 

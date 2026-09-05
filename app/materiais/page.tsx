@@ -21,6 +21,7 @@ export default function MateriaisPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -30,6 +31,14 @@ export default function MateriaisPage() {
   const [completedMaterialIds, setCompletedMaterialIds] = useState<number[]>([]);
   const requestIdRef = useRef(0);
   const { status: sessionStatus } = useSession();
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      setPage(1);
+      setSearchQuery(searchInput.trim());
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [searchInput]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -68,11 +77,16 @@ export default function MateriaisPage() {
   }, [page, searchQuery, selectedLevel, selectedCategory]);
 
   useEffect(() => {
+    if (sessionStatus !== "authenticated") {
+      setCompletedMaterialIds([]);
+      return;
+    }
+
     fetch("/api/materials/progress", { cache: "no-store" })
       .then((response) => response.json())
       .then((data) => setCompletedMaterialIds(data.completedMaterialIds || []))
       .catch(() => undefined);
-  }, []);
+  }, [sessionStatus]);
 
   const filteredMaterials = materiais;
   const niveis = facets.levels;
@@ -105,8 +119,8 @@ export default function MateriaisPage() {
                 <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
                 <input
                   type="text"
-                  value={searchQuery}
-                      onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Pesquisar material por título ou tema..."
                   className="w-full h-12 pl-12 pr-4 rounded-xl border border-gray-300 dark:border-slate-700 outline-none focus:border-red-600 text-sm transition bg-gray-50/50 dark:bg-slate-800 dark:text-white"
                 />
@@ -207,7 +221,7 @@ export default function MateriaisPage() {
               <FileText size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
               <p className="text-gray-600 dark:text-gray-400 font-medium text-lg">Nenhum material encontrado para esta busca.</p>
               <button
-                onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setPage(1); }}
+                onClick={() => { setSearchInput(""); setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setPage(1); }}
                 className="mt-4 text-xs font-bold uppercase text-red-600 hover:underline"
               >
                 Limpar filtros de pesquisa
