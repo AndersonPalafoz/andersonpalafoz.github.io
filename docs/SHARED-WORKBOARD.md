@@ -152,6 +152,81 @@ Ao iniciar uma nova atividade, substitua ou mova esta entrada conforme o estado 
 
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
+### TASK-007 — Diferenciar alunos internos e externos
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/student-internal-external-separation` |
+| Commit base | `main` |
+| Arquivos principais | A identificar após auditoria de `/dashboard`, `/dashboard/aluno-externo`, APIs de alunos e componentes de matrícula |
+| Serviços afetados | GitHub e Vercel; Neon somente se a auditoria exigir mudança de dados |
+| Confirmação necessária | Sim antes de migration ou alteração de dados em produção |
+
+**Objetivo:** tornar inequívoca a diferença entre aluno interno e aluno externo em navegação, permissões, dashboard, perfil, relatórios e comunicações.
+
+**Escopo:** mapear os papéis e vínculos reais; impedir que um aluno externo veja ou acesse fluxos internos; garantir que um aluno interno não seja enviado para a experiência externa por engano; revisar labels, CTAs, breadcrumbs e estados vazios; preservar vínculos existentes e LGPD.
+
+**Estado atual:** Turmas Externas já bloqueiam autoinscrição no servidor, mas a separação de experiência e nomenclatura ainda precisa de uma auditoria transversal.
+
+**Bloqueios:** Nenhum conhecido.
+
+**Próximo passo exato:** inventariar as rotas e endpoints que carregam dados de alunos e classificar cada superfície como interna, externa ou compartilhada.
+
+**Critério de conclusão:** matriz de acesso documentada, testes de autorização verdes, navegação sem ambiguidade e preview validado para aluno interno, aluno externo, professor e administrador.
+
+### TASK-008 — Diferenciar cursos internos e externos
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/course-internal-external-separation` |
+| Commit base | `main` |
+| Arquivos principais | A identificar após auditoria de `/cursos`, `/dashboard/cursos`, `/professor/cursos`, `course_offers` e catálogo |
+| Serviços afetados | GitHub e Vercel; Neon somente se a auditoria exigir mudança de dados |
+| Confirmação necessária | Sim antes de migration ou alteração de dados em produção |
+
+**Objetivo:** separar claramente cursos internos, que pertencem à experiência educacional da plataforma, de cursos/turmas externos, que dependem de cadastro explícito por professor ou administrador.
+
+**Escopo:** revisar origem do curso, visibilidade, catálogo, URLs, cards, filtros, matrículas, aulas, progresso, avaliações e relatórios; eliminar CTAs ou links que misturem os dois contextos; garantir que APIs mantenham o filtro por origem no servidor.
+
+**Estado atual:** o catálogo interno já exclui ofertas com `sourceExternalClassId`, e a matrícula externa por aluno está bloqueada server-side. Ainda falta harmonizar as superfícies de leitura e gestão.
+
+**Bloqueios:** Nenhum conhecido.
+
+**Próximo passo exato:** construir uma matriz de rotas/API por origem do curso e identificar as telas que exibem dados externos dentro de fluxos internos.
+
+**Critério de conclusão:** filtros server-side testados, contratos de API atualizados, CTAs coerentes, ausência de mistura visual e preview validado por perfil.
+
+### TASK-009 — Governar vínculos professor-aluno em turmas externas
+
+| Campo | Valor |
+|---|---|
+| Status | `backlog` |
+| Responsável | Conta que assumir a tarefa |
+| Iniciada em | — |
+| Branch | `feature/external-class-roster-governance` |
+| Commit base | `main` |
+| Arquivos principais | A identificar após auditoria de `app/api/course-offers/[id]/students`, `app/api/admin/external-students`, `app/api/professor/external-classes` e relatórios |
+| Serviços afetados | GitHub, Vercel e Neon; nenhuma alteração de produção sem confirmação |
+| Confirmação necessária | Sim antes de alteração de dados ou políticas de produção |
+
+**Objetivo:** garantir que somente professores e administradores possam cadastrar, remover ou consultar vínculos de alunos em Turmas Externas, com escopo e trilha de auditoria corretos.
+
+**Escopo:** validar autorização por papel e por turma, evitar enumeração de alunos, revisar remoção/desativação, convites e e-mails, e cobrir as diferenças entre roster externo e matrícula interna.
+
+**Estado atual:** a tentativa de autoinscrição externa foi bloqueada; o fluxo administrativo/docente de cadastro permanece permitido e precisa de auditoria específica.
+
+**Bloqueios:** Nenhum conhecido.
+
+**Próximo passo exato:** mapear cada endpoint de roster externo e escrever uma matriz de autorização para aluno, professor, administrador e usuário sem sessão.
+
+**Critério de conclusão:** testes negativos e positivos por papel, escopo por turma validado, respostas sem vazamento de dados e evidências registradas no workboard.
+
 ### TASK-002 — Otimizar especificamente a rota `/materiais`
 
 | Campo | Valor |
