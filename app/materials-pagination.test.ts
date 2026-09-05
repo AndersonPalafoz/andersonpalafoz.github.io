@@ -30,6 +30,17 @@ describe("Public materials pagination contract", () => {
     expect(api).toContain('session?.user?.email ? "private, no-store"');
   });
 
+  it("reduces redundant requests and keeps the public payload focused", () => {
+    const api = read("app/api/materials/route.ts");
+    const page = read("app/materiais/page.tsx");
+    expect(api).toContain("id: materials.id");
+    expect(api).toContain("title: materials.title");
+    expect(api).toContain("description: materials.description");
+    expect(api).not.toContain("db.select().from(materials)");
+    expect(page).toContain("window.setTimeout");
+    expect(page).toContain("sessionStatus !== \"authenticated\"");
+  });
+
   it("offers an accessible incremental loading state and skeleton loaders in the UI", () => {
     const page = read("app/materiais/page.tsx");
     expect(page).toContain("Carregar mais materiais");
