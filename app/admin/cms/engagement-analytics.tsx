@@ -72,7 +72,8 @@ export function CMSEngagementAnalytics() {
   };
 
   useEffect(() => {
-    void fetchRealStats();
+    const timer = window.setTimeout(() => void fetchRealStats(), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (

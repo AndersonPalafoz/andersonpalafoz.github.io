@@ -65,7 +65,8 @@ export default function CourseActivityAuditPage() {
   }, [limit]);
 
   useEffect(() => {
-    loadLogs(offset);
+    const timer = window.setTimeout(() => void loadLogs(offset), 0);
+    return () => window.clearTimeout(timer);
   }, [offset, loadLogs]);
 
   const totalPages = Math.ceil(total / limit) || 1;
