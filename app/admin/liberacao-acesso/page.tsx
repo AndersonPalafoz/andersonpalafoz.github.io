@@ -84,7 +84,10 @@ export default function AdminManualAccessPage() {
       window.location.href = "/";
       return;
     }
-    void loadData();
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [authLoading, user]);
 
   const filteredUsers = useMemo(() => {
@@ -289,7 +292,7 @@ export default function AdminManualAccessPage() {
                         <span className="rounded-md bg-red-100 dark:bg-red-950/60 px-2 py-0.5 text-[10px] font-black text-red-700 dark:text-red-300">{g.courseId ? "Curso" : "Material"}</span>
                       </div>
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5"><BookOpen size={13} /> {g.courseId ? `Curso ID #${g.courseId}` : `Material ID #${g.materialId}`}</p>
-                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300 italic">"{g.reason}"</p>
+                      <p className="text-xs font-medium text-slate-700 dark:text-slate-300 italic">&quot;{g.reason}&quot;</p>
                       <p className="text-[10px] text-muted-foreground">Concedido em: {new Date(g.createdAt).toLocaleString("pt-BR")}</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => void handleRevoke(g)} disabled={revokingId === g.id} className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50 text-xs font-bold shrink-0">
