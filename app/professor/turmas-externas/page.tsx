@@ -381,21 +381,26 @@ export default function TurmasExternasPage() {
 
   useEffect(() => {
     if (editingClassId) return;
-    const normalizedInstitution = finalInstitutionValue.toLowerCase();
-    if (["simal", "megaworks"].includes(normalizedInstitution)) {
-      setDurationType("annual");
-      setDurationValue(1);
-      setDurationUnit("year");
-    } else if (["isf", "profici"].includes(normalizedInstitution)) {
-      setDurationType("workload");
-      setDurationValue(workloadHours || 1);
-      setDurationUnit("hours");
-    } else {
-      setDurationType("semester");
-      setDurationValue(1);
-      setDurationUnit("semester");
-    }
-  }, [finalInstitutionValue, editingClassId]);
+
+    const timeoutId = window.setTimeout(() => {
+      const normalizedInstitution = finalInstitutionValue.toLowerCase();
+      if (["simal", "megaworks"].includes(normalizedInstitution)) {
+        setDurationType("annual");
+        setDurationValue(1);
+        setDurationUnit("year");
+      } else if (["isf", "profici"].includes(normalizedInstitution)) {
+        setDurationType("workload");
+        setDurationValue(workloadHours || 1);
+        setDurationUnit("hours");
+      } else {
+        setDurationType("semester");
+        setDurationValue(1);
+        setDurationUnit("semester");
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [finalInstitutionValue, editingClassId, workloadHours]);
 
   const validateClassForm = (): ClassFormErrors => {
     const errors: ClassFormErrors = {};
@@ -608,13 +613,16 @@ export default function TurmasExternasPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const classId = Number(params.get("classId"));
-    const offerId = Number(params.get("offerId"));
     const tab = params.get("tab");
-    if (Number.isInteger(classId) && classId > 0 && tab) {
-      setActiveTabByClass({ [classId]: tab });
-    }
-    void loadClasses();
-    void loadTrash();
+    const timeoutId = window.setTimeout(() => {
+      if (Number.isInteger(classId) && classId > 0 && tab) {
+        setActiveTabByClass({ [classId]: tab });
+      }
+      void loadClasses();
+      void loadTrash();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {
@@ -624,10 +632,13 @@ export default function TurmasExternasPage() {
     if (!Number.isInteger(offerId) || offerId <= 0 || !tab) return;
     const selectedClass = classes.find((item) => item.offerId === offerId);
     if (selectedClass) {
-      setActiveTabByClass((current) => ({ ...current, [selectedClass.id]: tab }));
+      const timeoutId = window.setTimeout(() => {
+        setActiveTabByClass((current) => ({ ...current, [selectedClass.id]: tab }));
+      }, 0);
       const url = new URL(window.location.href);
       url.searchParams.set("classId", String(selectedClass.id));
       window.history.replaceState({}, "", `${url.pathname}?${url.searchParams.toString()}`);
+      return () => window.clearTimeout(timeoutId);
     }
   }, [classes]);
 
