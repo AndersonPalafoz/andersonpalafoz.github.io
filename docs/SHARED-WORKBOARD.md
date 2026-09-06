@@ -92,13 +92,13 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Escopo inicial:** corrigir o botão **Nova turma** para levar ao fluxo correto de criação de oferta; completar o detalhe com abas responsivas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso; calcular o progresso real do aluno a partir dos registros existentes; reorganizar filtros e ações para telas de 320–375 px; separar visualmente ações de professor, administrador e superadministrador; e reduzir consultas sequenciais no dashboard do aluno.
 
-**Estado atual:** a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. A branch `v0/task-006-turmas-internas` adicionou o detalhe responsivo com abas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso. Neste ciclo, `v0/task-006-turmas-dados-reais` adicionou a rota protegida `/api/course-offers/[id]/academic-summary`, agregando sessões, presença, atividades e progresso real dos alunos vinculados, e conectou as métricas do workspace.
+**Estado atual:** a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. A branch `v0/task-006-turmas-internas` adicionou o detalhe responsivo com abas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso. Neste ciclo, `v0/task-006-turmas-dados-reais` adicionou a rota protegida `/api/course-offers/[id]/academic-summary`, agregando sessões, presença, atividades e progresso real dos alunos vinculados, conectou as métricas do workspace e adicionou `components/create-internal-class-dialog.tsx` ao fluxo de criação explícita.
 
-**Validação realizada:** lint focalizado, typecheck e `git diff --check` passaram; 18 testes de contrato/consistência de ofertas passaram. O navegador confirmou o redirecionamento correto para login quando não há sessão.
+**Validação realizada:** lint focalizado, typecheck e `git diff --check` passaram; 10 testes de contrato/e2e de ofertas passaram neste ciclo. O navegador confirmou o redirecionamento correto para login quando não há sessão.
 
-**Bloqueios:** o fluxo explícito de criação de turma ainda precisa substituir o CTA ambíguo; a rota protegida precisa ser validada com sessão real em desktop e mobile. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
+**Bloqueios:** a criação foi validada sem sessão e ainda precisa de validação autenticada em desktop/mobile; a rota protegida também deve ser exercitada com uma conta autorizada. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
 
-**Próximo passo exato:** implementar o formulário de criação de turma interna reutilizando `createCourseOffer`, depois validar as abas com dados reais autenticados.
+**Próximo passo exato:** validar o formulário e as abas com uma sessão real de professor/admin, confirmar criação de oferta draft e publicada, e registrar evidência de deployment.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 

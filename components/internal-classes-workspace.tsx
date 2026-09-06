@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Plus, Search, Users } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Search, Users } from "lucide-react";
+import { CreateInternalClassDialog } from "@/components/create-internal-class-dialog";
 
 type InternalClass = {
   id: number;
@@ -41,7 +42,7 @@ export function InternalClassesWorkspace({ classes, canCreate }: { classes: Inte
             <option value="draft">Rascunhos</option>
             <option value="archived">Arquivadas</option>
           </select>
-          {canCreate && <Link href="/professor/cursos" className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-red-600 px-3.5 py-2.5 text-sm font-bold text-white transition hover:bg-red-700"><Plus size={16} /> Nova turma</Link>}
+          {canCreate && <CreateInternalClassDialog onCreated={() => window.location.reload()} />}
         </div>
       </div>
 
