@@ -17,6 +17,16 @@ export function CreateInternalClassDialog({ onCreated }: { onCreated: () => void
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
     if (!open || courses.length > 0) return;
     void fetch("/api/professor/courses", { cache: "no-store" })
       .then((response) => response.json())
