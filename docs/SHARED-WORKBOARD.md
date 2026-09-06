@@ -98,7 +98,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Bloqueios:** a criação e a rota protegida ainda precisam ser exercitadas com uma sessão real de professor/admin em desktop e mobile; sem credenciais/sessão no preview, não foi possível confirmar criação draft/publicada nem registrar evidência de deployment. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
 
-**Próximo passo exato:** validar o fluxo autenticado com uma conta autorizada, confirmar criação de oferta draft e publicada, e registrar evidência de deployment.
+**Próximo passo exato:** validar o fluxo autenticado com uma conta autorizada, confirmar criação de oferta draft e publicada, e registrar evidência de deployment. A gestão de sessões/presença permanece bloqueada até existir vínculo seguro `class_sessions.offerId`; hoje `class_sessions` referencia apenas `courseId`, o que não permite distinguir duas turmas do mesmo curso sem risco de alterar dados da turma errada.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 
