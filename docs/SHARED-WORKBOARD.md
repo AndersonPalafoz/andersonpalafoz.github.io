@@ -92,11 +92,13 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Escopo inicial:** corrigir o botão **Nova turma** para levar ao fluxo correto de criação de oferta; completar o detalhe com abas responsivas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso; calcular o progresso real do aluno a partir dos registros existentes; reorganizar filtros e ações para telas de 320–375 px; separar visualmente ações de professor, administrador e superadministrador; e reduzir consultas sequenciais no dashboard do aluno.
 
-**Estado atual:** a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. Neste ciclo, a branch `v0/task-006-turmas-internas` adicionou o detalhe responsivo com abas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso, preservando o escopo de professor/admin e sem alterar banco ou permissões.
+**Estado atual:** a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. A branch `v0/task-006-turmas-internas` adicionou o detalhe responsivo com abas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso. Neste ciclo, `v0/task-006-turmas-dados-reais` adicionou a rota protegida `/api/course-offers/[id]/academic-summary`, agregando sessões, presença, atividades e progresso real dos alunos vinculados, conectou as métricas do workspace e adicionou `components/create-internal-class-dialog.tsx` ao fluxo de criação explícita.
 
-**Bloqueios:** nenhum bloqueio funcional conhecido. O progresso e os registros de sessões/presença/atividades ainda dependem dos contratos acadêmicos existentes e precisam ser conectados em um próximo lote. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
+**Validação realizada:** lint focalizado, typecheck e `git diff --check` passaram; 10 testes de contrato/e2e de ofertas passaram neste ciclo. O navegador confirmou o redirecionamento correto para login quando não há sessão.
 
-**Próximo passo exato:** validar a rota no navegador em desktop e mobile, depois conectar os dados reais de progresso e completar o fluxo de criação de turma interna a partir de uma oferta existente.
+**Bloqueios:** a criação foi validada sem sessão e ainda precisa de validação autenticada em desktop/mobile; a rota protegida também deve ser exercitada com uma conta autorizada. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
+
+**Próximo passo exato:** validar o formulário e as abas com uma sessão real de professor/admin, confirmar criação de oferta draft e publicada, e registrar evidência de deployment.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 
