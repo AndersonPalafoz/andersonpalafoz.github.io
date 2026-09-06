@@ -92,11 +92,11 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Escopo inicial:** corrigir o botão **Nova turma** para levar ao fluxo correto de criação de oferta; completar o detalhe com abas responsivas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso; calcular o progresso real do aluno a partir dos registros existentes; reorganizar filtros e ações para telas de 320–375 px; separar visualmente ações de professor, administrador e superadministrador; e reduzir consultas sequenciais no dashboard do aluno.
 
-**Estado atual:** a auditoria fornecida informa que a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. O diagnóstico também informa que a implementação auditada não alterou dados, permissões ou a main. A referência declarada da auditoria é `e815461`, enquanto a main remota consultada neste ambiente está em `64bf582`; essa divergência deve ser reconciliada antes da publicação.
+**Estado atual:** a implementação base já existe sobre `course_offers`, com catálogo, busca, filtros, detalhe, alunos vinculados e área do aluno. Neste ciclo, a branch `v0/task-006-turmas-internas` adicionou o detalhe responsivo com abas de Visão geral, Alunos, Sessões, Presença, Atividades e Progresso, preservando o escopo de professor/admin e sem alterar banco ou permissões.
 
-**Bloqueios:** nenhum bloqueio funcional conhecido. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
+**Bloqueios:** nenhum bloqueio funcional conhecido. O progresso e os registros de sessões/presença/atividades ainda dependem dos contratos acadêmicos existentes e precisam ser conectados em um próximo lote. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
 
-**Próximo passo exato:** reconciliar a referência `e815461` com a `main` remota e mapear as rotas, consultas e contratos de API usados pelo detalhe de Turmas Internas antes de implementar o primeiro lote.
+**Próximo passo exato:** validar a rota no navegador em desktop e mobile, depois conectar os dados reais de progresso e completar o fluxo de criação de turma interna a partir de uma oferta existente.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 
