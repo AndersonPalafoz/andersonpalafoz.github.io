@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpen, CalendarDays, CheckCircle2, Search, Users } from "lucide-react";
 import { CreateInternalClassDialog } from "@/components/create-internal-class-dialog";
 
@@ -20,6 +21,7 @@ type InternalClass = {
 };
 
 export function InternalClassesWorkspace({ classes, canCreate }: { classes: InternalClass[]; canCreate: boolean }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const filtered = useMemo(() => classes.filter((item) => {
@@ -42,7 +44,7 @@ export function InternalClassesWorkspace({ classes, canCreate }: { classes: Inte
             <option value="draft">Rascunhos</option>
             <option value="archived">Arquivadas</option>
           </select>
-          {canCreate && <CreateInternalClassDialog onCreated={() => window.location.reload()} />}
+          {canCreate && <CreateInternalClassDialog onCreated={() => router.refresh()} />}
         </div>
       </div>
 
