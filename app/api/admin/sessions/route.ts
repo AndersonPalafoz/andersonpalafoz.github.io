@@ -51,6 +51,36 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function PATCH(request: Request) {
+  try {
+    const session = await requireAdminOrTeacher();
+    if (!session?.user) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    const body = await request.json() as { id?: number; offerId?: number; title?: string; description?: string | null; scheduledAt?: string; durationMinutes?: number; status?: "scheduled" | "completed" | "cancelled" };
+    if (!body.id || !body.offerId || !body.title?.trim() || !body.scheduledAt) return NextResponse.json({ error: "Sessão, turma, título e data são obrigatórios." }, { status: 400 });
+    const [updated] = await db.update(classSessions).set({ title: body.title.trim(), description: body.description?.trim() || null, scheduledAt: new Date(body.scheduledAt), durationMinutes: body.durationMinutes ? Number(body.durationMinutes) : 60, status: body.status || "scheduled", updatedAt: new Date() }).where(and(eq(classSessions.id, Number(body.id)), eq(classSessions.offerId, Number(body.offerId)))).returning();
+    if (!updated) return NextResponse.json({ error: "Sessão não encontrada nessa turma." }, { status: 404 });
+    return NextResponse.json({ session: updated });
+  } catch (error) {
+    console.error("Erro ao atualizar sessão:", error);
+    return NextResponse.json({ error: "Não foi possível atualizar a sessão." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const session = await requireAdminOrTeacher();
+    if (!session?.user) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    const body = await request.json() as { id?: number; offerId?: number };
+    if (!body.id || !body.offerId) return NextResponse.json({ error: "Sessão e turma são obrigatórias." }, { status: 400 });
+    const deleted = await db.delete(classSessions).where(and(eq(classSessions.id, Number(body.id)), eq(classSessions.offerId, Number(body.offerId)))).returning({ id: classSessions.id });
+    if (!deleted.length) return NextResponse.json({ error: "Sessão não encontrada nessa turma." }, { status: 404 });
+    return NextResponse.json({ deleted: deleted[0].id });
+  } catch (error) {
+    console.error("Erro ao excluir sessão:", error);
+    return NextResponse.json({ error: "Não foi possível excluir a sessão." }, { status: 500 });
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const session = await requireAdminOrTeacher();

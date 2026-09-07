@@ -13,10 +13,12 @@ async function canManageAttendance() {
   return user;
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const user = await canManageAttendance();
   if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
 
+  const rawOfferId = request.nextUrl.searchParams.get("offerId");
+  const offerId = rawOfferId ? Number(rawOfferId) : null;
   const rows = await db.select({
     attendanceId: attendances.id,
     studentId: users.id,
@@ -32,6 +34,7 @@ export async function GET() {
     .innerJoin(classSessions, eq(attendances.sessionId, classSessions.id))
     .innerJoin(users, eq(attendances.studentId, users.id))
     .leftJoin(courses, eq(classSessions.courseId, courses.id))
+    .where(offerId && Number.isInteger(offerId) ? eq(classSessions.offerId, offerId) : undefined)
     .orderBy(asc(classSessions.scheduledAt), asc(users.name));
 
   return NextResponse.json({ records: rows });
@@ -47,6 +50,7 @@ export async function POST(request: NextRequest) {
       records?: Array<{ attendanceId: number; sessionId: number; status: "present" | "absent" | "justified" }>;
       title?: string;
       courseId?: number | null;
+      offerId?: number | null;
       scheduledAt?: string;
       modality?: "individual" | "group" | "hybrid";
       attendance?: Array<{ studentId: number; status: "present" | "absent" | "justified"; notes?: string }>;
@@ -64,6 +68,7 @@ export async function POST(request: NextRequest) {
     const [session] = await db.insert(classSessions).values({
       title: body.title.trim(),
       courseId: body.courseId || null,
+      offerId: body.offerId || null,
       teacherId: user.id,
       scheduledAt: new Date(body.scheduledAt),
       modality: body.modality || "group",

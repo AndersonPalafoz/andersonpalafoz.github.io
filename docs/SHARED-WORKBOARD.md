@@ -98,7 +98,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Bloqueios:** a criação e a rota protegida ainda precisam ser exercitadas com uma sessão real de professor/admin em desktop e mobile; sem credenciais/sessão no preview, não foi possível confirmar criação draft/publicada nem registrar evidência de deployment. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
 
-**Próximo passo exato:** atualizar os fluxos de criação/edição de sessões e presença para exigir `offerId`, adicionar ações protegidas no detalhe da turma e validar com TypeScript, testes de contrato e uma sessão autorizada. A migration já foi aplicada no Neon principal e está registrada localmente como `0089_link_sessions_to_offers.sql`.
+**Próximo passo exato:** conectar os controles de edição/exclusão de sessões e presença ao detalhe da turma, adicionar testes de contrato e validar com uma sessão autorizada. A base de API já exige `id + offerId` para alterar/excluir sessões, filtra presença por `offerId` e grava o vínculo na criação. TypeScript, lint focalizado e `git diff --check` passaram neste ciclo. A migration já foi aplicada no Neon principal e está registrada localmente como `0089_link_sessions_to_offers.sql`.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 
