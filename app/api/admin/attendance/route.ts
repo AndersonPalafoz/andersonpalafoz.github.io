@@ -40,6 +40,51 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ records: rows });
 }
 
+export async function PATCH(request: NextRequest) {
+  const user = await canManageAttendance();
+  if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+
+  try {
+    const body = await request.json() as { attendanceId?: number; sessionId?: number; offerId?: number; status?: "present" | "absent" | "justified"; notes?: string | null };
+    if (!body.attendanceId || !body.sessionId || !body.offerId || !body.status) {
+      return NextResponse.json({ error: "attendanceId, sessionId, offerId e status são obrigatórios." }, { status: 400 });
+    }
+    const session = await db.query.classSessions.findFirst({ where: and(eq(classSessions.id, body.sessionId), eq(classSessions.offerId, body.offerId)) });
+    if (!session) return NextResponse.json({ error: "Sessão não encontrada nesta turma." }, { status: 404 });
+    const [updated] = await db.update(attendances)
+      .set({ status: body.status, present: body.status === "present", notes: body.notes ?? null })
+      .where(and(eq(attendances.id, body.attendanceId), eq(attendances.sessionId, body.sessionId)))
+      .returning({ id: attendances.id });
+    if (!updated) return NextResponse.json({ error: "Registro de presença não encontrado nesta turma." }, { status: 404 });
+    return NextResponse.json({ updated: true });
+  } catch (error) {
+    console.error("Erro ao atualizar presença:", error);
+    return NextResponse.json({ error: "Não foi possível atualizar a presença." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const user = await canManageAttendance();
+  if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
+
+  try {
+    const body = await request.json() as { attendanceId?: number; sessionId?: number; offerId?: number };
+    if (!body.attendanceId || !body.sessionId || !body.offerId) {
+      return NextResponse.json({ error: "attendanceId, sessionId e offerId são obrigatórios." }, { status: 400 });
+    }
+    const session = await db.query.classSessions.findFirst({ where: and(eq(classSessions.id, body.sessionId), eq(classSessions.offerId, body.offerId)) });
+    if (!session) return NextResponse.json({ error: "Sessão não encontrada nesta turma." }, { status: 404 });
+    const deleted = await db.delete(attendances)
+      .where(and(eq(attendances.id, body.attendanceId), eq(attendances.sessionId, body.sessionId)))
+      .returning({ id: attendances.id });
+    if (!deleted.length) return NextResponse.json({ error: "Registro de presença não encontrado nesta turma." }, { status: 404 });
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    console.error("Erro ao excluir presença:", error);
+    return NextResponse.json({ error: "Não foi possível excluir a presença." }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   const user = await canManageAttendance();
   if (!user) return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
