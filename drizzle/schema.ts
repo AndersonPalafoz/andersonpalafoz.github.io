@@ -581,6 +581,7 @@ export const attendanceStatusEnum = pgEnum("attendance_status", [
 export const classSessions = pgTable("class_sessions", {
   id: serial("id").primaryKey(),
   courseId: integer("courseId").references(() => courses.id),
+  offerId: integer("offerId").references(() => courseOffers.id),
   teacherId: integer("teacherId")
     .notNull()
     .references(() => users.id),

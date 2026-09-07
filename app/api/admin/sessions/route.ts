@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { courseId, title, description, modality, scheduledAt, durationMinutes, attendanceRecords } = body;
+    const { courseId, offerId, title, description, modality, scheduledAt, durationMinutes, attendanceRecords } = body;
 
     if (!title || !scheduledAt) {
       return NextResponse.json({ error: "Título e data da aula são obrigatórios." }, { status: 400 });
@@ -73,6 +73,7 @@ export async function POST(request: Request) {
 
     const newSession = await db.insert(classSessions).values({
       courseId: courseId ? Number(courseId) : null,
+      offerId: offerId ? Number(offerId) : null,
       teacherId,
       title,
       description: description || null,

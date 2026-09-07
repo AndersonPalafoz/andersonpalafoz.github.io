@@ -21,7 +21,7 @@ export async function GET(_request: Request, { params }: Params) {
   const students = await db.select({ id: courseOfferStudents.id, userId: courseOfferStudents.userId }).from(courseOfferStudents).where(and(eq(courseOfferStudents.offerId, offerId), isNotNull(courseOfferStudents.userId)));
   const studentIds = students.flatMap((student) => student.userId == null ? [] : [student.userId]);
   const [sessions, activityRows] = await Promise.all([
-    db.select().from(classSessions).where(eq(classSessions.courseId, offer.courseId)).orderBy(asc(classSessions.scheduledAt)),
+    db.select().from(classSessions).where(eq(classSessions.offerId, offerId)).orderBy(asc(classSessions.scheduledAt)),
     db.select({ id: activities.id, title: activities.title, dueDate: activities.dueDate }).from(activities).where(eq(activities.offerId, offerId)).orderBy(asc(activities.dueDate)),
   ]);
   const sessionIds = sessions.map((item) => item.id);
