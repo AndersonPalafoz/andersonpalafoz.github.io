@@ -107,24 +107,26 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `backlog` |
-| Responsável | Conta Manus que assumir a tarefa |
-| Iniciada em | — |
-| Branch | `feature/performance-materiais` |
-| Commit base | `704e1ac` |
-| Arquivos principais | A identificar após auditoria da rota `/materiais` |
-| Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
+| Status | `em andamento` |
+| Responsável | v0 |
+| Iniciada em | 2026-09-08 |
+| Branch | `v0/task-002-performance-materiais` |
+| Commit base | `0a10aad` |
+| Arquivos principais | `app/materiais/page.tsx`, `app/api/materials/route.ts`, `app/api/materials/progress/route.ts`, `components/material-card.tsx` |
+| Serviços afetados | GitHub e Vercel; nenhum dado do Neon alterado neste diagnóstico |
 | Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
 
 **Objetivo:** reduzir o tempo de carregamento e o custo de execução da rota `/materiais`, que apresentou o menor score relativo no diagnóstico anterior.
 
 **Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
 
-**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado.
+**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado. A medição local inicial em desenvolvimento, viewport 384×591 e dark mode, registrou TTFB 1.300 ms, FCP/LCP 1.612 ms, CLS 0,002 e hidratação React de 125 ms.
+
+**Diagnóstico inicial:** os três custos prioritários são (1) TTFB/consulta da API `/api/materials`, (2) hidratação client-side de toda a página, incluindo busca, filtros, cards e seção de guias, e (3) chamada separada para `/api/materials/progress` após autenticação, que adiciona uma segunda atualização da lista. A página também mantém 24 cards e todos os filtros em um único Client Component.
 
 **Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
 
-**Próximo passo exato:** executar Lighthouse e inspeção de rede na rota `/materiais`, identificar os três maiores recursos ou operações responsáveis pelo custo e registrar as evidências.
+**Próximo passo exato:** inspecionar a implementação de `/api/materials` e seus índices/consultas, confirmar se a resposta pode usar cache seguro para visitantes e implementar a primeira otimização mensurável sem alterar o contrato da interface.
 
 **Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
 
