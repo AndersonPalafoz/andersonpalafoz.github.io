@@ -34,9 +34,15 @@ A branch removeu o carregamento duplicado de Poppins no CSS global, migrou Poppi
 
 Os contratos direcionados de assets, integração de depoimentos e rotas públicas passaram, totalizando **9 testes aprovados**. O `git diff --check` também passou. O build local compilou o código, mas a coleta de rotas não pôde terminar porque o sandbox não possui `NEON_DATABASE_URL` nem `DATABASE_URL`; a validação definitiva do build deve ocorrer no deployment da Vercel com as variáveis configuradas.
 
+## Série consolidada de medições
+
+A série válida registrada em 4 de setembro de 2026 executou três medições por rota no mesmo deployment público, totalizando 21 execuções Lighthouse. As medianas consolidadas foram documentadas em `docs/core-web-vitals-monitoring.md`: Performance entre 90 e 96, LCP entre 2.328 ms e 2.790 ms, CLS igual a 0,000, FCP entre 946 ms e 1.093 ms e TBT entre 84 ms e 256 ms. Todas as rotas ficaram acima do limite laboratorial de Performance 80 e abaixo do limite de LCP de 4.000 ms.
+
+A série deve ser interpretada como baseline de laboratório, não como medição de campo: não há dados de usuários suficientes no Speed Insights e não há artefatos JSON versionados no repositório. A execução local posterior não foi possível porque o sandbox não possui Chrome/Chromium; a repetição futura deve ocorrer no workflow do GitHub Actions, que instala o navegador via Lighthouse.
+
 ## Próximos passos
 
-A branch deve ser revisada visualmente no preview, com atenção especial a logos, imagem principal, layout responsivo e carregamento da rota `/materiais`. Depois, deve ser executada uma série de pelo menos três medições por rota, em condições equivalentes, para reduzir a variabilidade do score. Somente após confirmar o build da Vercel e a ausência de regressões a branch deve ser mesclada na `main`.
+A branch deve ser revisada visualmente no preview, com atenção especial a logos, imagem principal, layout responsivo e carregamento da rota `/materiais`. A série de três medições por rota já está consolidada; a próxima repetição deve ocorrer no mesmo deployment via GitHub Actions, preservando o JSON como artefato para permitir comparação temporal. Somente após confirmar o build da Vercel e a ausência de regressões a branch deve ser mesclada na `main`.
 
 ## Evidências
 
