@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
         levels: levels.map(({ value }) => value).filter((value): value is string => Boolean(value)),
         categories: categories.map(({ value }) => value).filter((value): value is string => Boolean(value)),
       },
-    }, { headers: { "Cache-Control": cacheControl } });
+    }, { headers: { "Cache-Control": cacheControl, Vary: "Cookie" } });
   } catch (error) {
     console.error("Error fetching materials:", error);
     return NextResponse.json({ error: "Failed to fetch materials" }, { status: 500, headers: { "Cache-Control": "no-store" } });

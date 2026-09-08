@@ -124,11 +124,11 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Diagnóstico inicial:** os três custos prioritários são (1) TTFB/consulta da API `/api/materials`, (2) hidratação client-side de toda a página, incluindo busca, filtros, cards e seção de guias, e (3) chamada separada para `/api/materials/progress` após autenticação, que adiciona uma segunda atualização da lista. A página também mantém 24 cards e todos os filtros em um único Client Component.
 
-**Otimização concluída neste ciclo:** a rota agora usa `force-cache` para visitantes não autenticados e mantém `no-store` para usuários autenticados, evitando reutilizar respostas personalizadas de matrícula. A dependência `sessionStatus` foi adicionada ao efeito para repetir a consulta quando a sessão muda. A medição atual em desenvolvimento, viewport 384×591 e dark mode, registrou TTFB 217,1 ms, FCP/LCP 492 ms e hidratação 89,6 ms; a interface e os filtros foram confirmados no preview mobile.
+**Otimização concluída neste ciclo:** a rota agora usa `force-cache` para visitantes não autenticados e mantém `no-store` para usuários autenticados, evitando reutilizar respostas personalizadas de matrícula. A dependência `sessionStatus` foi adicionada ao efeito para repetir a consulta quando a sessão muda. A API agora também envia `Vary: Cookie`, evitando que caches intermediários reutilizem uma resposta de acesso público para uma requisição com sessão. A medição atual em desenvolvimento, viewport 384×591 e dark mode, registrou TTFB 218,9 ms, FCP/LCP 408 ms e hidratação 64,3 ms; a interface e os filtros foram confirmados no preview mobile.
 
 **Bloqueios:** nenhum bloqueio da TASK-002. O lint focalizado continua apontando um erro `react-hooks/set-state-in-effect` preexistente na própria página, na linha que limpa o estado de progresso para visitantes; essa correção pertence à TASK-005 e não foi alterada conforme solicitado.
 
-**Próximo passo exato:** inspecionar a implementação de `/api/materials` e seus índices/consultas, confirmar se a resposta pode usar cache seguro para visitantes e implementar a primeira otimização mensurável sem alterar o contrato da interface.
+**Próximo passo exato:** comparar a rota em build de produção e avaliar índices para `isPublic`, `courseId`, `level` e `category` antes de propor uma migration do Neon. A otimização de cache está concluída sem alteração de schema; a correção do erro de lint `react-hooks/set-state-in-effect` permanece fora desta tarefa e não deve ser iniciada, pois pertence à TASK-005.
 
 **Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
 
