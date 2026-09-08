@@ -107,7 +107,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `em andamento` |
+| Status | `concluída` |
 | Responsável | v0 |
 | Iniciada em | 2026-09-08 |
 | Branch | `v0/task-002-performance-materiais` |
@@ -136,7 +136,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` |
+| Status | `bloqueada no ambiente local` |
 | Responsável | Conta Manus que iniciou a implementação |
 | Iniciada em | 2026-09-03 |
 | Branch | `main` |
@@ -151,7 +151,9 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Estado atual:** o pacote `@vercel/speed-insights@2.0.0` foi integrado ao layout raiz com amostragem de 50%. Eventos das rotas privadas e administrativas são descartados no `beforeSend`. O script `scripts/measure-core-web-vitals.mjs` mede as sete rotas públicas três vezes e calcula medianas para score, LCP, CLS, FCP, TBT e TTFB. O workflow diário está definido para 06:30 UTC e possui disparo manual.
 
-**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram.
+**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram. Nesta retomada, a execução local de `pnpm performance:measure` foi iniciada contra `https://andersonpalafoz.vercel.app`, mas falhou antes da primeira rota porque o ambiente não possui Chrome/Chromium e `CHROME_PATH` não está definido.
+
+**Próximo passo exato:** executar a série Lighthouse no GitHub Actions/CI, onde o Chrome está disponível, e anexar o JSON gerado como artefato; não alterar o script nem instalar navegador no projeto nesta retomada. A validação não deve iniciar a TASK-005.
 
 **Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
 
@@ -165,7 +167,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `backlog` |
+| Status | `em validação` |
 | Responsável | Conta Manus que assumir a tarefa |
 | Iniciada em | — |
 | Branch | `feature/performance-measurement-series` |
@@ -178,11 +180,11 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Escopo:** repetir pelo menos três execuções por rota em condições equivalentes, descartar execuções redirecionadas ou protegidas, calcular médias e variação, e registrar as limitações do método.
 
-**Estado atual:** há uma rodada válida comparando produção e preview, com melhora média de Performance de 74,0 para 89,3.
+**Estado atual:** a série válida de 4 de setembro de 2026 executou três medições por rota no mesmo deployment público, totalizando 21 execuções. As medianas estão consolidadas em `docs/core-web-vitals-monitoring.md` e agora também foram registradas no relatório `docs/performance-optimization-baseline-2026-09-02.md`: Performance entre 90 e 96, LCP entre 2.328 ms e 2.790 ms, CLS 0,000, FCP entre 946 ms e 1.093 ms e TBT entre 84 ms e 256 ms.
 
-**Bloqueios:** a série deve usar um preview acessível e um protocolo fixo para evitar misturar métricas de páginas protegidas, cold starts ou condições de rede diferentes.
+**Bloqueios:** não há artefatos JSON versionados no repositório; a execução local posterior foi bloqueada pela ausência de Chrome/Chromium. A repetição automatizada deve ocorrer no GitHub Actions, onde o workflow já instala as dependências necessárias.
 
-**Próximo passo exato:** executar as três rodadas no mesmo deployment e atualizar o relatório com média, mediana e faixa observada por rota.
+**Próximo passo exato:** executar manualmente o workflow de performance no GitHub Actions, baixar o artefato `core-web-vitals-<run_number>` e anexar o resultado bruto ao registro da tarefa antes de marcá-la como concluída.
 
 **Critério de conclusão:** relatório atualizado, artefatos brutos preservados, metodologia documentada e recomendação de merge ou nova rodada baseada nos dados.
 
