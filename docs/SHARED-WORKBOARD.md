@@ -136,7 +136,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` |
+| Status | `bloqueada no ambiente local` |
 | Responsável | Conta Manus que iniciou a implementação |
 | Iniciada em | 2026-09-03 |
 | Branch | `main` |
@@ -151,7 +151,9 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Estado atual:** o pacote `@vercel/speed-insights@2.0.0` foi integrado ao layout raiz com amostragem de 50%. Eventos das rotas privadas e administrativas são descartados no `beforeSend`. O script `scripts/measure-core-web-vitals.mjs` mede as sete rotas públicas três vezes e calcula medianas para score, LCP, CLS, FCP, TBT e TTFB. O workflow diário está definido para 06:30 UTC e possui disparo manual.
 
-**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram.
+**Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram. Nesta retomada, a execução local de `pnpm performance:measure` foi iniciada contra `https://andersonpalafoz.vercel.app`, mas falhou antes da primeira rota porque o ambiente não possui Chrome/Chromium e `CHROME_PATH` não está definido.
+
+**Próximo passo exato:** executar a série Lighthouse no GitHub Actions/CI, onde o Chrome está disponível, e anexar o JSON gerado como artefato; não alterar o script nem instalar navegador no projeto nesta retomada. A validação não deve iniciar a TASK-005.
 
 **Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
 
