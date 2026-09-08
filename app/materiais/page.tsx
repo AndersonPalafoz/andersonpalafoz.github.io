@@ -52,7 +52,7 @@ export default function MateriaisPage() {
       page === 1 ? setLoading(true) : setLoadingMore(true);
       setError(null);
       try {
-        const res = await fetch(`/api/materials?${params.toString()}`, { cache: "no-store", signal: controller.signal });
+        const res = await fetch(`/api/materials?${params.toString()}`, { cache: sessionStatus === "authenticated" ? "no-store" : "force-cache", signal: controller.signal });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Não foi possível carregar os materiais.");
         if (requestId !== requestIdRef.current) return;
@@ -74,7 +74,7 @@ export default function MateriaisPage() {
 
     void fetchMaterials();
     return () => controller.abort();
-  }, [page, searchQuery, selectedLevel, selectedCategory]);
+  }, [page, searchQuery, selectedLevel, selectedCategory, sessionStatus]);
 
   useEffect(() => {
     if (sessionStatus !== "authenticated") {

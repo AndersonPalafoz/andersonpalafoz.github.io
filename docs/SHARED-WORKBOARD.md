@@ -107,24 +107,28 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `backlog` |
-| Responsável | Conta Manus que assumir a tarefa |
-| Iniciada em | — |
-| Branch | `feature/performance-materiais` |
-| Commit base | `704e1ac` |
-| Arquivos principais | A identificar após auditoria da rota `/materiais` |
-| Serviços afetados | GitHub e Vercel; Neon somente se forem encontradas consultas lentas |
+| Status | `em andamento` |
+| Responsável | v0 |
+| Iniciada em | 2026-09-08 |
+| Branch | `v0/task-002-performance-materiais` |
+| Commit base | `0a10aad` |
+| Arquivos principais | `app/materiais/page.tsx`, `app/api/materials/route.ts`, `app/api/materials/progress/route.ts`, `components/material-card.tsx` |
+| Serviços afetados | GitHub e Vercel; nenhum dado do Neon alterado neste diagnóstico |
 | Confirmação necessária | Não para diagnóstico; sim antes de alterar produção, cache, banco ou infraestrutura |
 
 **Objetivo:** reduzir o tempo de carregamento e o custo de execução da rota `/materiais`, que apresentou o menor score relativo no diagnóstico anterior.
 
 **Escopo:** auditar imagens, fontes, JavaScript, chamadas de API, renderização, cache e consultas usadas pela página; corrigir os gargalos prioritários sem remover funcionalidades; e comparar LCP, INP, CLS, score de Performance e transferência total antes e depois.
 
-**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado.
+**Estado atual:** a rota marcou Performance 83, LCP de 3,68 s e transferência de 366,9 KB no preview otimizado. A medição local inicial em desenvolvimento, viewport 384×591 e dark mode, registrou TTFB 1.300 ms, FCP/LCP 1.612 ms, CLS 0,002 e hidratação React de 125 ms.
 
-**Bloqueios:** nenhum bloqueio conhecido. Não alterar dados do Neon durante a auditoria sem registro e confirmação.
+**Diagnóstico inicial:** os três custos prioritários são (1) TTFB/consulta da API `/api/materials`, (2) hidratação client-side de toda a página, incluindo busca, filtros, cards e seção de guias, e (3) chamada separada para `/api/materials/progress` após autenticação, que adiciona uma segunda atualização da lista. A página também mantém 24 cards e todos os filtros em um único Client Component.
 
-**Próximo passo exato:** executar Lighthouse e inspeção de rede na rota `/materiais`, identificar os três maiores recursos ou operações responsáveis pelo custo e registrar as evidências.
+**Otimização concluída neste ciclo:** a rota agora usa `force-cache` para visitantes não autenticados e mantém `no-store` para usuários autenticados, evitando reutilizar respostas personalizadas de matrícula. A dependência `sessionStatus` foi adicionada ao efeito para repetir a consulta quando a sessão muda. A API agora também envia `Vary: Cookie`, evitando que caches intermediários reutilizem uma resposta de acesso público para uma requisição com sessão. A medição atual em desenvolvimento, viewport 384×591 e dark mode, registrou TTFB 218,9 ms, FCP/LCP 408 ms e hidratação 64,3 ms; a interface e os filtros foram confirmados no preview mobile.
+
+**Bloqueios:** nenhum bloqueio da TASK-002. O lint focalizado continua apontando um erro `react-hooks/set-state-in-effect` preexistente na própria página, na linha que limpa o estado de progresso para visitantes; essa correção pertence à TASK-005 e não foi alterada conforme solicitado.
+
+**Próximo passo exato:** comparar a rota em build de produção e avaliar índices para `isPublic`, `courseId`, `level` e `category` antes de propor uma migration do Neon. A otimização de cache está concluída sem alteração de schema; a correção do erro de lint `react-hooks/set-state-in-effect` permanece fora desta tarefa e não deve ser iniciada, pois pertence à TASK-005.
 
 **Critério de conclusão:** obter melhoria mensurável sem regressão visual, passar nos testes e build, validar o deployment e registrar a comparação no quadro.
 
@@ -170,7 +174,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 | Serviços afetados | GitHub e Vercel; nenhum acesso ao Neon previsto |
 | Confirmação necessária | Não para medições somente leitura |
 
-**Objetivo:** transformar a comparação inicial before/after em uma série de medições estatisticamente mais confiável antes de novas decisões de otimização.
+**Objetivo:** transformar a comparação inicial before/after em uma série de medições estatisticamente mais confiável antes de novas decis��es de otimização.
 
 **Escopo:** repetir pelo menos três execuções por rota em condições equivalentes, descartar execuções redirecionadas ou protegidas, calcular médias e variação, e registrar as limitações do método.
 
