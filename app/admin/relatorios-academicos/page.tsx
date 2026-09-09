@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { redirect } from "next/navigation";
 import { CheckCircle2, RefreshCw, Loader2, ArrowLeft, ShieldCheck, Database, Download, BarChart3, Eye, X } from "lucide-react";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 import { getCourseOffers } from "@/lib/course-offer-client";
 import type { CourseOffer } from "@/lib/course-offer-types";
 
@@ -79,8 +81,9 @@ export default function AcademicReportsPage() {
   const [studentDetail, setStudentDetail] = useState<StudentDetail | null>(null);
   const [loadingStudent, setLoadingStudent] = useState(false);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async (signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       setLoading(true);
       setErrorMessage(null);
       const params = new URLSearchParams({
@@ -92,12 +95,13 @@ export default function AcademicReportsPage() {
       if (startDate) params.append("startDate", startDate);
       if (endDate) params.append("endDate", endDate);
 
-      const res = await fetch(`/api/admin/academic-reports?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`/api/admin/academic-reports?${params.toString()}`, { cache: "no-store", signal });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || `Não foi possível carregar os relatórios reais (HTTP ${res.status}).`);
       if (!json || !json.summary || !Array.isArray(json.reports)) throw new Error("A resposta dos relatórios está incompleta.");
-      setData(json);
+      if (!signal?.aborted) setData(json);
     } catch (err) {
+      if (signal?.aborted) return;
       console.error("Error loading real academic reports:", err);
       setData(null);
       const rawMessage = err instanceof Error ? err.message : "";
@@ -105,13 +109,28 @@ export default function AcademicReportsPage() {
         ? "Não foi possível conectar ao serviço de relatórios agora. Verifique sua conexão e tente novamente."
         : rawMessage || "Não foi possível carregar os relatórios acadêmicos reais. Tente novamente em alguns instantes.";
       setErrorMessage(friendlyMessage);
+      toast.error("Não foi possível carregar os relatórios acadêmicos.", { description: friendlyMessage });
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, [endDate, offerFilter, page, sourceFilter, startDate, statusFilter]);
 
   useEffect(() => {
-    void getCourseOffers().then(setOffers).catch((error) => console.warn("Não foi possível carregar as ofertas para o filtro de relatórios.", error));
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      void getCourseOffers().then((payload) => {
+        if (!cancelled) setOffers(payload);
+      }).catch((error) => {
+        if (!cancelled) {
+          console.warn("Não foi possível carregar as ofertas para o filtro de relatórios.", error);
+          toast.error("Não foi possível carregar as ofertas para o filtro.", { description: "Você ainda pode consultar os relatórios sem selecionar uma oferta específica." });
+        }
+      });
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -120,8 +139,13 @@ export default function AcademicReportsPage() {
       redirect("/");
       return;
     }
-    fetchReports();
-  }, [user, isLoading, sourceFilter, statusFilter, offerFilter, startDate, endDate, page]);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void fetchReports(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [fetchReports, isLoading, user]);
 
   const handleOpenStudentModal = async (studentId: number) => {
     setSelectedStudentId(studentId);
@@ -133,6 +157,7 @@ export default function AcademicReportsPage() {
       setStudentDetail(json.student);
     } catch (err) {
       console.error("Error loading student details:", err);
+      toast.error("Não foi possível carregar os detalhes deste aluno.", { description: "Tente novamente em alguns instantes." });
     } finally {
       setLoadingStudent(false);
     }
@@ -472,7 +497,13 @@ export default function AcademicReportsPage() {
             {loading ? (
               <div className="space-y-3 py-8 animate-pulse">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="h-12 bg-muted rounded-xl w-full" />
+                  <div key={i} className="rounded-xl border border-border/60 bg-background p-4" aria-hidden="true">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 space-y-2"><Skeleton className="h-4 w-48" /><Skeleton className="h-3 w-32" /></div>
+                      <Skeleton className="h-7 w-24 rounded-lg" />
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-3"><Skeleton className="h-8 rounded-lg" /><Skeleton className="h-8 rounded-lg" /><Skeleton className="h-8 rounded-lg" /></div>
+                  </div>
                 ))}
               </div>
             ) : (

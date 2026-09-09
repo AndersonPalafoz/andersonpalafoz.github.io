@@ -28,12 +28,14 @@ export default function CalendarioPage() {
   const [syncing, setSyncing] = useState(false);
   const [lastFetched, setLastFetched] = useState<string | null>(null);
 
-  const loadCalendar = useCallback(async (manual = false) => {
+  const loadCalendar = useCallback(async (manual = false, signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       manual ? setSyncing(true) : setLoading(true);
-      const response = await fetch("/api/calendar", { cache: "no-store" });
+      const response = await fetch("/api/calendar", { cache: "no-store", signal });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Não foi possível carregar o calendário.");
+      if (signal?.aborted) return;
       setPayload(data);
       setLastFetched(data.fetchedAt || new Date().toISOString());
       if (manual) {
@@ -41,14 +43,23 @@ export default function CalendarioPage() {
         else toast.success("Dados acadêmicos do banco atualizados. O Google Calendar não está conectado nesta sessão.");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível carregar os dados do calendário.");
+      if (!signal?.aborted) toast.error(error instanceof Error ? error.message : "Não foi possível carregar os dados do calendário.");
     } finally {
-      setLoading(false);
-      setSyncing(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+        setSyncing(false);
+      }
     }
   }, []);
 
-  useEffect(() => { void loadCalendar(); }, [loadCalendar]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadCalendar(false, controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [loadCalendar]);
 
   const handleSync = async () => {
     try {
