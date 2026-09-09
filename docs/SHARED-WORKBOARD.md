@@ -136,7 +136,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `bloqueada no ambiente local` |
+| Status | `em validação externa` |
 | Responsável | Conta Manus que iniciou a implementação |
 | Iniciada em | 2026-09-03 |
 | Branch | `main` |
@@ -157,7 +157,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
 
-**Bloqueios:** nenhum bloqueio de implementação. A validação de campo permanece pendente por ausência de tráfego real no período consultado.
+**Bloqueios:** nenhum bloqueio de implementação. A medição local está limitada pela ausência de Chrome/Chromium no sandbox; a validação externa depende da execução do workflow no GitHub Actions. A validação de campo também permanece pendente por ausência de tráfego real no período consultado.
 
 **Próximo passo exato:** publicar a implementação na `main`, aguardar a primeira execução diária do workflow e revisar o primeiro artefato junto com os dados de Speed Insights após haver tráfego real.
 
@@ -167,7 +167,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` |
+| Status | `em validação externa` |
 | Responsável | Conta Manus que assumir a tarefa |
 | Iniciada em | — |
 | Branch | `feature/performance-measurement-series` |
