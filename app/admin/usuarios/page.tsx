@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import Link from "next/link";
 import {
   Check,
@@ -71,7 +71,7 @@ function statusClasses(status: ApprovalStatus, deletedAt: string | null) {
 export default function UsuariosPage() {
   const { isSuperadmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
-  const [teachers, setTeachers] = useState<User[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -89,38 +89,38 @@ export default function UsuariosPage() {
   });
   const [creating, setCreating] = useState(false);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async (signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       setLoading(true);
-      const response = await fetch("/api/admin/users", { cache: "no-store" });
+      const response = await fetch("/api/admin/users", { cache: "no-store", signal });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Falha ao carregar usuários.");
-      setUsers(data.users);
-      setError(null);
+      if (!signal?.aborted) {
+        setUsers(data.users);
+        setError(null);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível carregar os usuários.");
+      if (!signal?.aborted) {
+        const message = err instanceof Error ? err.message : "Não foi possível carregar os usuários.";
+        setError(message);
+        toast.error("Não foi possível carregar os usuários.", { description: message });
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    void fetchUsers();
   }, []);
 
   useEffect(() => {
-    // Carregar lista de professores para atribuição
-    const loadTeachers = async () => {
-      try {
-        const res = await fetch("/api/admin/users", { cache: "no-store" });
-        const data = await res.json();
-        if (res.ok && data.users) {
-          setTeachers(data.users.filter((u: User) => (u.role === "professor" || u.role === "admin") && !u.deletedAt));
-        }
-      } catch (e) {}
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void fetchUsers(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
     };
-    void loadTeachers();
-  }, [users]);
+  }, [fetchUsers]);
+
+  const teachers = useMemo(() => users.filter((u) => (u.role === "professor" || u.role === "admin") && !u.deletedAt), [users]);
 
   const updateUser = async (userId: number, payload: Record<string, unknown>, successMessage: string) => {
     try {
@@ -248,10 +248,6 @@ export default function UsuariosPage() {
       return matchesQuery && matchesRole && matchesStatus;
     });
   }, [query, roleFilter, statusFilter, users]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query, roleFilter, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / pageSize));
   const paginatedUsers = useMemo(() => {

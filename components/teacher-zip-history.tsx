@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Clock, Download, FileArchive, Loader2, RefreshCw } from "lucide-react";
 
 type ZipExportItem = {
@@ -24,7 +24,7 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
   const [csvLoading, setCsvLoading] = useState(false);
   const [csvStatus, setCsvStatus] = useState<"idle" | "success" | "error">("idle");
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -37,11 +37,12 @@ export function TeacherZipHistory({ refreshTrigger }: { refreshTrigger?: number 
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadHistory();
-  }, [refreshTrigger]);
+    const timer = window.setTimeout(() => { void loadHistory(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, [loadHistory, refreshTrigger]);
 
   const exportCsv = async () => {
     if (csvLoading) return;

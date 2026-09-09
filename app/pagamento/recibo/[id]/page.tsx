@@ -72,8 +72,11 @@ export default function ReceiptDetailPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void loadReceipt(controller.signal);
-    return () => controller.abort();
+    const timer = window.setTimeout(() => { void loadReceipt(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [loadReceipt]);
 
   const handlePrint = () => window.print();

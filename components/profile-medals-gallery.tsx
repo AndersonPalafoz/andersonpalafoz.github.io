@@ -26,17 +26,26 @@ export function ProfileMedalsGallery() {
   const [onlyUnlocked, setOnlyUnlocked] = useState(false);
 
   useEffect(() => {
-    setTraditionalMode(window.localStorage.getItem("ap_traditional_mode") === "true");
-    let cancelled = false;
-    fetch("/api/user/medals", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as medalhas.");
-        if (!cancelled) setMedals(payload.medals || []);
-      })
-      .catch(() => { if (!cancelled) setError(true); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setTraditionalMode(window.localStorage.getItem("ap_traditional_mode") === "true");
+      void (async () => {
+        try {
+          const response = await fetch("/api/user/medals", { cache: "no-store", signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as medalhas.");
+          if (!controller.signal.aborted) setMedals(payload.medals || []);
+        } catch {
+          if (!controller.signal.aborted) setError(true);
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   const unlockedCount = medals.filter((medal) => medal.unlocked).length;

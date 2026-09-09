@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Eye, EyeOff, Loader2, MessageCircle, RotateCcw, Send, Star, BookOpen, FileText, CheckCircle2, Trash2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 
 type Course = { id: number; title: string };
@@ -24,38 +25,54 @@ export default function AdminReviewsPage() {
   const [moderatingId, setModeratingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = useCallback(async (selectedCourseId: string, selectedArticleId: string) => {
+  const loadData = useCallback(async (selectedCourseId: string, selectedArticleId: string, signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       setLoadingReviews(Boolean(selectedCourseId || selectedArticleId));
       setError(null);
       
       if (mode === "courses") {
         const params = selectedCourseId ? `?courseId=${encodeURIComponent(selectedCourseId)}` : "";
-        const response = await fetch(`/api/admin/reviews${params}`, { cache: "no-store" });
+        const response = await fetch(`/api/admin/reviews${params}`, { cache: "no-store", signal });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Não foi possível carregar as avaliações de cursos.");
-        setCourses(data.courses || []);
-        setReviews(data.reviews || []);
+        if (!signal?.aborted) {
+          setCourses(data.courses || []);
+          setReviews(data.reviews || []);
+        }
       } else {
         const params = selectedArticleId ? `?articleId=${encodeURIComponent(selectedArticleId)}` : "";
-        const response = await fetch(`/api/admin/article-reviews${params}`, { cache: "no-store" });
+        const response = await fetch(`/api/admin/article-reviews${params}`, { cache: "no-store", signal });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Não foi possível carregar os comentários do blog.");
-        setArticles(data.articles || []);
-        setReviews(data.reviews || []);
+        if (!signal?.aborted) {
+          setArticles(data.articles || []);
+          setReviews(data.reviews || []);
+        }
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Não foi possível carregar os dados.");
-      setReviews([]);
+      if (!signal?.aborted) {
+        const message = cause instanceof Error ? cause.message : "Não foi possível carregar os dados.";
+        setError(message);
+        setReviews([]);
+        toast.error("Não foi possível carregar as avaliações e comentários.", { description: message });
+      }
     } finally {
-      setLoading(false);
-      setLoadingReviews(false);
+      if (!signal?.aborted) {
+        setLoading(false);
+        setLoadingReviews(false);
+      }
     }
   }, [mode]);
 
   useEffect(() => {
-    void loadData(courseId, articleId);
-  }, [courseId, articleId, mode, loadData]);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadData(courseId, articleId, controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [courseId, articleId, loadData]);
 
   const moderateComment = async (reviewId: number, action: "hide" | "restore" | "delete") => {
     if (action === "delete" && !window.confirm("Excluir este comentário logicamente? O histórico será preservado no painel, mas ele deixará de aparecer publicamente.")) return;
@@ -182,8 +199,24 @@ export default function AdminReviewsPage() {
         )}
 
         {loading || loadingReviews ? (
-          <div className="flex items-center justify-center rounded-2xl border border-border bg-card py-16 text-red-600">
-            <Loader2 className="animate-spin" size={28} />
+          <div className="grid gap-4" aria-label="Carregando reviews e comentários" aria-busy="true">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-5 w-40" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+                  <Skeleton className="h-8 w-24 rounded-full" />
+                </div>
+                <Skeleton className="mt-5 h-4 w-full" />
+                <Skeleton className="mt-2 h-4 w-4/5" />
+                <div className="mt-6 flex gap-3 border-t border-border pt-4">
+                  <Skeleton className="h-9 w-24 rounded-lg" />
+                  <Skeleton className="h-9 w-24 rounded-lg" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : (mode === "courses" && !courseId) || (mode === "articles" && !articleId) ? (
           <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center text-muted-foreground">

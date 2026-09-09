@@ -29,17 +29,18 @@ export default function ProfessorSpeakingEvalPage() {
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, string>>({});
   const [scoreDrafts, setScoreDrafts] = useState<Record<number, number>>({});
 
-  const loadSubmissions = useCallback(async () => {
+  const loadSubmissions = useCallback(async (signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       setLoading(true);
-      const res = await fetch("/api/speaking", { cache: "no-store" });
+      const res = await fetch("/api/speaking", { cache: "no-store", signal });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao carregar submissões de speaking.");
-      setSubmissions(data.submissions || []);
+      if (!signal?.aborted) setSubmissions(data.submissions || []);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Erro ao carregar gravações.");
+      if (!signal?.aborted) toast.error(err instanceof Error ? err.message : "Erro ao carregar gravações.");
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   }, []);
 
@@ -49,7 +50,12 @@ export default function ProfessorSpeakingEvalPage() {
       window.location.href = "/";
       return;
     }
-    void loadSubmissions();
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadSubmissions(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [authLoading, user, loadSubmissions]);
 
   const handleGrade = async (progressId: number) => {
