@@ -67,23 +67,29 @@ export function CertificateFabricPrototype() {
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
-    const nextElements = composition.elements.map(element => ({
-      ...element,
-      size: element.size || 12,
-      color: element.color || "#333333",
-      src: element.type === "image" ? element.content : undefined,
-    }));
-    setExtraElements(nextElements);
-    const primaryLogo = composition.elements.find(element => element.id === "primary-logo" && element.type === "image");
-    if (primaryLogo) setLogoUrl(primaryLogo.content);
+    const timer = window.setTimeout(() => {
+      const nextElements = composition.elements.map(element => ({
+        ...element,
+        size: element.size || 12,
+        color: element.color || "#333333",
+        src: element.type === "image" ? element.content : undefined,
+      }));
+      setExtraElements(nextElements);
+      const primaryLogo = composition.elements.find(element => element.id === "primary-logo" && element.type === "image");
+      if (primaryLogo) setLogoUrl(primaryLogo.content);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [composition.elements]);
 
   useEffect(() => {
-    setStudentName(sampleData.studentName);
-    setStudentCpf(sampleData.studentCpf);
-    setCourseTitle(sampleData.courseTitle);
-    setWorkload(sampleData.workloadHours);
-    setPeriod(sampleData.period);
+    const timer = window.setTimeout(() => {
+      setStudentName(sampleData.studentName);
+      setStudentCpf(sampleData.studentCpf);
+      setCourseTitle(sampleData.courseTitle);
+      setWorkload(sampleData.workloadHours);
+      setPeriod(sampleData.period);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [sampleData]);
 
   const commitElements = (next: CertificatePdfElement[]) => {

@@ -33,6 +33,10 @@ describe("admin certificate workflow", () => {
     expect(manager).toContain("const totalPages");
     expect(manager).toContain("md:hidden");
     expect(manager).toContain("Tentar novamente");
+    expect(manager).toContain("Gerando certificado oficial");
+    expect(manager).toContain("Preparando exportação dos certificados");
+    expect(manager).toContain('role="status" aria-live="polite"');
+    expect(manager).toContain("loading-progress");
   });
 });
 

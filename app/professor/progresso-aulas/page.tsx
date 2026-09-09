@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Mic, Clock, Filter, Volume2, MessageSquare, Search, Users, Activity, RotateCcw, ListChecks } from "lucide-react";
@@ -25,7 +25,7 @@ export default function ProfessorProgressSpeakingPage() {
   const [dateSort, setDateSort] = useState<"newest" | "oldest">("newest");
   const [studentQuery, setStudentQuery] = useState("");
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setErrorMessage(null);
@@ -41,11 +41,14 @@ export default function ProfessorProgressSpeakingPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [contextQuery]);
 
   useEffect(() => {
-    void loadData();
-  }, [offerId, classId]);
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [loadData]);
 
   const handleEvaluate = async (activityProgressId: string) => {
     try {

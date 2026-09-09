@@ -77,15 +77,27 @@ export default function MateriaisPage() {
   }, [page, searchQuery, selectedLevel, selectedCategory, sessionStatus]);
 
   useEffect(() => {
-    if (sessionStatus !== "authenticated") {
-      setCompletedMaterialIds([]);
-      return;
-    }
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      if (sessionStatus !== "authenticated") {
+        setCompletedMaterialIds([]);
+        return;
+      }
 
-    fetch("/api/materials/progress", { cache: "no-store" })
-      .then((response) => response.json())
-      .then((data) => setCompletedMaterialIds(data.completedMaterialIds || []))
-      .catch(() => undefined);
+      fetch("/api/materials/progress", { cache: "no-store", signal: controller.signal })
+        .then((response) => response.json())
+        .then((data) => {
+          if (!controller.signal.aborted) setCompletedMaterialIds(data.completedMaterialIds || []);
+        })
+        .catch((error) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+        });
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [sessionStatus]);
 
   const filteredMaterials = materiais;

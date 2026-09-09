@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
     const offer = await createCourseOffer({
       courseId,
-      sourceExternalClassId: body.sourceExternalClassId ? Number(body.sourceExternalClassId) : null,
+      sourceExternalClassId: null,
       institution: body.institution ? String(body.institution).trim() : null,
       offerName,
       academicTerm,

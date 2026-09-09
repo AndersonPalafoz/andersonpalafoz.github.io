@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { MessageSquare, Send, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
@@ -28,23 +28,26 @@ export function MaterialCommentsSection({ materialId }: { materialId: number }) 
   const [newComment, setNewComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const loadComments = async () => {
+  const loadComments = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch(`/api/materials/${materialId}/comments`, { cache: "no-store" });
+      const res = await fetch(`/api/materials/${materialId}/comments`, { cache: "no-store", signal });
       const data = await res.json();
-      if (res.ok && data.comments) {
-        setComments(data.comments);
-      }
+      if (!signal?.aborted && res.ok && data.comments) setComments(data.comments);
     } catch {
-      // Ignorar erro de rede silenciosamente
+      // Ignorar erro de rede silenciosamente; cancelamentos são esperados ao trocar de material.
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, [materialId]);
 
   useEffect(() => {
-    void loadComments();
-  }, [materialId]);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadComments(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [loadComments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

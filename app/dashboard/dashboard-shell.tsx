@@ -90,6 +90,15 @@ const superadminNavItems: NavigationItem[] = [
   { href: "/admin/auditoria", label: "Auditoria", mobileLabel: "Auditoria", icon: Shield },
 ];
 
+const publicNavItems: NavigationItem[] = [
+  { href: "/", label: "Início", icon: Home, exact: true },
+  { href: "/sobre", label: "Sobre", icon: User },
+  { href: "/cursos", label: "Cursos", icon: GraduationCap },
+  { href: "/materiais", label: "Materiais", icon: Library },
+  { href: "/blog", label: "Blog", icon: FileText },
+  { href: "/contato", label: "Contato", icon: MessageSquare },
+];
+
 function getInitials(name?: string | null) {
   if (!name) return "?";
   const partes = name.trim().split(/\s+/);
@@ -175,13 +184,14 @@ export default function DashboardLayout({
 
     // Verificar se é o primeiro acesso para o tour guiado
     const hasSeenTour = localStorage.getItem("dashboard_tour_seen");
-    if (!hasSeenTour && (session?.user?.role === "admin" || session?.user?.role === "professor")) {
-      setShowTour(true);
-    }
+    const tourTimer = !hasSeenTour && (session?.user?.role === "admin" || session?.user?.role === "professor")
+      ? window.setTimeout(() => setShowTour(true), 0)
+      : undefined;
 
     return () => {
       mounted = false;
       if (pulseTimer) window.clearTimeout(pulseTimer);
+      if (tourTimer) window.clearTimeout(tourTimer);
       window.removeEventListener("wishlist:changed", handleWishlistChange);
     };
   }, [session?.user?.role]);
@@ -206,18 +216,28 @@ export default function DashboardLayout({
   }, [sidebarOpen]);
 
   useEffect(() => {
-    if (!session?.user?.email) { setAvatarLoading(false); return; }
     let active = true;
+    let stateTimer: number | undefined;
+    if (!session?.user?.email) {
+      stateTimer = window.setTimeout(() => setAvatarLoading(false), 0);
+      return () => {
+        active = false;
+        if (stateTimer) window.clearTimeout(stateTimer);
+      };
+    }
     const sessionEmail = session.user.email;
     const cachedAvatarUrl = readCachedAvatarUrl(sessionEmail);
     const immediateAvatarUrl = initialAvatarUrl || session.user?.avatarUrl || session.user?.image || cachedAvatarUrl || null;
 
-    if (immediateAvatarUrl) {
-      setAvatarUrl((current) => current || immediateAvatarUrl);
-      setAvatarLoading(false);
-    } else {
-      setAvatarLoading(true);
-    }
+    stateTimer = window.setTimeout(() => {
+      if (!active) return;
+      if (immediateAvatarUrl) {
+        setAvatarUrl((current) => current || immediateAvatarUrl);
+        setAvatarLoading(false);
+      } else {
+        setAvatarLoading(true);
+      }
+    }, 0);
 
     fetch("/api/user/profile", { cache: "default" })
       .then(async (response) => response.ok ? response.json() : null)
@@ -232,7 +252,10 @@ export default function DashboardLayout({
         }
       })
       .catch(() => { if (active) setAvatarLoading(false); });
-    return () => { active = false; };
+    return () => {
+      active = false;
+      if (stateTimer) window.clearTimeout(stateTimer);
+    };
   }, [initialAvatarUrl, session?.user?.avatarUrl, session?.user?.email, session?.user?.image]);
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -293,7 +316,7 @@ export default function DashboardLayout({
   const displayedAvatarUrl = !avatarLoadFailed ? (avatarUrl || session?.user?.image || null) : null;
 
   return (
-    <div className="dashboard-frame flex min-h-[100dvh] bg-background text-foreground">
+    <div className="dashboard-frame flex min-h-[100dvh] bg-background text-foreground md:h-[100dvh] md:overflow-hidden">
       {/* Tour Guiado Modal */}
       {showTour && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in">
@@ -325,7 +348,7 @@ export default function DashboardLayout({
 
           <aside
             id="dashboard-mobile-navigation"
-            className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky md:top-0 z-40 flex h-[100dvh] w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform`}
+            className={`dashboard-sidebar ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0 fixed md:sticky md:top-0 z-40 flex h-[100dvh] w-72 flex-col border-r border-border/70 text-card-foreground shadow-xl shadow-slate-900/5 backdrop-blur-xl transition-transform md:rounded-r-2xl md:shadow-[10px_0_35px_rgba(15,23,42,0.08)]`}
       >
         <div className="flex items-center gap-3 border-b border-border/70 bg-gradient-to-br from-card to-red-50/60 p-5 dark:from-card dark:to-red-950/20">
           <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={handleAvatarChange} />
@@ -372,9 +395,35 @@ export default function DashboardLayout({
               })}
             </section>
           ))}
+          <section className="space-y-1.5 border-t border-border/70 pt-4" aria-label="Menu principal do site">
+            <div className="px-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-muted-foreground">Menu principal do site</p>
+              <p className="mt-1 px-0 text-[11px] leading-relaxed text-muted-foreground">Acesse as páginas públicas sem sair do painel.</p>
+            </div>
+            {publicNavItems.map((item) => {
+              const Icon = item.icon;
+              const active = isActive(item.href, item.exact);
+              return (
+                <Link key={`public-${item.href}`} href={item.href} onClick={() => setSidebarOpen(false)}>
+                  <div className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${active ? "bg-red-50 text-red-700 shadow-sm shadow-red-900/5 dark:bg-red-950/40 dark:text-red-300" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}>
+                    <Icon size={19} />
+                    <span className="flex-1">{item.label}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </section>
         </nav>
 
-        <div className="border-t border-border/70 p-4">
+        <div className="border-t border-border/70 p-4 space-y-1.5">
+          <Link
+            href="/"
+            onClick={() => setSidebarOpen(false)}
+            className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+          >
+            <Home size={19} aria-hidden="true" />
+            Ver site
+          </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300"
@@ -400,9 +449,21 @@ export default function DashboardLayout({
         </header>
         <header className="dashboard-topbar flex items-center justify-between border-b border-border/70 p-4 text-card-foreground shadow-sm md:hidden">
           <div className="min-w-0"><p className="truncate font-bold text-foreground">{activeTitle}</p><p className="text-[10px] font-black uppercase tracking-[0.12em] text-muted-foreground">{roleLabel(visibleRole)}</p></div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen} aria-controls="dashboard-mobile-navigation">
-            {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/"
+              aria-label="Voltar para a página inicial do site"
+              title="Página inicial do site"
+              onClick={() => setSidebarOpen(false)}
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 dark:hover:bg-red-950/40 dark:hover:text-red-300"
+            >
+              <Home size={21} aria-hidden="true" />
+              <span className="sr-only">Página inicial</span>
+            </Link>
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-border p-2.5 text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/40 dark:hover:text-red-300" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen} aria-controls="dashboard-mobile-navigation">
+              {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </header>
 
         <main className="dashboard-content min-h-0 flex-1 overflow-visible p-3 pb-28 sm:p-6 sm:pb-24 md:overflow-y-auto lg:p-8 lg:pb-8">

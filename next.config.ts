@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   images: {
     formats: ["image/avif", "image/webp"],
+    qualities: [70, 75, 85],
     minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
       {

@@ -40,34 +40,53 @@ export default function AdminRelatoriosPage() {
   }, [authLoading, router, user, canAccessAdmin]);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/admin/stats", { cache: "no-store" });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to fetch stats");
-        setStats(data);
-      } catch (err) {
-        toast.error("Não foi possível carregar os relatórios administrativos.");
-      } finally {
-        setLoading(false);
-      }
+    if (authLoading || !canAccessAdmin) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          setLoading(true);
+          const res = await fetch("/api/admin/stats", { cache: "no-store", signal: controller.signal });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Failed to fetch stats");
+          if (!controller.signal.aborted) setStats(data);
+        } catch {
+          if (!controller.signal.aborted) toast.error("Não foi possível carregar os relatórios administrativos.");
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
     };
-    if (!authLoading && canAccessAdmin) {
-      void fetchStats();
-    }
   }, [authLoading, canAccessAdmin]);
 
   useEffect(() => {
-    if (!authLoading && canAccessAdmin) {
-      setDetailsLoading(true);
-      const params = new URLSearchParams();
-      if (search.trim()) params.set("search", search.trim());
-      void fetch(`/api/admin/reports?${params.toString()}`, { cache: "no-store" }).then(async (res) => {
-        if (!res.ok) throw new Error("Falha ao carregar relatórios detalhados");
-        setDetailedReports(await res.json());
-      }).catch(() => toast.error("Não foi possível carregar os dados detalhados dos relatórios.")).finally(() => setDetailsLoading(false));
-    }
+    if (authLoading || !canAccessAdmin) return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          setDetailsLoading(true);
+          const params = new URLSearchParams();
+          if (search.trim()) params.set("search", search.trim());
+          const res = await fetch(`/api/admin/reports?${params.toString()}`, { cache: "no-store", signal: controller.signal });
+          if (!res.ok) throw new Error("Falha ao carregar relatórios detalhados");
+          const payload = await res.json();
+          if (!controller.signal.aborted) setDetailedReports(payload);
+        } catch {
+          if (!controller.signal.aborted) toast.error("Não foi possível carregar os dados detalhados dos relatórios.");
+        } finally {
+          if (!controller.signal.aborted) setDetailsLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [authLoading, canAccessAdmin, search]);
 
   const exportDetailedCSV = () => {

@@ -33,14 +33,29 @@ export default function PurchasesAndSubscriptionsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/stripe/purchases")
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o histórico.");
-        setPurchases(payload.purchases || []);
-      })
-      .catch((reason) => setError(reason instanceof Error ? reason.message : "Erro ao carregar compras."))
-      .finally(() => setLoading(false));
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          const response = await fetch("/api/stripe/purchases", { signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o histórico.");
+          if (!controller.signal.aborted) setPurchases(payload.purchases || []);
+        } catch (reason) {
+          if (!controller.signal.aborted) {
+            const message = reason instanceof Error ? reason.message : "Erro ao carregar compras.";
+            setError(message);
+            toast.error("Não foi possível carregar o histórico de compras.", { description: message });
+          }
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   const filteredPurchases = useMemo(() => purchases
@@ -51,7 +66,29 @@ export default function PurchasesAndSubscriptionsPage() {
       return sortOrder === "desc" ? right - left : left - right;
     }), [purchases, searchTerm, sortBy, sortOrder]);
 
-  useEffect(() => { if (activeTab !== "subscriptions") return; setLoadingSubscriptions(true); fetch("/api/stripe/subscriptions").then(async (response) => { const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Não foi possível carregar assinaturas."); setSubscriptions(payload.subscriptions || []); }).catch((reason) => toast.error(reason instanceof Error ? reason.message : "Erro ao carregar assinaturas.")).finally(() => setLoadingSubscriptions(false)); }, [activeTab]);
+  useEffect(() => {
+    if (activeTab !== "subscriptions") return;
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        try {
+          setLoadingSubscriptions(true);
+          const response = await fetch("/api/stripe/subscriptions", { signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Não foi possível carregar assinaturas.");
+          if (!controller.signal.aborted) setSubscriptions(payload.subscriptions || []);
+        } catch (reason) {
+          if (!controller.signal.aborted) toast.error("Não foi possível carregar as assinaturas.", { description: reason instanceof Error ? reason.message : "Tente novamente em alguns instantes." });
+        } finally {
+          if (!controller.signal.aborted) setLoadingSubscriptions(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [activeTab]);
   const formatAmount = (purchase: Purchase) => purchase.payment?.amountTotal == null || !purchase.payment.currency ? "Valor não verificado" : (purchase.payment.amountTotal / 100).toLocaleString("pt-BR", { style: "currency", currency: purchase.payment.currency.toUpperCase() });
   const cancelSubscription = async (subscriptionId: string) => { if (!window.confirm("Agendar o cancelamento ao fim do período atual?")) return; setCancellingSubscription(subscriptionId); try { const response = await fetch(`/api/stripe/subscriptions/${subscriptionId}`, { method: "POST" }); const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Não foi possível atualizar a assinatura."); setSubscriptions((current) => current.map((subscription) => subscription.id === subscriptionId ? { ...subscription, cancelAtPeriodEnd: payload.subscription.cancelAtPeriodEnd } : subscription)); toast.success("Cancelamento agendado no Stripe."); } catch (error) { toast.error(error instanceof Error ? error.message : "Erro ao atualizar assinatura."); } finally { setCancellingSubscription(null); } };
 

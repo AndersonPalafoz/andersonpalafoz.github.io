@@ -25,24 +25,26 @@ export function WeeklyGoalsWidget() {
   const [traditionalMode, setTraditionalMode] = useState(false);
 
   useEffect(() => {
-    const storedMode = window.localStorage.getItem("ap_traditional_mode");
-    setTraditionalMode(storedMode === "true");
-
-    let cancelled = false;
-    fetch("/api/dashboard/weekly-summary", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o resumo semanal.");
-        if (!cancelled) setSummary(payload);
-      })
-      .catch((cause) => {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : "Não foi possível carregar o resumo semanal.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => { cancelled = true; };
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setTraditionalMode(window.localStorage.getItem("ap_traditional_mode") === "true");
+      void (async () => {
+        try {
+          const response = await fetch("/api/dashboard/weekly-summary", { cache: "no-store", signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Não foi possível carregar o resumo semanal.");
+          if (!controller.signal.aborted) setSummary(payload);
+        } catch (cause) {
+          if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Não foi possível carregar o resumo semanal.");
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   if (loading) {

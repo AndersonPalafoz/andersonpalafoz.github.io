@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 import { CalendarDays, CheckCircle2, Layers3, Users } from "lucide-react";
+import { shouldCelebrateProgress } from "@/lib/internal-class-progress";
 
 type StudentClass = {
   id: number;
@@ -15,7 +17,57 @@ type StudentClass = {
   classDays: string | null;
   classTime: string | null;
   progress: number;
+  progressHasEvidence: boolean;
+  totalLessons: number;
+  completedLessons: number;
+  totalActivities: number;
+  completedActivities: number;
 };
+
+function StudentInternalClassCard({ item }: { item: StudentClass }) {
+  const previousProgress = useRef<number | null>(null);
+  const [celebrating, setCelebrating] = useState(false);
+
+  useEffect(() => {
+    const previous = previousProgress.current;
+    previousProgress.current = item.progress;
+    if (!shouldCelebrateProgress(previous, item.progress, item.progressHasEvidence)) return;
+
+    setCelebrating(true);
+    const timeout = window.setTimeout(() => setCelebrating(false), 900);
+    return () => window.clearTimeout(timeout);
+  }, [item.progress, item.progressHasEvidence]);
+
+  const visibleProgress = item.progressHasEvidence ? item.progress : 0;
+
+  return (
+    <article className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-xs font-black uppercase tracking-wider text-red-600">{item.courseLevel} · {item.academicTerm}</span>
+          <h2 className="mt-1 text-lg font-black text-foreground">{item.offerName}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{item.courseTitle}{item.institution ? ` · ${item.institution}` : ""}</p>
+        </div>
+        <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{item.status === "published" ? "Ativa" : "Em preparação"}</span>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5"><Users size={14} aria-hidden="true" /> Sua turma</span>
+        <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} aria-hidden="true" /> {item.classDays || "Agenda a definir"}{item.classTime ? ` · ${item.classTime}` : ""}</span>
+        <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} aria-hidden="true" /> {item.modality || "Modalidade a definir"}</span>
+      </div>
+      <div className="mt-5">
+        <div className="flex items-center justify-between text-xs font-bold"><span className="text-muted-foreground">Progresso no curso</span><span className="text-foreground">{item.progressHasEvidence ? `${item.progress}%` : "Sem dados"}</span></div>
+        <div className={`relative mt-2 h-2 overflow-visible rounded-full bg-muted ${celebrating ? "progress-completion-celebrate" : ""}`} role="progressbar" aria-label={`Progresso de ${item.offerName}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={visibleProgress}>
+          <div className={`h-full rounded-full transition-[width] duration-500 ease-out ${item.progressHasEvidence ? "bg-red-600" : "bg-muted-foreground/30"}`} style={{ width: `${visibleProgress}%` }} />
+          {celebrating && <span className="progress-completion-glint" aria-hidden="true" />}
+        </div>
+        {celebrating && <p className="mt-2 text-xs font-bold text-emerald-700 dark:text-emerald-300" role="status">Progresso atualizado após uma nova conclusão.</p>}
+        {!celebrating && <p className="mt-2 text-xs text-muted-foreground">{item.progressHasEvidence ? `${item.completedLessons}/${item.totalLessons} aulas e ${item.completedActivities}/${item.totalActivities} atividades concluídas.` : "Ainda não há aulas ou atividades com evidência de progresso."}</p>}
+      </div>
+      <Link href={`/dashboard/cursos/${item.id}`} className="mt-5 inline-flex text-sm font-bold text-red-600 hover:underline">Acessar curso</Link>
+    </article>
+  );
+}
 
 export function StudentInternalClasses({ classes }: { classes: StudentClass[] }) {
   return (
@@ -29,28 +81,7 @@ export function StudentInternalClasses({ classes }: { classes: StudentClass[] })
         </div>
       ) : (
         <div className="grid gap-4 lg:grid-cols-2">
-          {classes.map((item) => (
-            <article key={item.id} className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-red-600">{item.courseLevel} · {item.academicTerm}</span>
-                  <h2 className="mt-1 text-lg font-black text-foreground">{item.offerName}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.courseTitle}{item.institution ? ` · ${item.institution}` : ""}</p>
-                </div>
-                <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">{item.status === "published" ? "Ativa" : "Em preparação"}</span>
-              </div>
-              <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><Users size={14} aria-hidden="true" /> Sua turma</span>
-                <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} aria-hidden="true" /> {item.classDays || "Agenda a definir"}{item.classTime ? ` · ${item.classTime}` : ""}</span>
-                <span className="inline-flex items-center gap-1.5"><CheckCircle2 size={14} aria-hidden="true" /> {item.modality || "Modalidade a definir"}</span>
-              </div>
-              <div className="mt-5">
-                <div className="flex items-center justify-between text-xs font-bold"><span className="text-muted-foreground">Progresso no curso</span><span className="text-foreground">{item.progress}%</span></div>
-                <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-red-600 transition-all" style={{ width: `${item.progress}%` }} /></div>
-              </div>
-              <Link href={`/dashboard/cursos/${item.id}`} className="mt-5 inline-flex text-sm font-bold text-red-600 hover:underline">Acessar curso</Link>
-            </article>
-          ))}
+          {classes.map((item) => <StudentInternalClassCard key={item.id} item={item} />)}
         </div>
       )}
     </section>
