@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth/next";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, inArray, or } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { courseOfferStudents, courseOffers, courses, users } from "@/drizzle/schema";
+import { activities, courseOfferStudents, courseOffers, courses, lessonProgress, lessons, modules, userActivityProgress, users } from "@/drizzle/schema";
 import { StudentInternalClasses, type StudentClass } from "@/components/student-internal-classes";
 import { Layers3, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { calculateInternalClassProgress } from "@/lib/internal-class-progress";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Minhas turmas internas | Anderson Palafoz", description: "Consulte suas turmas internas, agenda e progresso." };
@@ -27,7 +28,16 @@ export default async function StudentInternalClassesPage() {
     if (!offer) continue;
     const course = await db.query.courses.findFirst({ where: eq(courses.id, offer.courseId) });
     if (!course) continue;
-    classes.push({ id: offer.id, offerName: offer.offerName, academicTerm: offer.academicTerm, courseTitle: course.title, courseLevel: course.level, institution: offer.institution, status: offer.status, modality: offer.modality, classDays: offer.classDays, classTime: offer.classTime, progress: 0 });
+      const courseModules = await db.query.modules.findMany({ where: eq(modules.courseId, course.id), columns: { id: true } });
+    const moduleIds = courseModules.map((module) => module.id);
+    const courseLessons = moduleIds.length ? await db.query.lessons.findMany({ where: inArray(lessons.moduleId, moduleIds), columns: { id: true } }) : [];
+    const lessonIds = courseLessons.map((lesson) => lesson.id);
+    const completedLessons = lessonIds.length ? await db.query.lessonProgress.findMany({ where: and(eq(lessonProgress.userId, user.id), inArray(lessonProgress.lessonId, lessonIds), eq(lessonProgress.completed, 1)), columns: { id: true } }) : [];
+    const courseActivities = await db.query.activities.findMany({ where: and(eq(activities.courseId, course.id), or(isNull(activities.offerId), eq(activities.offerId, offer.id))), columns: { id: true } });
+    const activityIds = courseActivities.map((activity) => activity.id);
+    const completedActivities = activityIds.length ? await db.query.userActivityProgress.findMany({ where: and(eq(userActivityProgress.userId, user.id), inArray(userActivityProgress.activityId, activityIds), eq(userActivityProgress.status, "completed")), columns: { id: true } }) : [];
+    const progress = calculateInternalClassProgress({ totalLessons: lessonIds.length, completedLessons: completedLessons.length, totalActivities: activityIds.length, completedActivities: completedActivities.length });
+    classes.push({ id: offer.id, offerName: offer.offerName, academicTerm: offer.academicTerm, courseTitle: course.title, courseLevel: course.level, institution: offer.institution, status: offer.status, modality: offer.modality, classDays: offer.classDays, classTime: offer.classTime, progress: progress.percentage, progressHasEvidence: progress.hasEvidence, totalLessons: progress.totalLessons, completedLessons: progress.completedLessons, totalActivities: progress.totalActivities, completedActivities: progress.completedActivities });
   }
 
   return (

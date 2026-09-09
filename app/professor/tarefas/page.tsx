@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, type FormEvent } from "react";
+import { useEffect, useState, useMemo, useCallback, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckSquare, Calendar, Loader2, Filter, Trash2, AlertTriangle, Edit3, GripVertical, Moon, Sun, Save, Search, Download, FileText, CheckCircle2, Circle, Link2, Paperclip, ChevronDown, ChevronUp, Copy } from "lucide-react";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { buildWhatsAppMessageLink, buildDeadlineReminderText } from "@/lib/notifications-helper";
 import { createTablePdf, downloadPdf } from "@/lib/pdf-export";
+import { buildTasksCsv, getTasksExportFilename, TASK_EXPORT_HEADERS, type TaskExportRow } from "@/lib/task-export";
 
 interface SubTask {
   id: string;
@@ -105,6 +106,7 @@ export default function TeacherTasksPage() {
 
   const [darkMode, setDarkMode] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [exportingFormat, setExportingFormat] = useState<"csv" | "pdf" | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -115,7 +117,7 @@ export default function TeacherTasksPage() {
     tag: "Gramática",
   });
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setLoadError(null);
@@ -150,16 +152,23 @@ export default function TeacherTasksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [taskEndpoint]);
 
   useEffect(() => {
-    void fetchData();
-  }, [taskEndpoint]);
+    const timer = window.setTimeout(() => {
+      void fetchData();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchData]);
 
   useEffect(() => {
     if (!offerId) return;
     const selectedOffer = offers.find((offer) => String(offer.id) === offerId);
-    if (selectedOffer) setFormData((current) => ({ ...current, courseId: String(selectedOffer.courseId) }));
+    if (!selectedOffer) return;
+    const timer = window.setTimeout(() => {
+      setFormData((current) => ({ ...current, courseId: String(selectedOffer.courseId) }));
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [offerId, offers]);
 
   const toggleCardExpand = (id: number) => {
@@ -311,51 +320,15 @@ export default function TeacherTasksPage() {
     }
   };
 
-  const exportToCSV = () => {
-    if (activitiesList.length === 0) {
-      toast.error("Não há tarefas para exportar.");
-      return;
-    }
-    const headers = ["ID", "Titulo", "Tipo", "Curso", "Prazo", "Etiqueta"];
-    const rows = activitiesList.map((a) => [
-      a.id,
-      `"${(a.title || "").replace(/"/g, '""')}"`,
-      a.type,
-      `"${(a.course?.title || "Geral").replace(/"/g, '""')}"`,
-      a.dueDate ? new Date(a.dueDate).toLocaleString("pt-BR") : "Sem prazo",
-      a.tag || "Nenhuma",
-    ]);
-
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `tarefas_anderson_palafoz_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Lista exportada para CSV com sucesso!");
-  };
-
-  const exportToPDF = async () => {
-    if (activitiesList.length === 0) {
-      toast.error("Não há tarefas para exportar.");
-      return;
-    }
-    try {
-      const bytes = await createTablePdf("Relatório de tarefas — Anderson Palafoz", ["Título", "Curso", "Prazo", "Status", "Etiqueta"], activitiesList.map((activity) => [
-        activity.title,
-        activity.course?.title || "Geral",
-        activity.dueDate ? new Date(activity.dueDate).toLocaleString("pt-BR") : "Sem prazo",
-        activity.status === "completed" ? "Concluída" : "Pendente",
-        activity.tag || "Nenhuma",
-      ]));
-      downloadPdf(bytes, `tarefas-anderson-palafoz-${Date.now()}.pdf`);
-      toast.success("Lista exportada para PDF com sucesso!");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível gerar o PDF.");
-    }
-  };
+  const toExportRow = (activity: Activity): TaskExportRow => ({
+    id: activity.id,
+    title: activity.title,
+    type: activity.type,
+    course: activity.course?.title || "Geral",
+    dueDate: activity.dueDate ? new Date(activity.dueDate).toLocaleString("pt-BR") : "Sem prazo",
+    status: activity.status === "completed" ? "Concluída" : "Pendente",
+    tag: activity.tag || "Nenhuma",
+  });
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -429,6 +402,40 @@ export default function TeacherTasksPage() {
     return list;
   }, [activitiesList, searchQuery, filterStatus, selectedTagFilter, sortBy]);
 
+  const exportRows = filteredActivities.map(toExportRow);
+
+  const exportToCSV = () => {
+    if (exportRows.length === 0) {
+      toast.error("Não há tarefas visíveis para exportar com os filtros atuais.");
+      return;
+    }
+    const blob = new Blob([buildTasksCsv(exportRows)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = getTasksExportFilename("csv", { offerId, classId });
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast.success(`${exportRows.length} tarefa(s) exportada(s) para CSV.`);
+  };
+
+  const exportToPDF = async () => {
+    if (exportRows.length === 0) {
+      toast.error("Não há tarefas visíveis para exportar com os filtros atuais.");
+      return;
+    }
+    setExportingFormat("pdf");
+    try {
+      const bytes = await createTablePdf("Relatório de tarefas — Anderson Palafoz", TASK_EXPORT_HEADERS as unknown as string[], exportRows.map((row) => [row.id, row.title, row.type, row.course, row.dueDate, row.status, row.tag]));
+      downloadPdf(bytes, getTasksExportFilename("pdf", { offerId, classId }));
+      toast.success(`${exportRows.length} tarefa(s) exportada(s) para PDF.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível gerar o PDF.");
+    } finally {
+      setExportingFormat(null);
+    }
+  };
+
   const totalCount = activitiesList.length;
   const completedCount = activitiesList.filter((a) => a.status === "completed").length;
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
@@ -457,15 +464,17 @@ export default function TeacherTasksPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={exportToCSV}
-              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
+              disabled={exportingFormat !== null}
+              className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
             >
               <Download size={14} /> Exportar CSV
             </button>
             <button
               onClick={exportToPDF}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
+              disabled={exportingFormat !== null}
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
             >
-              <FileText size={14} /> Exportar PDF
+              <FileText size={14} /> {exportingFormat === "pdf" ? "Gerando PDF…" : "Exportar PDF"}
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}

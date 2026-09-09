@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquare, BarChart3, Loader2, ExternalLink, CheckCircle2, AlertCircle, Award, Mic2, Users } from "lucide-react";
 import { toast } from "sonner";
@@ -33,27 +33,35 @@ export function ProfessorSummaryDashboard() {
   const [classes, setClasses] = useState<ClassAverage[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSummary = async () => {
+  const loadSummary = useCallback(async (signal?: AbortSignal) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch("/api/professor/resumo", { cache: "no-store" });
+      const res = await fetch("/api/professor/resumo", { cache: "no-store", signal });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Erro ao carregar resumo do professor.");
-      setQuestions(data.pendingQuestions || []);
-      setClasses(data.classAverages || []);
+      if (!signal?.aborted) {
+        setQuestions(data.pendingQuestions || []);
+        setClasses(data.classAverages || []);
+      }
     } catch (err) {
+      if (signal?.aborted) return;
       const message = err instanceof Error ? err.message : "Falha ao carregar painel de resumo.";
       setError(message);
       toast.error(message);
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    void loadSummary();
-  }, []);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadSummary(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [loadSummary]);
 
   if (loading) {
     return (

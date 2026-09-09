@@ -77,6 +77,20 @@ describe("navegação lateral unificada", () => {
     expect(profilePage).toContain("Ver minhas medalhas e emblemas");
   });
 
+  it("mantém a moldura do painel na altura integral da janela no desktop", () => {
+    expect(shell).toContain("md:h-[100dvh] md:overflow-hidden");
+    expect(shell).toContain("h-[100dvh] w-72");
+    expect(shell).toContain("md:rounded-r-2xl");
+  });
+
+  it("oferece retorno explícito à página inicial no cabeçalho mobile", () => {
+    expect(shell).toContain('href="/"');
+    expect(shell).toContain('aria-label="Voltar para a página inicial do site"');
+    expect(shell).toContain('title="Página inicial do site"');
+    expect(shell).toContain('>\n            Ver site\n          </Link>');
+    expect(shell).toContain('className="dashboard-topbar flex items-center justify-between');
+  });
+
   it("expõe o menu completo na barra inferior sem duplicar atalhos nem ampliar permissões", () => {
     expect(shell).toContain("const mobileOverflowItems = allNavItems.filter");
     expect(shell).toContain('aria-label="Abrir todas as funções disponíveis"');
@@ -84,5 +98,16 @@ describe("navegação lateral unificada", () => {
     expect(shell).toContain("setSidebarOpen(true)");
     expect(shell).toContain("teacherNavItems[4]");
     expect(shell).toContain("superadminNavItems[2]");
+  });
+
+  it("oferece o menu principal público dentro do drawer mobile do dashboard", () => {
+    expect(shell).toContain("const publicNavItems");
+    expect(shell).toContain('aria-label="Menu principal do site"');
+    expect(shell).toContain("Acesse as páginas públicas sem sair do painel.");
+    expect(shell).toContain('href: "/sobre", label: "Sobre"');
+    expect(shell).toContain('href: "/cursos", label: "Cursos"');
+    expect(shell).toContain('href: "/materiais", label: "Materiais"');
+    expect(shell).toContain('href: "/blog", label: "Blog"');
+    expect(shell).toContain('href: "/contato", label: "Contato"');
   });
 });

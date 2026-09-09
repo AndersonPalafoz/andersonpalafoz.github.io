@@ -49,52 +49,65 @@ export function CertificateStandardManager() {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  const fetchCertificates = async () => {
+  const fetchCertificates = async (signal?: AbortSignal) => {
     setIsLoadingList(true);
     setListError(null);
     try {
-      const res = await fetch("/api/admin/certificates/issue", { cache: "no-store" });
+      const res = await fetch("/api/admin/certificates/issue", { cache: "no-store", signal });
       const data = await res.json();
+      if (signal?.aborted) return;
       if (!res.ok) throw new Error(data.error || "Não foi possível carregar os certificados.");
       setIssuedCertificates(Array.isArray(data.certificates) ? data.certificates : []);
     } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
       console.error("Erro ao carregar certificados", e);
       setListError(e instanceof Error ? e.message : "Não foi possível carregar os certificados.");
     } finally {
-      setIsLoadingList(false);
+      if (!signal?.aborted) setIsLoadingList(false);
     }
   };
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/admin/certificate-templates");
+      const res = await fetch("/api/admin/certificate-templates", { signal });
       const data = await res.json();
-      if (res.ok && data.templates) {
-        setTemplates(data.templates);
-      }
+      if (!signal?.aborted && res.ok && data.templates) setTemplates(data.templates);
     } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
       console.error("Erro ao carregar templates", e);
     }
   };
 
   useEffect(() => {
-    fetchCertificates();
-    fetchTemplates();
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      void fetchCertificates(controller.signal);
+      void fetchTemplates(controller.signal);
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
-    setStudentName(sampleData.studentName);
-    setCourseTitle(sampleData.courseTitle);
-    setLevel(sampleData.level);
-    setWorkloadHours(sampleData.workloadHours.replace(/\\D/g, "") || "40");
+    const timer = window.setTimeout(() => {
+      setStudentName(sampleData.studentName);
+      setCourseTitle(sampleData.courseTitle);
+      setLevel(sampleData.level);
+      setWorkloadHours(sampleData.workloadHours.replace(/\\D/g, "") || "40");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [sampleData]);
 
   useEffect(() => {
-    setSelectedTemplateId(workspaceTemplateId);
+    const timer = window.setTimeout(() => setSelectedTemplateId(workspaceTemplateId), 0);
+    return () => window.clearTimeout(timer);
   }, [workspaceTemplateId]);
 
   useEffect(() => {
-    setIncludeBranding(workspaceBranding);
+    const timer = window.setTimeout(() => setIncludeBranding(workspaceBranding), 0);
+    return () => window.clearTimeout(timer);
   }, [workspaceBranding]);
 
   const handleDeleteCertificate = async (id: number) => {
@@ -180,7 +193,8 @@ export function CertificateStandardManager() {
   };
 
   useEffect(() => {
-    setPage(1);
+    const timer = window.setTimeout(() => setPage(1), 0);
+    return () => window.clearTimeout(timer);
   }, [searchTerm, statusFilter, sortOrder]);
 
   const activeTemplate = templates.find((t: any) => String(t.id) === selectedTemplateId);
@@ -202,7 +216,9 @@ export function CertificateStandardManager() {
   const visibleCertificates = filteredCertificates.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => {
-    if (page > totalPages) setPage(totalPages);
+    if (page <= totalPages) return;
+    const timer = window.setTimeout(() => setPage(totalPages), 0);
+    return () => window.clearTimeout(timer);
   }, [page, totalPages]);
 
   const handleGenerateOfficial = async (e: React.FormEvent) => {
@@ -250,7 +266,24 @@ export function CertificateStandardManager() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="relative space-y-6">
+      {(isGenerating || isBulkExporting) && (
+        <div className="pointer-events-none sticky top-3 z-30 overflow-hidden rounded-2xl border border-red-200/80 bg-card/95 px-4 py-3 shadow-lg shadow-red-900/10 backdrop-blur animate-in fade-in slide-in-from-top-2 duration-200 dark:border-red-900/60" role="status" aria-live="polite">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 dark:bg-red-950/50 dark:text-red-300">
+              <Loader2 size={18} className="animate-spin" aria-hidden="true" />
+              <span className="absolute inset-0 rounded-xl bg-red-400/10 animate-pulse" aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black text-foreground">{isGenerating ? "Gerando certificado oficial" : "Preparando exportação dos certificados"}</p>
+              <p className="text-[11px] text-muted-foreground">O arquivo está sendo preparado. Não feche esta página.</p>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-red-100 dark:bg-red-950/60">
+                <div className="h-full w-2/5 rounded-full bg-red-600 transition-transform duration-700 ease-out animate-[loading-progress_1.4s_ease-in-out_infinite]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <Card className="overflow-hidden rounded-[2rem] border-border/70 bg-card shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
         <CardHeader className="border-b border-red-200/70 bg-[radial-gradient(circle_at_top_right,rgba(214,40,40,0.12),transparent_36%),linear-gradient(135deg,rgba(254,242,242,0.92),rgba(255,255,255,0.98))] pb-5 pt-6 sm:px-7 dark:border-red-900/50 dark:bg-red-950/20">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -603,7 +636,7 @@ export function CertificateStandardManager() {
                   <tr>
                     <td colSpan={7} className="py-8 text-center">
                       <p className="text-sm font-semibold text-red-700 dark:text-red-300">{listError}</p>
-                      <Button type="button" variant="outline" onClick={fetchCertificates} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
+                      <Button type="button" variant="outline" onClick={() => void fetchCertificates()} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
                     </td>
                   </tr>
                 ) : filteredCertificates.length === 0 ? (
@@ -663,7 +696,7 @@ export function CertificateStandardManager() {
             ) : listError ? (
               <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-center dark:border-red-900/60 dark:bg-red-950/20">
                 <p className="text-sm font-semibold text-red-700 dark:text-red-300">{listError}</p>
-                <Button type="button" variant="outline" onClick={fetchCertificates} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
+                <Button type="button" variant="outline" onClick={() => void fetchCertificates()} className="mt-3 gap-2 text-xs"><RotateCcw size={14} /> Tentar novamente</Button>
               </div>
             ) : visibleCertificates.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Nenhum certificado encontrado com esses filtros.</div>

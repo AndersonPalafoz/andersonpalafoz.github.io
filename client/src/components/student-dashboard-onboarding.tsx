@@ -30,10 +30,12 @@ export function StudentDashboardOnboarding() {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
-    const dismissed = localStorage.getItem("ap_onboarding_dismissed");
-    if (!dismissed) {
-      setShow(true);
-    }
+    const timer = window.setTimeout(() => {
+      const dismissed = localStorage.getItem("ap_onboarding_dismissed");
+      if (!dismissed) setShow(true);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
   const handleDismiss = () => {

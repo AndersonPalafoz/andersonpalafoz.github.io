@@ -39,11 +39,14 @@ export function CertificateGrapesPrototype() {
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
-    setStudentName(sampleData.studentName);
-    setStudentCpf(sampleData.studentCpf);
-    setCourseTitle(sampleData.courseTitle);
-    setWorkload(sampleData.workloadHours);
-    setPeriod(sampleData.period);
+    const timer = window.setTimeout(() => {
+      setStudentName(sampleData.studentName);
+      setStudentCpf(sampleData.studentCpf);
+      setCourseTitle(sampleData.courseTitle);
+      setWorkload(sampleData.workloadHours);
+      setPeriod(sampleData.period);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [sampleData]);
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

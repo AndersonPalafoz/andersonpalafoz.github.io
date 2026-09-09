@@ -18,22 +18,28 @@ export function RealtimeNotifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/notifications");
-      if (!res.ok) return;
+      if (signal?.aborted) return;
+      const res = await fetch("/api/notifications", { signal });
+      if (!res.ok || signal?.aborted) return;
       const data = await res.json();
       const list = data.notifications || data.items || [];
-      setNotifications(list);
+      if (!signal?.aborted) setNotifications(list);
     } catch (err) {
-      console.error("Error fetching notifications:", err);
+      if (!signal?.aborted) console.error("Error fetching notifications:", err);
     }
   };
 
   useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 10000); // Polling a cada 10s para dados em tempo real
-    return () => clearInterval(interval);
+    const controller = new AbortController();
+    const initialTimer = window.setTimeout(() => { void fetchNotifications(controller.signal); }, 0);
+    const interval = window.setInterval(() => { void fetchNotifications(controller.signal); }, 10000);
+    return () => {
+      window.clearTimeout(initialTimer);
+      window.clearInterval(interval);
+      controller.abort();
+    };
   }, []);
 
   const unreadCount = notifications.filter((n) => !n.isRead && !n.readAt).length;

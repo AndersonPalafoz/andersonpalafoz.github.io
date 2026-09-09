@@ -24,18 +24,22 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | "all" | "clear" | null>(null);
 
-  const load = async () => {
-    try {
-      const response = await fetch("/api/notifications", { cache: "no-store" });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as notificações.");
-      setItems(payload.notifications || []);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao carregar notificações.");
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/notifications", { cache: "no-store" });
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as notificações.");
+        if (!cancelled) setItems(payload.notifications || []);
+      } catch (error) {
+        if (!cancelled) toast.error(error instanceof Error ? error.message : "Erro ao carregar notificações.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const markRead = async (id?: number) => {
     setBusyId(id ?? "all");

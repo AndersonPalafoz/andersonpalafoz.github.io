@@ -63,8 +63,11 @@ function PaymentSuccessContent() {
 
   useEffect(() => {
     const controller = new AbortController();
-    void confirmPayment(controller.signal);
-    return () => controller.abort();
+    const timer = window.setTimeout(() => { void confirmPayment(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [confirmPayment]);
 
   if (loading) {

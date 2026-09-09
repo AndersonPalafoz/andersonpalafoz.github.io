@@ -15,21 +15,23 @@ export function SavedMaterialsSection() {
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<number | null>(null);
 
-  async function load() {
-    try {
-      const response = await fetch("/api/materials/saved", { cache: "no-store" });
-      if (response.status === 401) return;
-      if (!response.ok) throw new Error("Não foi possível carregar os materiais salvos.");
-      const data = await response.json();
-      setItems(data.items || []);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erro ao carregar materiais salvos.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch("/api/materials/saved", { cache: "no-store" });
+        if (response.status === 401) return;
+        if (!response.ok) throw new Error("Não foi possível carregar os materiais salvos.");
+        const data = await response.json();
+        if (!cancelled) setItems(data.items || []);
+      } catch (error) {
+        if (!cancelled) toast.error(error instanceof Error ? error.message : "Erro ao carregar materiais salvos.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function remove(materialId: number) {
     setRemoving(materialId);

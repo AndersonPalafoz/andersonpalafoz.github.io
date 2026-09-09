@@ -34,26 +34,40 @@ export default function ProfessorAlunosPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
 
-  const loadStudents = async () => {
+  const loadStudents = async (signal?: AbortSignal) => {
     try {
+      if (signal?.aborted) return;
       setLoading(true);
       const params = new URLSearchParams();
       if (offerId) params.set("offerId", offerId);
       if (classId) params.set("classId", classId);
-      const response = await fetch(`/api/professor/students${params.toString() ? `?${params}` : ""}`, { cache: "no-store" });
+      const response = await fetch(`/api/professor/students${params.toString() ? `?${params}` : ""}`, { cache: "no-store", signal });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Falha ao carregar alunos");
-      setStudents(data.students || []);
-      setContext(data.context || null);
-      setError(null);
+      if (!signal?.aborted) {
+        setStudents(data.students || []);
+        setContext(data.context || null);
+        setError(null);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar alunos");
+      if (!signal?.aborted) {
+        const message = err instanceof Error ? err.message : "Falha ao carregar alunos";
+        setError(message);
+        toast.error("Não foi possível carregar os alunos.", { description: message });
+      }
     } finally {
-      setLoading(false);
+      if (!signal?.aborted) setLoading(false);
     }
   };
 
-  useEffect(() => { void loadStudents(); }, [offerId, classId]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => { void loadStudents(controller.signal); }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [offerId, classId]);
 
   const review = async (userId: number, action: "approve" | "reject") => {
     try {

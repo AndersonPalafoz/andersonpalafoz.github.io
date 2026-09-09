@@ -21,13 +21,29 @@ export function MediaPlayer({ type, url, title, lessonId, onCompleteLesson }: Me
   const [notesSaving, setNotesSaving] = useState(false);
 
   useEffect(() => {
-    if (!lessonId) { setNotesLoading(false); return; }
-    let cancelled = false;
-    fetch(`/api/media-notes?lessonId=${lessonId}`, { cache: "no-store" })
-      .then(async (response) => { const payload = await response.json(); if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as anotações."); if (!cancelled) setNotes(payload.notes || []); })
-      .catch(() => { if (!cancelled) toast.error("Não foi possível carregar as anotações persistidas."); })
-      .finally(() => { if (!cancelled) setNotesLoading(false); });
-    return () => { cancelled = true; };
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      if (!lessonId) {
+        setNotesLoading(false);
+        return;
+      }
+      void (async () => {
+        try {
+          const response = await fetch(`/api/media-notes?lessonId=${lessonId}`, { cache: "no-store", signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Não foi possível carregar as anotações.");
+          if (!controller.signal.aborted) setNotes(payload.notes || []);
+        } catch {
+          if (!controller.signal.aborted) toast.error("Não foi possível carregar as anotações persistidas.");
+        } finally {
+          if (!controller.signal.aborted) setNotesLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, [lessonId]);
 
   const handleTimeUpdate = () => { if (mediaRef.current) setCurrentTime(mediaRef.current.currentTime); };

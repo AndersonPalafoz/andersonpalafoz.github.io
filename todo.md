@@ -2731,3 +2731,166 @@ Antes de iniciar uma atividade, leia o [Quadro compartilhado](./docs/SHARED-WORK
 - [x] Comparar a base reconciliada com o último estado local validado e confirmar que nenhum arquivo de estilo estava ausente.
 - [x] Reiniciar a prévia para recuperar os estilos transitórios, sem alterar dados, permissões ou fluxos de autenticação.
 - [x] Revalidar formulário, responsividade móvel, testes, TypeScript, build, integridade do diff e referência da main.
+
+## Separação estrutural entre Turmas Internas e Externas — 27/08/2026
+- [x] Auditar como `course_offers`/matrículas internas e `external_classes`/alunos externos coexistem atualmente.
+- [x] Definir fronteiras explícitas de dados, ciclo acadêmico, acesso, notas, presença, atividades e progresso entre os dois domínios.
+- [x] Implementar isolamento e rotulagem claros sem apagar, migrar automaticamente ou alterar dados acadêmicos existentes.
+- [x] Validar APIs, telas, navegação, responsividade, testes, TypeScript, build e integridade do diff.
+
+## Correção da regressão de Speed Insights — 27/08/2026
+- [x] Corrigir a importação de `@vercel/speed-insights/next` ausente na base reconciliada reinstalando as dependências já declaradas no lockfile.
+- [x] Reexecutar testes focados, TypeScript, build e validação da prévia antes de substituir o checkpoint anterior.
+
+## Progresso real nas turmas internas — 27/08/2026
+- [x] Mapear as fontes reais de aulas, atividades, conclusão e matrículas internas, sem usar percentuais fictícios.
+- [x] Definir e testar uma fórmula transparente de progresso por turma compatível com dados legados.
+- [x] Exibir barras de progresso acessíveis, responsivas e com estado claro quando ainda não houver aulas ou registros suficientes.
+- [x] Validar precisão, testes focados, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Pacote completo de Turmas Internas — 27/08/2026
+- [x] Criar fluxo explícito de criação de turma interna, sem encaminhamento ambíguo para cursos.
+- [x] Organizar detalhe em abas responsivas de visão geral, alunos, sessões, presença, atividades e progresso.
+- [x] Diferenciar visualmente ações de professor, administrador e superadministrador sem ampliar permissões reais.
+- [x] Integrar dados existentes de presença, atividades e progresso com consultas eficientes e sem duplicação.
+- [x] Validar mobile, acessibilidade, testes focados, TypeScript, build e integridade do diff antes do checkpoint.
+
+## Correção da prévia do pacote de Turmas Internas
+- [x] Restaurar o arquivo `lib/internal-class-progress.test.ts` exigido pelo rastreamento do Tailwind e pela validação do progresso.
+- [x] Reiniciar e validar a prévia, testes focados, TypeScript, build e screenshots responsivos após a restauração.
+
+## Sessões, presença e feedback animado nas Turmas Internas — 07/09/2026
+- [x] Carregar e exibir sessões reais na aba de sessões do detalhe da turma interna.
+- [x] Carregar e exibir registros reais de presença, totais e estados por aluno na aba de presença.
+- [x] Adicionar feedback visual animado e acessível quando o progresso aumentar após uma nova lição ou atividade concluída.
+- [x] Validar permissões, responsividade, testes focados, TypeScript e build antes do checkpoint.
+
+## Correção incremental de lint React Hooks — 07/09/2026
+- [x] Mapear e classificar os erros `react-hooks/set-state-in-effect` registrados na TASK-005; o lint atual encontrou 58 inicialmente, com 55 restantes após o primeiro lote.
+- [x] Corrigir o primeiro lote seguro sem alterar comportamento funcional em `components/saved-materials-section.tsx`, `app/dashboard/notificacoes/page.tsx` e `components/teacher-zip-history.tsx`.
+- [x] Reexecutar lint, testes, TypeScript e build; os testes focados, TypeScript e build passaram, enquanto o lint ficou com 55 erros `react-hooks/set-state-in-effect` restantes.
+- [x] Atualizar a TASK-005 no workboard e salvar checkpoint do lote validado.
+
+## Segundo lote de lint: efeitos com chamadas de rede — 07/09/2026
+- [x] Mapear os efeitos restantes que carregam dados por rede e classificar dependências/cancelamento.
+- [x] Refatorar o próximo lote de carregamentos de rede sem alterar contratos ou comportamento funcional em `components/material-comments-section.tsx` e `components/professor-summary-dashboard.tsx`.
+- [x] Reexecutar lint, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint específico passou e o global caiu de 55 para 53 ocorrências.
+- [x] Atualizar a TASK-005 no workboard e salvar checkpoint do lote.
+
+## Terceiro lote de lint: efeitos de rede restantes — 07/09/2026
+- [x] Mapear os efeitos restantes que fazem chamadas de rede e selecionar o próximo lote de baixo risco.
+- [x] Refatorar os carregamentos de rede selecionados com cancelamento e dependências estáveis em `components/media-player.tsx`, `components/profile-medals-gallery.tsx` e `components/weekly-progress-chart.tsx`.
+- [x] Reexecutar lint, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint global caiu de 53 para 50 ocorrências.
+- [x] Atualizar a TASK-005 e salvar checkpoint do lote validado.
+
+## Lint global e próximo lote de efeitos de rede — 07/09/2026
+- [x] Executar o lint global completo e registrar a contagem atual: 68 erros, 41 avisos e 50 ocorrências de `react-hooks/set-state-in-effect` antes do novo lote.
+- [x] Mapear e corrigir o próximo lote seguro de efeitos com chamadas de rede em `app/admin/relatorios/page.tsx` e `app/dashboard/metas-semanais.tsx`.
+- [x] Reexecutar lint, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint global caiu de 50 para 48 ocorrências e permanece com 66 erros e 41 avisos totais.
+- [x] Atualizar a TASK-005 e salvar checkpoint do lote validado.
+
+## Próximo lote de efeitos de rede — 07/09/2026
+- [x] Mapear o inventário atualizado do lint e selecionar efeitos de rede de baixo risco; o estado inicial foi de 66 erros, 41 avisos e 48 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Refatorar os efeitos selecionados com cancelamento e dependências estáveis em `app/admin/reviews/page.tsx` e `app/admin/relatorios-academicos/page.tsx`.
+- [x] Executar lint global, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint caiu para 64 erros, 40 avisos e 46 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Atualizar a TASK-005 e salvar o checkpoint validado.
+
+## Skeletons, toasts e próximo lote de lint — 07/09/2026
+- [x] Adicionar skeletons responsivos às páginas administrativas de reviews e relatórios acadêmicos.
+- [x] Padronizar toasts de erro amigáveis para falhas de rede nas páginas administrativas recém-atualizadas.
+- [x] Mapear e corrigir o próximo lote de efeitos de rede restantes do lint em `app/admin/usuarios/page.tsx`, removendo também um efeito síncrono de paginação.
+- [x] Executar lint global, testes, TypeScript e build; o lint caiu de 46 para 44 ocorrências de `react-hooks/set-state-in-effect`, com 62 erros e 40 avisos totais; testes focados, TypeScript e build passaram.
+- [x] Atualizar a TASK-005 e salvar checkpoint da entrega.
+
+## Próximo lote de efeitos de rede — 07/09/2026
+- [x] Mapear o inventário atualizado do lint e selecionar efeitos de rede de baixo risco; o estado inicial foi de 62 erros, 40 avisos e 44 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Refatorar os efeitos selecionados com cancelamento e dependências estáveis em `app/dashboard/calendario/page.tsx` e `app/dashboard/compras/page.tsx`.
+- [x] Executar lint global, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint caiu para 60 erros, 40 avisos e 42 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Atualizar a TASK-005 e salvar o checkpoint validado.
+
+## Validação móvel e próximo lote de rede — 07/09/2026
+- [x] Validar reviews e relatórios acadêmicos em 320px, 375px e 414px, incluindo skeletons e toasts; as rotas protegidas redirecionaram ao login sem sessão autenticada, e o fluxo de login não apresentou overflow nas três larguras.
+- [x] Corrigir eventuais problemas responsivos encontrados sem alterar dados acadêmicos; nenhum problema visual foi identificado no fluxo acessível, permanecendo pendente a validação autenticada dos estados internos.
+- [x] Mapear e corrigir o próximo lote de efeitos de rede restantes do lint em `app/professor/alunos/page.tsx`, com cancelamento seguro e toast de erro.
+- [x] Executar lint global, testes, TypeScript e build; o lint caiu de 42 para 41 ocorrências de `react-hooks/set-state-in-effect`, com 59 erros e 40 avisos totais; testes focados, TypeScript e build passaram.
+- [x] Atualizar a TASK-005 e salvar checkpoint da entrega.
+
+## Próximo lote de estabilidade de hooks — 07/09/2026
+- [x] Mapear o inventário atual do lint e selecionar os próximos casos seguros; o estado inicial foi de 59 erros, 40 avisos e 41 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Refatorar os efeitos selecionados sem alterar comportamento ou contratos de rede em `components/internal-class-detail.tsx` e `app/professor/speaking/page.tsx`, com cancelamento por `AbortController`.
+- [x] Executar lint, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint caiu para 57 erros, 40 avisos e 39 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Atualizar a TASK-005 e salvar o checkpoint validado.
+
+## Próximo lote de hooks e sincronização com main — 07/09/2026
+- [x] Mapear o inventário atual de `react-hooks/set-state-in-effect` e selecionar os próximos casos seguros; o estado inicial foi de 57 erros, 40 avisos e 39 ocorrências.
+- [x] Refatorar os efeitos selecionados sem alterar comportamento funcional no polling de `client/src/components/realtime-notifications.tsx`, com AbortController e limpeza do intervalo.
+- [x] Executar lint, testes, TypeScript e build; testes focados, TypeScript e build passaram; o lint caiu para 56 erros, 40 avisos e 38 ocorrências de `react-hooks/set-state-in-effect`.
+- [x] Atualizar a TASK-005 e o workboard compartilhado.
+- [x] Salvar checkpoint validado e sincronizar as alterações com a branch `main`.
+
+## Nova rodada de estabilidade de hooks — 08/09/2026
+- [x] Mapear o lint atual e selecionar o próximo lote seguro de `react-hooks/set-state-in-effect`; o estado inicial foi de 56 erros, 40 avisos e 38 ocorrências.
+- [x] Refatorar os efeitos selecionados sem alterar comportamento funcional em `app/pagamento/recibo/[id]/page.tsx` e `app/pagamento/sucesso/page.tsx`, com carregamento inicial adiado, cancelamento e limpeza do timer.
+- [x] Executar lint, testes, TypeScript e build; o lint caiu para 54 erros, 40 avisos e 36 ocorrências de `react-hooks/set-state-in-effect`; os 6 testes focados, TypeScript e build passaram.
+- [x] Atualizar o workboard e salvar o checkpoint validado.
+
+## Três próximos passos — hooks, imagens e Stripe — 08/09/2026
+- [x] Corrigir o próximo lote de `react-hooks/set-state-in-effect` em `app/dashboard/dashboard-shell.tsx`; o total caiu de 36 para 34 ocorrências.
+- [x] Ajustar `images.qualities` para incluir 85; o build não apresentou mais o aviso de qualidade não configurada.
+- [x] Validar a integração Stripe em modo read-only; a API de balance respondeu em test mode, com saldos available/pending e sem erro de autenticação; nenhuma transação foi criada.
+- [x] Atualizar o workboard e salvar checkpoint da rodada.
+
+## Próximo lote de qualidade de hooks — 08/09/2026
+- [x] Mapear o lint atual e selecionar o próximo lote seguro de `react-hooks/set-state-in-effect`.
+- [x] Refatorar os efeitos selecionados sem alterar comportamento funcional.
+- [x] Executar lint, testes, TypeScript e build; registrar a nova contagem: 49 erros, 38 avisos e 31 ocorrências da regra; 233 arquivos e 742 testes passaram.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Exportação de tarefas do professor — 08/09/2026
+- [x] Revisar utilitários existentes e definir o conteúdo do relatório exportado.
+- [x] Implementar botões de exportação CSV e PDF na página de tarefas, respeitando filtros e contexto atual.
+- [x] Adicionar testes para exportação, estados vazios e nomes de arquivo.
+- [x] Validar responsividade, lint, TypeScript e build.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Navegação mobile do painel — 08/09/2026
+- [x] Auditar o layout compartilhado e localizar o melhor ponto para o acesso à página inicial.
+- [x] Implementar um link persistente e acessível para `/` no painel mobile e subpáginas.
+- [x] Validar desktop, mobile, rotas protegidas, lint, testes, TypeScript e build.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Atalho textual Ver site no menu mobile — 08/09/2026
+- [x] Adicionar o link textual “Ver site” ao menu lateral mobile aberto.
+- [x] Adicionar ou atualizar teste de navegação e validar lint, TypeScript e build.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Painel lateral desktop — 08/09/2026
+- [x] Auditar a estrutura de altura e overflow do shell compartilhado.
+- [x] Ajustar a barra lateral para ocupar corretamente a altura da janela e refinar seu visual no desktop.
+- [x] Validar desktop, mobile, navegação, lint, testes, TypeScript e build.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Próximo lote de linting — 08/09/2026
+- [x] Mapear a contagem atual e selecionar o próximo lote homogêneo de erros.
+- [x] Aplicar as correções sem alterar comportamento funcional.
+- [x] Validar lint, testes, TypeScript e build e registrar a nova contagem: 47 erros, 38 avisos e 29 ocorrências de `react-hooks/set-state-in-effect`; 234 arquivos e 746 testes passaram.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Gerenciadores de certificados e validação autenticada — 08/09/2026
+- [x] Mapear os gerenciadores de certificados e os fluxos de geração/exportação afetados pelo lint.
+- [x] Corrigir um lote seguro de efeitos nos gerenciadores de certificados.
+- [x] Adicionar animação suave de carregamento durante geração ou exportação de certificados.
+- [x] Validar áreas autenticadas em desktop e mobile, registrando limitações de sessão quando aplicável.
+- [x] Executar lint, testes, TypeScript e build; atualizar workboard e salvar checkpoint. Resultado: 41 erros, 38 avisos e 23 ocorrências de `react-hooks/set-state-in-effect`; suíte completa e build passaram.
+
+## Próximo lote de React Hooks — 09/09/2026
+- [x] Mapear a contagem atual do lint e os arquivos com ocorrências restantes de `react-hooks/set-state-in-effect`.
+- [x] Corrigir um lote homogêneo de efeitos de React Hooks sem alterar o comportamento funcional.
+- [x] Validar lint específico e global, testes, TypeScript e build: 37 erros, 38 avisos e 19 ocorrências; 234 arquivos e suíte completa passaram.
+- [x] Atualizar o workboard e salvar checkpoint.
+
+## Menu público dentro do drawer mobile — 09/09/2026
+- [x] Auditar o drawer do dashboard e definir o acesso às páginas públicas.
+- [x] Implementar o menu principal do site dentro do menu lateral mobile do dashboard.
+- [x] Validar navegação do painel e do site em mobile/desktop, além de testes, lint, TypeScript e build: 12 testes de navegação passaram; lint sem erros no shell/teste, TypeScript e build passaram; a validação visual sem sessão redirecionou para login.
+- [x] Atualizar o workboard e salvar checkpoint.

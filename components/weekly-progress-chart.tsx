@@ -21,21 +21,26 @@ export function WeeklyProgressChart() {
   const [traditionalMode, setTraditionalMode] = useState(false);
 
   useEffect(() => {
-    setTraditionalMode(window.localStorage.getItem("ap_traditional_mode") === "true");
-    let cancelled = false;
-    fetch("/api/dashboard/weekly-summary", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Falha ao carregar o progresso semanal.");
-        if (!cancelled) setSummary(payload);
-      })
-      .catch(() => {
-        if (!cancelled) setSummary(null);
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => { cancelled = true; };
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => {
+      setTraditionalMode(window.localStorage.getItem("ap_traditional_mode") === "true");
+      void (async () => {
+        try {
+          const response = await fetch("/api/dashboard/weekly-summary", { cache: "no-store", signal: controller.signal });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Falha ao carregar o progresso semanal.");
+          if (!controller.signal.aborted) setSummary(payload);
+        } catch {
+          if (!controller.signal.aborted) setSummary(null);
+        } finally {
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      })();
+    }, 0);
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
   }, []);
 
   const total = useMemo(() => summary ? summary.totals.lessons + summary.totals.activities : 0, [summary]);
