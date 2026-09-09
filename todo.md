@@ -2894,3 +2894,12 @@ Antes de iniciar uma atividade, leia o [Quadro compartilhado](./docs/SHARED-WORK
 - [x] Implementar o menu principal do site dentro do menu lateral mobile do dashboard.
 - [x] Validar navegação do painel e do site em mobile/desktop, além de testes, lint, TypeScript e build: 12 testes de navegação passaram; lint sem erros no shell/teste, TypeScript e build passaram; a validação visual sem sessão redirecionou para login.
 - [x] Atualizar o workboard e salvar checkpoint.
+
+## Atualização do workboard sobre deploy — 09/09/2026
+- [x] Atualizar `docs/SHARED-WORKBOARD.md` com o commit `bd99886`, a sincronização para `main` e o deployment automático READY no Vercel.
+
+## Sincronização segura da main com GitHub — 09/09/2026
+- [ ] Criar backup da `main` remota antes da sincronização forçada.
+- [ ] Preparar snapshot local sem caches de build e comparar a árvore de arquivos.
+- [ ] Executar `force-with-lease` apenas se a main remota permanecer no commit esperado.
+- [ ] Confirmar GitHub/Vercel, atualizar o workboard e salvar checkpoint.

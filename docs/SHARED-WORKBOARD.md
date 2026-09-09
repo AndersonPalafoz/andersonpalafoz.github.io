@@ -27,13 +27,13 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em andamento` — primeiro lote local de correções iniciado; integração Neon permanece pendente |
+| Status | `em andamento` — correções incrementais de lint entregues e deploy automático confirmado; integração Neon permanece pendente |
 | Responsável | Conta Manus atual, em continuidade da auditoria e da correção incremental de lint |
 | Iniciada em | 2026-09-04 |
-| Branch | `main`; correção incremental local em andamento |
-| Commit base | `62221f4` — estado auditado; nenhum commit corretivo do v0 registrado no quadro |
+| Branch | `main` — sincronizada no GitHub em `bd99886` |
+| Commit base | `62221f4`; estado entregue em `bd99886` — Sync current platform state to main |
 | Arquivos principais | `drizzle/schema.ts`, `lib/academic-context.ts`, `lib/admin-auth.ts`, `lib/google-classroom-api.ts`, `app/api/classroom/`, `app/api/cron/classroom-sync/`, `app/api/health/`, `docs/SHARED-WORKBOARD.md` |
-| Serviços afetados | GitHub, Vercel e Neon; nenhuma alteração de produção feita nesta etapa |
+| Serviços afetados | GitHub e Vercel confirmados; Neon permanece sem alteração de produção |
 | Confirmação necessária | Sim antes de promover o `app_runtime` ou alterar a branch Neon de produção |
 
 **Objetivo:** confirmar que o modelo de turmas internas, a sincronização Google Classroom, as migrations e o role PostgreSQL restrito permanecem seguros e funcionais na `main` atual.
@@ -47,6 +47,15 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 **Próximo passo exato:** corrigir o próximo lote de ocorrências de `react-hooks/set-state-in-effect`, priorizando `certificate-signature-manager.tsx` e `certificate-template-manager.tsx` com atenção aos fluxos de assinatura e edição. Manter lint, testes, TypeScript e build como gates; não alterar o Neon até existir uma `DATABASE_URL` válida. A navegação mobile do dashboard agora também inclui a seção **Menu principal do site**, com links para Início, Sobre, Cursos, Materiais, Blog e Contato; cada link fecha o drawer ao navegar.
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
+
+## Atualização de sincronização e deploy — 09/09/2026
+
+| Item | Status confirmado |
+|---|---|
+| GitHub | A branch `main` recebeu o commit `bd99886ccc6c647e79cecb8188b5eb10e7babfdc`; o push foi concluído após remover somente caches de build `.next-build` que excediam o limite de tamanho do GitHub. |
+| Vercel | O projeto `andersonpalafoz` detectou automaticamente o push na `main`; o deployment de produção `dpl_G89hKfpVbfRP3obXhENN3v5MmP3W` foi criado para o commit `bd99886` e terminou com estado `READY`. |
+| Domínio para teste | [andersonpalafoz.vercel.app](https://andersonpalafoz.vercel.app) está disponível para validação no celular. |
+| Pendências | Validar o drawer autenticado no dispositivo móvel e continuar a correção dos hooks restantes. |
 
 ## Modelo de tarefa (referência)
 
