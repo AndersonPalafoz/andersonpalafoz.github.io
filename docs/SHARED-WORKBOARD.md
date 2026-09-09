@@ -98,7 +98,7 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Bloqueios:** a criação e a rota protegida ainda precisam ser exercitadas com uma sessão real de professor/admin em desktop e mobile; sem credenciais/sessão no preview, não foi possível confirmar criação draft/publicada nem registrar evidência de deployment. Não promover alterações ao Neon nem modificar permissões sem registrar evidências e confirmação.
 
-**Próximo passo exato:** validar os fluxos de presença e atividades com uma sessão autorizada em desktop e mobile. A aba Presença lista os registros por aluno e sessão, permite alterar entre presente/ausente/justificada e excluir com confirmação, usando `attendanceId + sessionId + offerId`; a aba Atividades agora permite editar título, descrição e prazo, além de excluir com confirmação, sempre atualizando o resumo acadêmico sem reload. TypeScript, lint focalizado, testes de ofertas (9 testes) e `git diff --check` passaram neste ciclo. Sem sessão, o navegador confirmou corretamente o redirecionamento para login em 384×591. A migration já foi aplicada no Neon principal e está registrada localmente como `0089_link_sessions_to_offers.sql`.
+**Próximo passo exato:** validar os fluxos de presença e atividades com uma sessão autorizada em desktop e mobile. A aba Presença lista os registros por aluno e sessão, permite alterar entre presente/ausente/justificada e excluir com confirmação, usando `attendanceId + sessionId + offerId`; a aba Atividades agora permite editar título, descrição e prazo, além de excluir com confirmação, sempre atualizando o resumo acadêmico sem reload. Foram adicionados testes de contrato cobrindo autorização/escopo e controles de mutação: 4 testes passaram, além dos testes de ofertas (9 testes). TypeScript e `git diff --check` passaram neste ciclo. Sem sessão, o navegador confirmou corretamente o redirecionamento para login em 384×591. A migration já foi aplicada no Neon principal e está registrada localmente como `0089_link_sessions_to_offers.sql`.
 
 **Critério de conclusão:** fluxo de criação funcional, detalhe com abas e dados reais, progresso calculado a partir dos registros existentes, layout validado em mobile, permissões distinguíveis, testes/build verdes e deployment verificado.
 
@@ -153,13 +153,13 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Validação realizada:** a série executada em 2026-09-04 mediu todas as sete rotas, totalizando 21 execuções Lighthouse, com status `passed`. As medianas ficaram entre 90 e 96 de Performance, LCP entre 2.328 ms e 2.790 ms e CLS igual a 0,000 em todas as rotas. TypeScript e sintaxe do script passaram. Nesta retomada, a execução local de `pnpm performance:measure` foi iniciada contra `https://andersonpalafoz.vercel.app`, mas falhou antes da primeira rota porque o ambiente não possui Chrome/Chromium e `CHROME_PATH` não está definido.
 
-**Próximo passo exato:** executar a série Lighthouse no GitHub Actions/CI, onde o Chrome está disponível, e anexar o JSON gerado como artefato; não alterar o script nem instalar navegador no projeto nesta retomada. A validação não deve iniciar a TASK-005.
+**Próximo passo exato:** executar a série Lighthouse no GitHub Actions/CI, onde o Chrome está disponível, e anexar o JSON gerado como artefato; não alterar o script nem instalar navegador no projeto nesta retomada. A tentativa de dispatch manual em 2026-09-09 foi recusada pela integração GitHub com HTTP 403 (`Resource not accessible by integration`), portanto a execução depende de permissões de workflow ou do agendamento diário. A validação não deve iniciar a TASK-005.
 
 **Dados reais:** a consulta de Web Analytics do projeto Vercel entre 2026-08-28 e 2026-09-04 retornou 0 visitantes e 0 pageviews. Portanto, o Speed Insights está integrado no código, mas ainda não existe amostra real suficiente para avaliar tendência de campo; isso deve ser reavaliado após tráfego de usuários.
 
 **Bloqueios:** nenhum bloqueio de implementação. A medição local está limitada pela ausência de Chrome/Chromium no sandbox; a validação externa depende da execução do workflow no GitHub Actions. A validação de campo também permanece pendente por ausência de tráfego real no período consultado.
 
-**Próximo passo exato:** publicar a implementação na `main`, aguardar a primeira execução diária do workflow e revisar o primeiro artefato junto com os dados de Speed Insights após haver tráfego real.
+**Próximo passo exato:** aguardar a execução diária do workflow ou corrigir a permissão de dispatch da integração GitHub, baixar o primeiro artefato `core-web-vitals-<run_number>` e revisar junto com os dados de Speed Insights após haver tráfego real.
 
 **Critério de conclusão:** workflow publicado e executado com artefato válido, limites definidos, dados de campo disponíveis em volume suficiente e documentação de resposta a regressões confirmada.
 
