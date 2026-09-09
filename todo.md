@@ -2899,7 +2899,12 @@ Antes de iniciar uma atividade, leia o [Quadro compartilhado](./docs/SHARED-WORK
 - [x] Atualizar `docs/SHARED-WORKBOARD.md` com o commit `bd99886`, a sincronização para `main` e o deployment automático READY no Vercel.
 
 ## Sincronização segura da main com GitHub — 09/09/2026
-- [ ] Criar backup da `main` remota antes da sincronização forçada.
-- [ ] Preparar snapshot local sem caches de build e comparar a árvore de arquivos.
-- [ ] Executar `force-with-lease` apenas se a main remota permanecer no commit esperado.
-- [ ] Confirmar GitHub/Vercel, atualizar o workboard e salvar checkpoint.
+- [x] Criar backup da `main` remota antes da sincronização forçada.
+- [x] Preparar snapshot local sem caches de build e comparar a árvore de arquivos.
+- [x] Executar `force-with-lease` apenas se a main remota permanecer no commit esperado.
+- [x] Confirmar GitHub/Vercel, atualizar o workboard e salvar checkpoint.
+
+## Sincronização final da documentação com GitHub — 09/09/2026
+- [ ] Confirmar o SHA atual da `main` e preparar commit limpo do workboard/TODO.
+- [ ] Enviar a documentação final para `main` sem reintroduzir caches.
+- [ ] Confirmar GitHub/Vercel, atualizar o registro e salvar checkpoint.

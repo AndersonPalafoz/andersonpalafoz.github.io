@@ -57,6 +57,16 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Domínio para teste | [andersonpalafoz.vercel.app](https://andersonpalafoz.vercel.app) está disponível para validação no celular. |
 | Pendências | Validar o drawer autenticado no dispositivo móvel e continuar a correção dos hooks restantes. |
 
+## Force push seguro e estado atual — 09/09/2026
+
+| Item | Status confirmado |
+|---|---|
+| Backup remoto | Criada a branch `backup/main-before-force-20260909`, preservando a main anterior em `bd99886`. |
+| Main do GitHub | Atualizada com `force-with-lease` para `4af117e478740da35cd8bd70a5e6f404d560cbd4`; a operação só prosseguiu porque a main permanecia no SHA esperado. |
+| Conteúdo sincronizado | Snapshot local enviado sem `.next`, `.next-build` e `node_modules`, evitando os arquivos de cache acima do limite do GitHub. |
+| Vercel | Deploy automático acionado pela `main`: `dpl_7fRkCgwkdcPiLXWm7o3q3Pe77NnH`, produção, estado `READY`. |
+| Próximo passo | Testar o menu principal do site no drawer autenticado usando o domínio de produção. |
+
 ## Modelo de tarefa (referência)
 
 ```md
