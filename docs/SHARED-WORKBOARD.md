@@ -123,6 +123,8 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Próximo passo exato:** manter o vermelho para ações primárias e mapear a próxima área acadêmica com maior concentração de cores utilitárias, priorizando componentes de aprendizagem autenticados quando houver sessão disponível.
 
+**Continuidade pública registrada em 2026-09-10:** as rotas públicas `/cursos` e `/blog` receberam o azul cerúleo em superfícies e etiquetas acadêmicas. O vermelho foi preservado nos títulos de destaque, CTAs e alertas de erro; `/materiais` já usava o selo azul semântico.
+
 **Continuidade registrada em 2026-09-10:** o mapeamento seguinte identificou o bloco de materiais complementares do detalhe de curso e o selo da Biblioteca Acadêmica em `/materiais`. Ambos receberam a superfície/selo semântico do azul cerúleo, sem alterar CTA, preço ou progresso. Na etapa seguinte, o histórico acadêmico passou a usar o azul em alertas informativos e contagem de avaliações, e eventos sincronizados do Google Calendar passaram a usar o ícone azul semântico; estados locais do banco continuam vermelhos para preservar a distinção de origem. O progresso semanal mantém o azul cerúleo nas barras e atividades concluídas.
 
 **Critério de conclusão:** validações técnicas sem novos erros, preview sem regressão visual e commit sincronizado no workboard.
