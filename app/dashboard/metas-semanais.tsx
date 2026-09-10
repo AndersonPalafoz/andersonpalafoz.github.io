@@ -108,7 +108,7 @@ export function WeeklyGoalsWidget() {
               <div key={day.key} className="flex h-full flex-col items-center justify-end gap-2">
                 <span className="text-[10px] font-black text-foreground">{total}</span>
                 <div className="flex h-full w-full max-w-9 items-end overflow-hidden rounded-xl bg-background">
-                  <div className={`w-full rounded-xl transition-all ${total > 0 ? "bg-red-600" : "bg-muted"}`} style={{ height: `${height}%` }} />
+                  <div className={`w-full rounded-xl transition-all ${total > 0 ? "support-blue-progress" : "bg-muted"}`} style={{ height: `${height}%` }} />
                 </div>
                 <span className="text-[11px] font-bold text-muted-foreground">{day.label}</span>
               </div>
@@ -119,7 +119,7 @@ export function WeeklyGoalsWidget() {
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"><CheckCircle2 className="text-emerald-600" size={19} /><div><p className="text-lg font-black text-foreground">{summary.totals.lessons}</p><p className="text-xs font-semibold text-muted-foreground">Aulas concluídas</p></div></div>
-        <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"><Clock3 className="text-blue-600" size={19} /><div><p className="text-lg font-black text-foreground">{summary.totals.activities}</p><p className="text-xs font-semibold text-muted-foreground">Atividades concluídas</p></div></div>
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4"><Clock3 className="support-blue-text" size={19} /><div><p className="text-lg font-black text-foreground">{summary.totals.activities}</p><p className="text-xs font-semibold text-muted-foreground">Atividades concluídas</p></div></div>
       </div>
     </section>
   );

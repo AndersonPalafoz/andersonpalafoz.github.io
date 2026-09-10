@@ -97,6 +97,33 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 ## Próximas atividades
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
+### TASK-007 — Expandir azul cerúleo nas áreas acadêmicas
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Iniciada em | 2026-09-10 |
+| Branch | `v0/gradual-blue-palette` |
+| Commit base | `db2b2ef` |
+| Arquivos principais | `app/globals.css`, `components/student-activities-board.tsx`, `components/student-style-dashboard-stats.tsx`, `app/dashboard/metas-semanais.tsx`, `app/cadastro/page.tsx`, `docs/SHARED-WORKBOARD.md` |
+| Serviços afetados | GitHub e Vercel; nenhum dado do Neon alterado |
+| Confirmação necessária | Não |
+
+**Objetivo:** levar o azul cerúleo educacional para estados de aprendizagem, progresso e informação sem substituir o vermelho institucional dos CTAs.
+
+**Mapeamento realizado:** atividades do aluno (status Em andamento), métricas operacionais (Alunos cadastrados), metas semanais (barras de progresso e Atividades concluídas) e cadastro (orientação sobre permissões). O rodapé e a homepage já utilizavam o mesmo token azul.
+
+**Estado atual:** foram criadas as classes semânticas `support-blue-badge`, `support-blue-border`, `support-blue-text` e `support-blue-progress`; as áreas mapeadas foram migradas do azul Tailwind cru para esses tokens compartilhados, com suporte a light/dark mode.
+
+**Validação realizada:** TypeScript, ESLint focalizado e `git diff --check` passaram. A rota `/cadastro` foi verificada no preview em desktop, 1216×597, dark mode; a hierarquia vermelha/azul permanece legível e o ícone de orientação acadêmica usa o azul semântico. Nenhum dado do Neon foi alterado.
+
+**Bloqueios:** nenhum.
+
+**Próximo passo exato:** manter o vermelho para ações primárias e mapear a próxima área acadêmica com maior concentração de cores utilitárias, priorizando catálogo público de cursos ou materiais.
+
+**Critério de conclusão:** validações técnicas sem novos erros, preview sem regressão visual e commit sincronizado no workboard.
+
+
 ### TASK-006 — Completar fluxo e gestão de Turmas Internas
 | Campo | Valor |
 |---|---|
