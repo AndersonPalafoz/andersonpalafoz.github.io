@@ -16,7 +16,7 @@ interface StatsProps {
 
 const metricDefinitions = [
   { key: "coursesCount", label: "Cursos publicados", icon: BookOpen, tone: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300", accent: "border-t-red-500" },
-  { key: "studentsCount", label: "Alunos cadastrados", icon: Users, tone: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300", accent: "border-t-blue-500" },
+  { key: "studentsCount", label: "Alunos cadastrados", icon: Users, tone: "support-blue-icon", accent: "support-blue-border" },
   { key: "materialsCount", label: "Materiais didáticos", icon: CheckSquare, tone: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300", accent: "border-t-amber-500" },
   { key: "enrollmentsCount", label: "Matrículas ativas", icon: Award, tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300", accent: "border-t-emerald-500" },
 ] as const;

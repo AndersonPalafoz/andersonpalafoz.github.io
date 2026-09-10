@@ -589,6 +589,23 @@ body {
   color: hsl(var(--support-blue-foreground));
   }
 
+  .support-blue-badge {
+  background: hsl(var(--support-blue-soft));
+  color: hsl(var(--support-blue-foreground));
+  }
+
+  .support-blue-border {
+  border-color: hsl(var(--support-blue) / 0.35);
+  }
+
+  .support-blue-text {
+  color: hsl(var(--support-blue-foreground));
+  }
+
+  .support-blue-progress {
+  background: hsl(var(--support-blue));
+  }
+
   .site-footer-accent {
   background: hsl(var(--support-blue));
   box-shadow: 0 0 18px hsl(var(--support-blue) / 0.28);
