@@ -328,7 +328,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
 
           <section
             aria-labelledby="google-drive-materials-title"
-            className="relative overflow-hidden rounded-3xl border border-sky-200 dark:border-sky-900/70 bg-gradient-to-br from-sky-50 via-white to-indigo-50 dark:from-sky-950/30 dark:via-background dark:to-indigo-950/25 p-5 shadow-sm sm:p-7"
+            className="support-blue-surface relative overflow-hidden rounded-3xl border p-5 shadow-sm sm:p-7"
           >
             <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-sky-100/70 dark:bg-sky-900/30 blur-2xl" aria-hidden="true" />
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
