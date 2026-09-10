@@ -15,6 +15,11 @@
     --error: #DC2626;
     --info: #2563EB;
 
+    /* Azul de apoio: informação, foco e elementos acadêmicos. */
+    --support-blue: 215 80% 42%;
+    --support-blue-soft: 214 95% 96%;
+    --support-blue-foreground: 215 82% 28%;
+
     /* Tokens shadcn/Tailwind, em HSL (formato exigido por hsl(var(--x)) no
        tailwind.config.ts). Antes nao existiam -- bg-background, text-foreground,
        border-border, bg-card, bg-muted, bg-primary etc ficavam com CSS invalido
@@ -63,6 +68,9 @@
     --border: 0 0% 26%;
     --input: 0 0% 26%;
     --ring: 0 69% 55%;
+    --support-blue: 213 92% 72%;
+    --support-blue-soft: 215 45% 22%;
+    --support-blue-foreground: 213 95% 88%;
   }
 }
 
@@ -135,8 +143,8 @@
   textarea:focus,
   select:focus {
     outline: none;
-    border-color: #D62828;
-    box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.1);
+    border-color: hsl(var(--support-blue));
+    box-shadow: 0 0 0 3px hsl(var(--support-blue) / 0.16);
   }
 }
 
@@ -558,13 +566,25 @@ body {
   text-transform: uppercase;
 }
 
-.dark .section-kicker {
+  .dark .section-kicker {
   border-color: rgba(214, 40, 40, 0.32);
   background: rgba(214, 40, 40, 0.14);
   color: #fca5a5;
-}
+  }
 
-.dashboard-frame {
+  .section-kicker.support-blue {
+  border-color: hsl(var(--support-blue) / 0.24);
+  background: hsl(var(--support-blue-soft));
+  color: hsl(var(--support-blue-foreground));
+  }
+
+  .dark .section-kicker.support-blue {
+  border-color: hsl(var(--support-blue) / 0.38);
+  background: hsl(var(--support-blue-soft));
+  color: hsl(var(--support-blue-foreground));
+  }
+
+  .dashboard-frame {
   background:
     radial-gradient(circle at 0% 0%, rgba(214, 40, 40, 0.09), transparent 28rem),
     hsl(var(--background));
