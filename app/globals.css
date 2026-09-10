@@ -16,9 +16,9 @@
     --info: #2563EB;
 
     /* Azul de apoio: informação, foco e elementos acadêmicos. */
-    --support-blue: 208 54% 40%;
-    --support-blue-soft: 204 58% 96%;
-    --support-blue-foreground: 208 55% 28%;
+    --support-blue: 202 62% 48%;
+    --support-blue-soft: 202 68% 96%;
+    --support-blue-foreground: 202 64% 32%;
 
     /* Tokens shadcn/Tailwind, em HSL (formato exigido por hsl(var(--x)) no
        tailwind.config.ts). Antes nao existiam -- bg-background, text-foreground,
@@ -68,9 +68,9 @@
     --border: 0 0% 26%;
     --input: 0 0% 26%;
     --ring: 0 69% 55%;
-    --support-blue: 204 68% 70%;
-    --support-blue-soft: 208 30% 22%;
-    --support-blue-foreground: 204 72% 88%;
+    --support-blue: 202 78% 76%;
+    --support-blue-soft: 202 34% 24%;
+    --support-blue-foreground: 202 80% 91%;
   }
 }
 
@@ -587,6 +587,11 @@ body {
   .support-blue-icon {
   background: hsl(var(--support-blue-soft));
   color: hsl(var(--support-blue-foreground));
+  }
+
+  .site-footer-accent {
+  background: hsl(var(--support-blue));
+  box-shadow: 0 0 18px hsl(var(--support-blue) / 0.28);
   }
 
   .dashboard-frame {
