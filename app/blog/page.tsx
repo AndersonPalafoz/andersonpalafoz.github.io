@@ -18,7 +18,7 @@ export default async function BlogPage() {
         <div className="mx-auto w-full max-w-7xl">
           <div className="max-w-3xl space-y-8">
             <div className="space-y-4">
-              <span className="eyebrow">Knowledge Hub</span>
+              <span className="eyebrow support-blue-badge">Knowledge Hub</span>
               <h1 className="text-5xl font-bold leading-tight md:text-6xl">Blog de<br /><span className="text-red-600">Inglês e Educação</span></h1>
               <p className="text-lg leading-relaxed text-gray-600 dark:text-slate-400">Artigos, dicas, insights e reflexões sobre ensino de inglês, linguística, educação e tecnologia.</p>
             </div>
