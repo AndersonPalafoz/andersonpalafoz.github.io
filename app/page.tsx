@@ -132,7 +132,7 @@ export default async function HomePage() {
           </div>
 
           <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
-            <div className="h-12 w-12 rounded-2xl bg-[hsl(var(--support-blue-soft))] text-[hsl(var(--support-blue-foreground))] flex items-center justify-center font-bold">
+            <div className="support-blue-icon h-12 w-12 rounded-2xl flex items-center justify-center font-bold">
               <Sparkles size={24} />
             </div>
             <h3 className="text-xl font-black">Prática de Speaking Guiada</h3>
