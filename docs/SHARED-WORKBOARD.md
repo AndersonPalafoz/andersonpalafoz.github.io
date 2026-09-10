@@ -119,9 +119,11 @@ Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 **Bloqueios:** nenhum.
 
-**Próximo passo exato:** manter o vermelho para ações primárias e mapear a próxima área acadêmica com maior concentração de cores utilitárias, priorizando progresso de aulas e componentes de aprendizagem.
+**Validação da etapa seguinte:** histórico acadêmico e calendário foram verificados em desktop dark mode; sem sessão autenticada, o preview redirecionou corretamente para `/login`, sem erro de aplicação. TypeScript, ESLint focalizado e `git diff --check` passaram.
 
-**Continuidade registrada em 2026-09-10:** o mapeamento seguinte identificou o bloco de materiais complementares do detalhe de curso e o selo da Biblioteca Acadêmica em `/materiais`. Ambos receberam a superfície/selo semântico do azul cerúleo, sem alterar CTA, preço ou progresso.
+**Próximo passo exato:** manter o vermelho para ações primárias e mapear a próxima área acadêmica com maior concentração de cores utilitárias, priorizando componentes de aprendizagem autenticados quando houver sessão disponível.
+
+**Continuidade registrada em 2026-09-10:** o mapeamento seguinte identificou o bloco de materiais complementares do detalhe de curso e o selo da Biblioteca Acadêmica em `/materiais`. Ambos receberam a superfície/selo semântico do azul cerúleo, sem alterar CTA, preço ou progresso. Na etapa seguinte, o histórico acadêmico passou a usar o azul em alertas informativos e contagem de avaliações, e eventos sincronizados do Google Calendar passaram a usar o ícone azul semântico; estados locais do banco continuam vermelhos para preservar a distinção de origem. O progresso semanal mantém o azul cerúleo nas barras e atividades concluídas.
 
 **Critério de conclusão:** validações técnicas sem novos erros, preview sem regressão visual e commit sincronizado no workboard.
 
