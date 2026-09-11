@@ -498,16 +498,16 @@ body {
 .surface-card {
   border-color: var(--line-soft);
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.12), var(--shadow-soft);
   backdrop-filter: blur(16px);
   transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);
-}
+  }
 
 .surface-card.interactive-card:hover {
   transform: translateY(-3px);
   border-color: rgba(214, 40, 40, 0.28);
-  box-shadow: var(--shadow-hover);
-}
+  box-shadow: 5px 6px 0 rgba(63, 126, 163, 0.16), var(--shadow-hover);
+  }
 
 .public-hero {
   position: relative;
