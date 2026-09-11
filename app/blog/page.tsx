@@ -27,7 +27,7 @@ export default async function BlogPage() {
         </div>
       </section>
 
-      <section id="artigos-publicados" className="bg-white dark:bg-slate-900 px-4 py-20 md:px-8 lg:px-16">
+      <section id="artigos-publicados" className="public-blue-divider bg-white dark:bg-slate-900 px-4 py-20 md:px-8 lg:px-16">
         <div className="mx-auto max-w-7xl">
           {!available ? <div className="mx-auto max-w-2xl rounded-2xl border border-red-100 dark:border-red-900/50 bg-red-50 dark:bg-red-950/20 p-8 text-center"><h2 className="text-xl font-bold text-gray-900 dark:text-white">Conteúdo temporariamente indisponível</h2><p className="mt-3 text-gray-600 dark:text-slate-400">Estamos atualizando o blog. Tente novamente em alguns instantes.</p></div> : articles.length === 0 ? <div className="mx-auto max-w-2xl rounded-2xl border border-dashed border-gray-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-900/50 p-10 text-center"><h2 className="text-xl font-bold text-gray-900 dark:text-white">Nenhum artigo publicado no momento</h2><p className="mt-3 text-gray-600 dark:text-slate-400">Volte em breve para acompanhar novos conteúdos.</p></div> : <BlogBrowser articles={articles} />}
         </div>
