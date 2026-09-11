@@ -22,7 +22,7 @@ const resources = [
 
 export function Footer() {
   return (
-    <footer className="site-footer relative overflow-hidden bg-slate-950 text-white shadow-[0_-20px_70px_rgba(15,23,42,0.1)]">
+    <footer className="relative overflow-hidden bg-slate-950 text-white shadow-[0_-20px_70px_rgba(15,23,42,0.1)]">
       <div className="site-footer-accent absolute inset-x-0 top-0 h-1" aria-hidden="true" />
       <div className="pointer-events-none absolute -right-32 -top-40 h-80 w-80 rounded-full bg-red-600/10 blur-3xl" />
       <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">

@@ -112,7 +112,7 @@ export default function MateriaisPage() {
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <span className="support-blue-badge px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
                 Biblioteca Acadêmica
               </span>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900 dark:text-white">

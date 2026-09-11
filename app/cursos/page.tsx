@@ -71,12 +71,12 @@ export default async function CursosPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="support-blue-surface relative flex min-h-[68vh] items-center overflow-hidden border-b px-4 py-20 md:px-8 lg:px-16">
+      <section className="relative flex min-h-[68vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16">
         <div className="pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <span className="eyebrow support-blue-badge">Trilha de aprendizagem</span>
+              <span className="eyebrow">Trilha de aprendizagem</span>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                 Cursos de
                 <br />
