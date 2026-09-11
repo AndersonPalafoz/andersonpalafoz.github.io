@@ -107,7 +107,7 @@ export default function MateriaisPage() {
   return (
     <div className="w-full">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white dark:bg-slate-950 px-4 py-20 md:px-8 lg:px-16 border-b border-slate-200 dark:border-slate-800">
+      <section className="public-blue-divider relative overflow-hidden bg-white dark:bg-slate-950 px-4 py-20 md:px-8 lg:px-16 border-b border-slate-200 dark:border-slate-800">
         <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-red-100/60 dark:bg-red-950/20 blur-3xl" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
