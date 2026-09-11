@@ -65,7 +65,7 @@ export default function CadastroPage() {
           <div className="mt-6 grid gap-3 text-sm text-muted-foreground">
             <p className="flex items-center gap-3"><CheckCircle2 className="text-green-600" size={18} /> Aluno: revisão por professor aprovado ou super-admin.</p>
             <p className="flex items-center gap-3"><ShieldCheck className="text-red-600" size={18} /> Professor: aprovação exclusiva do super-admin.</p>
-            <p className="flex items-center gap-3"><GraduationCap className="support-blue-text" size={18} /> O pedido não altera permissões enquanto estiver pendente.</p>
+            <p className="flex items-center gap-3"><GraduationCap className="text-blue-600" size={18} /> O pedido não altera permissões enquanto estiver pendente.</p>
           </div>
           <ol className="mt-7 grid grid-cols-2 gap-3" aria-label="Como funciona o cadastro">
             <li className="rounded-2xl border border-border/70 bg-card p-4"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-xs font-black text-white">1</span><p className="mt-3 text-sm font-black text-foreground">Crie sua conta</p><p className="mt-1 text-xs leading-5 text-muted-foreground">Use um e-mail que você acessa.</p></li>

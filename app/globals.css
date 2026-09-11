@@ -15,11 +15,6 @@
     --error: #DC2626;
     --info: #2563EB;
 
-    /* Azul de apoio: informação, foco e elementos acadêmicos. */
-    --support-blue: 202 62% 48%;
-    --support-blue-soft: 202 68% 96%;
-    --support-blue-foreground: 202 64% 32%;
-
     /* Tokens shadcn/Tailwind, em HSL (formato exigido por hsl(var(--x)) no
        tailwind.config.ts). Antes nao existiam -- bg-background, text-foreground,
        border-border, bg-card, bg-muted, bg-primary etc ficavam com CSS invalido
@@ -68,9 +63,6 @@
     --border: 0 0% 26%;
     --input: 0 0% 26%;
     --ring: 0 69% 55%;
-    --support-blue: 202 78% 76%;
-    --support-blue-soft: 202 34% 24%;
-    --support-blue-foreground: 202 80% 91%;
   }
 }
 
@@ -143,8 +135,8 @@
   textarea:focus,
   select:focus {
     outline: none;
-    border-color: hsl(var(--support-blue));
-    box-shadow: 0 0 0 3px hsl(var(--support-blue) / 0.16);
+    border-color: #D62828;
+    box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.1);
   }
 }
 
@@ -566,58 +558,15 @@ body {
   text-transform: uppercase;
 }
 
-  .dark .section-kicker {
+.dark .section-kicker {
   border-color: rgba(214, 40, 40, 0.32);
   background: rgba(214, 40, 40, 0.14);
   color: #fca5a5;
-  }
-
-  .section-kicker.support-blue {
-  border-color: hsl(var(--support-blue) / 0.24);
-  background: hsl(var(--support-blue-soft));
-  color: hsl(var(--support-blue-foreground));
-  }
-
-  .dark .section-kicker.support-blue {
-  border-color: hsl(var(--support-blue) / 0.38);
-  background: hsl(var(--support-blue-soft));
-  color: hsl(var(--support-blue-foreground));
-  }
-
-  .support-blue-icon {
-  background: hsl(var(--support-blue-soft));
-  color: hsl(var(--support-blue-foreground));
-  }
-
-  .support-blue-badge {
-  background: hsl(var(--support-blue-soft));
-  color: hsl(var(--support-blue-foreground));
-  }
-
-  .support-blue-border {
-  border-color: hsl(var(--support-blue) / 0.35);
-  }
-
-  .support-blue-text {
-  color: hsl(var(--support-blue-foreground));
-  }
-
-  .support-blue-progress {
-  background: hsl(var(--support-blue));
-  }
-
-  .support-blue-surface {
-  border-color: hsl(var(--support-blue) / 0.3);
-  background: linear-gradient(135deg, hsl(var(--support-blue-soft)), hsl(var(--background)) 72%);
-  }
-
-  .dark .support-blue-surface {
-  background: linear-gradient(135deg, hsl(var(--support-blue-soft)), hsl(var(--background)) 72%);
-  }
+}
 
   .site-footer-accent {
-  background: hsl(var(--support-blue));
-  box-shadow: 0 0 18px hsl(var(--support-blue) / 0.28);
+  background: #4d9bc2;
+  box-shadow: 0 0 18px rgba(77, 155, 194, 0.28);
   }
 
   .dashboard-frame {

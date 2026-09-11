@@ -301,11 +301,11 @@ export default function HistoricoAcademicoPage() {
       <div className={`p-4 rounded-2xl border flex items-center gap-3.5 shadow-xs ${
         performanceAlert.type === "success" ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200" :
         performanceAlert.type === "warning" ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200" :
-        "support-blue-badge border support-blue-border"
+        "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-200"
       }`}>
         {performanceAlert.type === "success" ? <CheckCircle2 size={20} className="text-emerald-600 shrink-0" /> :
          performanceAlert.type === "warning" ? <AlertTriangle size={20} className="text-amber-600 shrink-0" /> :
-         <TrendingUp size={20} className="support-blue-text shrink-0" />}
+         <TrendingUp size={20} className="text-blue-600 shrink-0" />}
         <div className="text-xs font-bold">
           <span className="uppercase tracking-wider block text-[10px] opacity-75 mb-0.5">Resumo do desempenho registrado</span>
           {performanceAlert.text}
@@ -315,7 +315,7 @@ export default function HistoricoAcademicoPage() {
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Média das Notas</span><Award size={20} className="text-red-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{gradeAverage}</p><p className="mt-1 text-xs text-gray-500">pontuação média no filtro</p></div>
         <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Frequência Geral</span><CalendarCheck size={20} className="text-emerald-600" /></div><p className="mt-3 text-3xl font-black text-emerald-700 dark:text-emerald-400">{presenceRate}</p><p className="mt-1 text-xs text-gray-500">presenças registradas</p></div>
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Avaliações Filtradas</span><TrendingUp size={20} className="support-blue-text" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{filteredGrades.length}</p><p className="mt-1 text-xs text-gray-500">atividades pontuadas</p></div>
+        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Avaliações Filtradas</span><TrendingUp size={20} className="text-blue-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{filteredGrades.length}</p><p className="mt-1 text-xs text-gray-500">atividades pontuadas</p></div>
       </section>
 
       {/* Visão Detalhada por Disciplina */}

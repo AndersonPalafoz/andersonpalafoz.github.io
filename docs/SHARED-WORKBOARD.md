@@ -97,38 +97,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 ## Próximas atividades
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
-### TASK-007 — Expandir azul cerúleo nas áreas acadêmicas
-| Campo | Valor |
-|---|---|
-| Status | `em validação` |
-| Responsável | v0 |
-| Iniciada em | 2026-09-10 |
-| Branch | `v0/gradual-blue-palette` |
-| Commit base | `db2b2ef` |
-| Arquivos principais | `app/globals.css`, `components/student-activities-board.tsx`, `components/student-style-dashboard-stats.tsx`, `app/dashboard/metas-semanais.tsx`, `app/cadastro/page.tsx`, `docs/SHARED-WORKBOARD.md` |
-| Serviços afetados | GitHub e Vercel; nenhum dado do Neon alterado |
-| Confirmação necessária | Não |
-
-**Objetivo:** levar o azul cerúleo educacional para estados de aprendizagem, progresso e informação sem substituir o vermelho institucional dos CTAs.
-
-**Mapeamento realizado:** atividades do aluno (status Em andamento), métricas operacionais (Alunos cadastrados), metas semanais (barras de progresso e Atividades concluídas) e cadastro (orientação sobre permissões). O rodapé e a homepage já utilizavam o mesmo token azul.
-
-**Estado atual:** foram criadas as classes semânticas `support-blue-badge`, `support-blue-border`, `support-blue-text`, `support-blue-progress` e `support-blue-surface`; as áreas mapeadas foram migradas do azul Tailwind cru para esses tokens compartilhados, com suporte a light/dark mode. A expansão seguinte aplicou `support-blue-surface` ao bloco de materiais complementares no detalhe de curso e `support-blue-badge` ao selo da Biblioteca Acadêmica em `/materiais`.
-
-**Validação realizada:** TypeScript, ESLint focalizado e `git diff --check` passaram. A rota `/cadastro` foi verificada no preview em desktop, 1216×597, dark mode; a hierarquia vermelha/azul permanece legível e o ícone de orientação acadêmica usa o azul semântico. Nenhum dado do Neon foi alterado.
-
-**Bloqueios:** nenhum.
-
-**Validação da etapa seguinte:** histórico acadêmico e calendário foram verificados em desktop dark mode; sem sessão autenticada, o preview redirecionou corretamente para `/login`, sem erro de aplicação. TypeScript, ESLint focalizado e `git diff --check` passaram.
-
-**Próximo passo exato:** manter o vermelho para ações primárias e mapear a próxima área acadêmica com maior concentração de cores utilitárias, priorizando componentes de aprendizagem autenticados quando houver sessão disponível.
-
-**Continuidade pública registrada em 2026-09-10:** as rotas públicas `/cursos` e `/blog` receberam o azul cerúleo em superfícies e etiquetas acadêmicas. O vermelho foi preservado nos títulos de destaque, CTAs e alertas de erro; `/materiais` já usava o selo azul semântico.
-
-**Continuidade registrada em 2026-09-10:** o mapeamento seguinte identificou o bloco de materiais complementares do detalhe de curso e o selo da Biblioteca Acadêmica em `/materiais`. Ambos receberam a superfície/selo semântico do azul cerúleo, sem alterar CTA, preço ou progresso. Na etapa seguinte, o histórico acadêmico passou a usar o azul em alertas informativos e contagem de avaliações, e eventos sincronizados do Google Calendar passaram a usar o ícone azul semântico; estados locais do banco continuam vermelhos para preservar a distinção de origem. O progresso semanal mantém o azul cerúleo nas barras e atividades concluídas.
-
-**Critério de conclusão:** validações técnicas sem novos erros, preview sem regressão visual e commit sincronizado no workboard.
-
+### Nota de design — azul cerúleo
+A expansão gradual do azul nas áreas públicas e autenticadas foi revertida a pedido do usuário. A paleta original foi restaurada em todas as áreas; permanece somente a linha azul fina antes do rodapé, explicitamente aprovada. Nenhum dado, rota ou regra de negócio foi alterado.
 
 ### TASK-006 — Completar fluxo e gestão de Turmas Internas
 | Campo | Valor |

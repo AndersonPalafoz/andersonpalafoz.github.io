@@ -49,7 +49,7 @@ export default async function HomePage() {
         
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           <div className="lg:col-span-7 space-y-8 text-left">
-              <div className="section-kicker support-blue shadow-sm">
+              <div className="section-kicker shadow-sm">
               <Sparkles size={15} /> Metodologia Exclusiva & Interativa
             </div>
 
@@ -132,7 +132,7 @@ export default async function HomePage() {
           </div>
 
           <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
-            <div className="support-blue-icon h-12 w-12 rounded-2xl flex items-center justify-center font-bold">
+            <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Sparkles size={24} />
             </div>
             <h3 className="text-xl font-black">Prática de Speaking Guiada</h3>
