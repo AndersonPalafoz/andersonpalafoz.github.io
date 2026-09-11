@@ -107,7 +107,7 @@ export default async function CursosPage() {
       </section>
 
       {/* Cursos */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
+      <section className="public-blue-divider py-20 px-4 md:px-8 lg:px-16 bg-white">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
             Nossos Cursos

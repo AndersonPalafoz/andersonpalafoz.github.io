@@ -367,11 +367,11 @@
   .site-shell, main.min-h-screen { max-width: 100%; overflow-x: hidden; background: hsl(var(--background)); color: hsl(var(--foreground)); }
   .surface-card { border-color: hsl(var(--border) / 0.78); background: hsl(var(--card)); color: hsl(var(--card-foreground)); }
   .interactive-card { will-change: transform, box-shadow; }
-  .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; }
+  .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.1); }
   .data-table th { @apply bg-muted/60 px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground; }
   .data-table td { @apply border-t border-border/70 px-4 py-3 text-sm text-foreground; }
   .field-control { @apply h-11 w-full rounded-xl border border-input bg-background px-3 text-sm text-foreground shadow-sm transition focus:border-red-600 focus:outline-none focus:ring-2 focus:ring-red-600/10; }
-  .empty-state { @apply rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-sm; }
+  .empty-state { @apply rounded-2xl border border-dashed border-border bg-card p-8 text-center shadow-sm; box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.1), var(--shadow-soft); }
 }
 
 
@@ -498,16 +498,16 @@ body {
 .surface-card {
   border-color: var(--line-soft);
   background: var(--surface);
-  box-shadow: var(--shadow-soft);
+  box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.12), var(--shadow-soft);
   backdrop-filter: blur(16px);
   transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);
-}
+  }
 
 .surface-card.interactive-card:hover {
   transform: translateY(-3px);
   border-color: rgba(214, 40, 40, 0.28);
-  box-shadow: var(--shadow-hover);
-}
+  box-shadow: 5px 6px 0 rgba(63, 126, 163, 0.16), var(--shadow-hover);
+  }
 
 .public-hero {
   position: relative;
@@ -564,7 +564,16 @@ body {
   color: #fca5a5;
 }
 
-.dashboard-frame {
+  .site-footer-accent {
+  background: #3f7ea3;
+  box-shadow: 0 0 18px rgba(63, 126, 163, 0.28);
+  }
+
+  .public-blue-divider {
+  border-top: 1px solid rgba(63, 126, 163, 0.42);
+  }
+
+  .dashboard-frame {
   background:
     radial-gradient(circle at 0% 0%, rgba(214, 40, 40, 0.09), transparent 28rem),
     hsl(var(--background));
