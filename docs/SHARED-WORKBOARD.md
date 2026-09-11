@@ -98,7 +98,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
 ### Nota de design — azul cerúleo
-A expansão gradual do azul nas áreas públicas e autenticadas foi revertida a pedido do usuário. A paleta original foi restaurada em todas as áreas; permanece somente a linha azul fina antes do rodapé, explicitamente aprovada. Nenhum dado, rota ou regra de negócio foi alterado.
+A expansão gradual do azul nas áreas públicas e autenticadas foi revertida a pedido do usuário. A paleta original foi restaurada em todas as áreas; permanece somente a linha azul fina antes do rodapé, explicitamente aprovada. Em 2026-09-10, a linha foi ajustada para `#3F7EA3`, um azul médio inspirado em Oxford/Cambridge e adequado a um curso de inglês, sem alterar outras áreas. Nenhum dado, rota ou regra de negócio foi alterado.
 
 ### TASK-006 — Completar fluxo e gestão de Turmas Internas
 | Campo | Valor |
