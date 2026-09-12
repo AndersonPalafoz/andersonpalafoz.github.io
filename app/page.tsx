@@ -121,15 +121,23 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="surface-card public-accent-card interactive-card rounded-3xl p-8 space-y-4">
-            <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
+          <article className="live-class-card surface-card interactive-card relative overflow-hidden rounded-3xl p-8 space-y-5">
+            <div className="live-class-orb" aria-hidden="true" />
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300">
               <BookOpen size={24} />
             </div>
-            <h3 className="text-xl font-black">Aulas Básico ao Avançado [A1-C2]</h3>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Estrutura pedagógica completa para iniciantes e alunos avançados, com materiais complementares em PDF e áudio.
-            </p>
-          </div>
+            <div className="relative space-y-2">
+              <span className="text-xs font-bold uppercase tracking-[0.14em] text-blue-600 dark:text-blue-300">Próxima aula</span>
+              <h3 className="text-xl font-black">Aulas Básico ao Avançado [A1-C2]</h3>
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Estrutura pedagógica completa para iniciantes e alunos avançados, com materiais complementares em PDF e áudio.
+              </p>
+            </div>
+            <Link href="/cursos" className="relative inline-flex w-full items-center justify-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2">
+              Conhecer os cursos
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </article>
 
           <div className="surface-card public-accent-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
