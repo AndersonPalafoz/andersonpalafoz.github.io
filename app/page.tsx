@@ -122,7 +122,6 @@ export default async function HomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <article className="live-class-card surface-card interactive-card relative overflow-hidden rounded-3xl p-8 space-y-5">
-            <div className="live-class-orb" aria-hidden="true" />
             <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300">
               <BookOpen size={24} />
             </div>

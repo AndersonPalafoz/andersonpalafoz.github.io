@@ -384,20 +384,6 @@
   box-shadow: 7px 8px 0 rgba(37, 99, 235, 0.25), var(--shadow-hover);
   }
 
-  .live-class-orb {
-  position: absolute;
-  right: -3.5rem;
-  top: -3.5rem;
-  width: 9rem;
-  height: 9rem;
-  border-radius: 999px;
-  background: rgba(219, 234, 254, 0.72);
-  }
-
-  .dark .live-class-orb {
-  background: rgba(30, 64, 175, 0.24);
-  }
-
   .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.1); }
   .data-table th { @apply bg-muted/60 px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground; }
   .data-table td { @apply border-t border-border/70 px-4 py-3 text-sm text-foreground; }
