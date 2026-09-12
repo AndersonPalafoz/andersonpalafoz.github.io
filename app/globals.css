@@ -497,9 +497,8 @@ body {
 
   .surface-card {
   border-color: var(--line-soft);
-  border-left: 4px solid rgba(37, 99, 235, 0.88);
   background: var(--surface);
-  box-shadow: 5px 6px 0 rgba(37, 99, 235, 0.16), var(--shadow-soft);
+  box-shadow: 5px 6px 0 rgba(37, 99, 235, 0.18), var(--shadow-soft);
   backdrop-filter: blur(16px);
   transition: transform 180ms var(--ease-out), box-shadow 180ms var(--ease-out), border-color 180ms var(--ease-out);
   }
@@ -507,7 +506,6 @@ body {
 .surface-card.interactive-card:hover {
   transform: translateY(-3px);
   border-color: rgba(214, 40, 40, 0.28);
-  border-left-color: rgba(37, 99, 235, 1);
   box-shadow: 6px 7px 0 rgba(37, 99, 235, 0.22), var(--shadow-hover);
   }
 
