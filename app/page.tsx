@@ -121,7 +121,7 @@ export default async function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
+          <div className="surface-card public-accent-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <BookOpen size={24} />
             </div>
@@ -131,7 +131,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
+          <div className="surface-card public-accent-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Sparkles size={24} />
             </div>
@@ -141,7 +141,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="surface-card interactive-card rounded-3xl p-8 space-y-4">
+          <div className="surface-card public-accent-card interactive-card rounded-3xl p-8 space-y-4">
             <div className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center font-bold">
               <Award size={24} />
             </div>

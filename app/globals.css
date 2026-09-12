@@ -367,6 +367,15 @@
   .site-shell, main.min-h-screen { max-width: 100%; overflow-x: hidden; background: hsl(var(--background)); color: hsl(var(--foreground)); }
   .surface-card { border-color: hsl(var(--border) / 0.78); background: hsl(var(--card)); color: hsl(var(--card-foreground)); }
   .interactive-card { will-change: transform, box-shadow; }
+
+  .public-accent-card {
+  box-shadow: 6px 7px 0 rgba(37, 99, 235, 0.2), var(--shadow-soft);
+  }
+
+  .public-accent-card:hover {
+  box-shadow: 7px 8px 0 rgba(37, 99, 235, 0.24), var(--shadow-hover);
+  }
+
   .data-table { @apply w-full overflow-hidden rounded-2xl border border-border bg-card; box-shadow: 4px 5px 0 rgba(63, 126, 163, 0.1); }
   .data-table th { @apply bg-muted/60 px-4 py-3 text-left text-[11px] font-black uppercase tracking-[0.14em] text-muted-foreground; }
   .data-table td { @apply border-t border-border/70 px-4 py-3 text-sm text-foreground; }
