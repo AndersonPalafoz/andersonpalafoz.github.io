@@ -31,10 +31,11 @@ export function Navbar() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const themeDropdownRef = useRef<HTMLDivElement>(null);
 
-  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system" | "contrast">("system");
+  const [themeMode, setThemeMode] = useState<"light" | "dark" | "system" | "contrast">("light");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsOpen(false);
     setUserDropdownOpen(false);
     setThemeDropdownOpen(false);
@@ -128,7 +129,7 @@ export function Navbar() {
     if (storedMode) {
       applyTheme(storedMode, false);
     } else {
-      applyTheme("system", false);
+      applyTheme("light", false);
     }
   }, []);
 
