@@ -33,7 +33,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Arquivos principais | `components/external-class-detail.tsx`, `components/external-students-manager.tsx`, `app/professor/turmas-externas/[id]/page.tsx` |
 | Validação | TypeScript, ESLint, `git diff --check` e 19 testes de API passaram; rotas protegidas verificadas no navegador. |
 
-**Atualização:** o detalhe da turma agora exibe e grava chamadas/notas pela API existente. Também foi adicionado cadastro de aluno por turma, com atualização automática das listas.
+**Atualização:** o detalhe da turma agora exibe notas SIMAL históricas por aluno, componente, versão e unidade, além de frequência normalizada a partir do JSON persistido. O editor permite novos lançamentos de notas/chamadas e atualiza a tela após salvar. 23 testes de API/contrato passaram.
 
 ### TASK-016 — Separar fluxos de turmas externas em subpáginas
 
