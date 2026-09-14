@@ -950,7 +950,11 @@ export async function POST(request: NextRequest) {
       if (!attendanceData || typeof attendanceData !== "object" || Array.isArray(attendanceData)) {
         return NextResponse.json({ error: "Os dados de frequência devem ser um mapa de aluno para status." }, { status: 400 });
       }
-      const invalidStatuses = Object.values(attendanceData as Record<string, unknown>).filter((status) => !VALID_ATTENDANCE_STATUSES.has(String(status)));
+      const attendanceEntries = attendanceData as Record<string, unknown>;
+      const invalidStatuses = Object.values(attendanceEntries).filter((entry) => {
+        const status = typeof entry === "string" ? entry : (entry as { status?: unknown })?.status;
+        return !VALID_ATTENDANCE_STATUSES.has(String(status));
+      });
       if (invalidStatuses.length > 0) {
         return NextResponse.json({ error: "Há um status de frequência inválido. Use presente, ausente, atrasado ou justificado." }, { status: 400 });
       }
@@ -990,10 +994,10 @@ export async function POST(request: NextRequest) {
           .from(courseOfferStudents)
           .where(eq(courseOfferStudents.offerId, resolvedOfferId));
         const contextualIdByExternalId = new Map(contextualStudents.filter((student) => student.externalStudentId !== null).map((student) => [student.externalStudentId!, student.id]));
-        const contextualAttendanceData = Object.fromEntries(
-          Object.entries(attendanceData as Record<string, string>)
+          const contextualAttendanceData = Object.fromEntries(
+          Object.entries(attendanceEntries)
             .filter(([externalId]) => contextualIdByExternalId.has(Number(externalId)))
-            .map(([externalId, status]) => [String(contextualIdByExternalId.get(Number(externalId))), status])
+            .map(([externalId, entry]) => [String(contextualIdByExternalId.get(Number(externalId))), entry])
         );
         const existingOfferAttendance = await db.query.courseOfferAttendance.findFirst({
           where: and(eq(courseOfferAttendance.offerId, resolvedOfferId), eq(courseOfferAttendance.date, String(date).trim())),
