@@ -29,8 +29,8 @@ export default async function TeacherDashboardPage() {
   ]);
 
   return (
-    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
-      <div className="page-container space-y-8">
+    <div className="site-shell px-4 py-6 sm:px-6 lg:px-8">
+      <div className="page-container space-y-6">
         {/* Header */}
         <section className="dashboard-hero grid gap-6 rounded-3xl p-6 sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
           <div className="space-y-2">
@@ -43,51 +43,30 @@ export default async function TeacherDashboardPage() {
               Gerencie conteúdos, acompanhe o engajamento dos alunos e organize o Academic Knowledge Hub com alta governança e dados em tempo real.
             </p>
           </div>
-          <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
-            <p className="px-1 pb-2 text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Ações frequentes</p>
-            <div className="teacher-action-grid grid grid-cols-2 gap-2">
-            <Link
-              href="/professor/progresso-aulas"
-              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
-            >
-              Aulas & Speaking
-            </Link>
-            <Link
-              href="/professor/tarefas"
-              className="flex min-h-11 items-center rounded-xl border border-border bg-card px-3 py-2.5 text-xs font-bold leading-tight text-foreground transition hover:-translate-y-0.5 hover:border-red-200 hover:bg-muted hover:shadow-sm"
-            >
-              Tarefas & Deadlines
-            </Link>
-            <Link
-              href="/professor/turmas-internas"
-              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
-            >
-              Turmas Internas
-            </Link>
-            <Link
-              href="/professor/turmas-externas"
-              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
-            >
-              Turmas Externas
-            </Link>
-            <Link
-              href="/professor/alunos"
-              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
-            >
-              Aprovar Alunos
-            </Link>
-            <Link
-              href="/professor/certificados"
-              className="flex min-h-11 items-center rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs font-bold leading-tight text-red-700 transition hover:-translate-y-0.5 hover:bg-red-100 hover:shadow-sm dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
-            >
-              Assinar Certificados
-            </Link>
-            <Link
-              href="/professor/cursos"
-              className="flex min-h-11 items-center rounded-xl bg-primary px-3 py-2.5 text-xs font-bold leading-tight text-primary-foreground shadow-sm shadow-red-600/20 transition hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-sm"
-            >
-              Novo Curso
-            </Link>
+          <div className="relative z-[1] rounded-2xl border border-white/70 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-slate-950/20">
+            <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">Organize por área</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3 xl:grid-cols-1">
+              <Link href="/professor/cursos" className="group rounded-xl border border-border/70 bg-card/80 p-3 transition hover:border-red-300 hover:bg-card">
+                <span className="text-sm font-black text-foreground">Cursos</span>
+                <span className="mt-1 block text-xs text-muted-foreground">Criar, editar e publicar conteúdo</span>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-red-600">Gerenciar <ArrowRight size={13} /></span>
+              </Link>
+              <Link href="/professor/turmas-internas" className="group rounded-xl border border-border/70 bg-card/80 p-3 transition hover:border-red-300 hover:bg-card">
+                <span className="text-sm font-black text-foreground">Turmas internas</span>
+                <span className="mt-1 block text-xs text-muted-foreground">Oferta, agenda e progresso</span>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-red-600">Abrir área <ArrowRight size={13} /></span>
+              </Link>
+              <Link href="/professor/turmas-externas" className="group rounded-xl border border-border/70 bg-card/80 p-3 transition hover:border-red-300 hover:bg-card">
+                <span className="text-sm font-black text-foreground">Turmas externas</span>
+                <span className="mt-1 block text-xs text-muted-foreground">Instituições, alunos e registros</span>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-red-600">Abrir área <ArrowRight size={13} /></span>
+              </Link>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-xs font-semibold text-muted-foreground">
+              <Link href="/professor/alunos" className="hover:text-red-600">Alunos</Link>
+              <Link href="/professor/progresso-aulas" className="hover:text-red-600">Aulas e speaking</Link>
+              <Link href="/professor/tarefas" className="hover:text-red-600">Tarefas</Link>
+              <Link href="/professor/certificados" className="hover:text-red-600">Certificados</Link>
             </div>
           </div>
         </section>
@@ -128,7 +107,7 @@ export default async function TeacherDashboardPage() {
         />
 
         {/* Seções de Conteúdo Recente */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Lista de Cursos com Paginação e Ações Rápidas */}
           <ProfessorCoursesList initialCourses={allCourses.map((course) => ({
             id: course.id,

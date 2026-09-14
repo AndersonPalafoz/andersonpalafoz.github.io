@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-014 — Hub do professor por domínios
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Reduzir a poluição do painel principal e organizar a entrada em Cursos, Turmas internas, Turmas externas e links secundários para alunos, aulas, tarefas e certificados. |
+| Arquivo principal | `app/professor/page.tsx` |
+| Validação | TypeScript, ESLint e `git diff --check` passaram; preview sem sessão redireciona corretamente para login. |
+
+**Direção visual:** três cartões de domínio substituem a grade de ações repetidas; ações secundárias ficam em uma linha discreta e o espaçamento geral foi reduzido.
+
 ### TASK-013 — Simplificar área externa de turmas
 
 | Campo | Valor |
