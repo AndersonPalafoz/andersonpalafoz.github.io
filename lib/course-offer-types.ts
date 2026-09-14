@@ -2,6 +2,8 @@ export type CourseOfferStatus = "draft" | "published" | "archived";
 export type CourseOfferGradeStatus = "open" | "closed";
 export type CourseOfferGradingPolicy = "standard" | "unit" | "simal";
 export type CourseOfferGradingScope = "course" | "unit";
+export type CourseOfferCalendarPeriod = "monthly" | "bimonthly" | "quarterly" | "semester" | "annual";
+export type CourseOfferDurationType = "calendar_period" | "workload" | "annual" | "semester" | "custom";
 
 export type CourseOffer = {
   id: number;
@@ -14,6 +16,10 @@ export type CourseOffer = {
   description?: string | null;
   classDays?: string | null;
   classTime?: string | null;
+  workloadHours?: number | null;
+  durationType?: CourseOfferDurationType | null;
+  durationValue?: number | null;
+  durationUnit?: CourseOfferCalendarPeriod | "hours" | "year" | "semester" | string | null;
   modality?: string | null;
   startDate?: string | null;
   endDate?: string | null;

@@ -4,6 +4,7 @@ import { courses, users } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 import { requireTeacherOrAdmin } from "@/lib/admin-auth";
 import { createCourseOffer, listCourseOffers } from "@/lib/course-offer-service";
+import { validateCourseOfferDuration } from "@/lib/course-offer-duration";
 
 const GLOBAL_ROLES = new Set(["admin", "super_admin"]);
 
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
     if (!Number.isInteger(courseId) || courseId <= 0 || !offerName || !academicTerm) {
       return NextResponse.json({ error: "Curso, nome da oferta e período acadêmico são obrigatórios." }, { status: 400 });
     }
+    const duration = validateCourseOfferDuration(body);
+    if (!duration.ok) return NextResponse.json({ error: duration.error }, { status: 400 });
     const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
     if (!course) return NextResponse.json({ error: "Curso não encontrado." }, { status: 404 });
 
@@ -59,12 +62,12 @@ export async function POST(request: NextRequest) {
       description: body.description ? String(body.description).trim() : null,
       classDays: body.classDays ? String(body.classDays).trim() : null,
       classTime: body.classTime ? String(body.classTime).trim() : null,
-      workloadHours: body.workloadHours ? Number(body.workloadHours) : 40,
+      workloadHours: duration.workloadHours,
       startDate: body.startDate ? new Date(body.startDate) : null,
       endDate: body.endDate ? new Date(body.endDate) : null,
-      durationType: body.durationType ? String(body.durationType) : "semester",
-      durationValue: body.durationValue ? Number(body.durationValue) : null,
-      durationUnit: body.durationUnit ? String(body.durationUnit) : null,
+      durationType: duration.durationType,
+      durationValue: duration.durationValue,
+      durationUnit: duration.durationUnit,
       modality: body.modality ? String(body.modality) : "Remota",
       meetingLink: body.meetingLink ? String(body.meetingLink).trim() : null,
       classroomLocation: body.classroomLocation ? String(body.classroomLocation).trim() : null,
