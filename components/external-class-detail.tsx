@@ -57,7 +57,30 @@ export function ExternalClassDetail({ id }: { id: string }) {
     const present = cells.filter((cell) => cell.status === "present" || cell.status === "late").length;
     return { records: attendance.length, present, total: cells.length, rate: cells.length ? Math.round((present / cells.length) * 100) : 0 };
   }, [attendance]);
-  const gradesByStudent = useMemo(() => new Map(students.map((student) => [student.id, grades.filter((grade) => grade.studentId === student.id)])), [students, grades]);
+  const gradesByStudent = useMemo(() => {
+    const grouped = new Map<number, GradeRow[]>();
+    for (const student of students) grouped.set(student.id, []);
+    for (const grade of grades) {
+      const studentId = Number(grade.studentId);
+      const records = grouped.get(studentId);
+      if (records) records.push(grade);
+    }
+    return grouped;
+  }, [students, grades]);
+  const gradeStudents = useMemo(() => {
+    const knownIds = new Set(students.map((student) => student.id));
+    const unmatched = grades.filter((grade) => !knownIds.has(Number(grade.studentId))).map((grade) => ({ id: Number(grade.studentId), name: `Aluno ${grade.studentId}`, email: null, status: "legacy" }));
+    return [...students, ...unmatched.filter((student, index, rows) => rows.findIndex((candidate) => candidate.id === student.id) === index)];
+  }, [students, grades]);
+  const gradeComponentLabel = (component?: string | null) => ({
+    grammar: "Grammar",
+    reading: "Reading",
+    writing: "Writing",
+    listening: "Listening",
+    speaking: "Speaking",
+    presentation: "Apresentação sobre a Copa do Mundo",
+    total: "Total da prova",
+  }[component || ""] || component || "Avaliação");
   const editGrade = async (grade: GradeRow) => {
     const assessmentTitle = window.prompt("Título da avaliação", grade.assessmentTitle);
     if (!assessmentTitle?.trim()) return;
@@ -103,7 +126,7 @@ export function ExternalClassDetail({ id }: { id: string }) {
       <div className="p-5">
         {tab === "students" && <div className="divide-y divide-border">{students.map((student) => <div key={student.id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="font-bold">{student.name}</p><p className="text-xs text-muted-foreground">{student.email || "Sem e-mail"}</p></div><span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-700">{student.status || "active"}</span></div>)}</div>}
         {tab === "attendance" && <div className="space-y-3">{attendance.length ? attendance.map((row) => { const cells = parseAttendance(row); const absences = cells.filter((cell) => cell.status === "absent").length; return <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"><div><p className="font-bold">{new Date(`${row.date}T12:00:00`).toLocaleDateString("pt-BR")}</p><p className="text-xs text-muted-foreground">{cells.length} registros lançados</p></div><div className="flex items-center gap-2"><span className={`rounded-full px-3 py-1 text-xs font-bold ${absences ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700"}`}>{absences} ausência(s)</span><button type="button" onClick={() => void editAttendance(row)} className="rounded-lg border border-border px-2.5 py-1 text-xs font-bold hover:bg-muted">Editar</button></div></div>; }) : <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhuma chamada cadastrada.</p>}</div>}
-        {tab === "grades" && <div className="space-y-5">{grades.length ? students.map((student) => { const records = gradesByStudent.get(student.id) || []; if (!records.length) return null; return <div key={student.id} className="rounded-xl border border-border p-4"><div className="mb-3 flex items-center justify-between gap-3"><div><p className="font-black">{student.name}</p><p className="text-xs text-muted-foreground">{records.length} lançamento(s)</p></div><span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">SIMAL</span></div><div className="grid gap-2 sm:grid-cols-2">{records.map((grade) => <div key={grade.id} className="rounded-lg bg-muted/50 p-3"><div className="flex justify-between gap-3"><p className="text-sm font-bold">{grade.assessmentTitle}</p><p className="text-sm font-black text-red-600">{grade.score}/{grade.maxScore}</p></div><p className="mt-1 text-xs text-muted-foreground">{grade.assessmentComponent || grade.assessmentType || "Avaliação"}{grade.assessmentVersion ? ` · Versão ${grade.assessmentVersion}` : ""}{grade.unitNumber ? ` · Unidade ${grade.unitNumber}` : ""}</p><button type="button" onClick={() => void editGrade(grade)} className="mt-3 rounded-lg border border-border px-2.5 py-1 text-xs font-bold hover:bg-background">Editar nota</button></div>)}</div></div>; }) : <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhuma nota SIMAL encontrada para esta turma.</p>}<ExternalAcademicEditor classId={data.id} students={students} onSaved={() => void load()} /></div>}
+        {tab === "grades" && <div className="space-y-5">{grades.length ? gradeStudents.map((student) => { const records = gradesByStudent.get(student.id) || []; if (!records.length) return null; return <div key={student.id} className="rounded-xl border border-border p-4"><div className="mb-3 flex items-center justify-between gap-3"><div><p className="font-black">{student.name}</p><p className="text-xs text-muted-foreground">{records.length} lançamento(s)</p></div><span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">SIMAL</span></div><div className="grid gap-2 sm:grid-cols-2">{records.map((grade) => <div key={grade.id} className="rounded-lg bg-muted/50 p-3"><div className="flex justify-between gap-3"><p className="text-sm font-bold">{grade.assessmentTitle}</p><p className="text-sm font-black text-red-600">{grade.score}/{grade.maxScore}</p></div><p className="mt-1 text-xs text-muted-foreground">{gradeComponentLabel(grade.assessmentComponent)}{grade.assessmentVersion ? ` · Versão ${grade.assessmentVersion}` : ""}{grade.unitNumber ? ` · Unidade ${grade.unitNumber}` : ""}{grade.assessmentDate ? ` · ${new Date(`${grade.assessmentDate}T12:00:00`).toLocaleDateString("pt-BR")}` : ""}</p><button type="button" onClick={() => void editGrade(grade)} className="mt-3 rounded-lg border border-border px-2.5 py-1 text-xs font-bold hover:bg-background">Editar nota</button></div>)}</div></div>; }) : <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhuma nota SIMAL encontrada para esta turma.</p>}<ExternalAcademicEditor classId={data.id} students={students} onSaved={() => void load()} /></div>}
         {tab === "materials" && <div className="space-y-3">{data.materials?.length ? data.materials.map((material) => <div key={material.id} className="rounded-xl border border-border p-4"><p className="font-bold">{material.title}</p><p className="text-sm text-muted-foreground">{material.description || "Material da turma"}</p></div>) : <p className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhum material cadastrado.</p>}</div>}
       </div>
     </div>
