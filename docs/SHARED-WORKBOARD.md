@@ -23,6 +23,16 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-017 — Detalhe de turma e gestão de alunos funcionais
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Implementar detalhe real da turma externa e gestão de alunos com busca, filtro, métricas, abas e estados de erro/loading. |
+| Arquivos principais | `components/external-class-detail.tsx`, `components/external-students-manager.tsx`, `app/professor/turmas-externas/[id]/page.tsx` |
+| Validação | TypeScript, ESLint e `git diff --check` passaram; rotas protegidas verificadas no navegador. |
+
 ### TASK-016 — Separar fluxos de turmas externas em subpáginas
 
 | Campo | Valor |
