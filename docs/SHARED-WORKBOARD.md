@@ -27,13 +27,13 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` — implementação e testes focados concluídos |
+| Status | `em validação` — interfaces interna/externa e validações compartilhadas implementadas; testes focados concluídos |
 | Responsável | v0 |
 | Branch | `v0/course-offer-duration` |
 | Escopo | Permitir ofertas mensais, bimestrais, trimestrais, semestrais, anuais e por carga horária inteira a partir de 1 hora em turmas internas e externas. |
 | Arquivos principais | `lib/course-offer-duration.ts`, `app/api/course-offers/route.ts`, `app/api/professor/external-classes/route.ts`, `components/internal-class-create-panel.tsx` |
 
-**Próximo passo:** completar a interface externa para edição/criação, cobrir os dois fluxos com testes e validar migrations, TypeScript, lint e build.
+**Próximo passo:** validar o fluxo completo em preview com sessão autorizada, confirmar a migration/schema no ambiente de banco e executar build de produção.
 
 **Regra:** SIMAL continua exclusivamente no fluxo de turmas externas.
 
@@ -82,7 +82,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Main do GitHub | Atualizada com `force-with-lease` para `4af117e478740da35cd8bd70a5e6f404d560cbd4`; a operação só prosseguiu porque a main permanecia no SHA esperado. |
 | Conteúdo sincronizado | Snapshot local enviado sem `.next`, `.next-build` e `node_modules`, evitando os arquivos de cache acima do limite do GitHub. |
 | Vercel | Deploy automático acionado pela `main`: `dpl_7fRkCgwkdcPiLXWm7o3q3Pe77NnH`, produção, estado `READY`. |
-| Próximo passo | Testar o menu principal do site no drawer autenticado usando o domínio de produção. |
+| Próximo passo | Testar o menu principal do site no drawer autenticado usando o domínio de produç��o. |
 
 ## Modelo de tarefa (referência)
 
