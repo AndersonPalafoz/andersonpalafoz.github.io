@@ -31,7 +31,9 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Responsável | v0 |
 | Escopo | Implementar detalhe real da turma externa e gestão de alunos com busca, filtro, métricas, abas e estados de erro/loading. |
 | Arquivos principais | `components/external-class-detail.tsx`, `components/external-students-manager.tsx`, `app/professor/turmas-externas/[id]/page.tsx` |
-| Validação | TypeScript, ESLint e `git diff --check` passaram; rotas protegidas verificadas no navegador. |
+| Validação | TypeScript, ESLint, `git diff --check` e 19 testes de API passaram; rotas protegidas verificadas no navegador. |
+
+**Atualização:** o detalhe da turma agora exibe e grava chamadas/notas pela API existente. Também foi adicionado cadastro de aluno por turma, com atualização automática das listas.
 
 ### TASK-016 — Separar fluxos de turmas externas em subpáginas
 
