@@ -11,6 +11,7 @@ import { calculateSimalComposite } from "@/lib/simal-grading";
 import { calculateCourseGrade, normalizeGradeInput, parseGradeNumber } from "@/lib/course-grading";
 import { canAccessAdminPortal } from "@/lib/role-capabilities";
 import { useRolePreview } from "@/components/role-preview";
+import { ExternalClassesSectionNav } from "@/components/external-classes-section-nav";
 
 interface ExternalStudentItem {
   id: number;
@@ -1772,6 +1773,7 @@ export default function TurmasExternasPage() {
           </div>
         </header>
 
+        <ExternalClassesSectionNav />
 
         {loadError && (
           <section
