@@ -23,6 +23,17 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-009 — Menu de criação de turmas internas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Fluxo guiado para criar turma interna, com seções recolhíveis, resumo vivo, duração contextual, validações acionáveis e responsividade. |
+| Arquivo principal | `components/internal-class-create-panel.tsx` |
+
+**Validação:** TypeScript, ESLint, 14 testes focados e `git diff --check` passaram. O preview sem sessão redireciona corretamente para login.
+
 ### TASK-008 — Atualização completa das páginas de turmas
 
 | Campo | Valor |
