@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-015 — Limpeza visual da gestão de turmas externas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Remover painéis de indicadores e comparativos da entrada, reduzir resumos institucionais e deixar importações, relatórios e edição dentro do menu contextual de cada turma. |
+| Arquivo principal | `app/professor/turmas-externas/page.tsx` |
+| Validação | TypeScript e `git diff --check` passaram; ESLint sem erros, apenas 3 avisos preexistentes de dependências de hooks; preview sem sessão redirecionou corretamente para login. |
+
+**Resultado:** a página prioriza busca, filtros e turmas; detalhes acadêmicos continuam disponíveis nas abas e ações contextuais.
+
 ### TASK-014 — Hub do professor por domínios
 
 | Campo | Valor |

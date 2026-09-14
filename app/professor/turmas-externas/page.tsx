@@ -1772,33 +1772,6 @@ export default function TurmasExternasPage() {
           </div>
         </header>
 
-        <section aria-labelledby="operational-overview-title" className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
-            <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Visão operacional</p>
-              <h2 id="operational-overview-title" className="text-lg sm:text-xl font-black text-gray-950 dark:text-white">O que precisa da sua atenção</h2>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-slate-400">Os indicadores são calculados a partir dos registros atuais das turmas.</p>
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6 xl:gap-3">
-            {[
-              { label: "Turmas ativas", value: operationalMetrics.activeClasses, icon: Building2, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
-              { label: "Próximas aulas", value: operationalMetrics.upcomingLessons, icon: Calendar, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
-              { label: "Chamadas pendentes", value: operationalMetrics.pendingAttendance, icon: ClipboardCheck, tone: "text-amber-600 bg-amber-50 dark:bg-amber-950/30" },
-              { label: "Baixa frequência", value: operationalMetrics.lowAttendanceStudents, icon: AlertTriangle, tone: "text-orange-600 bg-orange-50 dark:bg-orange-950/30" },
-              { label: "Avaliações pendentes", value: operationalMetrics.pendingAssessments, icon: BarChart3, tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/30" },
-              { label: "Potenciais certificados", value: operationalMetrics.potentialCertificates, icon: Award, tone: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30" },
-            ].map(({ label, value, icon: Icon, tone }) => (
-              <div key={label} className="flex min-h-[108px] flex-col justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-3.5 transition duration-200 hover:-translate-y-0.5 hover:border-gray-200 hover:bg-white hover:shadow-sm dark:border-slate-800 dark:bg-slate-800/40 dark:hover:border-slate-700 dark:hover:bg-slate-800">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="max-w-[11rem] text-[10px] font-black uppercase leading-tight tracking-wide text-gray-500 dark:text-slate-400">{label}</p>
-                  <div className={`shrink-0 rounded-xl p-2 ${tone}`}><Icon size={16} aria-hidden="true" /></div>
-                </div>
-                <p className={`text-2xl font-black tracking-tight ${loadError ? "text-gray-400 dark:text-slate-500" : "text-gray-950 dark:text-white"}`}>{loadError ? "—" : value}</p>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {loadError && (
           <section
@@ -1854,37 +1827,8 @@ export default function TurmasExternasPage() {
           </div>
         )}
 
-        {/* Resumo Consolidado por Instituição */}
-        {Object.keys(institutionSummary).length > 0 && (
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-            {Object.entries(institutionSummary).map(([inst, summary]) => (
-              <div key={inst} className="group rounded-[24px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 shadow-[0_8px_24px_rgba(15,23,42,0.05)] dark:shadow-none space-y-3 transition hover:-translate-y-0.5 hover:shadow-[0_14px_32px_rgba(15,23,42,0.09)]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black uppercase tracking-wider px-2.5 py-1 rounded-lg bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
-                    {inst}
-                  </span>
-                  <BarChart3 size={16} className="text-gray-400" />
-                </div>
-                <div className="grid grid-cols-3 gap-2 pt-1 text-center">
-                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase">Turmas</p>
-                    <p className="text-sm font-black text-gray-900 dark:text-white">{summary.classesCount}</p>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
-                    <p className="text-[10px] text-gray-500 font-bold uppercase">Alunos</p>
-                    <p className="text-sm font-black text-gray-900 dark:text-white">{summary.studentsCount}</p>
-                  </div>
-                  <div className="bg-gray-50 dark:bg-slate-800/60 p-2 rounded-xl">
-                    <p className="text-[10px] text-green-600 font-bold uppercase">Ativos</p>
-                    <p className="text-sm font-black text-green-600">{summary.activeCount}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </section>
-        )}
 
-        {comparisonChartData.length > 0 && (
+        {false && comparisonChartData.length > 0 && (
           <section aria-labelledby="external-comparison-chart-title" className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
@@ -1958,7 +1902,7 @@ export default function TurmasExternasPage() {
             </p>
           </div>
 
-          <div className="external-class-filters mt-4 grid w-full grid-cols-1 items-stretch gap-3 pb-1 sm:grid-cols-2 sm:items-center lg:mt-0 lg:grid-cols-2 lg:pb-0 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="external-class-filters mt-4 grid w-full grid-cols-1 items-stretch gap-3 border-t border-border/60 pt-4 sm:grid-cols-2 sm:items-center lg:mt-0 lg:grid-cols-2 lg:border-t-0 lg:pt-0 xl:grid-cols-3">
             <div className="flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center sm:gap-2 [&>select]:w-full sm:[&>select]:w-auto">
               <span className="text-xs font-bold text-gray-500 whitespace-nowrap">Ano:</span>
               <select
@@ -2756,48 +2700,6 @@ export default function TurmasExternasPage() {
                         )}
                       </div>
                       {canManage && (<div className="relative flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
-                        <div className="hidden sm:flex items-center gap-2 flex-wrap">
-                          <label className="cursor-pointer px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300">
-                            <FileSpreadsheet size={14} className="text-green-600" /> Importar planilha
-                            <input
-                              type="file"
-                              accept={EXTERNAL_STUDENT_IMPORT_ACCEPT}
-                              className="hidden"
-                              onChange={(e) => void handleCsvImport(cls.id, e)}
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => exportAcademicCsv(cls)}
-                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-emerald-300 hover:bg-emerald-50 dark:hover:border-emerald-900/60 dark:hover:bg-emerald-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                            title="Exportar relatório acadêmico em CSV"
-                          >
-                            <FileSpreadsheet size={14} className="text-emerald-600" /> Relatório CSV
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => void exportAcademicXlsx(cls)}
-                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-blue-300 hover:bg-blue-50 dark:hover:border-blue-900/60 dark:hover:bg-blue-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                            title="Baixar relatório acadêmico em Excel"
-                          >
-                            <FileSpreadsheet size={14} className="text-blue-600" /> Relatório Excel
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => exportAcademicPdf(cls)}
-                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:border-red-300 hover:bg-red-50 dark:hover:border-red-900/60 dark:hover:bg-red-950/30 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                            title="Abrir relatório acadêmico para salvar em PDF"
-                          >
-                            <FileText size={14} className="text-red-600" /> Relatório PDF
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => startEditClass(cls)}
-                            className="px-3 py-2 rounded-xl border border-gray-200 dark:border-slate-700 text-xs font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
-                          >
-                            <Edit3 size={14} /> Editar
-                          </button>
-                        </div>
 
                         {/* Menu de Ações Rápidas */}
                         <div className="relative">
