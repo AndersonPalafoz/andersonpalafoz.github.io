@@ -15,7 +15,7 @@ import {
   notifications,
   courseOffers,
 } from "@/drizzle/schema";
-import { eq, desc, and, or, isNull, isNotNull, inArray } from "drizzle-orm";
+import { eq, desc, and, or, isNull, isNotNull, inArray, sql } from "drizzle-orm";
 import { normalizeGradeInput } from "@/lib/course-grading";
 import { validateCourseOfferDuration } from "@/lib/course-offer-duration";
 
@@ -185,13 +185,24 @@ export async function GET(request: NextRequest) {
           return row;
         }
       };
-      const attendance = [...normalizedOfferAttendance, ...legacyAttendance.map(normalizeAttendanceRow)].filter((row, index, rows) => rows.findIndex((candidate) => candidate.date === row.date) === index);
+      const archivedAttendance = await db.execute(sql`
+        SELECT id, "externalClassId", "offerId", date, "attendanceData", "createdAt"
+        FROM legacy_external_class_attendance_archive
+        WHERE "externalClassId" = ${cls.id} OR (${linkedOffer?.id ?? null} IS NOT NULL AND "offerId" = ${linkedOffer?.id ?? null})
+      `).catch(() => [] as Array<Record<string, unknown>>);
+      const attendance = [...normalizedOfferAttendance, ...legacyAttendance.map(normalizeAttendanceRow), ...archivedAttendance.map((row) => ({ ...row, externalClassId: cls.id }))].filter((row, index, rows) => rows.findIndex((candidate) => (candidate as unknown as { date: string }).date === (row as unknown as { date: string }).date) === index);
       const rawGrades = await db.select().from(externalClassGrades).where(or(eq(externalClassGrades.externalClassId, cls.id), linkedOffer ? eq(externalClassGrades.offerId, linkedOffer.id) : eq(externalClassGrades.externalClassId, cls.id))).orderBy(desc(externalClassGrades.updatedAt));
-      const grades = rawGrades.map((grade) => ({
+      const archivedGrades = await db.execute(sql`
+        SELECT id, "externalClassId", "studentId", "offerId", "courseOfferStudentId", "assessmentTitle", "assessmentType", "assessmentVersion", "assessmentComponent", score, "maxScore", "assessmentDate", "unit_number" AS "unitNumber", feedback, "createdAt", "updatedAt"
+        FROM legacy_external_class_grades_archive
+        WHERE "externalClassId" = ${cls.id} OR (${linkedOffer?.id ?? null} IS NOT NULL AND "offerId" = ${linkedOffer?.id ?? null})
+      `).catch(() => [] as Array<Record<string, unknown>>);
+      const normalizedGrades = [...rawGrades, ...archivedGrades].map((grade) => ({
         ...grade,
         externalClassId: cls.id,
-        studentId: grade.studentId || (grade.courseOfferStudentId ? offerStudents.find((student) => student.id === grade.courseOfferStudentId)?.externalStudentId || 0 : 0),
+        studentId: Number(grade.studentId || (grade.courseOfferStudentId ? offerStudents.find((student) => student.id === Number(grade.courseOfferStudentId))?.externalStudentId || 0 : 0)),
       })).filter((grade) => students.some((student) => student.id === grade.studentId));
+      const grades = normalizedGrades.filter((grade, index, rows) => rows.findIndex((candidate) => (candidate as { id: number }).id === (grade as { id: number }).id) === index);
       const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
       
       const totalStudents = students.length;
