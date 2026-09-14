@@ -35,6 +35,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Atualização:** o formulário lateral foi removido visualmente da entrada principal. Criação, gestão e alunos agora têm entradas próprias; a lista principal permanece focada apenas na consulta das turmas.
 
+**Revisão de rotas:** corrigidos links que apontavam para query strings sem destino dedicado, validado o parâmetro numérico de `[id]` com `notFound()` e atualizado o contrato visual para refletir a arquitetura atual. TypeScript, ESLint e 5 testes de rota passaram.
+
 **Nota:** os fluxos atuais permanecem preservados; as subpáginas funcionam como portas dedicadas para a migração progressiva das operações sem quebrar importações e relatórios.
 
 ### TASK-015 — Limpeza visual da gestão de turmas externas

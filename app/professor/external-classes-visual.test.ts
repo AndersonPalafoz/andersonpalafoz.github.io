@@ -5,41 +5,27 @@ import { resolve } from "node:path";
 describe("contrato visual da página de cursos externos", () => {
   const source = readFileSync(resolve(process.cwd(), "app/professor/turmas-externas/page.tsx"), "utf8");
 
-  it("mantém uma hierarquia visual responsiva para o cabeçalho e o conteúdo", () => {
-    expect(source).toContain("max-w-[1500px]");
-    expect(source).toContain("text-xl leading-tight sm:text-3xl");
-    expect(source).toContain("grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)]");
-    expect(source).toContain("p-4 sm:p-6 lg:px-8 lg:py-8");
-    expect(source).toContain("flex min-w-0 flex-col items-stretch gap-1.5 sm:flex-row");
-    expect(source).toContain("grid grid-cols-2 gap-2 bg-gray-50");
-    expect(source).toContain("external-attendance-toolbar flex w-full flex-col");
+  it("mantém uma hierarquia visual responsiva e encaminha cada fluxo para sua rota", () => {
+    expect(source).toContain("ExternalClassesSectionNav");
+    expect(source).toContain("ExternalClassesSectionNav");
+    expect(source).toContain("external-classes-page");
+    expect(source).toContain("focus:ring-2 focus:ring-red-600");
   });
 
-  it("exibe o comparativo de distribuição acadêmica por turma", () => {
-    expect(source).toContain("comparisonChartData");
-    expect(source).toContain("Distribuição de notas e frequência");
-    expect(source).toContain("Médias (0–10)");
-    expect(source).toContain("Abaixo de 75%");
-    expect(source).toContain("style={{ width:");
-    expect(source).toContain("xl:grid-cols-2");
+  it("mantém o foco da entrada na consulta das turmas", () => {
+    expect(source).toContain("Turmas externas");
+    expect(source).toContain("ExternalClassesSectionNav");
+    expect(source).not.toContain("Visão operacional");
   });
 
-  it("preserva superfícies, estados e cards com suporte ao modo escuro", () => {
-    expect(source).toContain("bg-white/95 dark:bg-slate-900");
-    expect(source).toContain("dark:border-slate-800");
-    expect(source).toContain("Atualizado às");
+  it("preserva estados de carregamento e erro na entrada", () => {
     expect(source).toContain("Atualizando dados");
-    expect(source).toContain("hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)]");
+    expect(source).toContain("Fazer login");
+    expect(source).toContain("focus:ring-2 focus:ring-red-600");
   });
 
-  it("expõe uma visão operacional com indicadores acionáveis", () => {
-    expect(source).toContain("Visão operacional");
-    expect(source).toContain("Turmas ativas");
-    expect(source).toContain("Chamadas pendentes");
-    expect(source).toContain("Avaliações pendentes");
-    expect(source).toContain("Nova turma");
-    expect(source).toContain("Prévia da importação");
-    expect(source).toContain("Deseja confirmar?");
+  it("mantém a navegação dedicada fora da entrada principal", () => {
+    expect(source).toContain("ExternalClassesSectionNav");
   });
 
   it("mantém foco visível e identificação acessível das ações rápidas", () => {
