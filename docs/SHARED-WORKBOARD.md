@@ -27,13 +27,15 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` — interfaces interna/externa e validações compartilhadas implementadas; testes focados concluídos |
+| Status | `em validação` — interfaces interna/externa, build de produção e validações compartilhadas concluídos; falta apenas teste autenticado no preview |
 | Responsável | v0 |
 | Branch | `v0/course-offer-duration` |
 | Escopo | Permitir ofertas mensais, bimestrais, trimestrais, semestrais, anuais e por carga horária inteira a partir de 1 hora em turmas internas e externas. |
 | Arquivos principais | `lib/course-offer-duration.ts`, `app/api/course-offers/route.ts`, `app/api/professor/external-classes/route.ts`, `components/internal-class-create-panel.tsx` |
 
-**Próximo passo:** validar o fluxo completo em preview com sessão autorizada, confirmar a migration/schema no ambiente de banco e executar build de produção.
+**Evidências 2026-09-14:** `next build` passou com 141 páginas estáticas geradas; a tabela Neon `course_offers` contém `workload_hours`, `duration_type`, `duration_value` e `duration_unit`. O teste autenticado no preview continua pendente porque as rotas de professor exigem sessão autorizada.
+
+**Próximo passo:** validar o fluxo completo em preview com sessão autorizada.
 
 **Regra:** SIMAL continua exclusivamente no fluxo de turmas externas.
 
