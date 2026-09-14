@@ -851,7 +851,7 @@ export default function TurmasExternasPage() {
     setWorkloadHours((cls as any).workloadHours || 40);
     setDurationType((cls.durationType as "calendar_period" | "annual" | "semester" | "workload" | "custom") || "calendar_period");
     setDurationValue((cls as any).durationValue || 1);
-    setDurationUnit((cls as any).durationUnit || "semester");
+    setDurationUnit((cls as any).durationUnit || ((cls as any).durationType === "workload" ? "hours" : "semester"));
     setStartDate((cls as any).startDate ? new Date((cls as any).startDate).toISOString().split('T')[0] : "");
     setEndDate((cls as any).endDate ? new Date((cls as any).endDate).toISOString().split('T')[0] : "");
     setMinimumAttendancePercent(getMinimumAttendanceFromMaxAbsence((cls as any).maxAbsencePercent));
