@@ -44,6 +44,11 @@ export async function POST(request: NextRequest) {
     }
     const duration = validateCourseOfferDuration(body);
     if (!duration.ok) return NextResponse.json({ error: duration.error }, { status: 400 });
+    const startDate = body.startDate ? new Date(body.startDate) : null;
+    const endDate = body.endDate ? new Date(body.endDate) : null;
+    if (!startDate || !endDate || Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return NextResponse.json({ error: "Datas de início e término são obrigatórias." }, { status: 400 });
+    if (endDate < startDate) return NextResponse.json({ error: "A data de término deve ser posterior ao início." }, { status: 400 });
+    if (!body.classDays || !body.classTime) return NextResponse.json({ error: "Dias e horário dos encontros são obrigatórios." }, { status: 400 });
     const course = await db.query.courses.findFirst({ where: eq(courses.id, courseId) });
     if (!course) return NextResponse.json({ error: "Curso não encontrado." }, { status: 404 });
 
@@ -63,8 +68,8 @@ export async function POST(request: NextRequest) {
       classDays: body.classDays ? String(body.classDays).trim() : null,
       classTime: body.classTime ? String(body.classTime).trim() : null,
       workloadHours: duration.workloadHours,
-      startDate: body.startDate ? new Date(body.startDate) : null,
-      endDate: body.endDate ? new Date(body.endDate) : null,
+      startDate,
+      endDate,
       durationType: duration.durationType,
       durationValue: duration.durationValue,
       durationUnit: duration.durationUnit,
