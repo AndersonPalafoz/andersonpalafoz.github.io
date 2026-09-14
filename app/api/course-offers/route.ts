@@ -34,6 +34,10 @@ export async function POST(request: NextRequest) {
     const courseId = Number(body.courseId);
     const offerName = String(body.offerName ?? "").trim();
     const academicTerm = String(body.academicTerm ?? "").trim();
+    const institution = body.institution ? String(body.institution).trim() : null;
+    if (institution?.toLowerCase() === "simal") {
+      return NextResponse.json({ error: "Turmas SIMAL devem ser criadas na área de turmas externas." }, { status: 400 });
+    }
     if (!Number.isInteger(courseId) || courseId <= 0 || !offerName || !academicTerm) {
       return NextResponse.json({ error: "Curso, nome da oferta e período acadêmico são obrigatórios." }, { status: 400 });
     }

@@ -11,6 +11,12 @@ describe("internal class management layout", () => {
     expect(source).not.toContain('href="/professor/cursos"');
   });
 
+  it("rejects SIMAL from the internal course-offer endpoint", () => {
+    const route = read("app/api/course-offers/route.ts");
+    expect(route).toContain('institution?.toLowerCase() === "simal"');
+    expect(route).toContain("Turmas SIMAL devem ser criadas na área de turmas externas.");
+  });
+
   it("exposes the operational tabs and preserves the internal domain boundary", () => {
     const detail = read("components/internal-class-detail-tabs.tsx");
     const page = read("app/professor/turmas-internas/[id]/page.tsx");
