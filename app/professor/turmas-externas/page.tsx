@@ -89,7 +89,7 @@ interface ExternalClassItem {
   courseName: string;
   academicTerm: string;
   description: string | null;
-  durationType?: "annual" | "semester" | "workload" | "custom" | null;
+  durationType?: "calendar_period" | "annual" | "semester" | "workload" | "custom" | null;
   durationValue?: number | null;
   durationUnit?: string | null;
   maxAbsencePercent?: number | null;
@@ -229,6 +229,8 @@ const normalizeWorkloadHours = (value: unknown) => {
 };
 
 const formatDurationLabel = (item: Pick<ExternalClassItem, "durationType" | "durationValue" | "durationUnit">) => {
+  const periodLabels: Record<string, string> = { monthly: "Mensal", bimonthly: "Bimestral", quarterly: "Trimestral", semester: "Semestral", annual: "Anual" };
+  if (item.durationType === "calendar_period") return item.durationValue && item.durationValue > 1 ? `${item.durationValue} × ${periodLabels[item.durationUnit || "semester"] || item.durationUnit}` : periodLabels[item.durationUnit || "semester"] || "Período de calendário";
   if (item.durationType === "annual") return "Anual";
   if (item.durationType === "workload") return item.durationValue ? `${item.durationValue} ${item.durationUnit || "horas"}` : "Por carga horária";
   if (item.durationType === "custom") return item.durationValue ? `${item.durationValue} ${item.durationUnit || "unidade(s)"}` : "Outro formato";
@@ -358,9 +360,9 @@ export default function TurmasExternasPage() {
   const [classDays, setClassDays] = useState("Segundas e Quartas");
   const [classTime, setClassTime] = useState("19:00 - 20:30");
   const [workloadHours, setWorkloadHours] = useState(40);
-  const [durationType, setDurationType] = useState<"annual" | "semester" | "workload" | "custom">("annual");
+  const [durationType, setDurationType] = useState<"calendar_period" | "annual" | "semester" | "workload" | "custom">("calendar_period");
   const [durationValue, setDurationValue] = useState(1);
-  const [durationUnit, setDurationUnit] = useState("year");
+  const [durationUnit, setDurationUnit] = useState("monthly");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [minimumAttendancePercent, setMinimumAttendancePercent] = useState(REPORT_MIN_ATTENDANCE);
@@ -392,11 +394,11 @@ export default function TurmasExternasPage() {
         setDurationType("workload");
         setDurationValue(workloadHours || 1);
         setDurationUnit("hours");
-      } else {
-        setDurationType("semester");
-        setDurationValue(1);
-        setDurationUnit("semester");
-      }
+  } else {
+  setDurationType("calendar_period");
+  setDurationValue(1);
+  setDurationUnit("monthly");
+  }
     }, 0);
 
     return () => window.clearTimeout(timeoutId);
@@ -847,7 +849,7 @@ export default function TurmasExternasPage() {
     setClassDays((cls as any).classDays || "Segundas e Quartas");
     setClassTime((cls as any).classTime || "19:00 - 20:30");
     setWorkloadHours((cls as any).workloadHours || 40);
-    setDurationType((cls.durationType as "annual" | "semester" | "workload" | "custom") || "semester");
+    setDurationType((cls.durationType as "calendar_period" | "annual" | "semester" | "workload" | "custom") || "calendar_period");
     setDurationValue((cls as any).durationValue || 1);
     setDurationUnit((cls as any).durationUnit || "semester");
     setStartDate((cls as any).startDate ? new Date((cls as any).startDate).toISOString().split('T')[0] : "");
@@ -1576,7 +1578,7 @@ export default function TurmasExternasPage() {
       return;
     }
     printWindow.opener = null;
-    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acadêmico — ${escapeReportHtml(cls.className)}</title><style>
+    printWindow.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8" /><title>Relatório acad��mico — ${escapeReportHtml(cls.className)}</title><style>
       @page { size: A4 landscape; margin: 12mm; } body { font-family: Arial, sans-serif; color: #1f2937; font-size: 10px; line-height: 1.35; } header { border-bottom: 4px solid #dc2626; padding: 0 0 13px; margin-bottom: 16px; } h1 { margin: 0 0 5px; color: #b91c1c; font-size: 22px; letter-spacing: -0.02em; } h2 { margin: 0 0 7px; color: #111827; font-size: 14px; } .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 16px; } .meta div { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 8px; } .meta b { display: block; color: #6b7280; font-size: 8px; text-transform: uppercase; margin-bottom: 3px; } .summary { border: 1px solid #d1d5db; border-radius: 8px; padding: 10px 12px; margin: 12px 0 16px; page-break-inside: avoid; } .summary-title { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: #374151; } .summary-title span { color: #6b7280; font-size: 9px; } .chart-row { display: grid; grid-template-columns: 105px 1fr 105px; align-items: center; gap: 8px; margin: 6px 0; } .chart-label { font-size: 9px; font-weight: 700; } .approved-label { color: #166534; } .failed-label { color: #991b1b; } .insufficient-label { color: #4b5563; } .bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #e5e7eb; } .bar-track span { display: block; height: 100%; min-width: 0; border-radius: 999px; } .bar-approved { background: #16a34a; } .bar-failed { background: #dc2626; } .bar-insufficient { background: #9ca3af; } .chart-row strong { text-align: right; font-size: 9px; color: #374151; } .summary-details { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; padding-top: 7px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } table { width: 100%; border-collapse: collapse; table-layout: fixed; } thead { display: table-header-group; } tr { page-break-inside: avoid; } th { background: #991b1b; color: white; text-align: left; padding: 7px 5px; font-size: 7px; letter-spacing: 0.02em; } td { border-bottom: 1px solid #e5e7eb; padding: 6px 4px; vertical-align: top; font-size: 8px; overflow-wrap: anywhere; } td.status { font-weight: 700; white-space: nowrap; } .status-approved { color: #166534; } .status-failed { color: #991b1b; } .status-pending { color: #92400e; } tr:nth-child(even) td { background: #f9fafb; } small { color: #6b7280; } footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 8px; } </style></head><body>
       <header><h1>Relatório Acadêmico</h1><h2>${escapeReportHtml(cls.courseName)} — ${escapeReportHtml(cls.className)}</h2><div>Documento gerado em ${escapeReportHtml(generatedAt)}</div></header>
       ${reportSummaryHtml}
@@ -2300,19 +2302,20 @@ export default function TurmasExternasPage() {
                     </div>
                     <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                       <select id="external-duration-type" value={durationType} onChange={(e) => {
-                        const next = e.target.value as "annual" | "semester" | "workload" | "custom";
+                        const next = e.target.value as "calendar_period" | "annual" | "semester" | "workload" | "custom";
                         setDurationType(next);
-                        setDurationUnit(next === "annual" ? "year" : next === "semester" ? "semester" : next === "workload" ? "hours" : "custom");
+                        setDurationUnit(next === "calendar_period" ? "monthly" : next === "annual" ? "year" : next === "semester" ? "semester" : next === "workload" ? "hours" : "custom");
                       }} className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white">
-                        <option value="annual">Anual</option>
-                        <option value="semester">Semestral</option>
+                        <option value="calendar_period">Período de calendário</option>
+                        <option value="annual">Anual (legado)</option>
+                        <option value="semester">Semestral (legado)</option>
                         <option value="workload">Por carga horária</option>
                         <option value="custom">Outro formato</option>
                       </select>
                       <input aria-label="Valor da duração" type="number" min={1} max={9999} value={durationValue} onChange={(e) => setDurationValue(Number(e.target.value) || 1)} className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
-                      <input aria-label="Unidade da duração" type="text" value={durationUnit} onChange={(e) => setDurationUnit(e.target.value)} placeholder="year, semester, hours..." className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />
+                      {durationType === "calendar_period" ? <select aria-label="Período da duração" value={durationUnit} onChange={(e) => setDurationUnit(e.target.value)} className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white"><option value="monthly">Mensal</option><option value="bimonthly">Bimestral</option><option value="quarterly">Trimestral</option><option value="semester">Semestral</option><option value="annual">Anual</option></select> : <input aria-label="Unidade da duração" type="text" value={durationUnit} onChange={(e) => setDurationUnit(e.target.value)} placeholder="year, semester, hours..." className="w-full rounded-xl border border-red-200 bg-white p-2.5 text-xs font-semibold text-gray-900 dark:border-red-900/60 dark:bg-slate-800 dark:text-white" />}
                     </div>
-                    <p className="mt-2 text-[11px] font-semibold text-red-800 dark:text-red-200">{durationType === "annual" ? "Duração: 1 ano letivo." : durationType === "semester" ? "Duração: semestre letivo." : durationType === "workload" ? `Duração definida por ${durationValue} hora(s).` : "Use o campo de unidade para descrever o formato."}</p>
+                    <p className="mt-2 text-[11px] font-semibold text-red-800 dark:text-red-200">{durationType === "annual" ? "Duração: 1 ano letivo." : durationType === "semester" ? "Duração: semestre letivo." : durationType === "calendar_period" ? `Duração: ${durationValue} período(s) ${durationUnit}.` : durationType === "workload" ? `Duração definida por ${durationValue} hora(s).` : "Use o campo de unidade para descrever o formato."}</p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>

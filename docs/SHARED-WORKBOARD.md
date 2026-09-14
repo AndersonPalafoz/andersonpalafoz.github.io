@@ -23,6 +23,21 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-007 — Durações flexíveis para turmas internas e externas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` — implementação e testes focados concluídos |
+| Responsável | v0 |
+| Branch | `v0/course-offer-duration` |
+| Escopo | Permitir ofertas mensais, bimestrais, trimestrais, semestrais, anuais e por carga horária inteira a partir de 1 hora em turmas internas e externas. |
+| Arquivos principais | `lib/course-offer-duration.ts`, `app/api/course-offers/route.ts`, `app/api/professor/external-classes/route.ts`, `components/internal-class-create-panel.tsx` |
+
+**Próximo passo:** completar a interface externa para edição/criação, cobrir os dois fluxos com testes e validar migrations, TypeScript, lint e build.
+
+**Regra:** SIMAL continua exclusivamente no fluxo de turmas externas.
+
+
 ### TASK-005 — Auditar segurança, banco e integração Classroom
 
 | Campo | Valor |
