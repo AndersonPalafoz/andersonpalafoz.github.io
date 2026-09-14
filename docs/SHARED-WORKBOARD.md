@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-016 — Separar fluxos de turmas externas em subpáginas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Criar entradas dedicadas para gerenciar turmas, criar turma, cadastrar/gerenciar alunos e abrir o detalhe de uma turma com navegação própria. |
+| Arquivos principais | `components/external-classes-section-nav.tsx`, `app/professor/turmas-externas/{gerenciar,criar,alunos,[id]}/page.tsx` |
+| Validação | TypeScript, ESLint e `git diff --check` passaram; rotas protegidas redirecionam usuários não autenticados para login. |
+
+**Nota:** os fluxos atuais permanecem preservados; as subpáginas funcionam como portas dedicadas para a migração progressiva das operações sem quebrar importações e relatórios.
+
 ### TASK-015 — Limpeza visual da gestão de turmas externas
 
 | Campo | Valor |
