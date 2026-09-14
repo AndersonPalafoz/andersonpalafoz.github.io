@@ -48,6 +48,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
 
+**Regra de domínio registrada em 2026-09-14:** SIMAL é exclusivamente uma turma externa. A rota de ofertas internas rejeita a instituição `SIMAL`; avaliações SIMAL e seus alunos permanecem nos fluxos `external_classes`.
+
 ## Atualização de sincronização e deploy — 09/09/2026
 
 | Item | Status confirmado |
