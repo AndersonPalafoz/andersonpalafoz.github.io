@@ -24,7 +24,7 @@ export default async function InternalClassesPage({ searchParams }: PageProps) {
   const user = email ? await db.query.users.findFirst({ where: eq(users.email, email) }) : undefined;
   if (!user) redirect("/login?callbackUrl=/professor/turmas-internas");
   const isGlobalAdmin = role === "admin" || role === "superadmin";
-  const offers = await listCourseOffers({ userId: user.id, globalAdmin: isGlobalAdmin });
+  const offers = (await listCourseOffers({ userId: user.id, globalAdmin: isGlobalAdmin })).filter((offer) => !offer.sourceExternalClassId);
   const availableCourses = isGlobalAdmin
     ? await db.query.courses.findMany({ where: isNull(courses.deletedAt), columns: { id: true, title: true, level: true } })
     : (await getTeacherCourses(email)).map((course) => ({ id: course.id, title: course.title, level: course.level }));
