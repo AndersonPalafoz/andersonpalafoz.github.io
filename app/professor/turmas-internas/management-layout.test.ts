@@ -7,7 +7,8 @@ const read = (file: string) => readFileSync(resolve(process.cwd(), file), "utf8"
 describe("internal class management layout", () => {
   it("routes the primary action to the explicit internal-class creation flow", () => {
     const source = read("components/internal-classes-workspace.tsx");
-    expect(source).toContain("CreateInternalClassDialog");
+    expect(source).toContain('href="/professor/turmas-internas?new=internal-class"');
+    expect(source).not.toContain("CreateInternalClassDialog");
     expect(source).not.toContain('href="/professor/cursos"');
   });
 

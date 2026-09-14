@@ -23,6 +23,16 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-010 — Corrigir conexão do menu novo
+
+| Campo | Valor |
+|---|---|
+| Status | `em andamento` |
+| Responsável | v0 |
+| Causa confirmada | O botão exibido em produção ainda vinha de `CreateInternalClassDialog`, o formulário antigo. `InternalClassCreatePanel` existia, mas só era renderizado quando a URL continha `?new=internal-class`; o botão não navegava para essa URL. |
+| Correção | Trocar o botão antigo pelo link `/professor/turmas-internas?new=internal-class`, atualizar o teste de layout e manter o painel novo como destino único. |
+| Validação | TypeScript, ESLint, 3 testes focados e `git diff --check` passaram localmente. |
+
 ### TASK-009 — Menu de criação de turmas internas
 
 | Campo | Valor |
