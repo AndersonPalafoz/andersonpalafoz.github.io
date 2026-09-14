@@ -1729,7 +1729,7 @@ export default function TurmasExternasPage() {
     <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-4 sm:p-6 lg:px-8 lg:py-8 xl:px-10 xl:py-10 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white">
       <div className="mx-auto w-full max-w-[1500px] min-w-0 space-y-6 sm:space-y-8 xl:max-w-[1680px]">
         {/* Cabeçalho */}
-        <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 px-5 py-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)] backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-none md:px-7 md:py-6">
+        <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 overflow-hidden rounded-[24px] border border-red-100/80 bg-gradient-to-br from-red-50/70 via-white/95 to-white px-5 py-5 shadow-[0_12px_36px_rgba(127,29,29,0.08)] backdrop-blur dark:border-red-950/50 dark:bg-slate-900/90 dark:from-red-950/20 dark:via-slate-900/90 dark:to-slate-900 md:px-7 md:py-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <Link
@@ -1783,7 +1783,7 @@ export default function TurmasExternasPage() {
           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6 xl:gap-3">
             {[
               { label: "Turmas ativas", value: operationalMetrics.activeClasses, icon: Building2, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
-              { label: "Próximas aulas", value: operationalMetrics.upcomingLessons, icon: Calendar, tone: "text-blue-600 bg-blue-50 dark:bg-blue-950/30" },
+              { label: "Próximas aulas", value: operationalMetrics.upcomingLessons, icon: Calendar, tone: "text-red-600 bg-red-50 dark:bg-red-950/30" },
               { label: "Chamadas pendentes", value: operationalMetrics.pendingAttendance, icon: ClipboardCheck, tone: "text-amber-600 bg-amber-50 dark:bg-amber-950/30" },
               { label: "Baixa frequência", value: operationalMetrics.lowAttendanceStudents, icon: AlertTriangle, tone: "text-orange-600 bg-orange-50 dark:bg-orange-950/30" },
               { label: "Avaliações pendentes", value: operationalMetrics.pendingAssessments, icon: BarChart3, tone: "text-violet-600 bg-violet-50 dark:bg-violet-950/30" },

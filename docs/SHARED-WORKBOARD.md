@@ -23,6 +23,21 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-008 — Atualização completa das páginas de turmas
+
+| Campo | Valor |
+|---|---|
+| Status | `em andamento` |
+| Responsável | v0 |
+| Escopo | Atualizar turmas internas e externas com hierarquia visual, cabeçalhos, métricas, formulários de duração e responsividade coerentes. |
+| Arquivos principais | `app/professor/turmas-internas/page.tsx`, `components/internal-class-create-panel.tsx`, `app/professor/turmas-externas/page.tsx` |
+
+**Implementado nesta etapa:** cabeçalhos internos e externos refinados, formulário interno com superfície editorial, métricas externas harmonizadas sem azul experimental e duração visível nos cards internos.
+
+**Validação 2026-09-14:** 30 testes focados, TypeScript, lint específico e `git diff --check` passaram. O preview sem sessão redirecionou corretamente as duas rotas para login em desktop e mobile; a validação autenticada segue pendente.
+
+**Próximo passo:** validar as duas rotas com sessão autorizada e revisar o formulário externo completo em desktop e mobile.
+
 ### TASK-007 — Durações flexíveis para turmas internas e externas
 
 | Campo | Valor |
