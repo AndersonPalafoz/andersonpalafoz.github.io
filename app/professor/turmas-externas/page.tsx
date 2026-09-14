@@ -2050,7 +2050,7 @@ export default function TurmasExternasPage() {
 
         <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-[minmax(280px,320px)_minmax(0,1fr)] lg:gap-7 xl:gap-8">
           {/* Formulários de Cadastro / Edição */}
-          <div className="min-w-0 space-y-6">
+          <div className="hidden">
             {canManage && (<>
             {/* Criar / Editar Turma */}
             <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-sm dark:shadow-none space-y-4">
