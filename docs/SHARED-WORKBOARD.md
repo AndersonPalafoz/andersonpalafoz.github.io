@@ -35,7 +35,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Atualização:** o formulário lateral foi removido visualmente da entrada principal. Criação, gestão e alunos agora têm entradas próprias; a lista principal permanece focada apenas na consulta das turmas.
 
-**Revisão de rotas:** corrigidos links que apontavam para query strings sem destino dedicado, validado o parâmetro numérico de `[id]` com `notFound()` e atualizado o contrato visual para refletir a arquitetura atual. TypeScript, ESLint e 5 testes de rota passaram.
+**Revisão funcional:** a raiz agora é um painel enxuto de consulta; criação, gerenciamento e alunos têm componentes client próprios, com leitura e criação conectadas à API real. O formulário lateral legado não é mais exibido na entrada principal. TypeScript e ESLint passaram, com apenas 3 avisos preexistentes de dependências de hooks no componente legado.
 
 **Nota:** os fluxos atuais permanecem preservados; as subpáginas funcionam como portas dedicadas para a migração progressiva das operações sem quebrar importações e relatórios.
 
