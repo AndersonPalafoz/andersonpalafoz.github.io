@@ -79,7 +79,7 @@ export default function RootLayout({
                   root.classList.add("dark");
                 } else if (mode === "light") {
                   // O estado limpo representa o modo claro.
-                } else if (mode === "system" || (!mode && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+                } else if (mode === "system") {
                   if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
                     root.classList.add("dark");
                   }
