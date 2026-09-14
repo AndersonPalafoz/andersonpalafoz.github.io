@@ -23,8 +23,6 @@ interface ExternalClassesCalendarProps {
 
 export function ExternalClassesCalendar({ classes }: ExternalClassesCalendarProps) {
   const [selectedModality, setSelectedModality] = useState<string>("all");
-  const [activeTooltipId, setActiveTooltipId] = useState<number | null>(null);
-
   const filtered = classes.filter(c => selectedModality === "all" || c.modality === selectedModality);
 
   const modalityBadgeColor = (mod: string) => {
@@ -68,18 +66,8 @@ export function ExternalClassesCalendar({ classes }: ExternalClassesCalendarProp
           {filtered.map((item) => (
             <div
               key={item.id}
-              onMouseEnter={() => setActiveTooltipId(item.id)}
-              onMouseLeave={() => setActiveTooltipId(null)}
-              className="relative surface-card border border-border/70 p-6 shadow-sm space-y-4 flex flex-col justify-between transition hover:border-red-400"
+              className="surface-card border border-border/70 p-5 shadow-sm space-y-4 flex flex-col justify-between transition hover:border-red-300 hover:shadow-md"
             >
-              {/* Tooltip detalhado ao passar o mouse */}
-              {activeTooltipId === item.id && (
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-20 w-72 rounded-xl bg-popover text-popover-foreground border border-border p-3 text-xs shadow-xl space-y-1 animate-in fade-in zoom-in-95">
-                  <p className="font-bold text-red-600">{item.title}</p>
-                  <p className="text-muted-foreground">Período: {item.startDate} até {item.endDate}</p>
-                  <p className="text-muted-foreground">Limite de faltas: {item.maxAbsencesPercent}%</p>
-                </div>
-              )}
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
