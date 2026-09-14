@@ -48,6 +48,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Critério de conclusão:** CI e lint verdes, migrations comparadas e aplicadas em staging, Preview validado com `app_runtime`, fluxos de turma interna/Classroom testados e evidências registradas no quadro.
 
+**Regra de domínio registrada em 2026-09-14:** SIMAL é exclusivamente uma turma externa. A rota de ofertas internas rejeita a instituição `SIMAL`; avaliações SIMAL e seus alunos permanecem nos fluxos `external_classes`.
+
 ## Atualização de sincronização e deploy — 09/09/2026
 
 | Item | Status confirmado |
@@ -97,8 +99,6 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 ## Próximas atividades
 Use esta seção para tarefas já decididas, mas ainda não iniciadas.
 
-### Nota de design — azul cerúleo
-A expansão gradual do azul nas áreas públicas e autenticadas foi revertida a pedido do usuário. A paleta original foi restaurada em todas as áreas; permanece a linha azul fina antes do rodapé, explicitamente aprovada. Em 2026-09-10, a linha foi ajustada para `#3F7EA3`, um azul médio inspirado em Oxford/Cambridge e adequado a um curso de inglês. Nesta etapa, a mesma linguagem de linha fina foi aplicada apenas como divisor entre hero e conteúdo em `/cursos`, `/materiais` e `/blog`; nenhuma cor de fundo, CTA ou regra de negócio foi alterada. Em seguida, as caixas `.surface-card` receberam uma sombra de contorno azul muito sutil deslocada para a direita e para baixo (`#3F7EA3`), reforçada levemente no hover. Nesta continuidade, tabelas de dados e estados vazios receberam o mesmo contorno em intensidade menor, mantendo CTAs e controles sem azul. TypeScript, ESLint focalizado e `git diff --check` passaram; as três rotas públicas foram abertas em dark mode no viewport 1216×597 sem regressão de renderização.
 
 ### TASK-006 — Completar fluxo e gestão de Turmas Internas
 | Campo | Valor |
