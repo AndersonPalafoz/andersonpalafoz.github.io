@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-013 — Simplificar área externa de turmas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Reduzir densidade visual da página externa, calendário e modal de configuração, mantendo o fluxo separado das turmas internas. |
+| Arquivos principais | `app/professor/turmas-externas/page.tsx`, `components/external-classes-calendar.tsx`, `components/external-class-days-modal.tsx` |
+| Validação | TypeScript, ESLint e `git diff --check` passaram; o preview sem sessão redirecionou corretamente para login. |
+
+**Direção visual:** superfícies neutras, bordas discretas, menos sombras, largura de conteúdo alinhada ao fluxo interno e ações contextuais preservadas.
+
 ### TASK-012 — Criar curso novo no fluxo de turma interna
 
 | Campo | Valor |

@@ -45,8 +45,8 @@ export function ExternalClassDaysModal({ isOpen, onClose, currentDays, currentMo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl space-y-6 font-sans animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-5 shadow-2xl space-y-5 font-sans animate-in fade-in zoom-in-95">
         <div className="flex items-center justify-between border-b border-border pb-4">
           <div className="flex items-center gap-2.5">
             <div className="rounded-xl bg-red-100 dark:bg-red-950/60 p-2 text-red-600">
