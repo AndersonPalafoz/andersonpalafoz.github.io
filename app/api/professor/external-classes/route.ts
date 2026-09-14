@@ -173,8 +173,25 @@ export async function GET(request: NextRequest) {
           return null;
         }
       }).filter((row): row is (typeof offerAttendance)[number] & { externalClassId: number } => row !== null);
-      const attendance = [...normalizedOfferAttendance, ...legacyAttendance].filter((row, index, rows) => rows.findIndex((candidate) => candidate.date === row.date) === index);
-      const grades = await db.select().from(externalClassGrades).where(eq(externalClassGrades.externalClassId, cls.id)).orderBy(desc(externalClassGrades.createdAt));
+      const normalizeAttendanceRow = (row: typeof legacyAttendance[number]) => {
+        try {
+          const source = JSON.parse(row.attendanceData) as Record<string, string>;
+          const mapped = Object.fromEntries(Object.entries(source).map(([studentId, status]) => {
+            const offerStudent = offerStudents.find((student) => String(student.id) === studentId);
+            return [String(offerStudent?.externalStudentId || studentId), status];
+          }));
+          return { ...row, attendanceData: JSON.stringify(mapped) };
+        } catch {
+          return row;
+        }
+      };
+      const attendance = [...normalizedOfferAttendance, ...legacyAttendance.map(normalizeAttendanceRow)].filter((row, index, rows) => rows.findIndex((candidate) => candidate.date === row.date) === index);
+      const rawGrades = await db.select().from(externalClassGrades).where(or(eq(externalClassGrades.externalClassId, cls.id), linkedOffer ? eq(externalClassGrades.offerId, linkedOffer.id) : eq(externalClassGrades.externalClassId, cls.id))).orderBy(desc(externalClassGrades.updatedAt));
+      const grades = rawGrades.map((grade) => ({
+        ...grade,
+        externalClassId: cls.id,
+        studentId: grade.studentId || (grade.courseOfferStudentId ? offerStudents.find((student) => student.id === grade.courseOfferStudentId)?.externalStudentId || 0 : 0),
+      })).filter((grade) => students.some((student) => student.id === grade.studentId));
       const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
       
       const totalStudents = students.length;
