@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-012 — Criar curso novo no fluxo de turma interna
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Permitir escolher um curso existente ou criar um novo curso com título, nível, categoria e descrição antes de criar a turma. |
+| Arquivos principais | `components/internal-class-create-panel.tsx`, `app/api/courses/route.ts` |
+| Validação | TypeScript, ESLint, 14 testes focados e `git diff --check` passaram. |
+
+**Segurança:** `POST /api/courses` exige sessão de professor, administrador ou super administrador, valida título e nível e retorna o ID recém-criado para a oferta.
+
 ### TASK-011 — Calendário real na criação de turmas internas
 
 | Campo | Valor |
