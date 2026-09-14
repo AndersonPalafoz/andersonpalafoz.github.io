@@ -921,6 +921,40 @@ body {
 
 @media (max-width: 767px) {
   .external-classes-page {
+    min-width: 0;
+  }
+
+  .external-manager-toolbar {
+    gap: 1rem;
+  }
+
+  .external-manager-toolbar > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .external-manager-toolbar > div:last-child > * {
+    min-width: 0;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .external-class-card {
+    overflow: hidden;
+  }
+
+  .external-class-card .flex {
+    min-width: 0;
+  }
+
+  .external-class-card button,
+  .external-class-card a {
+    max-width: 100%;
+  }
+
+  .external-classes-page {
     padding-inline: 0.75rem;
   }
 
