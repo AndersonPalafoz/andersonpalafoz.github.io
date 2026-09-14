@@ -35,6 +35,14 @@ export async function GET(_request: Request, { params }: Params) {
   const present = attendanceRows.filter((row) => row.status === "present").length;
   const attendanceRate = attendanceRows.length ? Math.round((present / attendanceRows.length) * 100) : 0;
   const completedActivities = activityProgressRows.filter((row) => row.status === "completed").length;
+  const studentMetrics = students.map((student) => {
+    const studentProgress = progressRows.filter((row) => row.userId === student.userId);
+    const studentActivities = activityProgressRows.filter((row) => row.userId === student.userId);
+    const progressAverage = studentProgress.length ? Math.round(studentProgress.reduce((sum, row) => sum + (row.percentageCompleted ?? 0), 0) / studentProgress.length) : 0;
+    const activityAverage = activityRows.length ? Math.round((studentActivities.filter((row) => row.status === "completed").length / activityRows.length) * 100) : 0;
+    const average = studentProgress.length || studentActivities.length ? Math.round((progressAverage + activityAverage) / (studentProgress.length && activityRows.length ? 2 : 1)) : null;
+    return { studentId: student.id, average };
+  });
 
-  return NextResponse.json({ sessions, activities: activityRows, attendances: attendanceRows, averageProgress, attendanceRate, completedActivities, totalActivities: activityRows.length });
+  return NextResponse.json({ sessions, activities: activityRows, attendances: attendanceRows, averageProgress, attendanceRate, completedActivities, totalActivities: activityRows.length, passingAverage: Number(offer.passingAverage ?? 6), studentMetrics });
 }
