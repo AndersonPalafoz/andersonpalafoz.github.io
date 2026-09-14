@@ -157,7 +157,23 @@ export async function GET(request: NextRequest) {
       const linkedUsers = linkedUserIds.length ? await db.select({ id: users.id, lastSignedIn: users.lastSignedIn, mustChangePassword: users.mustChangePassword }).from(users).where(inArray(users.id, linkedUserIds)) : [];
       const lastAccessByUserId = new Map(linkedUsers.map((user) => [user.id, user.mustChangePassword ? null : user.lastSignedIn]));
       const studentsWithAccess = students.map((student) => ({ ...student, courseOfferStudentId: offerStudentIdByExternalStudentId.get(student.id) ?? null, lastSignedIn: student.userId ? lastAccessByUserId.get(student.userId) || null : null }));
-      const attendance = await db.select().from(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, cls.id)).orderBy(desc(externalClassAttendance.createdAt));
+      const legacyAttendance = await db.select().from(externalClassAttendance).where(eq(externalClassAttendance.externalClassId, cls.id)).orderBy(desc(externalClassAttendance.createdAt));
+      const offerAttendance = linkedOffer
+        ? await db.select().from(courseOfferAttendance).where(eq(courseOfferAttendance.offerId, linkedOffer.id)).orderBy(desc(courseOfferAttendance.updatedAt))
+        : [];
+      const offerStudentById = new Map(offerStudents.map((student) => [student.id, student.externalStudentId]));
+      const normalizedOfferAttendance = offerAttendance.map((row) => {
+        try {
+          const mapped = Object.fromEntries(Object.entries(JSON.parse(row.attendanceData) as Record<string, string>).flatMap(([offerStudentId, status]) => {
+            const externalStudentId = offerStudentById.get(Number(offerStudentId));
+            return externalStudentId ? [[String(externalStudentId), status]] : [];
+          }));
+          return Object.keys(mapped).length ? { ...row, externalClassId: cls.id, attendanceData: JSON.stringify(mapped) } : null;
+        } catch {
+          return null;
+        }
+      }).filter((row): row is (typeof offerAttendance)[number] & { externalClassId: number } => row !== null);
+      const attendance = [...normalizedOfferAttendance, ...legacyAttendance].filter((row, index, rows) => rows.findIndex((candidate) => candidate.date === row.date) === index);
       const grades = await db.select().from(externalClassGrades).where(eq(externalClassGrades.externalClassId, cls.id)).orderBy(desc(externalClassGrades.createdAt));
       const materials = await db.select().from(externalClassMaterials).where(eq(externalClassMaterials.externalClassId, cls.id)).orderBy(desc(externalClassMaterials.createdAt));
       
