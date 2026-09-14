@@ -23,6 +23,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-011 — Calendário real na criação de turmas internas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` |
+| Responsável | v0 |
+| Escopo | Usar datas reais de início/fim, seleção de dias da semana e horários de início/fim na criação de turmas internas. |
+| Arquivos principais | `components/internal-class-create-panel.tsx`, `app/api/course-offers/route.ts` |
+| Validação | TypeScript, ESLint, 14 testes focados e `git diff --check` passaram. Preview sem sessão redirecionou para login. |
+
+**Regra:** a API rejeita datas ausentes/inválidas, término anterior ao início, dias sem seleção e agenda sem horário.
+
 ### TASK-010 — Corrigir conexão do menu novo
 
 | Campo | Valor |
