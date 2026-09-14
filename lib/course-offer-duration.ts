@@ -84,14 +84,16 @@ export function formatCourseOfferDuration(input: {
   durationValue?: number | null;
   durationUnit?: string | null;
   workloadHours?: number | null;
+  unitCount?: number | null;
 }) {
   if (input.durationType === "workload") return `${input.workloadHours ?? input.durationValue ?? 0} horas`;
   if (input.durationType === "calendar_period" && CALENDAR_PERIODS.includes(input.durationUnit as CalendarPeriod)) {
     const period = input.durationUnit as CalendarPeriod;
     const value = input.durationValue ?? 1;
+    if (period === "annual" && input.unitCount && input.unitCount > 1) return `${value === 1 ? "anual" : `${value} × anual`} · ${input.unitCount} unidades letivas`;
     return value === 1 ? CALENDAR_PERIOD_LABELS[period] : `${value} × ${CALENDAR_PERIOD_LABELS[period]}`;
   }
-  if (input.durationType === "annual") return "anual";
+  if (input.durationType === "annual") return input.unitCount && input.unitCount > 1 ? `anual · ${input.unitCount} unidades letivas` : "anual";
   if (input.durationType === "semester") return "semestral";
   if (input.durationType === "custom") return `${input.durationValue ?? 0} ${input.durationUnit ?? "unidade(s)"}`;
   return "semestral";

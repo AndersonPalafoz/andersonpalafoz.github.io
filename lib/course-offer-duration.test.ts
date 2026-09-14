@@ -23,6 +23,12 @@ describe("course offer duration", () => {
     expect(validateCourseOfferDuration({ durationType: "workload", workloadHours: hours, durationValue: hours }).ok).toBe(false);
   });
 
+  it("representa curso anual dividido em duas unidades letivas", () => {
+    const result = validateCourseOfferDuration({ durationType: "calendar_period", durationUnit: "annual", durationValue: 1, workloadHours: 80 });
+    expect(result).toMatchObject({ ok: true, durationUnit: "annual" });
+    if (result.ok) expect(formatCourseOfferDuration({ ...result, unitCount: 2 })).toBe("anual · 2 unidades letivas");
+  });
+
   it("mantém compatibilidade com semestre legado", () => {
     expect(validateCourseOfferDuration({ durationType: "semester", durationValue: 1, durationUnit: "semester", workloadHours: 40 })).toMatchObject({ ok: true });
   });
