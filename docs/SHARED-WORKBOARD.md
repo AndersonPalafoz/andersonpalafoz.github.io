@@ -36,7 +36,9 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Validação 2026-09-14:** 30 testes focados, TypeScript, lint específico e `git diff --check` passaram. O preview sem sessão redirecionou corretamente as duas rotas para login em desktop e mobile; a validação autenticada segue pendente.
 
-**Próximo passo:** validar as duas rotas com sessão autorizada e revisar o formulário externo completo em desktop e mobile.
+**Correção adicional:** a listagem interna agora exclui ofertas com `sourceExternalClassId`; o detalhe interno já aplica o mesmo bloqueio. O estado vazio explica que turmas externas/SIMAL ficam na Área externa.
+
+**Próximo passo:** validar a área interna autenticada e confirmar que a lista fica vazia quando não há turmas internas.
 
 ### TASK-007 — Durações flexíveis para turmas internas e externas
 
