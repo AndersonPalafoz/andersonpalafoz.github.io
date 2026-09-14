@@ -33,6 +33,8 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Arquivos principais | `components/external-classes-section-nav.tsx`, `app/professor/turmas-externas/{gerenciar,criar,alunos,[id]}/page.tsx` |
 | Validação | TypeScript, ESLint e `git diff --check` passaram; rotas protegidas redirecionam usuários não autenticados para login. |
 
+**Atualização:** o formulário lateral foi removido visualmente da entrada principal. Criação, gestão e alunos agora têm entradas próprias; a lista principal permanece focada apenas na consulta das turmas.
+
 **Nota:** os fluxos atuais permanecem preservados; as subpáginas funcionam como portas dedicadas para a migração progressiva das operações sem quebrar importações e relatórios.
 
 ### TASK-015 — Limpeza visual da gestão de turmas externas
