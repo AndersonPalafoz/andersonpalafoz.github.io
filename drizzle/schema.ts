@@ -127,9 +127,9 @@ export const courses = pgTable("courses", {
   workloadHours: integer("workload_hours").default(40),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
-  durationType: varchar("duration_type", { length: 32 }).default("semester"), // annual, semester, workload, custom
+  durationType: varchar("duration_type", { length: 32 }).default("semester"), // calendar_period, annual, semester, workload, custom
   durationValue: integer("duration_value"),
-  durationUnit: varchar("duration_unit", { length: 24 }), // year, semester, hours, custom
+  durationUnit: varchar("duration_unit", { length: 24 }), // monthly, bimonthly, quarterly, semester, annual, hours, custom
   maxAbsencePercent: integer("max_absence_percent").default(25),
   hasUnits: boolean("has_units").notNull().default(false),
   unitCount: integer("unit_count").default(1),
@@ -897,9 +897,9 @@ export const externalClasses = pgTable("external_classes", {
   workloadHours: integer("workload_hours").default(40),
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
-  durationType: varchar("duration_type", { length: 32 }).default("semester"), // annual, semester, workload, custom
+  durationType: varchar("duration_type", { length: 32 }).default("semester"), // calendar_period, annual, semester, workload, custom
   durationValue: integer("duration_value"),
-  durationUnit: varchar("duration_unit", { length: 24 }), // year, semester, hours, custom
+  durationUnit: varchar("duration_unit", { length: 24 }), // monthly, bimonthly, quarterly, semester, annual, hours, custom
   maxAbsencePercent: integer("max_absence_percent").default(25),
   hasUnits: boolean("has_units").notNull().default(false),
   unitCount: integer("unit_count").default(1),

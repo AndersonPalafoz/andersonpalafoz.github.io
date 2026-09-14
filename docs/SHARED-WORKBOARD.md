@@ -23,6 +23,23 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-007 — Durações flexíveis para turmas internas e externas
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` — interfaces interna/externa, build de produção e validações compartilhadas concluídos; falta apenas teste autenticado no preview |
+| Responsável | v0 |
+| Branch | `v0/course-offer-duration` |
+| Escopo | Permitir ofertas mensais, bimestrais, trimestrais, semestrais, anuais e por carga horária inteira a partir de 1 hora em turmas internas e externas. |
+| Arquivos principais | `lib/course-offer-duration.ts`, `app/api/course-offers/route.ts`, `app/api/professor/external-classes/route.ts`, `components/internal-class-create-panel.tsx` |
+
+**Evidências 2026-09-14:** `next build` passou com 141 páginas estáticas geradas; a tabela Neon `course_offers` contém `workload_hours`, `duration_type`, `duration_value` e `duration_unit`. O teste autenticado no preview continua pendente porque as rotas de professor exigem sessão autorizada.
+
+**Próximo passo:** validar o fluxo completo em preview com sessão autorizada.
+
+**Regra:** SIMAL continua exclusivamente no fluxo de turmas externas.
+
+
 ### TASK-005 — Auditar segurança, banco e integração Classroom
 
 | Campo | Valor |
@@ -67,7 +84,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 | Main do GitHub | Atualizada com `force-with-lease` para `4af117e478740da35cd8bd70a5e6f404d560cbd4`; a operação só prosseguiu porque a main permanecia no SHA esperado. |
 | Conteúdo sincronizado | Snapshot local enviado sem `.next`, `.next-build` e `node_modules`, evitando os arquivos de cache acima do limite do GitHub. |
 | Vercel | Deploy automático acionado pela `main`: `dpl_7fRkCgwkdcPiLXWm7o3q3Pe77NnH`, produção, estado `READY`. |
-| Próximo passo | Testar o menu principal do site no drawer autenticado usando o domínio de produção. |
+| Próximo passo | Testar o menu principal do site no drawer autenticado usando o domínio de produç��o. |
 
 ## Modelo de tarefa (referência)
 

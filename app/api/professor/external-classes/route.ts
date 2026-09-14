@@ -17,6 +17,7 @@ import {
 } from "@/drizzle/schema";
 import { eq, desc, and, or, isNull, isNotNull, inArray } from "drizzle-orm";
 import { normalizeGradeInput } from "@/lib/course-grading";
+import { validateCourseOfferDuration } from "@/lib/course-offer-duration";
 
 type ExternalClassesDbError = Error & {
   code?: string;
@@ -353,15 +354,11 @@ export async function POST(request: NextRequest) {
       if (maxAbsenceValue === null || (maxAbsenceValue !== undefined && (maxAbsenceValue < 0 || maxAbsenceValue > 100))) {
         return NextResponse.json({ error: "O limite máximo de faltas deve ser um percentual entre 0% e 100%." }, { status: 400 });
       }
-      const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
+      const duration = validateCourseOfferDuration({ durationType, durationValue, durationUnit, workloadHours });
+      if (!duration.ok) return NextResponse.json({ error: duration.error }, { status: 400 });
       if (hasUnits && (!Number.isInteger(Number(unitCount)) || Number(unitCount) < 1 || Number(unitCount) > 100)) return NextResponse.json({ error: "A quantidade de unidades deve estar entre 1 e 100." }, { status: 400 });
       if (gradingScope !== undefined && !["course", "unit"].includes(String(gradingScope))) return NextResponse.json({ error: "Escopo de média inválido." }, { status: 400 });
       if (passingAverageValue === null || (passingAverageValue !== undefined && (passingAverageValue < 0 || passingAverageValue > 10))) return NextResponse.json({ error: "A média mínima deve ser um número entre 0 e 10." }, { status: 400 });
-      const normalizedDurationType = allowedDurationTypes.includes(String(durationType || "semester")) ? String(durationType || "semester") : "semester";
-      if (durationValue !== undefined && durationValue !== null && (!Number.isFinite(Number(durationValue)) || Number(durationValue) <= 0)) {
-        return NextResponse.json({ error: "O valor da duração deve ser maior que zero." }, { status: 400 });
-      }
-
       const inserted = await db.insert(externalClasses).values({
         teacherId: teacher.id,
         institution: institution.trim(),
@@ -371,10 +368,10 @@ export async function POST(request: NextRequest) {
         description: description ? description.trim() : null,
         classDays: classDays ? classDays.trim() : null,
         classTime: classTime ? classTime.trim() : null,
-        workloadHours: workloadHours ? Number(workloadHours) : 40,
-        durationType: normalizedDurationType,
-        durationValue: durationValue ? Number(durationValue) : null,
-        durationUnit: durationUnit ? String(durationUnit).trim() : null,
+        workloadHours: duration.workloadHours,
+        durationType: duration.durationType,
+        durationValue: duration.durationValue,
+        durationUnit: duration.durationUnit,
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         maxAbsencePercent: maxAbsenceValue ?? 25,
@@ -411,13 +408,13 @@ export async function POST(request: NextRequest) {
       if (maxAbsenceValue === null || (maxAbsenceValue !== undefined && (maxAbsenceValue < 0 || maxAbsenceValue > 100))) {
         return NextResponse.json({ error: "O limite máximo de faltas deve ser um percentual entre 0% e 100%." }, { status: 400 });
       }
-      const allowedDurationTypes = ["annual", "semester", "workload", "custom"];
-      if (durationType !== undefined && !allowedDurationTypes.includes(String(durationType))) {
-        return NextResponse.json({ error: "Formato de duração inválido." }, { status: 400 });
-      }
-      if (durationValue !== undefined && durationValue !== null && (!Number.isFinite(Number(durationValue)) || Number(durationValue) <= 0)) {
-        return NextResponse.json({ error: "O valor da duração deve ser maior que zero." }, { status: 400 });
-      }
+      const duration = validateCourseOfferDuration({
+        durationType: durationType !== undefined ? durationType : existing.durationType,
+        durationValue: durationValue !== undefined ? durationValue : existing.durationValue,
+        durationUnit: durationUnit !== undefined ? durationUnit : existing.durationUnit,
+        workloadHours: workloadHours !== undefined ? workloadHours : existing.workloadHours,
+      });
+      if (!duration.ok) return NextResponse.json({ error: duration.error }, { status: 400 });
 
       const updated = await db.update(externalClasses)
         .set({
@@ -428,10 +425,10 @@ export async function POST(request: NextRequest) {
           description: description ? description.trim() : null,
           classDays: classDays !== undefined ? (classDays ? classDays.trim() : null) : existing.classDays,
           classTime: classTime !== undefined ? (classTime ? classTime.trim() : null) : existing.classTime,
-          workloadHours: workloadHours !== undefined ? Number(workloadHours) : existing.workloadHours,
-          durationType: durationType !== undefined ? String(durationType) : existing.durationType,
-          durationValue: durationValue !== undefined ? (durationValue === null ? null : Number(durationValue)) : existing.durationValue,
-          durationUnit: durationUnit !== undefined ? (durationUnit ? String(durationUnit).trim() : null) : existing.durationUnit,
+          workloadHours: duration.workloadHours,
+          durationType: duration.durationType,
+          durationValue: duration.durationValue,
+          durationUnit: duration.durationUnit,
           startDate: startDate ? new Date(startDate) : existing.startDate,
           endDate: endDate ? new Date(endDate) : existing.endDate,
           maxAbsencePercent: maxAbsenceValue !== undefined ? maxAbsenceValue : existing.maxAbsencePercent,

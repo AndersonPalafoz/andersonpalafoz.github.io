@@ -4,6 +4,7 @@ import { users } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 import { canManageCourseOffer, canReadCourseOffer, requireTeacherOrAdmin } from "@/lib/admin-auth";
 import { getCourseOfferById, restoreCourseOffer, softDeleteCourseOffer, updateCourseOffer } from "@/lib/course-offer-service";
+import { validateCourseOfferDuration } from "@/lib/course-offer-duration";
 
 const GLOBAL_ROLES = new Set(["admin", "super_admin"]);
 type RouteContext = { params: Promise<{ id: string }> };
@@ -36,6 +37,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const body = await request.json();
     const forbidden = ["id", "courseId", "ownerTeacherId", "sourceExternalClassId", "createdAt", "deletedAt"];
     const payload = Object.fromEntries(Object.entries(body).filter(([key]) => !forbidden.includes(key)));
+    const durationKeys = ["durationType", "durationValue", "durationUnit", "workloadHours"];
+    if (durationKeys.some((key) => key in body)) {
+      const current = await getCourseOfferById(offerId);
+      if (!current) return NextResponse.json({ error: "Oferta não encontrada." }, { status: 404 });
+      const duration = validateCourseOfferDuration({ ...current, ...body });
+      if (!duration.ok) return NextResponse.json({ error: duration.error }, { status: 400 });
+      Object.assign(payload, {
+        durationType: duration.durationType,
+        durationValue: duration.durationValue,
+        durationUnit: duration.durationUnit,
+        workloadHours: duration.workloadHours,
+      });
+    }
     if (payload.offerName !== undefined && !String(payload.offerName).trim()) {
       return NextResponse.json({ error: "O nome da oferta não pode ficar vazio." }, { status: 400 });
     }
