@@ -1726,10 +1726,10 @@ export default function TurmasExternasPage() {
   };
 
   return (
-    <div className="external-classes-page min-h-screen overflow-x-clip bg-[#f8fafc] p-4 sm:p-6 lg:px-8 lg:py-8 xl:px-10 xl:py-10 pb-32 font-sans text-gray-900 dark:bg-slate-950 dark:text-white">
-      <div className="mx-auto w-full max-w-[1500px] min-w-0 space-y-6 sm:space-y-8 xl:max-w-[1680px]">
+    <div className="external-classes-page min-h-screen overflow-x-clip bg-background p-4 pb-24 font-sans text-foreground sm:p-6 lg:px-8 lg:py-7">
+      <div className="mx-auto w-full max-w-7xl min-w-0 space-y-5 sm:space-y-6">
         {/* Cabeçalho */}
-        <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 overflow-hidden rounded-[24px] border border-red-100/80 bg-gradient-to-br from-red-50/70 via-white/95 to-white px-5 py-5 shadow-[0_12px_36px_rgba(127,29,29,0.08)] backdrop-blur dark:border-red-950/50 dark:bg-slate-900/90 dark:from-red-950/20 dark:via-slate-900/90 dark:to-slate-900 md:px-7 md:py-6">
+        <header className="relative flex flex-col md:flex-row md:items-center justify-between gap-5 overflow-hidden rounded-[24px] border border-red-100/80 bg-gradient-to-br from-red-50/70 via-white/95 to-white px-5 py-5 shadow-sm backdrop-blur dark:border-red-950/50 dark:bg-slate-900/90 dark:from-red-950/20 dark:via-slate-900/90 dark:to-slate-900 md:px-7 md:py-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <Link
@@ -1772,7 +1772,7 @@ export default function TurmasExternasPage() {
           </div>
         </header>
 
-        <section aria-labelledby="operational-overview-title" className="rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
+        <section aria-labelledby="operational-overview-title" className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
             <div>
               <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Visão operacional</p>
@@ -1885,7 +1885,7 @@ export default function TurmasExternasPage() {
         )}
 
         {comparisonChartData.length > 0 && (
-          <section aria-labelledby="external-comparison-chart-title" className="rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
+          <section aria-labelledby="external-comparison-chart-title" className="rounded-2xl border border-border/70 bg-card p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:p-6">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-red-600">Comparativo acadêmico</p>
@@ -1935,7 +1935,7 @@ export default function TurmasExternasPage() {
         )}
 
         {/* Barra de Busca e Filtros Globais */}
-        <section id="external-class-quick-search" className="scroll-mt-24 rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:grid lg:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)] lg:items-start lg:gap-6 lg:p-6">
+        <section id="external-class-quick-search" className="scroll-mt-24 rounded-2xl border border-border/70 bg-card p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none sm:p-5 lg:grid lg:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)] lg:items-start lg:gap-6 lg:p-6">
           <div className="w-full min-w-0 lg:w-auto">
             <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -2107,7 +2107,7 @@ export default function TurmasExternasPage() {
           <div className="min-w-0 space-y-6">
             {canManage && (<>
             {/* Criar / Editar Turma */}
-            <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
+            <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-sm dark:shadow-none space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
                   <BookOpen size={18} className="text-red-600" /> {editingClassId ? "Editar Turma Externa" : "Nova Turma Externa"}
@@ -2448,7 +2448,7 @@ export default function TurmasExternasPage() {
             </section>
 
             {/* Matricular ou Editar Aluno */}
-            <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
+            <section className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white/95 dark:bg-slate-900 p-5 sm:p-6 shadow-sm dark:shadow-none space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
                   <Users size={18} className="text-red-600" /> {editingStudentId ? "Editar Aluno" : "Matricular Aluno"}
@@ -2597,7 +2597,7 @@ export default function TurmasExternasPage() {
                 <div className="flex items-center gap-2 rounded-2xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs font-bold text-blue-700 dark:text-blue-200"><Loader2 size={15} className="animate-spin" aria-hidden="true" /> Carregando turmas, alunos e indicadores…</div>
                 <div className="space-y-6 animate-pulse">
                   {[1, 2].map((i) => (
-                    <div key={i} className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-4">
+                    <div key={i} className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-sm dark:shadow-none space-y-4">
                     <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-4">
                       <div className="space-y-2 w-3/4">
                         <div className="flex gap-2">
@@ -2641,7 +2641,7 @@ export default function TurmasExternasPage() {
               <div
                 role="status"
                 aria-live="polite"
-                className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 sm:p-12 text-center shadow-[0_10px_30px_rgba(15,23,42,0.05)] dark:shadow-none space-y-3"
+                className="rounded-[28px] border border-gray-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 sm:p-12 text-center shadow-sm dark:shadow-none space-y-3"
               >
                 <AlertCircle size={32} className="mx-auto text-gray-400" aria-hidden="true" />
                 <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300">
@@ -2680,7 +2680,7 @@ export default function TurmasExternasPage() {
                 const academicRows = getAcademicReportRows(cls);
 
                 return (
-                  <div key={cls.id} className="group min-w-0 overflow-hidden rounded-[24px] border border-gray-200/80 bg-white/95 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-200 hover:border-red-200 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-red-900/60 sm:p-6 xl:p-7">
+                  <div key={cls.id} className="group min-w-0 overflow-hidden rounded-2xl border border-border/70 bg-card p-4 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-200 hover:border-red-200 hover:shadow-[0_16px_40px_rgba(15,23,42,0.10)] dark:border-slate-800 dark:bg-slate-900 dark:shadow-none dark:hover:border-red-900/60 sm:p-6 xl:p-7">
                     <div className="flex min-w-0 flex-col gap-4 border-b border-gray-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
