@@ -108,17 +108,17 @@ export default function MateriaisPage() {
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-white dark:bg-slate-950 px-4 py-20 md:px-8 lg:px-16 border-b border-slate-200 dark:border-slate-800">
-        <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-red-100/60 dark:bg-red-950/20 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 top-10 h-80 w-80 rounded-full bg-slate-200/70 blur-3xl dark:bg-slate-800/50" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-semibold">
+              <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
                 Biblioteca Acadêmica
               </span>
-              <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900 dark:text-white">
+              <h1 className="text-4xl font-black leading-tight tracking-tight text-slate-900 dark:text-white sm:text-5xl md:text-6xl">
                 Materiais
                 <br />
-                <span className="text-red-600">Didáticos Exclusivos</span>
+                <span className="text-red-600">para estudar melhor</span>
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
                 Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, que podem alcançar os níveis C1 e C2, cobrindo do nível A1-C2.
@@ -129,8 +129,10 @@ export default function MateriaisPage() {
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="relative">
                 <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
+                <label htmlFor="material-search" className="sr-only">Pesquisar materiais</label>
                 <input
-                  type="text"
+                  id="material-search"
+                  type="search"
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   placeholder="Pesquisar material por título ou tema..."
@@ -138,7 +140,7 @@ export default function MateriaisPage() {
                 />
               </div>
 
-              <div className="flex flex-wrap gap-4 items-center justify-between pt-2">
+              <div className="flex flex-wrap gap-4 items-center justify-between pt-2" aria-label="Filtros da biblioteca">
                 <div className="flex flex-wrap items-center gap-2 pb-2 min-w-0">
                   <span className="text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
                     <Filter size={14} /> Nível:
