@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Clock, Users, Award, BookOpen } from "lucide-react";
+import { Clock, Users, Award, BookOpen, MessageCircle, Target, ArrowRight } from "lucide-react";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseTypeLegend } from "@/components/course-type-legend";
 import { getServerSession } from "next-auth";
@@ -72,11 +72,11 @@ export default async function CursosPage() {
     <div className="w-full">
       {/* Hero Section */}
       <section className="relative flex min-h-[68vh] items-center overflow-hidden bg-white px-4 py-20 md:px-8 lg:px-16">
-        <div className="pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-red-100/60 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-slate-200/70 blur-3xl dark:bg-slate-800/50" />
         <div className="max-w-7xl mx-auto w-full">
           <div className="space-y-8 max-w-3xl">
             <div className="space-y-4">
-              <span className="eyebrow">Trilha de aprendizagem</span>
+              <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900">Trilha de aprendizagem</span>
               <h1 className="text-5xl md:text-6xl font-bold leading-tight">
                 Cursos de
                 <br />
@@ -106,11 +106,36 @@ export default async function CursosPage() {
         </div>
       </section>
 
+      {/* Descoberta por objetivo */}
+      <section className="border-y border-slate-200 bg-slate-50 px-4 py-16 dark:border-slate-800 dark:bg-slate-950 md:px-8 lg:px-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-red-600">Comece pelo seu objetivo</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white md:text-4xl">Qual é o próximo passo que você quer dar?</h2>
+            <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">Explore uma trilha organizada ou fale comigo para escolher o nível mais adequado para sua rotina.</p>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {[
+              { icon: Target, title: "Construir base", text: "Começar do zero ou reorganizar seus fundamentos.", href: "#catalogo-cursos" },
+              { icon: BookOpen, title: "Avançar com estrutura", text: "Seguir uma trilha do Básico ao Avançado.", href: "#catalogo-cursos" },
+              { icon: MessageCircle, title: "Entender meu caminho", text: "Conversar sobre objetivos, nível e formato.", href: "/contato" },
+            ].map(({ icon: Icon, title, text, href }) => (
+              <Link key={title} href={href} className="group rounded-2xl border border-slate-200 bg-white p-6 transition hover:-translate-y-1 hover:border-red-300 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900">
+                <Icon className="text-red-600" size={24} aria-hidden="true" />
+                <h3 className="mt-5 font-black text-slate-900 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
+                <span className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wide text-red-600">Explorar <ArrowRight size={14} aria-hidden="true" /></span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Cursos */}
-      <section className="py-20 px-4 md:px-8 lg:px-16 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">
-            Nossos Cursos
+      <section id="catalogo-cursos" className="scroll-mt-24 bg-white px-4 py-20 dark:bg-slate-950 md:px-8 lg:px-16">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="mb-16 text-center text-4xl font-black text-slate-900 dark:text-white md:text-5xl">
+            Encontre seu curso
           </h2>
 
           <CourseTypeLegend />
@@ -153,10 +178,8 @@ export default async function CursosPage() {
           <p className="text-lg text-red-100">
             Escolha um nível, acompanhe sua evolução e pratique com uma trilha organizada.
           </p>
-          <Link href="/dashboard">
-            <button className="bg-white hover:bg-gray-100 text-red-600 px-8 py-6 text-lg rounded-lg font-semibold">
-              Explorar Cursos
-            </button>
+          <Link href="#catalogo-cursos" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-white px-8 py-4 text-lg font-semibold text-red-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600">
+            Explorar Cursos
           </Link>
         </div>
       </section>
