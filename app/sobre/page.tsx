@@ -75,7 +75,7 @@ export default function SobrePage() {
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
             <div className="space-y-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-red-500/10 dark:bg-red-500/20 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-red-600 dark:text-red-400 border border-red-500/20">
+              <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-red-600 dark:text-red-400 border border-red-500/20">
                 <Sparkles size={14} aria-hidden="true" />
                 Trajetória Acadêmica e Profissional
               </span>
@@ -86,7 +86,7 @@ export default function SobrePage() {
               <p className="text-lg leading-8 text-slate-600 dark:text-slate-300">
                 Professor de inglês licenciado e graduando em Letras com Inglês pela <strong className="font-semibold text-slate-900 dark:text-white">Universidade Federal da Bahia (UFBA)</strong>. Pesquisador de linguística, letramento étnico-racial e metodologias ativas para o ensino de idiomas.
               </p>
-              <p className="max-w-2xl rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/40 px-4 py-3 text-sm leading-6 text-red-900 dark:text-red-200">
+              <p className="max-w-2xl rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 px-4 py-3 text-sm leading-6 text-slate-700 dark:text-slate-200">
                 As aulas são organizadas do <strong>A1 ao B2</strong>; a biblioteca de materiais pode avançar até os níveis <strong>C1 e C2</strong>, conforme o objetivo de estudo.
               </p>
               <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap">
@@ -286,6 +286,20 @@ export default function SobrePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-slate-900 px-4 py-14 text-white dark:border-slate-800 sm:px-6 lg:px-16 lg:py-18">
+        <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-red-300">Próximo passo</p>
+            <h2 className="mt-3 text-3xl font-black tracking-tight sm:text-4xl">Quer aprender inglês com uma abordagem clara?</h2>
+            <p className="mt-3 leading-7 text-slate-300">Conheça as aulas e encontre o formato mais adequado para seus objetivos.</p>
+          </div>
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+            <Link href="/aulas" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-red-600 px-6 py-3 font-bold text-white transition hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">Conhecer aulas <ArrowRight size={18} aria-hidden="true" /></Link>
+            <Link href="/contato" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-600 px-6 py-3 font-bold text-white transition hover:border-white hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Falar comigo</Link>
           </div>
         </div>
       </section>
