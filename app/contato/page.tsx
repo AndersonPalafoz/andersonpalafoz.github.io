@@ -87,7 +87,7 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
 
   return (
     <main className="w-full bg-white text-[#1F1F1F] dark:text-slate-100 dark:bg-slate-950 dark:text-slate-100">
-      <section className="relative overflow-hidden bg-[#F8F9FA] dark:bg-slate-900 px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28 dark:bg-slate-950">
+      <section className="relative overflow-hidden bg-slate-50 px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28 dark:bg-slate-950">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-20">
             <div>
@@ -160,7 +160,7 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
             <div className="mt-8 space-y-4">
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
-                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
                   <Mail size={20} aria-hidden="true" />
@@ -175,7 +175,7 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
                 href={CONTACT_WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
                   <Phone size={20} aria-hidden="true" />
@@ -190,7 +190,7 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
                 href={CONTACT_LOCATION_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
+                className="group flex items-start gap-4 rounded-2xl border border-gray-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5 transition hover:border-red-200 hover:bg-red-50 dark:hover:bg-red-950/40 focus:outline-none focus:ring-2 focus:ring-red-200"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
                   <MapPin size={20} aria-hidden="true" />
@@ -216,7 +216,7 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
             </div>
             <div className="space-y-3">
               {faqItems.map((item) => (
-                <details key={item.pergunta} className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-900 px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
+                <details key={item.pergunta} className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-5 py-4 shadow-sm transition open:border-red-200 sm:px-6">
                   <summary className="cursor-pointer list-none pr-8 font-semibold text-[#1F1F1F] dark:text-slate-100 outline-none transition marker:hidden focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
                     <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">
                       {item.pergunta}
@@ -230,11 +230,11 @@ export default async function ContatoPage({ searchParams }: ContactPageProps) {
         </div>
       </section>
 
-      <section className="bg-[#D62828] px-4 py-16 sm:px-6 md:px-8 lg:px-16 lg:py-20">
+      <section className="bg-slate-900 px-4 py-16 dark:bg-slate-950 sm:px-6 md:px-8 lg:px-16 lg:py-20">
         <div className="mx-auto flex max-w-5xl flex-col items-start justify-between gap-8 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-3xl font-bold text-white sm:text-4xl">Pronto para começar?</h2>
-            <p className="mt-3 max-w-2xl text-lg leading-7 text-red-100">
+            <p className="mt-3 max-w-2xl text-lg leading-7 text-slate-300">
               Conheça as aulas ou envie uma mensagem para conversar sobre seu próximo passo.
             </p>
           </div>
