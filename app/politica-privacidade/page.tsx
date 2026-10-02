@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function PoliticaPrivacidadePage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-900 py-16 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-16 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-10">
         <div>
           <Link
@@ -20,7 +20,7 @@ export default function PoliticaPrivacidadePage() {
           >
             <ArrowLeft size={16} /> Voltar para a página inicial
           </Link>
-          <div className="inline-flex items-center gap-2 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
             <ShieldCheck size={16} /> Transparência e Segurança
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">Política de Privacidade</h1>
@@ -29,7 +29,7 @@ export default function PoliticaPrivacidadePage() {
           </p>
         </div>
 
-        <div className="prose prose-lg max-w-none text-gray-700 dark:text-slate-300 space-y-6">
+        <div className="prose prose-lg max-w-none space-y-6 text-slate-700 dark:prose-invert dark:text-slate-300">
           <section className="space-y-3">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">1. Introdução</h2>
             <p>
@@ -75,6 +75,10 @@ export default function PoliticaPrivacidadePage() {
               Caso tenha dúvidas sobre esta Política de Privacidade ou sobre o tratamento dos seus dados, entre em contato através da nossa <Link href="/contato" className="text-red-600 font-semibold hover:underline">página de contato</Link>.
             </p>
           </section>
+        </div>
+
+        <div className="border-t border-slate-200 pt-8 dark:border-slate-800">
+          <Link href="/contato" className="text-sm font-bold text-red-600 transition hover:text-red-700 hover:underline">Dúvidas sobre seus dados? Fale conosco.</Link>
         </div>
       </div>
     </main>
