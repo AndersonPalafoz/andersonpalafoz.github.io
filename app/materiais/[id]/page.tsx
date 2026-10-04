@@ -18,15 +18,15 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
 
   if (!material) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-600">Material não encontrado.</p>
-      </div>
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-900 dark:bg-slate-950 dark:text-white">
+        <p className="text-slate-600 dark:text-slate-300">Material não encontrado.</p>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-3xl mx-auto px-4 py-12">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
+      <div className="mx-auto max-w-3xl px-4 py-12">
         <Breadcrumbs
           items={[
             { label: "Materiais", href: "/materiais" },
@@ -36,29 +36,29 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
 
         <div className="space-y-6">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
               {material.category}
             </span>
-            <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
               {material.level}
             </span>
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-900">{material.title}</h1>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{material.title}</h1>
 
           {material.description && (
-            <p className="text-lg text-gray-600 leading-relaxed">{material.description}</p>
+            <p className="text-lg leading-relaxed text-slate-600 dark:text-slate-300">{material.description}</p>
           )}
 
-          <div className="flex items-center gap-2 text-gray-600 text-sm">
+          <div className="flex items-center gap-2 text-slate-600 text-sm dark:text-slate-300">
             <Download size={16} className="text-red-600" />
             <span>{material.downloads} downloads</span>
           </div>
 
           <div className="space-y-5 pt-4">
             {material.fileUrl && /\.pdf(?:$|[?#])/i.test(material.fileUrl) && (
-              <section className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 shadow-sm" aria-label="Visualizador do PDF">
-                <div className="flex items-center gap-2 border-b border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-800">
+              <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" aria-label="Visualizador do PDF">
+                <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
                   <FileText size={18} className="text-red-600" />
                   Leitura prévia do PDF
                 </div>
@@ -88,16 +88,16 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
 
             <MaterialCommentsSection materialId={material.id} />
 
-            <div className="pt-10 border-t border-gray-200 dark:border-slate-800 mt-12">
+            <section className="mt-12 border-t border-slate-200 pt-10 dark:border-slate-800">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Materiais Relacionados</h2>
               <Suspense fallback={<p className="text-sm text-gray-500">Carregando relacionados...</p>}>
                 <RelatedMaterialsList materialId={material.id} category={material.category} level={material.level} />
               </Suspense>
-            </div>
+            </section>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -155,9 +155,9 @@ export default async function MaterialPage({
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-white flex items-center justify-center">
-          <p className="text-gray-600">Carregando material...</p>
-        </div>
+        <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 text-slate-600 dark:bg-slate-950 dark:text-slate-300">
+          <p>Carregando material...</p>
+        </main>
       }
     >
       <MaterialDetail materialId={parseInt(id)} />
