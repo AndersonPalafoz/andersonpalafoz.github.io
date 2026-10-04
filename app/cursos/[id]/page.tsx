@@ -77,7 +77,7 @@ async function CourseModulesList({ courseId, userId, offerId }: { courseId: numb
       )}
       {modulesWithLessons.map(({ mod, lessons, completedInMod }) => {
         return (
-          <div key={mod.id} className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-6 shadow-sm">
+          <div key={mod.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-red-600">Módulo {mod.order}</span>
@@ -238,7 +238,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
   const progressPercentage = totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-background dark:text-foreground">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       <div className="max-w-4xl mx-auto px-4 py-12">
         <Breadcrumbs
           items={[
@@ -249,7 +249,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
 
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold">
+            <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
               {formatLevel(course.level)}
             </span>
             {user && (
@@ -259,7 +259,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
             )}
           </div>
 
-          <h1 className="text-4xl font-bold text-gray-900">{course.title}</h1>
+          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{course.title}</h1>
 
           <section className={`rounded-3xl border p-5 shadow-sm sm:p-6 ${courseType.className}`} aria-labelledby="course-type-title">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -403,11 +403,11 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
             <CertificateModal courseId={course.id} courseName={course.title} percentage={progressPercentage} />
           </div>
 
-          <div className="pt-6 border-t border-gray-200 dark:border-border"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} offerId={offerId} /></div>
+          <div className="border-t border-slate-200 pt-6 dark:border-slate-800"><h2 className="text-2xl font-bold text-gray-900 mb-6">Módulos e Aulas do Curso</h2><CourseModulesList courseId={course.id} userId={user?.id ? Number(user.id) : undefined} offerId={offerId} /></div>
           <CourseEngagement courseId={course.id} />
         </div>
       </div>
-    </div>
+    </main>
   );
 }
 
