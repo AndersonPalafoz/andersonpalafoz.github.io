@@ -307,22 +307,22 @@ export default function LessonPageClient() {
 
   if (loadingInitial) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
         <Loader2 className="animate-spin text-red-600" size={40} />
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200 shadow-sm">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
+      <header className="border-b border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href={`/cursos/${courseId}${courseContextQuery}`} className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-semibold transition">
+          <Link href={`/cursos/${courseId}${courseContextQuery}`} className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:text-white font-semibold transition">
             <ChevronLeft size={20} /> Voltar ao Curso ({courseTitle})
           </Link>
-          <span className="text-xs font-mono font-bold text-gray-400">Aula #{lessonId}</span>
+          <span className="text-xs font-mono font-bold text-gray-400">Aula #{lessonId}          </span>
         </div>
-      </div>
+      </header>
 
       <div className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
         <div className="bg-black rounded-3xl overflow-hidden aspect-video flex items-center justify-center border border-gray-200 shadow-lg relative">
@@ -337,11 +337,11 @@ export default function LessonPageClient() {
           )}
         </div>
 
-        <div className="bg-white rounded-3xl border border-gray-200 p-8 shadow-sm space-y-6">
+        <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-red-600">{lesson?.type || "Aula Prática"}</span>
-              <h1 className="text-2xl font-extrabold text-gray-900 mt-1">{lesson?.title || "Aula"}</h1>
+              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white mt-1">{lesson?.title || "Aula"}</h1>
               <p className="text-sm text-gray-500 mt-1">Plataforma Acadêmica Anderson Palafoz</p>
             </div>
             <Button onClick={handleToggleComplete} disabled={loadingProgress} className={`gap-2 font-bold h-12 px-6 rounded-xl ${completed ? "bg-green-600 hover:bg-green-700 text-white" : "bg-red-600 hover:bg-red-700 text-white"}`}>
@@ -351,8 +351,8 @@ export default function LessonPageClient() {
           </div>
 
           <div className="space-y-4">
-            <h3 className="font-bold text-lg text-gray-900">Descrição & Orientações da Aula</h3>
-            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Descrição & Orientações da Aula</h3>
+            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
               {lesson?.description || "Acompanhe os materiais de apoio e participe das atividades práticas para fixar o conteúdo desta unidade."}
             </p>
           </div>
@@ -360,7 +360,7 @@ export default function LessonPageClient() {
           {lesson?.pedagogy && (lesson.pedagogy.learningObjectives.length > 0 || lesson.pedagogy.evidenceOfLearning.length > 0) && (
             <section className="rounded-2xl border border-red-100 bg-red-50/50 p-5 dark:border-red-900/60 dark:bg-red-950/20" aria-labelledby="lesson-pedagogy-title">
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2"><Target size={19} className="text-red-600" /><h2 id="lesson-pedagogy-title" className="font-bold text-gray-900 dark:text-white">Roteiro de aprendizagem</h2></div>
+                <div className="flex items-center gap-2"><Target size={19} className="text-red-600" /><h2 id="lesson-pedagogy-title" className="font-bold text-slate-900 dark:text-white dark:text-white">Roteiro de aprendizagem</h2></div>
                 <p className="text-xs font-medium text-gray-500 dark:text-slate-400">Use este roteiro para orientar sua prática.</p>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -371,7 +371,7 @@ export default function LessonPageClient() {
           )}
 
           <div className="border-t border-gray-100 pt-6 space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-base text-gray-900">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div>
+            <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold text-base text-slate-900 dark:text-white">Minhas anotações</h3><span className="text-xs font-semibold text-gray-500">Salvas por aula</span></div>
             {noteDeletedByAdminAt ? (
               <div className="flex items-start gap-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800"><ShieldAlert size={18} className="mt-0.5 shrink-0" /><p>Esta anotação foi excluída por um administrador{noteDeletedByAdminEmail ? ` (${noteDeletedByAdminEmail})` : ""} em {new Date(noteDeletedByAdminAt).toLocaleString("pt-BR")}. O conteúdo original não pode mais ser editado.</p></div>
             ) : (
@@ -381,7 +381,7 @@ export default function LessonPageClient() {
 
           <div className="border-t border-gray-100 pt-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-base text-gray-900">Materiais Complementares da Aula ({materials.length})</h3>
+              <h3 className="font-bold text-base text-slate-900 dark:text-white">Materiais Complementares da Aula ({materials.length})</h3>
               <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">Oficiais</span>
             </div>
             {materials.length === 0 ? (
@@ -395,7 +395,7 @@ export default function LessonPageClient() {
                         <FileText size={20} />
                       </div>
                       <div>
-                        <p className="font-bold text-sm text-gray-900">{mat.title}</p>
+                        <p className="font-bold text-sm text-slate-900 dark:text-white">{mat.title}</p>
                         <p className="text-xs text-gray-500">{mat.category} • Nível {mat.level}</p>
                       </div>
                     </div>
@@ -429,12 +429,12 @@ export default function LessonPageClient() {
           </div>
 
           <div className="border-t border-gray-100 pt-6 space-y-6">
-            <h3 className="font-bold text-lg text-gray-900">Atividades Práticas (Listening & Speaking)</h3>
+            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Atividades Práticas (Listening & Speaking)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="p-6 rounded-2xl bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/25 border border-red-200 dark:border-red-900/70 space-y-4">
                 <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-200 bg-white dark:bg-black/20 px-3 py-1 rounded-full shadow-xs">Compreensão Auditiva</span><span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Listening Exercise</span></div>
-                <h4 className="font-bold text-gray-900 dark:text-gray-100 text-base">Ouça o áudio de referência</h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">Pratique a escuta ativa acompanhando o diálogo principal da aula.</p>
+                <h4 className="font-bold text-slate-900 dark:text-white dark:text-gray-100 text-base">Ouça o áudio de referência</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 dark:text-gray-300 leading-relaxed">Pratique a escuta ativa acompanhando o diálogo principal da aula.</p>
                 {(lesson?.audioUrl || courseAudioUrl) ? (
                   <>
                     <audio controls preload="metadata" src={lesson?.audioUrl || courseAudioUrl || undefined} className="w-full" aria-label={`Áudio de listening da aula ${lesson?.title || lessonId}`} />
@@ -449,7 +449,7 @@ export default function LessonPageClient() {
                     </Button>
                   </>
                 ) : (
-                  <div className="rounded-xl border border-dashed border-red-200 dark:border-red-900/70 bg-white/70 dark:bg-black/20 px-4 py-3 text-xs text-gray-600 dark:text-gray-300">
+                  <div className="rounded-xl border border-dashed border-red-200 dark:border-red-900/70 bg-white/70 dark:bg-black/20 px-4 py-3 text-xs text-slate-600 dark:text-slate-300 dark:text-gray-300">
                     O áudio de listening ainda não foi vinculado a esta aula.
                   </div>
                 )}
@@ -457,8 +457,8 @@ export default function LessonPageClient() {
 
               <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 space-y-4">
                 <div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-white px-3 py-1 rounded-full shadow-xs">Prática de Pronúncia</span><span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Speaking Ativo</span></div>
-                <h4 className="font-bold text-gray-900 text-base">Grave sua voz e acompanhe suas tentativas</h4>
-                <p className="text-xs text-gray-600 leading-relaxed">{speakingActivity ? speakingActivity.title : "Atividade de conversação guiada."}</p>
+                <h4 className="font-bold text-slate-900 dark:text-white text-base">Grave sua voz e acompanhe suas tentativas</h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{speakingActivity ? speakingActivity.title : "Atividade de conversação guiada."}</p>
                 <div className="pt-2 space-y-3">
                   {speakingReview && (
                     <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-800 dark:bg-amber-950/35 dark:text-amber-100" role="status">
@@ -471,7 +471,7 @@ export default function LessonPageClient() {
                   <Button disabled={!speakingActivity || savingSpeaking} onClick={isRecording ? stopRecording : startRecording} className={`w-full py-3 rounded-xl text-white font-bold text-xs ${isRecording ? "bg-gray-900 hover:bg-black" : "bg-blue-600 hover:bg-blue-700"}`}>
                     {savingSpeaking ? <><Loader2 size={14} className="mr-2 animate-spin" /> Salvando...</> : isRecording ? <><Square size={14} className="mr-2" /> Parar gravação</> : <><Mic size={14} className="mr-2" /> {speakingReview ? "Enviar nova tentativa orientada" : speakingHistory.length > 0 ? "Regravar e comparar evolução" : "Gravar tentativa"}</>}
                   </Button>
-                  <label className="block rounded-xl border border-dashed border-blue-200 bg-white/70 p-3 text-xs text-gray-600">Enviar arquivo de áudio
+                  <label className="block rounded-xl border border-dashed border-blue-200 bg-white/70 p-3 text-xs text-slate-600 dark:text-slate-300">Enviar arquivo de áudio
                     <input type="file" accept="audio/*" disabled={!speakingActivity || savingSpeaking} onChange={(e) => { const f = e.target.files?.[0]; if (f) void submitSpeakingAudio(f); e.currentTarget.value = ""; }} className="mt-2 block w-full text-xs file:mr-3 file:rounded-md file:border-0 file:bg-blue-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                   </label>
 
@@ -482,7 +482,7 @@ export default function LessonPageClient() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
 
       <ConfirmDialog
@@ -500,16 +500,16 @@ export default function LessonPageClient() {
             <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-amber-100 text-amber-600 animate-bounce"><PartyPopper size={42} /></div>
             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-600">Conquista desbloqueada</p>
             <h2 id="certificate-celebration-title" className="mt-2 text-3xl font-black text-gray-950">Parabéns! Curso concluído.</h2>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">Seu certificado foi gerado automaticamente e já está disponível para download.</p>
-            {certificateCelebration.certificateCode && <p className="mt-3 rounded-xl bg-gray-50 px-3 py-2 font-mono text-xs font-bold text-gray-600">Código: {certificateCelebration.certificateCode}</p>}
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">Seu certificado foi gerado automaticamente e já está disponível para download.</p>
+            {certificateCelebration.certificateCode && <p className="mt-3 rounded-xl bg-gray-50 px-3 py-2 font-mono text-xs font-bold text-slate-600 dark:text-slate-300">Código: {certificateCelebration.certificateCode}</p>}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               <a href={certificateCelebration.certificateUrl} download target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-red-600/25 transition hover:bg-red-700"><Download size={18} /> Baixar certificado PDF</a>
               <button onClick={() => { const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(certificateCelebration.certificateUrl)}`; window.open(shareUrl, "_blank", "noopener,noreferrer"); }} className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#0A66C2] bg-[#0A66C2] px-5 py-3.5 text-sm font-black text-white transition hover:bg-[#084d91]"><Share2 size={18} /> Compartilhar no LinkedIn</button>
             </div>
-            <button onClick={() => setCertificateCelebration(null)} className="mt-5 text-sm font-bold text-gray-500 underline-offset-4 hover:text-gray-900 hover:underline">Continuar estudando</button>
+            <button onClick={() => setCertificateCelebration(null)} className="mt-5 text-sm font-bold text-gray-500 underline-offset-4 hover:text-slate-900 dark:text-white hover:underline">Continuar estudando</button>
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }
