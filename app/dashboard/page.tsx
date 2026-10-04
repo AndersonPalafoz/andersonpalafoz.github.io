@@ -84,7 +84,7 @@ export default async function DashboardPage() {
   const primeiroNome = session?.user?.name?.split(" ")[0] || "aluno(a)";
 
   const metrics = [
-    { label: "Cursos ativos", value: cursosAtivos.length, icon: BookOpen, tone: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300" },
+    { label: "Cursos ativos", value: cursosAtivos.length, icon: BookOpen, tone: "border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300" },
     { label: "Atividades pendentes", value: atividadesPendentes.length, icon: CheckSquare, tone: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300" },
     { label: "Certificados obtidos", value: certificates.length, icon: Award, tone: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" },
   ];
@@ -95,14 +95,14 @@ export default async function DashboardPage() {
       <OnboardingModal />
       <MedalNotificationAlert />
 
-      <header className="dashboard-hero flex flex-col gap-4 rounded-3xl p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7">
+      <header className="dashboard-hero flex flex-col gap-4 rounded-3xl border border-slate-200 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7 dark:border-slate-800">
         <div>
-          <span className="eyebrow">Área do aluno</span>
+          <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Área do aluno</span>
           <h1 className="mt-3 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Olá, {primeiroNome}</h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">Aqui está um resumo do seu progresso e dos próximos passos da sua jornada.</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="hidden items-center gap-2 rounded-2xl border border-red-100 bg-red-50/70 px-4 py-3 text-xs font-bold text-red-800 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200 sm:flex">
+          <div className="hidden items-center gap-2 rounded-2xl border border-red-100 border border-slate-200 bg-slate-100 px-4 py-3 text-xs font-bold text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 sm:flex">
             <Sparkles size={16} /> Aprenda com clareza e propósito
           </div>
           <DashboardPdfExport
