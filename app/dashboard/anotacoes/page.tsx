@@ -89,45 +89,45 @@ export default function NotesPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-5xl space-y-6 pb-12">
-        <div className="flex flex-col justify-between gap-4 border-b border-gray-200 pb-6 dark:border-slate-800 sm:flex-row sm:items-end">
+      <main className="mx-auto max-w-5xl space-y-6 bg-slate-50 pb-12 text-slate-900 dark:bg-slate-950 dark:text-white">
+        <header className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-6 dark:border-slate-800 sm:flex-row sm:items-end">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-red-600">Estudo pessoal</p>
-            <h1 className="mt-2 text-3xl font-black text-gray-900 dark:text-white">Central de Anotações</h1>
-            <p className="mt-2 text-gray-600 dark:text-slate-400">Pesquise e organize observações feitas nas aulas.</p>
+            <p className="inline-flex w-fit rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Estudo pessoal</p>
+            <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Central de Anotações</h1>
+            <p className="mt-2 text-slate-600 dark:text-slate-300">Pesquise e organize observações feitas nas aulas.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button onClick={exportNotes} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 text-sm font-bold text-gray-700 hover:border-red-500 hover:text-red-600 dark:border-slate-700 dark:text-slate-300">
-              <Download size={16} /> Exportar texto
+              <Download size={16} aria-hidden="true" /> Exportar texto
             </button>
             <a href="/api/notes/export" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-700">
-              <Download size={16} /> Exportar PDF
+              <Download size={16} aria-hidden="true" /> Exportar PDF
             </a>
           </div>
-        </div>
+        </header>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500" size={18} />
-          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar por aula ou conteúdo..." className="w-full rounded-2xl border border-gray-300 bg-white px-10 py-3 outline-none focus:border-red-500 dark:border-slate-700 dark:bg-slate-900" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} aria-hidden="true" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Pesquisar por aula ou conteúdo..." className="w-full rounded-2xl border border-slate-200 bg-white dark:border-slate-800 px-10 py-3 outline-none focus:border-red-500 dark:border-slate-700 dark:bg-slate-900" />
         </div>
 
         {loading ? (
           <div className="flex justify-center rounded-2xl border bg-white p-12 dark:bg-slate-900"><Loader2 className="animate-spin text-red-600" /></div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"><FileText className="mx-auto mb-3 text-gray-400 dark:text-slate-500" />Você ainda não possui anotações salvas.</div>
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-white dark:border-slate-800 p-12 text-center text-gray-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"><FileText className="mx-auto mb-3 text-gray-400 dark:text-slate-500" />Você ainda não possui anotações salvas.</div>
         ) : (
           <div className="space-y-4">
             {filtered.map((note) => (
-              <article key={note.id} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+              <article key={note.id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
                     <h2 className="font-bold text-gray-900 dark:text-white">{note.lesson?.title || `Aula #${note.lessonId}`}</h2>
                     <p className="text-xs text-gray-500 dark:text-slate-400">Atualizada em {new Date(note.updatedAt).toLocaleString("pt-BR")}</p>
                   </div>
-                  {!note.deletedByAdminAt && <button onClick={() => setPendingDelete(note)} disabled={deletingId === note.id} aria-label="Excluir anotação" className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-slate-500"><Trash2 size={16} /></button>}
+                  {!note.deletedByAdminAt && <button onClick={() => setPendingDelete(note)} disabled={deletingId === note.id} aria-label="Excluir anotação" className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-slate-500"><Trash2 size={16} aria-hidden="true" /></button>}
                 </div>
                 {note.deletedByAdminAt ? (
-                  <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300"><ShieldAlert size={16} className="mt-0.5 shrink-0" /><span>Esta anotação foi excluída por um administrador em {new Date(note.deletedByAdminAt).toLocaleString("pt-BR")}.</span></div>
+                  <div className="flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-100 p-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"><ShieldAlert size={16} className="mt-0.5 shrink-0" /><span>Esta anotação foi excluída por um administrador em {new Date(note.deletedByAdminAt).toLocaleString("pt-BR")}.</span></div>
                 ) : (
                   <>
                     <textarea value={note.note} onChange={(event) => setNotes((current) => current.map((item) => item.id === note.id ? { ...item, note: event.target.value } : item))} className="min-h-28 w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-800 outline-none focus:border-red-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200" />
@@ -138,7 +138,7 @@ export default function NotesPage() {
             ))}
           </div>
         )}
-      </div>
+      </main>
 
       <ConfirmDialog
         open={Boolean(pendingDelete)}
