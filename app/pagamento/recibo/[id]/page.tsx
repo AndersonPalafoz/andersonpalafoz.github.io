@@ -83,7 +83,7 @@ export default function ReceiptDetailPage() {
 
   if (loading) {
     return (
-      <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4 p-6" role="status" aria-live="polite">
+      <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex flex-col items-center justify-center gap-4 p-6" role="status" aria-live="polite">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
           <Loader2 className="animate-spin" size={32} aria-hidden="true" />
         </div>
@@ -94,13 +94,13 @@ export default function ReceiptDetailPage() {
 
   if (error || !data) {
     return (
-      <div className="site-shell min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl bg-card border border-border p-8 text-center shadow-lg space-y-4">
+      <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-3xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-8 text-center shadow-lg space-y-4">
           <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
             <AlertCircle size={24} aria-hidden="true" />
           </div>
           <h1 className="text-xl font-black">Recibo indisponível</h1>
-          <p className="text-sm leading-6 text-muted-foreground">{error || "Não foi possível carregar os dados do recibo."}</p>
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{error || "Não foi possível carregar os dados do recibo."}</p>
           <div className="flex flex-col gap-2 pt-2 sm:flex-row">
             <Button onClick={() => void loadReceipt()} disabled={retrying} className="flex-1 bg-red-600 font-bold text-white hover:bg-red-700">
               {retrying ? <Loader2 className="animate-spin" size={15} aria-hidden="true" /> : null}
@@ -122,41 +122,41 @@ export default function ReceiptDetailPage() {
   const amount = formatAmount(data.purchase.amount, data.purchase.currency);
 
   return (
-    <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 py-12">
-      <article className="max-w-2xl w-full rounded-3xl bg-card border border-border p-8 shadow-xl md:p-12 space-y-8 print:shadow-none print:border-none print:p-0">
-        <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-start sm:justify-between">
+    <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex flex-col items-center justify-center p-4 py-12">
+      <article className="max-w-2xl w-full rounded-3xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-8 shadow-xl md:p-12 space-y-8 print:shadow-none print:border-none print:p-0">
+        <header className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600 text-xl font-bold text-white shadow-md">AP</div>
             <div>
               <h1 className="text-lg font-extrabold">Anderson Palafoz Platform</h1>
-              <p className="text-xs text-muted-foreground">Recibo de pagamento</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">Recibo de pagamento</p>
             </div>
           </div>
           <div className="text-left sm:text-right">
             <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-bold uppercase text-green-700 dark:bg-green-950/60 dark:text-green-300">Pago e verificado</span>
-            <p className="mt-1 break-all text-xs text-muted-foreground font-mono">Compra #{data.purchase.id}</p>
+            <p className="mt-1 break-all text-xs text-slate-600 dark:text-slate-300 font-mono">Compra #{data.purchase.id}</p>
           </div>
         </header>
 
         <section className="space-y-4" aria-labelledby="receipt-title">
           <h2 id="receipt-title" className="text-xl font-bold">Recibo oficial da transação</h2>
-          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-border bg-muted/40 p-6 text-sm md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-6 text-sm md:grid-cols-2">
             <div>
-              <p className="text-xs font-semibold uppercase text-muted-foreground">Data de emissão</p>
+              <p className="text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Data de emissão</p>
               <p className="font-bold">{issuedAt}</p>
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase text-muted-foreground">Processamento</p>
+              <p className="text-xs font-semibold uppercase text-slate-600 dark:text-slate-300">Processamento</p>
               <p className="flex items-center gap-1 font-bold text-green-600"><ShieldCheck size={14} aria-hidden="true" /> Stripe Secure Gateway</p>
             </div>
           </div>
         </section>
 
-        <div className="overflow-hidden rounded-2xl border border-border bg-background">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[520px] border-collapse text-left">
               <thead>
-                <tr className="border-b border-border bg-muted/50 text-xs font-bold uppercase text-muted-foreground">
+                <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-xs font-bold uppercase text-slate-600 dark:text-slate-300">
                   <th className="p-4">Item / descrição</th>
                   <th className="p-4 text-center">Nível</th>
                   <th className="p-4 text-right">Total</th>
@@ -166,7 +166,7 @@ export default function ReceiptDetailPage() {
                 <tr>
                   <td className="p-4">
                     <p className="font-bold">{data.course?.title || `Curso #${data.purchase.courseId}`}</p>
-                    <p className="text-xs text-muted-foreground">Compra registrada e vinculada à conta autenticada.</p>
+                    <p className="text-xs text-slate-600 dark:text-slate-300">Compra registrada e vinculada à conta autenticada.</p>
                   </td>
                   <td className="p-4 text-center">
                     <span className="rounded bg-red-50 px-2 py-1 text-xs font-semibold text-red-700 dark:bg-red-950 dark:text-red-300">{data.course?.level || "Não informado"}</span>
@@ -176,7 +176,7 @@ export default function ReceiptDetailPage() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-between border-t border-border bg-muted/40 p-4 text-base font-extrabold">
+          <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-base font-extrabold">
             <span>Valor total pago</span>
             <span className="text-lg text-red-600">{amount}</span>
           </div>

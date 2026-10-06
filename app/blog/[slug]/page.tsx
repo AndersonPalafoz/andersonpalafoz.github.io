@@ -137,7 +137,7 @@ export default function BlogArticlePage({
     : "5.0";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 text-gray-900 dark:text-white">
+    <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <Breadcrumbs
           items={[
@@ -148,7 +148,7 @@ export default function BlogArticlePage({
 
         <article className="mt-8">
           {article.category && (
-            <span className="inline-block bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+            <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
               {article.category}
             </span>
           )}
@@ -174,7 +174,7 @@ export default function BlogArticlePage({
             </div>
           </div>
 
-          <div className="prose prose-slate max-w-none text-gray-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed text-lg mb-12">
+          <div className="prose prose-slate max-w-none whitespace-pre-wrap text-lg leading-relaxed text-slate-700 dark:prose-invert dark:text-slate-300 mb-12">
             {article.content}
           </div>
         </article>
@@ -228,7 +228,7 @@ export default function BlogArticlePage({
                       type="button"
                       key={star}
                       onClick={() => setRating(star)}
-                      className="focus:outline-none transition transform hover:scale-110"
+                      aria-label={`Avaliar com ${star} estrelas`} aria-pressed={rating === star} className="rounded-md p-1 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600"
                     >
                       <Star
                         size={28}
@@ -327,6 +327,6 @@ export default function BlogArticlePage({
           )}
         </section>
       </div>
-    </div>
+    </main>
   );
 }

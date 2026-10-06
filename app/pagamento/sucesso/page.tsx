@@ -72,7 +72,7 @@ function PaymentSuccessContent() {
 
   if (loading) {
     return (
-      <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center gap-4 p-6" role="status" aria-live="polite">
+      <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex flex-col items-center justify-center gap-4 p-6" role="status" aria-live="polite">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
           <Loader2 className="animate-spin" size={32} aria-hidden="true" />
         </div>
@@ -84,13 +84,13 @@ function PaymentSuccessContent() {
 
   if (error || !data) {
     return (
-      <div className="site-shell min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-        <div className="max-w-md w-full rounded-3xl bg-card border border-border p-8 text-center shadow-lg space-y-4">
+      <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full rounded-3xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-8 text-center shadow-lg space-y-4">
           <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/60 dark:text-red-300">
             <TriangleAlert size={24} aria-hidden="true" />
           </div>
           <h1 className="text-xl font-black">Falha na verificação</h1>
-          <p className="text-sm leading-6 text-muted-foreground">{error || "Não foi possível confirmar a compra."}</p>
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">{error || "Não foi possível confirmar a compra."}</p>
           <div className="flex flex-col gap-2 pt-2 sm:flex-row">
             <Button onClick={() => void confirmPayment()} disabled={retrying} className="flex-1 bg-red-600 font-bold text-white hover:bg-red-700">
               {retrying ? <Loader2 className="animate-spin" size={15} aria-hidden="true" /> : null}
@@ -114,31 +114,31 @@ function PaymentSuccessContent() {
   const hasEnrollment = Boolean(data.enrollment && ["active", "approved", "enrolled"].includes(data.enrollment.status.toLowerCase()));
 
   return (
-    <div className="site-shell min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 py-12">
-      <div className="max-w-xl w-full rounded-3xl bg-card border border-border p-8 text-center shadow-xl md:p-12 space-y-6">
+    <div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex flex-col items-center justify-center p-4 py-12">
+      <div className="max-w-xl w-full rounded-3xl bg-white border border-slate-200 dark:bg-slate-900 dark:border-slate-800 p-8 text-center shadow-xl md:p-12 space-y-6">
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-700 shadow-inner dark:bg-green-950/60 dark:text-green-300">
           <CheckCircle2 size={44} aria-hidden="true" />
         </div>
         <div className="space-y-2">
           <span className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-bold uppercase text-green-700 dark:bg-green-950/60 dark:text-green-300">Pagamento aprovado via Stripe</span>
           <h1 className="text-3xl font-extrabold tracking-tight">Pagamento confirmado.</h1>
-          <p className="text-sm leading-6 text-muted-foreground">
+          <p className="text-sm leading-6 text-slate-600 dark:text-slate-300">
             {hasEnrollment ? "Seu acesso foi validado e a matrícula está vinculada à sua conta." : "O pagamento foi confirmado. A liberação da matrícula pode levar alguns instantes."}
           </p>
         </div>
 
         {data.course ? (
-          <div className="rounded-2xl border border-border bg-muted/40 p-6 text-left space-y-3">
-            <p className="text-xs font-bold uppercase text-muted-foreground">Curso adquirido</p>
+          <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-950 p-6 text-left space-y-3">
+            <p className="text-xs font-bold uppercase text-slate-600 dark:text-slate-300">Curso adquirido</p>
             <h2 className="text-xl font-black">{data.course.title}</h2>
-            <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-300 sm:flex-row sm:items-center sm:justify-between">
               <span>Nível {data.course.level}</span>
               <span className="font-bold text-foreground">{amount}</span>
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-border bg-muted/40 p-6 text-left">
-            <p className="text-sm text-muted-foreground">O Stripe confirmou a sessão, mas não há um curso associado nos dados retornados.</p>
+          <div className="rounded-2xl border border-border bg-slate-50 dark:bg-slate-950 p-6 text-left">
+            <p className="text-sm text-slate-600 dark:text-slate-300">O Stripe confirmou a sessão, mas não há um curso associado nos dados retornados.</p>
           </div>
         )}
 
@@ -155,7 +155,7 @@ function PaymentSuccessContent() {
             <Button variant="outline" className="h-12 w-full rounded-xl font-semibold">Histórico de compras</Button>
           </Link>
         </div>
-        <p className="pt-2 text-xs text-muted-foreground">O recibo detalhado permanece disponível no histórico de compras da sua conta.</p>
+        <p className="pt-2 text-xs text-slate-600 dark:text-slate-300">O recibo detalhado permanece disponível no histórico de compras da sua conta.</p>
       </div>
     </div>
   );
@@ -163,7 +163,7 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={<div className="site-shell min-h-screen bg-background text-foreground flex items-center justify-center" role="status"><Loader2 className="animate-spin text-red-600" size={40} aria-label="Carregando confirmação do pagamento" /></div>}>
+    <Suspense fallback={<div className="site-shell min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white flex items-center justify-center" role="status"><Loader2 className="animate-spin text-red-600" size={40} aria-label="Carregando confirmação do pagamento" /></div>}>
       <PaymentSuccessContent />
     </Suspense>
   );

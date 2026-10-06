@@ -56,10 +56,10 @@ export default function CadastroPage() {
   };
 
   return (
-    <main className="site-shell min-h-screen px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+    <main className="site-shell min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 sm:py-12 lg:px-8">
       <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-8">
         <section className="min-w-0">
-          <p className="eyebrow">Acesso acadêmico</p>
+          <p className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Acesso acadêmico</p>
           <h1 className="mt-3 text-4xl font-black leading-tight tracking-tight text-foreground">Solicite seu papel na plataforma</h1>
           <p className="mt-4 text-base leading-8 text-muted-foreground sm:text-lg">Toda conta começa com acesso pendente. Escolha o tipo de participação que deseja solicitar; o papel efetivo só será alterado depois da análise correspondente.</p>
           <div className="mt-6 grid gap-3 text-sm text-muted-foreground">

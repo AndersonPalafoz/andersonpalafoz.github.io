@@ -72,18 +72,18 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
 
   if (cert.length === 0) {
     return (
-      <div className="site-shell min-h-screen bg-background flex items-center justify-center p-6 text-foreground">
-        <div className="surface-card max-w-md w-full text-center p-8 border border-border/70 space-y-4">
+      <main className="site-shell flex min-h-screen items-center justify-center bg-slate-50 p-6 text-slate-900 dark:bg-slate-950 dark:text-white">
+        <section className="w-full max-w-md space-y-4 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="h-14 w-14 rounded-full bg-red-100 text-red-600 flex items-center justify-center mx-auto">
             <ShieldCheck size={28} />
           </div>
           <h1 className="text-xl font-black">Certificado Não Encontrado</h1>
-          <p className="text-sm text-muted-foreground">O código de autenticidade informado ({code}) não corresponde a nenhum certificado válido emitido na plataforma.</p>
+          <p className="text-sm text-slate-600 dark:text-slate-300">O código de autenticidade informado ({code}) não corresponde a nenhum certificado válido emitido na plataforma.</p>
           <Link href="/" className="inline-block rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700">
             Voltar ao Início
           </Link>
-        </div>
-      </div>
+        </section>
+      </main>
     );
   }
 
@@ -94,10 +94,10 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
     : null;
 
   return (
-    <div className="site-shell min-h-screen bg-background pb-16 text-foreground">
-      <header className="border-b border-border bg-card">
+    <div className="site-shell min-h-screen bg-slate-50 pb-16 text-slate-900 dark:bg-slate-950 dark:text-white">
+      <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
         <div className="page-container py-6 flex items-center justify-between">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-red-600">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-red-600">
             <ArrowLeft size={16} /> Anderson Palafoz Platform
           </Link>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
@@ -107,37 +107,37 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
       </header>
 
       <main className="page-container mt-10 max-w-2xl">
-        <div className="surface-card border border-border/70 p-8 sm:p-10 shadow-lg space-y-6">
-          <div className="text-center space-y-2 border-b border-border/60 pb-6">
+        <section className="space-y-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-slate-900 sm:p-10">
+          <div className="text-center space-y-2 border-b border-slate-200 dark:border-slate-800 pb-6">
             <div className="h-16 w-16 rounded-2xl bg-red-600/10 text-red-600 flex items-center justify-center mx-auto">
               <Award size={32} />
             </div>
             <p className="text-xs font-black uppercase tracking-[0.2em] text-red-600">Validação de Autenticidade</p>
             <h1 className="text-2xl font-black text-foreground sm:text-3xl">{item.courseTitle}</h1>
-            <p className="text-sm text-muted-foreground">Nível {item.level} • Concluído em {new Date(item.issuedAt).toLocaleDateString("pt-BR")}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-300">Nível {item.level} • Concluído em {new Date(item.issuedAt).toLocaleDateString("pt-BR")}</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 text-sm bg-muted/30 p-5 rounded-2xl border border-border/50">
             <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase">Titular do Certificado</p>
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Titular do Certificado</p>
               <p className="mt-1 font-black text-foreground text-base">{item.studentName || "Aluno(a)"}</p>
             </div>
             <div>
-              <p className="text-xs font-bold text-muted-foreground uppercase">Código de Autenticidade</p>
+              <p className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase">Código de Autenticidade</p>
               <p className="mt-1 font-mono font-bold text-foreground text-xs bg-background p-2 rounded-lg border border-border">{item.certificateCode}</p>
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 pt-4 border-t border-border/60 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-4 pt-4 border-t border-slate-200 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-center gap-3">
               {qrDataUrl && <img src={qrDataUrl} alt="QR Code para validar este certificado" className="h-20 w-20 rounded-lg border border-border bg-white p-1" />}
               <div>
                 <p className="text-xs font-bold text-foreground">Validação pública</p>
-                <p className="mt-1 max-w-xs text-xs text-muted-foreground">Escaneie o QR Code ou use o código de autenticidade acima.</p>
+                <p className="mt-1 max-w-xs text-xs text-slate-600 dark:text-slate-300">Escaneie o QR Code ou use o código de autenticidade acima.</p>
               </div>
             </div>
             <div className="flex flex-col items-start gap-3 sm:items-end">
-              <p className="text-xs text-muted-foreground">Emitido digitalmente com assinatura oficial da plataforma.</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300">Emitido digitalmente com assinatura oficial da plataforma.</p>
               {downloadUrl !== "#" && (
               <a
                 href={downloadUrl}
@@ -150,7 +150,7 @@ export default async function PublicVerifyCertificatePage({ params }: Props) {
               )}
             </div>
           </div>
-        </div>
+        </section>
       </main>
     </div>
   );

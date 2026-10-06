@@ -70,12 +70,12 @@ export default function NotificationsPage() {
   const unread = items.filter((item) => !item.readAt).length;
 
   return (
-    <div className="space-y-8 pb-12">
-      <div className="flex flex-col gap-4 border-b border-gray-200 dark:border-slate-800 pb-6 sm:flex-row sm:items-end sm:justify-between">
+    <main className="space-y-8 bg-slate-50 pb-12 text-slate-900 dark:bg-slate-950 dark:text-white">
+      <header className="flex flex-col gap-4 border-b border-slate-200 pb-6 dark:border-slate-800 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.22em] text-red-600">Central de comunicação</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900 dark:text-white">Notificações</h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Acompanhe avisos de notas, materiais e atualizações importantes sobre seus estudos.</p>
+          <p className="inline-flex w-fit rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Central de comunicação</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Notificações</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">Acompanhe avisos de notas, materiais e atualizações importantes sobre seus estudos.</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {unread > 0 && (
@@ -85,7 +85,7 @@ export default function NotificationsPage() {
               disabled={busyId === "all"}
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 transition hover:border-red-300 hover:text-red-600 disabled:opacity-60 shadow-xs"
             >
-              <CheckCheck size={15} /> Marcar todas como lidas
+              <CheckCheck size={15} aria-hidden="true" /> Marcar todas como lidas
             </button>
           )}
           {items.length > 0 && (
@@ -93,22 +93,22 @@ export default function NotificationsPage() {
               type="button"
               onClick={() => void clearAll()}
               disabled={busyId === "clear"}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 px-4 py-2 text-xs font-bold text-red-700 dark:text-red-300 transition hover:bg-red-100 disabled:opacity-60 shadow-xs"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-900 px-4 py-2 text-xs font-bold text-red-700 dark:text-red-300 transition hover:bg-red-100 disabled:opacity-60 shadow-xs"
             >
-              <Trash2 size={15} /> Limpar todas
+              <Trash2 size={15} aria-hidden="true" /> Limpar todas
             </button>
           )}
         </div>
-      </div>
+      </header>
 
       {loading ? (
-        <div className="flex items-center justify-center rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 py-16 text-red-600">
-          <Loader2 className="animate-spin" size={28} />
+        <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 py-16 text-red-600">
+          <Loader2 className="animate-spin" size={28} aria-label="Carregando notificações" />
         </div>
       ) : items.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-gray-300 dark:border-slate-800 bg-white dark:bg-slate-900 p-12 text-center shadow-sm">
-          <Bell className="mx-auto text-gray-300 dark:text-gray-700" size={42} />
-          <h2 className="mt-4 font-bold text-gray-900 dark:text-white text-base">Tudo em dia</h2>
+          <Bell className="mx-auto text-slate-300 dark:text-slate-700" size={42} aria-hidden="true" />
+          <h2 className="mt-4 font-bold text-slate-900 dark:text-white text-base">Tudo em dia</h2>
           <p className="mt-1 text-xs text-gray-500">Você não possui notificações pendentes no momento.</p>
         </div>
       ) : (
@@ -120,13 +120,13 @@ export default function NotificationsPage() {
                 key={item.id}
                 className={`rounded-2xl border p-5 shadow-xs transition ${
                   item.readAt
-                    ? "border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-gray-800 dark:text-gray-200"
-                    : "border-red-200 dark:border-red-900/60 bg-red-50/60 dark:bg-red-950/30 text-gray-900 dark:text-white"
+                    ? "border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 text-gray-800 dark:text-gray-200"
+                    : "border-slate-200 bg-slate-100/80 text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 }`}
               >
                 <div className="flex gap-4">
                   <div className={`mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.readAt ? "bg-gray-100 dark:bg-slate-800 text-gray-500" : "bg-red-600 text-white"}`}>
-                    <MessageSquare size={18} />
+                    <MessageSquare size={18} aria-hidden="true" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
@@ -154,7 +154,7 @@ export default function NotificationsPage() {
                           type="button"
                           onClick={() => void markRead(item.id)}
                           disabled={busyId === item.id}
-                          className="text-xs font-bold text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-60"
+                          className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 disabled:opacity-60"
                         >
                           Marcar como lida
                         </button>
@@ -167,6 +167,6 @@ export default function NotificationsPage() {
           })}
         </div>
       )}
-    </div>
+    </main>
   );
 }

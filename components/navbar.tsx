@@ -176,7 +176,7 @@ export function Navbar() {
       )}
 
       {isOpen && <button type="button" tabIndex={-1} aria-label="Fechar menu de navegação" onClick={() => setIsOpen(false)} className="fixed inset-0 top-[4.75rem] z-40 cursor-default bg-slate-950/25 backdrop-blur-[1px] lg:hidden" />}
-      <nav className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/90" : "border-slate-200/60 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/95"}`}>
+      <nav aria-label="Navegação principal" className={`fixed left-0 right-0 top-0 z-50 w-full border-b transition-all duration-300 ${scrolled ? "border-slate-200/80 bg-white/90 shadow-[0_12px_40px_rgba(15,23,42,0.08)] backdrop-blur-2xl dark:border-slate-800 dark:bg-slate-900/90" : "border-slate-200/60 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.04)] backdrop-blur-xl dark:border-slate-800/70 dark:bg-slate-900/95"}`}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex min-h-[4.75rem] items-center justify-between gap-4">
             <Link href="/" className="group shrink-0 rounded-2xl border border-slate-200/70 bg-white/95 px-2.5 py-1.5 shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-red-600 dark:border-slate-700 dark:bg-slate-100" aria-label="Anderson Palafoz — página inicial">
@@ -192,8 +192,8 @@ export function Navbar() {
               />
             </Link>
 
-            <div className="hidden items-center gap-1.5 lg:flex">
-              {navLinks.map((link) => <Link key={link.href} href={link.href} className={linkClass(link.href)}>{link.label}</Link>)}
+            <div className="hidden items-center gap-1.5 lg:flex" aria-label="Navegação principal">
+              {navLinks.map((link) => <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined} className={linkClass(link.href)}>{link.label}</Link>)}
             </div>
 
             <div className="hidden items-center gap-2 lg:flex">
@@ -333,7 +333,7 @@ export function Navbar() {
           {isOpen && <div id="mobile-navigation" aria-label="Menu de navegação" className="my-2 max-h-[calc(100dvh-6rem)] overflow-y-auto overscroll-contain rounded-3xl border border-slate-200/80 bg-white/95 px-2 py-4 shadow-[0_20px_50px_rgba(15,23,42,0.12)] backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/95 lg:hidden">
             {session && <Link href="/dashboard" onClick={() => setIsOpen(false)} className="mb-3 flex min-h-12 items-center justify-between rounded-2xl bg-red-600 px-3.5 py-3 text-sm font-black text-white shadow-sm shadow-red-600/20"><span className="flex items-center gap-2"><LayoutDashboard size={18} /> Minha Área</span><span className="text-[10px] font-bold uppercase tracking-[0.12em] text-red-100">Painel</span></Link>}
             <div className="grid gap-1">
-              {navLinks.map((link) => <Link key={link.href} href={link.href} className={linkClass(link.href)} onClick={() => setIsOpen(false)}>{link.label}</Link>)}
+              {navLinks.map((link) => <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? "page" : undefined} className={linkClass(link.href)} onClick={() => setIsOpen(false)}>{link.label}</Link>)}
             </div>
             <div className="mt-3 grid gap-2 border-t border-gray-100 dark:border-slate-800 pt-3">
               {session ? <>
