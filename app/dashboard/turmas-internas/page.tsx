@@ -41,11 +41,11 @@ export default async function StudentInternalClassesPage() {
   }
 
   return (
-    <main className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
-        <header className="dashboard-hero rounded-3xl p-5 sm:p-8">
+        <header className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
           <Link href="/dashboard" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-red-600 hover:underline"><ArrowLeft size={16} aria-hidden="true" /> Voltar ao painel</Link>
-          <div className="flex items-start gap-4"><div className="rounded-2xl bg-red-100 p-3 text-red-700 dark:bg-red-950/50 dark:text-red-300"><Layers3 size={26} aria-hidden="true" /></div><div><p className="text-xs font-black uppercase tracking-[0.16em] text-red-600">Sua jornada</p><h1 className="mt-1 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Minhas turmas internas</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">Acompanhe as turmas em que você está matriculado e acesse seus cursos com clareza.</p></div></div>
+          <div className="flex items-start gap-4"><div className="rounded-2xl border border-slate-200 bg-slate-100 p-3 text-red-700 dark:border-slate-700 dark:bg-slate-800 dark:text-red-300"><Layers3 size={26} aria-hidden="true" /></div><div><p className="text-xs font-black uppercase tracking-[0.16em] text-red-600">Sua jornada</p><h1 className="mt-1 text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">Minhas turmas internas</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">Acompanhe as turmas em que você está matriculado e acesse seus cursos com clareza.</p></div></div>
         </header>
         <StudentInternalClasses classes={classes} />
       </div>

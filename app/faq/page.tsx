@@ -46,8 +46,8 @@ const faqItems = [
 
 export default function FaqPage() {
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-900 text-[#1F1F1F] dark:text-white">
-      <section className="bg-[#F8F9FA] dark:bg-slate-950/40 px-4 py-20 sm:px-6 md:px-8 lg:px-16 lg:py-28">
+    <main className="min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-white">
+      <section className="bg-slate-50 px-4 py-20 dark:bg-slate-950 sm:px-6 md:px-8 lg:px-16 lg:py-28">
         <div className="mx-auto max-w-6xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Central de ajuda</p>
           <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
@@ -55,7 +55,7 @@ export default function FaqPage() {
               <h1 className="max-w-3xl text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">Perguntas frequentes</h1>
               <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-slate-400">Encontre orientações rápidas sobre as aulas, os cursos, os materiais e o funcionamento da plataforma educacional Anderson Palafoz.</p>
             </div>
-            <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm sm:p-8">
+            <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm sm:p-8">
               <MessageCircle className="text-red-600" size={28} aria-hidden="true" />
               <h2 className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">Ainda ficou com dúvida?</h2>
               <p className="mt-3 leading-7 text-gray-600 dark:text-slate-400">Nossa equipe pode orientar você sobre acesso, aulas, materiais e próximos passos.</p>
@@ -69,7 +69,7 @@ export default function FaqPage() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-3">
             {faqItems.map((item) => (
-              <details key={item.question} className="group rounded-2xl border border-gray-200 dark:border-slate-800 bg-[#F8F9FA] dark:bg-slate-800/60 px-5 py-4 shadow-sm transition open:border-red-200 dark:open:border-red-900/60 sm:px-6">
+              <details key={item.question} className="group rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 px-5 py-4 shadow-sm transition open:border-red-200 dark:open:border-red-900/60 sm:px-6">
                 <summary className="cursor-pointer list-none pr-10 font-semibold text-gray-900 dark:text-white outline-none focus-visible:ring-2 focus-visible:ring-red-200 [&::-webkit-details-marker]:hidden">
                   <span className="relative block after:absolute after:right-0 after:top-1/2 after:text-2xl after:font-normal after:text-red-600 after:content-['+'] after:-translate-y-1/2 group-open:after:content-['−']">{item.question}</span>
                 </summary>
@@ -77,6 +77,17 @@ export default function FaqPage() {
               </details>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-200 bg-slate-900 px-4 py-14 text-white dark:border-slate-800 dark:bg-slate-950 sm:px-6 lg:px-16">
+        <div className="mx-auto flex max-w-4xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-red-300">Próximo passo</p>
+            <h2 className="mt-3 text-2xl font-black sm:text-3xl">Não encontrou a resposta?</h2>
+            <p className="mt-2 text-slate-300">Envie sua dúvida e receba uma orientação personalizada.</p>
+          </div>
+          <Link href="/contato" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-bold text-white transition hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">Falar comigo <ArrowRight size={18} aria-hidden="true" /></Link>
         </div>
       </section>
     </main>

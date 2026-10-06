@@ -75,7 +75,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="site-shell flex min-h-screen flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <main className="site-shell flex min-h-screen flex-col justify-center bg-slate-50 px-4 py-12 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <Link href="/" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-6 justify-center">
           <ArrowLeft size={16} /> Voltar para a Página Inicial
@@ -213,6 +213,6 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+  </main>
   );
 }

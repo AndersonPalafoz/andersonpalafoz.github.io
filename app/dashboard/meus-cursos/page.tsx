@@ -65,9 +65,9 @@ export default function MeusCursosExternosPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-gray-900 dark:text-white p-6 md:p-10 font-sans">
-      <div className="max-w-5xl mx-auto space-y-8">
-        <header className="flex items-center justify-between border-b border-gray-200 dark:border-slate-800 pb-6">
+    <main className="min-h-screen bg-slate-50 p-6 font-sans text-slate-900 dark:bg-slate-950 dark:text-white md:p-10">
+      <div className="mx-auto max-w-5xl space-y-8">
+        <header className="flex items-center justify-between border-b border-slate-200 pb-6 dark:border-slate-800">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
               <Link
@@ -77,7 +77,7 @@ export default function MeusCursosExternosPage() {
               >
                 <ArrowLeft size={18} />
               </Link>
-              <h1 className="text-2xl font-black tracking-tight text-gray-950 dark:text-white flex items-center gap-2">
+              <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white">
                 <BookOpen className="text-red-600" size={26} /> Meus Cursos, Notas e Frequências Externas
               </h1>
             </div>
@@ -104,7 +104,7 @@ export default function MeusCursosExternosPage() {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 dark:border-slate-800 pb-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
                         {classItem.institution}
                       </span>
                       <span className="text-xs font-bold text-gray-500">Período: {classItem.academicTerm}</span>
@@ -121,21 +121,21 @@ export default function MeusCursosExternosPage() {
 
                 {/* Estatísticas de Frequência */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800 space-y-1">
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 space-y-1">
                     <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1.5">
                       <Calendar size={14} className="text-red-600" /> Frequência / Presença
                     </p>
                     <p className="text-lg font-black text-gray-950 dark:text-white">{attendanceStats.attendanceRate}%</p>
                     <p className="text-[11px] text-gray-500">{attendanceStats.presentCount} presenças em {attendanceStats.totalClasses} aulas chamadas</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800 space-y-1">
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 space-y-1">
                     <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1.5">
                       <Award size={14} className="text-blue-600" /> Avaliações Realizadas
                     </p>
                     <p className="text-lg font-black text-gray-950 dark:text-white">{grades.length}</p>
                     <p className="text-[11px] text-gray-500">Notas registradas pelo professor</p>
                   </div>
-                  <div className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800/40 border border-gray-100 dark:border-slate-800 space-y-1">
+                  <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 space-y-1">
                     <p className="text-[10px] font-bold uppercase text-gray-500 flex items-center gap-1.5">
                       <FileText size={14} className="text-amber-600" /> Materiais Disponíveis
                     </p>
@@ -158,7 +158,7 @@ export default function MeusCursosExternosPage() {
                             {g.feedback && <p className="text-gray-500 italic mt-0.5">Feedback: &quot;{g.feedback}&quot;</p>}
                           </div>
                           <div className="text-right whitespace-nowrap">
-                            <span className="px-3 py-1.5 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-black text-sm">
+                            <span className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 font-black text-sm">
                               {g.score} / {g.maxScore}
                             </span>
                           </div>
@@ -183,7 +183,7 @@ export default function MeusCursosExternosPage() {
                           rel="noopener noreferrer"
                           className="p-4 rounded-2xl border border-gray-200 dark:border-slate-800 hover:border-red-600 dark:hover:border-red-500 bg-gray-50 dark:bg-slate-800/50 transition flex items-start gap-3 group"
                         >
-                          <div className="p-2 rounded-xl bg-red-100 dark:bg-red-950/60 text-red-600 mt-0.5">
+                          <div className="p-2 rounded-xl border border-slate-200 bg-slate-100 text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 mt-0.5">
                             <FileText size={16} />
                           </div>
                           <div className="space-y-1">
@@ -200,6 +200,6 @@ export default function MeusCursosExternosPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

@@ -40,7 +40,7 @@ function AcademicTooltip({ active, payload, metric }: AcademicTooltipProps) {
   if (!point) return null;
 
   return (
-    <div className="min-w-[190px] rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
+    <div className="min-w-[190px] rounded-xl border border-slate-200 bg-white p-3 shadow-xl dark:border-slate-700 dark:bg-slate-900">
       <p className="text-xs font-black uppercase tracking-wide text-gray-500">{point.month} · {point.monthKey}</p>
       {metric === "grade" ? (
         <>
@@ -201,7 +201,7 @@ export default function HistoricoAcademicoPage() {
 
   if (loading) {
     return (
-      <div className="space-y-8 pb-12 font-sans animate-pulse">
+      <div className="space-y-8 rounded-3xl bg-slate-50 pb-12 font-sans animate-pulse dark:bg-slate-950">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-2">
             <div className="h-4 w-48 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
@@ -217,21 +217,21 @@ export default function HistoricoAcademicoPage() {
         <div className="h-16 w-full bg-gray-200 dark:bg-slate-800 rounded-2xl"></div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-3">
             <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
             <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
           </div>
-          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-3">
             <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
             <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
           </div>
-          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 p-5 space-y-3">
+          <div className="h-32 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 space-y-3">
             <div className="h-4 w-28 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
             <div className="h-8 w-20 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
           </div>
         </div>
 
-        <div className="h-64 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-slate-800 p-6 space-y-4">
+        <div className="h-64 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 space-y-4">
           <div className="h-5 w-48 bg-gray-200 dark:bg-slate-800 rounded-lg"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="h-24 bg-gray-100 dark:bg-slate-800/60 rounded-2xl"></div>
@@ -245,9 +245,9 @@ export default function HistoricoAcademicoPage() {
 
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 space-y-4 bg-white dark:bg-slate-900 rounded-3xl border border-red-200 dark:border-red-900/50 shadow-sm">
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center p-6 space-y-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         <div className="p-4 bg-red-50 dark:bg-red-950/40 text-red-600 rounded-2xl">
-          <AlertTriangle size={32} />
+          <AlertTriangle size={32} aria-hidden="true" />
         </div>
         <div>
           <h2 className="text-lg font-black text-gray-950 dark:text-white">Não foi possível carregar o histórico acadêmico.</h2>
@@ -264,18 +264,18 @@ export default function HistoricoAcademicoPage() {
   }
 
   return (
-    <div className="space-y-8 pb-12 font-sans">
+    <main className="space-y-8 bg-slate-50 pb-12 font-sans text-slate-900 dark:bg-slate-950 dark:text-white">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-red-600 flex items-center gap-1.5">
-            <Cloud size={14} className="text-red-600" /> Registros acadêmicos persistidos
+          <p className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
+            <Cloud size={14} aria-hidden="true" /> Registros acadêmicos persistidos
           </p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-950 dark:text-white">Histórico Acadêmico e Relatórios</h1>
-          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-gray-500 dark:text-gray-400">Acompanhe notas e frequência usando somente registros acadêmicos reais da sua conta.</p>
+          <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white">Histórico Acadêmico e Relatórios</h1>
+          <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-6 text-slate-600 dark:text-slate-300">Acompanhe notas e frequência usando somente registros acadêmicos reais da sua conta.</p>
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-2.5 rounded-2xl shadow-xs">
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2.5 rounded-2xl shadow-xs">
             <Filter size={15} className="text-red-600 shrink-0" />
             <select
               value={selectedSemester}
@@ -313,13 +313,13 @@ export default function HistoricoAcademicoPage() {
       </div>
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Média das Notas</span><Award size={20} className="text-red-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{gradeAverage}</p><p className="mt-1 text-xs text-gray-500">pontuação média no filtro</p></div>
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Frequência Geral</span><CalendarCheck size={20} className="text-emerald-600" /></div><p className="mt-3 text-3xl font-black text-emerald-700 dark:text-emerald-400">{presenceRate}</p><p className="mt-1 text-xs text-gray-500">presenças registradas</p></div>
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Avaliações Filtradas</span><TrendingUp size={20} className="text-blue-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{filteredGrades.length}</p><p className="mt-1 text-xs text-gray-500">atividades pontuadas</p></div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Média das Notas</span><Award size={20} className="text-red-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{gradeAverage}</p><p className="mt-1 text-xs text-gray-500">pontuação média no filtro</p></div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Frequência Geral</span><CalendarCheck size={20} className="text-emerald-600" /></div><p className="mt-3 text-3xl font-black text-emerald-700 dark:text-emerald-400">{presenceRate}</p><p className="mt-1 text-xs text-gray-500">presenças registradas</p></div>
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm"><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wide text-gray-500">Avaliações Filtradas</span><TrendingUp size={20} className="text-blue-600" /></div><p className="mt-3 text-3xl font-black text-gray-950 dark:text-white">{filteredGrades.length}</p><p className="mt-1 text-xs text-gray-500">atividades pontuadas</p></div>
       </section>
 
       {/* Visão Detalhada por Disciplina */}
-      <section className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm space-y-4">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-black text-gray-950 dark:text-white flex items-center gap-2">
             <BookOpen size={18} className="text-red-600" /> Desempenho por Disciplina / Curso
@@ -344,7 +344,7 @@ export default function HistoricoAcademicoPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
           <div className="mb-5 flex items-start justify-between gap-3"><div><h2 className="text-lg font-black text-gray-950 dark:text-white flex items-center gap-2"><Calendar size={18} className="text-red-600" /> Evolução Gráfica das Notas</h2><p className="mt-1 text-xs text-gray-500">Comparativo temporal entre seu desempenho e a média da turma.</p></div><BarChart3 size={20} className="text-red-600" /></div>
           <div className="h-72 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
@@ -361,7 +361,7 @@ export default function HistoricoAcademicoPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
+        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm sm:p-6">
           <h2 className="text-lg font-black text-gray-950 dark:text-white mb-1">Detalhamento das Avaliações</h2>
           <p className="text-xs text-gray-500 mb-4">Registro completo de notas do semestre filtrado.</p>
           
@@ -384,6 +384,6 @@ export default function HistoricoAcademicoPage() {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 }
