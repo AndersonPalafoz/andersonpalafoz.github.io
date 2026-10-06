@@ -79,17 +79,18 @@ export default function WishlistPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8 pb-12 font-sans">
-      <div className="border-b border-border pb-6">
-        <h1 className="flex items-center gap-3 text-3xl font-black tracking-tight text-foreground">
+    <main className="mx-auto max-w-6xl space-y-8 bg-slate-50 pb-12 font-sans text-slate-900 dark:bg-slate-950 dark:text-white">
+      <header className="border-b border-slate-200 pb-6 dark:border-slate-800">
+        <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Planejamento de estudos</span>
+        <h1 className="mt-3 flex items-center gap-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white">
           <Heart className="fill-red-600 text-red-600" size={32} /> Lista de Desejos
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Cursos salvos para matrícula futura, consulta e planejamento de estudos.</p>
-      </div>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">Cursos salvos para matrícula futura, consulta e planejamento de estudos.        </p>
+      </header>
 
-      <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm md:flex-row">
+      <section aria-label="Filtros da lista de desejos" className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:flex-row">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} aria-hidden="true" />
           <Input
             placeholder="Buscar por título..."
             value={searchTerm}
@@ -105,27 +106,27 @@ export default function WishlistPage() {
               className={`rounded-xl px-4 py-2 text-xs font-bold transition ${
                 selectedCategory === category
                   ? "bg-red-600 text-white shadow-sm"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  : "bg-muted text-slate-600 dark:text-slate-300 hover:bg-muted/80"
               }`}
             >
               {category === "all" ? "Todas as categorias" : category}
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
       {loading ? (
-        <div className="flex justify-center rounded-2xl border border-border bg-card p-12">
+        <div className="flex justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-12">
           <Loader2 className="animate-spin text-red-600" size={32} />
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-card p-12 text-center text-muted-foreground">
+        <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-12 text-center text-slate-600 dark:text-slate-300">
           Sua Lista de Desejos ainda não possui cursos para estes filtros.
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map(({ id, course }) => course && (
-            <article key={id} className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition hover:shadow-md">
+            <article key={id} className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm transition hover:shadow-md">
               <div>
                 <div className="relative h-48 overflow-hidden bg-red-50 dark:bg-red-950/20">
                   {course.imageUrl ? (
@@ -150,7 +151,7 @@ export default function WishlistPage() {
                 </div>
                 <div className="space-y-3 p-6">
                   <h2 className="text-lg font-black leading-snug text-foreground">{course.title}</h2>
-                  <p className="line-clamp-2 text-sm text-muted-foreground">{course.description || "Curso de inglês da plataforma Anderson Palafoz."}</p>
+                  <p className="line-clamp-2 text-sm text-slate-600 dark:text-slate-300">{course.description || "Curso de inglês da plataforma Anderson Palafoz."}</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between gap-2 border-t border-border p-6 pt-4">
@@ -178,6 +179,6 @@ export default function WishlistPage() {
       )}
 
       <SavedMaterialsSection />
-    </div>
+    </main>
   );
 }
