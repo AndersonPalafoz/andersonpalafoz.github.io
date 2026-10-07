@@ -2,7 +2,7 @@ import { Skeleton } from "@/app/components/ui/skeleton";
 
 export default function ProfessorLoading() {
   return (
-    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 px-4 py-8 dark:bg-slate-950 sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
         <div className="surface-card p-6 sm:p-8 rounded-3xl border border-border/70 space-y-4">
           <Skeleton className="h-6 w-48 rounded-xl" />
