@@ -100,19 +100,19 @@ export default function ProfessorAlunosPage() {
     : "Revise solicitações de acesso de alunos com conta. Alunos externos sem conta são gerenciados dentro de uma oferta acadêmica.";
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-slate-900/50 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <header className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
-          <Link href="/professor" className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline"><ArrowLeft size={16} /> Voltar ao painel do professor</Link>
+        <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8">
+          <Link href="/professor" className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-red-600 hover:underline"><ArrowLeft size={16} aria-hidden="true" /> Voltar ao painel do professor</Link>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-600">Gestão acadêmica contextual</p>
+              <p className="inline-flex w-fit rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Gestão acadêmica contextual</p>
               <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">{title}</h1>
               <p className="mt-2 max-w-2xl text-gray-600 dark:text-slate-400">{description}</p>
-              {context && <p className="mt-3 inline-flex rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-950/30 dark:text-red-300">Oferta #{context.offerId ?? "legada"} · {students.length} registro(s) acadêmico(s)</p>}
+              {context && <p className="mt-3 inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-bold text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">Oferta #{context.offerId ?? "legada"} · {students.length} registro(s) acadêmico(s)</p>}
             </div>
             <div className="flex items-center gap-2">
-              <button type="button" onClick={() => void loadStudents()} disabled={loading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-3 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60" aria-label="Atualizar alunos"><RefreshCw size={15} className={loading ? "animate-spin" : ""} /> Atualizar</button>
+              <button type="button" onClick={() => void loadStudents()} disabled={loading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-3 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60" aria-label="Atualizar alunos"><RefreshCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Atualizar</button>
               <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"><Clock3 size={18} /> {students.length}</div>
             </div>
           </div>
@@ -121,10 +121,10 @@ export default function ProfessorAlunosPage() {
         {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{error}</div>}
 
         <section className="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          {loading ? <div className="space-y-3 p-6" aria-busy="true"><div className="h-20 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" /><div className="h-20 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" /><p className="text-center text-sm text-gray-500">Carregando alunos…</p></div> : (
+          {loading ? <div className="space-y-3 p-6" aria-busy="true"><div className="h-20 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" /><div className="h-20 animate-pulse rounded-2xl bg-gray-100 dark:bg-slate-800" /><p className="text-center text-sm text-slate-600 dark:text-slate-300">Carregando alunos…</p></div> : (
             <div className="divide-y divide-gray-100 dark:divide-slate-800">
-              {students.length > 0 && <div className="p-4 sm:px-6"><label className="relative block"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white" placeholder="Buscar por nome, e-mail ou matrícula" aria-label="Buscar alunos" /></label></div>}
-              {filteredStudents.length === 0 && <div className="p-12 text-center"><UserCheck size={44} className="mx-auto text-green-600" /><h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">{contextual ? "Nenhum aluno nesta oferta" : "Nenhuma solicitação pendente"}</h2><p className="mt-2 text-gray-600 dark:text-slate-400">{contextual ? "Alunos externos podem ser matriculados sem possuir conta no site." : "Novas solicitações aparecerão aqui para revisão."}</p></div>}
+              {students.length > 0 && <div className="p-4 sm:px-6"><label className="relative block"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-9 pr-3 text-sm text-gray-900 outline-none focus:border-red-600 focus:ring-2 focus:ring-red-100 dark:border-slate-700 dark:bg-slate-950 dark:text-white" placeholder="Buscar por nome, e-mail ou matrícula" aria-label="Buscar alunos" /></label></div>}
+              {filteredStudents.length === 0 && <div className="p-12 text-center"><UserCheck size={44} aria-hidden="true" className="mx-auto text-emerald-600" /><h2 className="mt-4 text-xl font-bold text-gray-900 dark:text-white">{contextual ? "Nenhum aluno nesta oferta" : "Nenhuma solicitação pendente"}</h2><p className="mt-2 text-gray-600 dark:text-slate-400">{contextual ? "Alunos externos podem ser matriculados sem possuir conta no site." : "Novas solicitações aparecerão aqui para revisão."}</p></div>}
               {filteredStudents.map((student) => {
                 const pendingRequest = !contextual && student.approvalStatus === "pending" && student.userId;
                 return <article key={student.courseOfferStudentId ?? `request-${student.userId}`} className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
@@ -133,11 +133,11 @@ export default function ProfessorAlunosPage() {
                     <p className="text-sm text-gray-600 dark:text-slate-400">{student.email || "Sem conta vinculada"}</p>
                     <div className="mt-2 flex flex-wrap gap-2 text-xs">
                       <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">Matrícula acadêmica: {student.courseOfferStudentId ?? "legada"}</span>
-                      <span className={`rounded-full px-2 py-1 font-semibold ${student.userId ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-800"}`}>{student.userId ? "Conta vinculada" : "Sem conta no site"}</span>
+                      <span className={`rounded-full px-2 py-1 font-semibold ${student.userId ? "border border-slate-200 bg-slate-100 text-emerald-700 dark:border-slate-700 dark:bg-slate-900 dark:text-emerald-300" : "border border-slate-200 bg-slate-100 text-amber-700 dark:border-slate-700 dark:bg-slate-900 dark:text-amber-300"}`}>{student.userId ? "Conta vinculada" : "Sem conta no site"}</span>
                       {student.studentIdNumber && <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">Registro: {student.studentIdNumber}</span>}
                     </div>
                   </div>
-                  {pendingRequest && <div className="flex flex-col gap-2 sm:flex-row"><button disabled={actionId === student.userId} onClick={() => void review(student.userId!, "reject")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"><UserX size={16} /> Recusar</button><button disabled={actionId === student.userId} onClick={() => void review(student.userId!, "approve")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60">{actionId === student.userId ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />} Aprovar aluno</button></div>}
+                  {pendingRequest && <div className="flex flex-col gap-2 sm:flex-row"><button disabled={actionId === student.userId} onClick={() => void review(student.userId!, "reject")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"><UserX size={16} aria-hidden="true" /> Recusar</button><button disabled={actionId === student.userId} onClick={() => void review(student.userId!, "approve")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-60">{actionId === student.userId ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} aria-hidden="true" />} Aprovar aluno</button></div>}
                 </article>;
               })}
             </div>
