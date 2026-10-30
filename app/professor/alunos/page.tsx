@@ -113,7 +113,7 @@ export default function ProfessorAlunosPage() {
             </div>
             <div className="flex items-center gap-2">
               <button type="button" onClick={() => void loadStudents()} disabled={loading} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-red-200 px-3 text-xs font-bold text-red-700 hover:bg-red-50 disabled:opacity-60" aria-label="Atualizar alunos"><RefreshCw size={15} aria-hidden="true" className={loading ? "animate-spin" : ""} /> Atualizar</button>
-              <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"><Clock3 size={18} /> {students.length}</div>
+              <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700"><Clock3 size={18} aria-hidden="true" /> {students.length}</div>
             </div>
           </div>
         </header>

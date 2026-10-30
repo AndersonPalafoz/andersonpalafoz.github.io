@@ -97,8 +97,8 @@ export default function ProfessorProgressSpeakingPage() {
 
   if (errorMessage && !data) {
     return (
-      <div className="site-shell px-4 py-16 sm:px-6 lg:px-8">
-        <div className="max-w-xl mx-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-red-200 bg-red-50/50 text-center space-y-4 shadow-sm">
+      <div className="min-h-screen bg-slate-50 px-4 py-16 dark:bg-slate-950 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-red-200 bg-slate-50 dark:bg-slate-950 text-center space-y-4 shadow-sm">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 mx-auto font-bold text-xl">
             ⚠️
           </div>
@@ -188,7 +188,7 @@ export default function ProfessorProgressSpeakingPage() {
             <div className="grid gap-3 lg:grid-cols-2">
               {interventions.map((item: any) => (
                 <a key={item.id} href={`#activity-progress-${item.activityProgressId}`} className="rounded-2xl border border-border/70 bg-muted/50 p-4 text-left transition hover:border-red-300 hover:bg-red-50/40 focus:outline-none focus:ring-2 focus:ring-red-500 dark:hover:bg-red-950/20">
-                  <div className="flex flex-wrap items-center justify-between gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${item.priority === "ação agora" ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.priority}</span><span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{item.actionLabel}</span></div>
+                  <div className="flex flex-wrap items-center justify-between gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${item.priority === "ação agora" ? "border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 dark:bg-red-950 dark:text-red-200" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.priority}</span><span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{item.actionLabel}</span></div>
                   <p className="mt-3 text-sm font-bold text-slate-900 dark:text-white">{item.studentName} · {item.activityTitle}</p>
                   <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">{item.reason}</p>
                 </a>
@@ -217,7 +217,7 @@ export default function ProfessorProgressSpeakingPage() {
                 return (
                   <div key={student.id} className="rounded-2xl border border-border/70 bg-muted/50 p-5 space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold">
+                      <div className="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 flex items-center justify-center font-bold">
                         {student.name ? student.name.charAt(0).toUpperCase() : "A"}
                       </div>
                       <div>
@@ -273,7 +273,7 @@ export default function ProfessorProgressSpeakingPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
                             {sub.activity?.title || "Atividade de Speaking"}
                           </span>
                           <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -298,7 +298,7 @@ export default function ProfessorProgressSpeakingPage() {
                           <span className="text-[11px] text-slate-600 dark:text-slate-300">A mais recente aparece primeiro</span>
                         </div>
                         {attempts.map((attempt: any) => (
-                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 md:flex-row md:items-center">
+                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-red-200 bg-slate-50 dark:bg-slate-950 p-3 md:flex-row md:items-center">
                             <div className="flex-1">
                               <p className="text-xs font-bold text-slate-900 dark:text-white">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
                               <p className="text-[11px] text-slate-600 dark:text-slate-300">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
@@ -346,7 +346,7 @@ export default function ProfessorProgressSpeakingPage() {
                           <input type="checkbox" checked={requestRevision} onChange={(event) => setRequestRevision(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-blue-400 text-red-600 focus:ring-red-500" />
                           <span><strong className="flex items-center gap-1.5"><RotateCcw size={15} /> Solicitar nova tentativa</strong><span className="mt-1 block text-xs leading-5">Mantenha a devolutiva objetiva e indique o que o estudante deve revisar antes de regravar. A tentativa anterior não será apagada.</span></span>
                         </label>
-                        <div className="rounded-xl border border-dashed border-red-200 bg-red-50/50 p-3">
+                        <div className="rounded-xl border border-dashed border-red-200 bg-slate-50 dark:bg-slate-950 p-3">
                           <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-white"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
                           <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                           {feedbackAudio && <p className="mt-2 text-[11px] text-emerald-700">Arquivo pronto: {feedbackAudio.name}</p>}

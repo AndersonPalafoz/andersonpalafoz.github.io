@@ -34,7 +34,7 @@ export default async function TeacherDashboardPage() {
         {/* Header */}
         <section className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8 xl:grid-cols-[minmax(0,1fr)_minmax(23rem,0.86fr)] xl:items-center">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-xl bg-red-50 dark:bg-red-950/40 px-3 py-1.5 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
+            <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900 text-xs font-black uppercase tracking-[0.2em] text-red-600 dark:text-red-400">
               <GraduationCap size={16} aria-hidden="true" />
               Área Acadêmica do Professor
             </div>
