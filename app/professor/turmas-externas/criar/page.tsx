@@ -4,5 +4,5 @@ import { ExternalClassesPageHeader, ExternalClassesSectionNav } from "@/componen
 export const metadata = { title: "Criar turma externa | Anderson Palafoz" };
 
 export default function CreateExternalClassPage() {
-  return <main className="site-shell px-4 py-6 sm:px-6 lg:px-8"><div className="page-container space-y-6"><ExternalClassesPageHeader eyebrow="Turmas externas · cadastro" title="Criar nova turma" description="Cadastre a turma em uma tela própria. Alunos e acompanhamento ficam em áreas separadas." /><ExternalClassesSectionNav /><ExternalClassCreateForm /></div></main>;
+  return <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8"><div className="page-container space-y-6"><ExternalClassesPageHeader eyebrow="Turmas externas · cadastro" title="Criar nova turma" description="Cadastre a turma em uma tela própria. Alunos e acompanhamento ficam em áreas separadas." /><ExternalClassesSectionNav /><ExternalClassCreateForm /></div></main>;
 }

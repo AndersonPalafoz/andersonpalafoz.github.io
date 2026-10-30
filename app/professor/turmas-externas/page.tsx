@@ -1728,7 +1728,7 @@ export default function TurmasExternasPage() {
     }
   };
 
-  return <main className="site-shell px-4 py-6 sm:px-6 lg:px-8"><div className="page-container space-y-6"><ExternalClassesPageHeader eyebrow="Área externa" title="Turmas externas" description="Escolha uma área para trabalhar: crie, gerencie turmas ou organize alunos." /><ExternalClassesSectionNav /><ExternalClassesManager /></div></main>;
+  return <main className="min-h-screen bg-slate-50 px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8"><div className="page-container space-y-6"><ExternalClassesPageHeader eyebrow="Área externa" title="Turmas externas" description="Escolha uma área para trabalhar: crie, gerencie turmas ou organize alunos." /><ExternalClassesSectionNav /><ExternalClassesManager /></div></main>;
 
   return (
   <div className="external-classes-page min-h-screen overflow-x-clip bg-background p-4 pb-24 font-sans text-foreground sm:p-6 lg:px-8 lg:py-7">

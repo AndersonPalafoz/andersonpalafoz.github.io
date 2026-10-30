@@ -55,10 +55,10 @@ interface CourseOffer {
 }
 
 const AVAILABLE_TAGS = [
-  { name: "Urgente", color: "bg-red-100 text-red-700 border-red-300 hover:bg-red-200" },
+  { name: "Urgente", color: "border-slate-200 bg-slate-100 text-red-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300" },
   { name: "Gramática", color: "bg-blue-100 text-blue-700 border-blue-300 hover:bg-blue-200" },
-  { name: "Conversação", color: "bg-green-100 text-green-700 border-green-300 hover:bg-green-200" },
-  { name: "Vocabulário", color: "bg-purple-100 text-purple-700 border-purple-300 hover:bg-purple-200" },
+  { name: "Conversação", color: "border-slate-200 bg-slate-100 text-emerald-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-emerald-300" },
+  { name: "Vocabulário", color: "border-slate-200 bg-slate-100 text-violet-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-900 dark:text-violet-300" },
   { name: "Avaliação", color: "bg-amber-100 text-amber-700 border-amber-300 hover:bg-amber-200" },
 ];
 
@@ -441,15 +441,15 @@ export default function TeacherTasksPage() {
   const progressPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? "bg-gray-900 text-gray-100" : "bg-gray-50 text-gray-900"}`}>
+    <main className={`min-h-screen transition-colors duration-300 ${darkMode ? "bg-slate-950 text-slate-100" : "bg-slate-50 text-slate-900"}`}>
       <div className="max-w-7xl mx-auto py-12 px-4 md:px-8 lg:px-12 space-y-8">
-        <div className={`p-8 rounded-2xl shadow-sm border flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <header className={`rounded-3xl border p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${darkMode ? "bg-slate-900 border-slate-800" : "bg-white border-slate-200"}`}>
           <div>
             <Link href="/professor" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
-              <ArrowLeft size={16} /> Voltar ao Painel do Professor
+              <ArrowLeft size={16} aria-hidden="true" /> Voltar ao Painel do Professor
             </Link>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <CheckSquare className="text-red-600" size={32} />
+              <CheckSquare className="text-red-600" size={32} aria-hidden="true" />
               Gerenciamento de Tarefas, Checklists e Anexos
             </h1>
             <p className={`mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -467,26 +467,26 @@ export default function TeacherTasksPage() {
               disabled={exportingFormat !== null}
               className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
             >
-              <Download size={14} /> Exportar CSV
+              <Download size={14} aria-hidden="true" /> Exportar CSV
             </button>
             <button
               onClick={exportToPDF}
               disabled={exportingFormat !== null}
               className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60 text-white font-semibold text-xs transition inline-flex items-center gap-1.5"
             >
-              <FileText size={14} /> {exportingFormat === "pdf" ? "Gerando PDF…" : "Exportar PDF"}
+              <FileText size={14} aria-hidden="true" /> {exportingFormat === "pdf" ? "Gerando PDF…" : "Exportar PDF"}
             </button>
             <button
               onClick={() => setDarkMode(!darkMode)}
               className={`p-3 rounded-xl border transition ${darkMode ? "border-gray-700 bg-gray-700 text-yellow-400 hover:bg-gray-600" : "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {darkMode ? <Sun size={20} aria-hidden="true" /> : <Moon size={20} aria-hidden="true" />}
             </button>
             <Button onClick={() => setShowForm(!showForm)} className="bg-red-600 hover:bg-red-700 text-white font-bold h-11 px-6 rounded-xl shadow-md">
               {showForm ? "Fechar Formulário" : "+ Nova Tarefa"}
             </Button>
           </div>
-        </div>
+        </header>
 
         {/* Barra de Progresso Geral */}
         <div className={`p-6 rounded-2xl border shadow-sm space-y-3 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
@@ -952,6 +952,6 @@ export default function TeacherTasksPage() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

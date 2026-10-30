@@ -87,9 +87,9 @@ export default function ProfessorProgressSpeakingPage() {
 
   if (loading && !data) {
     return (
-      <div className="site-shell flex items-center justify-center p-12" aria-busy="true">
-        <div className="surface-card h-64 animate-pulse flex items-center justify-center">
-          <p className="text-sm font-bold text-muted-foreground">Carregando painel de progresso...</p>
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-12 dark:bg-slate-950" aria-busy="true">
+        <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Carregando painel de progresso...</p>
         </div>
       </div>
     );
@@ -97,8 +97,8 @@ export default function ProfessorProgressSpeakingPage() {
 
   if (errorMessage && !data) {
     return (
-      <div className="site-shell px-4 py-16 sm:px-6 lg:px-8">
-        <div className="max-w-xl mx-auto surface-card p-8 rounded-3xl border border-red-200 bg-red-50/50 text-center space-y-4 shadow-sm">
+      <div className="min-h-screen bg-slate-50 px-4 py-16 dark:bg-slate-950 sm:px-6 lg:px-8">
+        <div className="max-w-xl mx-auto rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 p-8 rounded-3xl border border-red-200 bg-slate-50 dark:bg-slate-950 text-center space-y-4 shadow-sm">
           <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600 mx-auto font-bold text-xl">
             ⚠️
           </div>
@@ -143,18 +143,18 @@ export default function ProfessorProgressSpeakingPage() {
     });
 
   return (
-    <div className="site-shell px-4 py-8 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-white sm:px-6 lg:px-8">
       <div className="page-container space-y-8">
-        <header className="surface-card flex flex-col justify-between gap-4 p-5 sm:p-7 md:flex-row md:items-center">
+        <header className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7 md:flex-row md:items-center">
           <div>
             <Link href="/professor" className="text-sm font-semibold text-red-600 hover:underline flex items-center gap-1 mb-2">
-              <ArrowLeft size={16} /> Voltar ao Painel do Professor
+              <ArrowLeft size={16} aria-hidden="true" /> Voltar ao Painel do Professor
             </Link>
-            <h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-              <Mic className="text-red-600" size={32} />
+            <h1 className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white sm:text-3xl">
+              <Mic className="text-red-600" size={32} aria-hidden="true" />
               Progresso de Aulas & Avaliação de Speaking
             </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300 sm:text-base">
               Acompanhe o andamento das aulas e avalie as gravações de áudio enviadas pelos alunos com feedback personalizado.
             </p>
             {data?.context?.offerId ? (
@@ -162,35 +162,35 @@ export default function ProfessorProgressSpeakingPage() {
                 Contexto da oferta #{data.context.offerId}{data.context.classId ? ` · legado #${data.context.classId}` : ""}
               </p>
             ) : classId ? (
-              <p className="mt-3 inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold text-muted-foreground">Contexto legado da turma #{classId}</p>
+              <p className="mt-3 inline-flex rounded-full border border-border bg-muted px-3 py-1 text-xs font-bold text-slate-600 dark:text-slate-300">Contexto legado da turma #{classId}</p>
             ) : null}
           </div>
         </header>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-label="Resumo do progresso">
-          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Users size={15} className="text-red-600" /> Alunos acompanhados</div><p className="mt-2 text-2xl font-black text-foreground">{students.length}</p></div>
-          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><CheckCircle2 size={15} className="text-emerald-600" /> Aulas concluídas</div><p className="mt-2 text-2xl font-black text-foreground">{completedLessons}</p></div>
-          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><MessageSquare size={15} className="text-amber-600" /> Feedbacks pendentes</div><p className="mt-2 text-2xl font-black text-foreground">{pendingFeedbackCount}</p></div>
-          <div className="surface-card rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"><Activity size={15} className="text-blue-600" /> Cobertura registrada</div><p className="mt-2 text-2xl font-black text-foreground">{lessonCoverage}%</p></div>
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300"><Users size={15} aria-hidden="true" className="text-red-600" /> Alunos acompanhados</div><p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{students.length}</p></div>
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300"><CheckCircle2 size={15} aria-hidden="true" className="text-emerald-600" /> Aulas concluídas</div><p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{completedLessons}</p></div>
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300"><MessageSquare size={15} aria-hidden="true" className="text-amber-600" /> Feedbacks pendentes</div><p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{pendingFeedbackCount}</p></div>
+          <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 rounded-2xl p-4"><div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-slate-600 dark:text-slate-300"><Activity size={15} className="text-blue-600" /> Cobertura registrada</div><p className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{lessonCoverage}%</p></div>
         </section>
 
-        <section className="surface-card space-y-4 p-5 sm:p-6" aria-labelledby="interventions-title" aria-live="polite">
+        <section className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 p-5 sm:p-6" aria-labelledby="interventions-title" aria-live="polite">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 id="interventions-title" className="flex items-center gap-2 text-xl font-black text-foreground"><ListChecks className="text-red-600" size={23} /> Fila de intervenções pedagógicas</h2>
-              <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">A fila destaca somente ações apoiadas por evidências registradas: devolutivas pendentes e novas tentativas já orientadas. Ela não usa ranking nem estima o desempenho do estudante.</p>
+              <h2 id="interventions-title" className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white"><ListChecks className="text-red-600" size={23} /> Fila de intervenções pedagógicas</h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600 dark:text-slate-300">A fila destaca somente ações apoiadas por evidências registradas: devolutivas pendentes e novas tentativas já orientadas. Ela não usa ranking nem estima o desempenho do estudante.</p>
             </div>
             <span className="self-start rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700 dark:bg-red-950/40 dark:text-red-200">{interventions.length} {interventions.length === 1 ? "ação" : "ações"}</span>
           </div>
           {interventions.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-muted-foreground">Nenhuma intervenção pedagógica pendente no escopo atual. Novas gravações e pedidos de revisão aparecerão aqui quando houver uma ação docente clara.</div>
+            <div className="rounded-2xl border border-dashed border-border p-5 text-sm text-slate-600 dark:text-slate-300">Nenhuma intervenção pedagógica pendente no escopo atual. Novas gravações e pedidos de revisão aparecerão aqui quando houver uma ação docente clara.</div>
           ) : (
             <div className="grid gap-3 lg:grid-cols-2">
               {interventions.map((item: any) => (
                 <a key={item.id} href={`#activity-progress-${item.activityProgressId}`} className="rounded-2xl border border-border/70 bg-muted/50 p-4 text-left transition hover:border-red-300 hover:bg-red-50/40 focus:outline-none focus:ring-2 focus:ring-red-500 dark:hover:bg-red-950/20">
-                  <div className="flex flex-wrap items-center justify-between gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${item.priority === "ação agora" ? "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-200" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.priority}</span><span className="text-[11px] font-bold text-muted-foreground">{item.actionLabel}</span></div>
-                  <p className="mt-3 text-sm font-bold text-foreground">{item.studentName} · {item.activityTitle}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.reason}</p>
+                  <div className="flex flex-wrap items-center justify-between gap-2"><span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${item.priority === "ação agora" ? "border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 dark:bg-red-950 dark:text-red-200" : "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200"}`}>{item.priority}</span><span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">{item.actionLabel}</span></div>
+                  <p className="mt-3 text-sm font-bold text-slate-900 dark:text-white">{item.studentName} · {item.activityTitle}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-600 dark:text-slate-300">{item.reason}</p>
                 </a>
               ))}
             </div>
@@ -198,16 +198,16 @@ export default function ProfessorProgressSpeakingPage() {
         </section>
 
         {/* Seção 1: Progresso de Aulas por Aluno */}
-        <div className="surface-card space-y-6 p-5 sm:p-6">
+        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6 p-5 sm:p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <h2 className="flex items-center gap-2 text-xl font-black text-foreground"><CheckCircle2 className="text-red-600" size={24} /> Progresso Geral de Aulas dos Alunos</h2>
-            <div className="relative w-full md:max-w-xs"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} /><input value={studentQuery} onChange={(event) => setStudentQuery(event.target.value)} placeholder="Filtrar aluno..." className="field-control w-full pl-9 text-sm" aria-label="Filtrar alunos por nome ou e-mail" /></div>
+            <h2 className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white"><CheckCircle2 className="text-red-600" size={24} /> Progresso Geral de Aulas dos Alunos</h2>
+            <div className="relative w-full md:max-w-xs"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 dark:text-slate-300" size={16} /><input value={studentQuery} onChange={(event) => setStudentQuery(event.target.value)} placeholder="Filtrar aluno..." className="field-control w-full pl-9 text-sm" aria-label="Filtrar alunos por nome ou e-mail" /></div>
           </div>
 
           {students.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">Nenhum aluno vinculado no momento.</p>
+            <p className="py-4 text-sm text-slate-600 dark:text-slate-300">Nenhum aluno vinculado no momento.</p>
           ) : filteredStudents.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">Nenhum aluno corresponde ao filtro atual.</p>
+            <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-slate-600 dark:text-slate-300">Nenhum aluno corresponde ao filtro atual.</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {filteredStudents.map((student) => {
@@ -217,18 +217,18 @@ export default function ProfessorProgressSpeakingPage() {
                 return (
                   <div key={student.id} className="rounded-2xl border border-border/70 bg-muted/50 p-5 space-y-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold">
+                      <div className="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300 flex items-center justify-center font-bold">
                         {student.name ? student.name.charAt(0).toUpperCase() : "A"}
                       </div>
                       <div>
-                        <h3 className="font-bold text-foreground">{student.name || "Aluno"}</h3>
-                        <p className="text-xs text-muted-foreground">{student.email}</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{student.name || "Aluno"}</h3>
+                        <p className="text-xs text-slate-600 dark:text-slate-300">{student.email}</p>
                       </div>
                     </div>
                     <div className="space-y-2 border-t border-border/70 pt-3 text-sm">
-                      <div className="flex items-center justify-between"><span className="font-medium text-muted-foreground">Aulas concluídas</span><span className="font-bold text-red-600">{studentLessons.length}/{studentTotalLessons || "—"}</span></div>
+                      <div className="flex items-center justify-between"><span className="font-medium text-slate-600 dark:text-slate-300">Aulas concluídas</span><span className="font-bold text-red-600">{studentLessons.length}/{studentTotalLessons || "—"}</span></div>
                       <div className="h-2 overflow-hidden rounded-full bg-border"><div className="h-full rounded-full bg-red-600 transition-all" style={{ width: `${studentProgress}%` }} /></div>
-                      <p className="text-right text-[11px] font-bold text-muted-foreground">{studentProgress}% de progresso registrado</p>
+                      <p className="text-right text-[11px] font-bold text-slate-600 dark:text-slate-300">{studentProgress}% de progresso registrado</p>
                     </div>
                   </div>
                 );
@@ -238,19 +238,19 @@ export default function ProfessorProgressSpeakingPage() {
         </div>
 
         {/* Seção 2: Submissões de Speaking & Feedback do Professor */}
-        <div className="surface-card space-y-6 p-5 sm:p-6">
-          <h2 className="flex items-center gap-2 text-xl font-black text-foreground">
+        <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-6 p-5 sm:p-6">
+          <h2 className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white">
             <MessageSquare className="text-red-600" size={24} />
             Avaliação de Gravações de Speaking (Feedback Docente)
           </h2>
           <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-muted/50 p-3 sm:flex-row sm:items-center">
-            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Filter size={14} className="text-red-600" /> Status do feedback
-              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300"><Filter size={14} className="text-red-600" /> Status do feedback
+              <select value={feedbackFilter} onChange={(e) => setFeedbackFilter(e.target.value as typeof feedbackFilter)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-slate-900 dark:text-white">
                 <option value="all">Todas</option><option value="pending">Aguardando feedback</option><option value="reviewed">Já avaliadas</option>
               </select>
             </label>
-            <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground"><Clock size={14} className="text-red-600" /> Ordenar por data
-              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-foreground">
+            <label className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300"><Clock size={14} className="text-red-600" /> Ordenar por data
+              <select value={dateSort} onChange={(e) => setDateSort(e.target.value as typeof dateSort)} className="field-control rounded-lg border border-border bg-card px-2 py-1.5 text-xs font-semibold text-slate-900 dark:text-white">
                 <option value="newest">Mais recentes</option><option value="oldest">Mais antigas</option>
               </select>
             </label>
@@ -259,8 +259,8 @@ export default function ProfessorProgressSpeakingPage() {
 
           {filteredSpeakingSubmissions.length === 0 ? (
             <div className="empty-state py-12 text-center">
-              <Mic className="mx-auto mb-3 text-muted-foreground" size={36} />
-              <p className="font-semibold text-foreground">Nenhuma gravação de speaking enviada pelos alunos ainda.</p>
+              <Mic className="mx-auto mb-3 text-slate-600 dark:text-slate-300" size={36} />
+              <p className="font-semibold text-slate-900 dark:text-white">Nenhuma gravação de speaking enviada pelos alunos ainda.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -273,16 +273,16 @@ export default function ProfessorProgressSpeakingPage() {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold border border-slate-200 bg-slate-100 text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
                             {sub.activity?.title || "Atividade de Speaking"}
                           </span>
-                          <span className="text-xs font-medium text-muted-foreground">
+                          <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                             Aluno: {student?.name || student?.email || `ID ${sub.userId}`}
                           </span>
                           {needsFeedback && <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold uppercase">Aguardando feedback</span>}
                           {sub.status === "in_progress" && (sub.teacherFeedback || sub.teacherAudioFeedbackUrl) && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold uppercase">Nova tentativa solicitada</span>}
                         </div>
-                        <p className="text-sm font-semibold text-foreground">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
                           Status: <span className="uppercase text-red-600">{sub.status}</span> {sub.score ? `• Nota: ${sub.score}/100` : ""}
                         </p>
                       </div>
@@ -292,16 +292,16 @@ export default function ProfessorProgressSpeakingPage() {
                     </div>
 
                     {attempts.length > 0 && (
-                      <div className="surface-card space-y-2 p-4">
+                      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-2 p-4">
                         <div className="flex items-center justify-between">
                           <p className="text-xs font-bold uppercase tracking-wide text-red-600">Histórico de tentativas ({attempts.length})</p>
-                          <span className="text-[11px] text-muted-foreground">A mais recente aparece primeiro</span>
+                          <span className="text-[11px] text-slate-600 dark:text-slate-300">A mais recente aparece primeiro</span>
                         </div>
                         {attempts.map((attempt: any) => (
-                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-red-200 bg-red-50/50 p-3 md:flex-row md:items-center">
+                          <div key={attempt.id} className="flex flex-col gap-3 rounded-xl border border-red-200 bg-slate-50 dark:bg-slate-950 p-3 md:flex-row md:items-center">
                             <div className="flex-1">
-                              <p className="text-xs font-bold text-foreground">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
-                              <p className="text-[11px] text-muted-foreground">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
+                              <p className="text-xs font-bold text-slate-900 dark:text-white">Tentativa #{attempt.attemptNumber} · {attempt.aiScore ?? "—"}/100</p>
+                              <p className="text-[11px] text-slate-600 dark:text-slate-300">{attempt.submittedAt ? new Date(attempt.submittedAt).toLocaleString("pt-BR") : "Data não informada"}</p>
                             </div>
                             {attempt.audioResponseUrl && <audio controls src={attempt.audioResponseUrl} className="h-8 w-full md:w-56" />}
                             <Button size="sm" variant="outline" onClick={() => { setSelectedAttemptId(attempt.id); setEvaluatingId(sub.id); setScoreVal(sub.score ?? attempt.aiScore ?? null); setFeedbackText(attempt.teacherFeedback || sub.teacherFeedback || ""); setFeedbackAudio(null); setRequestRevision(sub.status === "in_progress"); }} className="text-xs">Avaliar esta</Button>
@@ -311,7 +311,7 @@ export default function ProfessorProgressSpeakingPage() {
                     )}
 
                     {sub.teacherFeedback && (
-                      <div className="surface-card p-4 text-sm text-foreground">
+                      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 p-4 text-sm text-slate-900 dark:text-white">
                         <p className="font-bold text-red-700 mb-1">Feedback Registrado pelo Professor:</p>
                         <p className="whitespace-pre-wrap">{sub.teacherFeedback}</p>
                         {sub.teacherAudioFeedbackUrl && <audio controls src={sub.teacherAudioFeedbackUrl} className="mt-3 h-8 w-full" />}
@@ -319,10 +319,10 @@ export default function ProfessorProgressSpeakingPage() {
                     )}
 
                     {evaluatingId === sub.id ? (
-                      <div className="surface-card space-y-4 p-4">
-                        <h4 className="text-sm font-bold text-foreground">Avaliar e Fornecer Feedback</h4>
+                      <div className="rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 space-y-4 p-4">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">Avaliar e Fornecer Feedback</h4>
                         <div>
-                          <label className="mb-1 block text-xs font-semibold text-foreground">Nota (0 a 100)</label>
+                          <label className="mb-1 block text-xs font-semibold text-slate-900 dark:text-white">Nota (0 a 100)</label>
                           <input
                             type="number"
                             min={0}
@@ -333,7 +333,7 @@ export default function ProfessorProgressSpeakingPage() {
                           />
                         </div>
                         <div>
-                          <label className="mb-1 block text-xs font-semibold text-foreground">Comentário do Professor</label>
+                          <label className="mb-1 block text-xs font-semibold text-slate-900 dark:text-white">Comentário do Professor</label>
                           <textarea
                             rows={2}
                             value={feedbackText}
@@ -346,9 +346,9 @@ export default function ProfessorProgressSpeakingPage() {
                           <input type="checkbox" checked={requestRevision} onChange={(event) => setRequestRevision(event.target.checked)} className="mt-0.5 h-4 w-4 rounded border-blue-400 text-red-600 focus:ring-red-500" />
                           <span><strong className="flex items-center gap-1.5"><RotateCcw size={15} /> Solicitar nova tentativa</strong><span className="mt-1 block text-xs leading-5">Mantenha a devolutiva objetiva e indique o que o estudante deve revisar antes de regravar. A tentativa anterior não será apagada.</span></span>
                         </label>
-                        <div className="rounded-xl border border-dashed border-red-200 bg-red-50/50 p-3">
-                          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-foreground"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
-                          <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-muted-foreground file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
+                        <div className="rounded-xl border border-dashed border-red-200 bg-slate-50 dark:bg-slate-950 p-3">
+                          <label className="mb-2 flex items-center gap-2 text-xs font-semibold text-slate-900 dark:text-white"><Volume2 size={14} className="text-red-600" /> Comentário em áudio (opcional)</label>
+                          <input type="file" accept="audio/*" onChange={(event) => setFeedbackAudio(event.target.files?.[0] || null)} className="block w-full text-xs text-slate-600 dark:text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-red-600 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-white" />
                           {feedbackAudio && <p className="mt-2 text-[11px] text-emerald-700">Arquivo pronto: {feedbackAudio.name}</p>}
                         </div>
                         <div className="flex flex-wrap gap-3">
@@ -385,6 +385,6 @@ export default function ProfessorProgressSpeakingPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
