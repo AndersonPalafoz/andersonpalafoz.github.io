@@ -9,12 +9,17 @@ import { MaterialProgressButton } from "@/components/material-progress-button";
 import { MaterialCommentsSection } from "@/components/material-comments-section";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
 import { SaveMaterialButton } from "@/components/save-material-button";
+import { extractGoogleDriveFileId } from "@/lib/google-drive";
 import { MaterialLoginLock } from "@/components/material-login-lock";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
   const session = await getServerSession(authOptions);
   const isAuthenticated = Boolean(session?.user?.email);
   const material = await getMaterialById(materialId);
+  const driveFileId = material?.fileUrl ? extractGoogleDriveFileId(material.fileUrl) : null;
+  const previewUrl = driveFileId
+    ? `https://drive.google.com/file/d/${encodeURIComponent(driveFileId)}/preview`
+    : material?.fileUrl;
   const userId = Number(session?.user?.id);
   const savedMaterialIds = material && Number.isInteger(userId) && userId > 0
     ? await getSavedMaterialIds(userId, [material.id])
@@ -63,15 +68,15 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
           </div>
 
           <div className="space-y-5 pt-4">
-            {material.fileUrl && /\.pdf(?:$|[?#])/i.test(material.fileUrl) && (
+            {previewUrl && (driveFileId || /\.pdf(?:$|[?#])/i.test(previewUrl)) && (
               <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" aria-label="Visualizador do PDF">
                 <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
                   <FileText size={18} aria-hidden="true" className="text-red-600" />
                   Leitura prévia do PDF
                 </div>
                 <iframe
-                  src={material.fileUrl}
-                  title={`Visualização de ${material.title}`}
+src={previewUrl}
+          title={`Visualização de ${material.title}`}
                   className="h-[min(70vh,720px)] w-full bg-white"
                   loading="lazy"
                 />
