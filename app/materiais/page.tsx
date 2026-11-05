@@ -248,15 +248,15 @@ export default function MateriaisPage() {
                 return (
                   <div
                     key={material.id}
-                    className="interactive-card flex flex-col justify-between rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 shadow-sm group"
+                    className="group interactive-card flex flex-col justify-between rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-7"
                   >
                     <div>
                       <div className="flex items-start justify-between mb-4 gap-3">
                         <div className="w-12 h-12 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-300">
-                          <Icon size={24} />
+                          <Icon size={24} aria-hidden="true" />
                         </div>
                         <div className="flex flex-wrap justify-end gap-2">
-                          {completedMaterialIds.includes(Number(material.id)) && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300"><CheckCircle2 size={13} /> Concluído</span>}
+                          {completedMaterialIds.includes(Number(material.id)) && <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300"><CheckCircle2 size={13} aria-hidden="true" /> Concluído</span>}
                           <span className="bg-red-100 dark:bg-red-950 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-xs font-bold">
                             {material.level}
                           </span>
@@ -273,11 +273,9 @@ export default function MateriaisPage() {
 
                     <div className="flex flex-col gap-2">
                       {sessionStatus === "unauthenticated" && <MaterialLoginLock materialId={Number(material.id)} />}
-                      <Link href={`/materiais/${material.id}`} className="w-full">
-                        <button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm hover:shadow">
-                          <Download size={18} />
-                          <span>Visualizar Material</span>
-                        </button>
+                      <Link href={`/materiais/${material.id}`} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-red-700 hover:shadow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">
+                        <Download size={18} aria-hidden="true" />
+                        <span>Visualizar material</span>
                       </Link>
                     </div>
                   </div>
