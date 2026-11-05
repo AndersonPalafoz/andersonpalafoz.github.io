@@ -121,14 +121,14 @@ export default function MateriaisPage() {
                 <span className="text-red-600">para estudar melhor</span>
               </h1>
               <p className="text-lg text-gray-600 dark:text-gray-300 leading-relaxed">
-                Explore worksheets, guias, recursos interativos e templates autorais para potencializar seu aprendizado de inglês, que podem alcançar os níveis C1 e C2, cobrindo do nível A1-C2.
+                Explore worksheets, guias, recursos interativos e templates autorais para praticar inglês com autonomia — do nível A1 ao C2.
               </p>
             </div>
 
             {/* Barra de Busca e Filtros */}
             <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm space-y-4">
               <div className="relative">
-                <Search className="absolute left-4 top-3.5 text-gray-400" size={20} />
+                <Search className="absolute left-4 top-3.5 text-slate-400" size={20} aria-hidden="true" />
                 <label htmlFor="material-search" className="sr-only">Pesquisar materiais</label>
                 <input
                   id="material-search"
@@ -143,7 +143,7 @@ export default function MateriaisPage() {
               <div className="flex flex-wrap gap-4 items-center justify-between pt-2" aria-label="Filtros da biblioteca">
                 <div className="flex flex-wrap items-center gap-2 pb-2 min-w-0">
                   <span className="text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
-                    <Filter size={14} /> Nível:
+                    <Filter size={14} aria-hidden="true" /> Nível:
                   </span>
                   <button
                     onClick={() => { setSelectedLevel("all"); setPage(1); }}
@@ -198,7 +198,7 @@ export default function MateriaisPage() {
       <section className="py-16 px-4 md:px-8 lg:px-16 bg-gray-50 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            <h2 aria-live="polite" className="text-3xl font-bold text-gray-900 dark:text-white">
               {meta.total} materiais disponíveis
             </h2>
           </div>
@@ -225,14 +225,14 @@ export default function MateriaisPage() {
             </div>
           ) : error && filteredMaterials.length === 0 ? (
             <div role="alert" className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900/60">
-              <AlertCircle size={48} className="mx-auto text-red-600 mb-3" />
+              <AlertCircle size={48} aria-hidden="true" className="mx-auto text-red-600 mb-3" />
               <p className="text-gray-900 dark:text-white font-bold text-lg">Não foi possível carregar a biblioteca.</p>
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{error}</p>
               <button type="button" onClick={() => setPage(1)} className="mt-4 text-xs font-bold uppercase text-red-600 hover:underline">Tentar novamente</button>
             </div>
           ) : filteredMaterials.length === 0 ? (
             <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800">
-              <FileText size={48} className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
+              <FileText size={48} aria-hidden="true" className="mx-auto text-gray-300 dark:text-gray-600 mb-3" />
               <p className="text-gray-600 dark:text-gray-400 font-medium text-lg">Nenhum material encontrado para esta busca.</p>
               <button
                 onClick={() => { setSearchInput(""); setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setPage(1); }}
