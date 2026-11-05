@@ -130,7 +130,7 @@ async function CourseModulesList({ courseId, userId, offerId }: { courseId: numb
                         </div>
                       </div>
                       <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300 flex-shrink-0">
-                        <Clock size={14} />
+                        <Clock size={14} aria-hidden="true" />
                         <span>{lesson.duration || 15} min</span>
                       </div>
                     </Link>
@@ -239,7 +239,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
-      <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
         <Breadcrumbs
           items={[
             { label: "Cursos", href: "/cursos" },
@@ -312,12 +312,12 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
 
           <div className="flex flex-wrap items-center gap-6 text-gray-700 dark:text-gray-300 text-sm">
             <div className="flex items-center gap-2">
-              <Layers size={18} className="text-red-600" />
+              <Layers size={18} aria-hidden="true" className="text-red-600" />
               <span>{modules.length} {modules.length === 1 ? "módulo" : "módulos"}</span>
             </div>
             {course.instructor && (
               <div className="flex items-center gap-2">
-                <BookOpen size={18} className="text-red-600" />
+                <BookOpen size={18} aria-hidden="true" className="text-red-600" />
                 <span>{course.instructor}</span>
               </div>
             )}
@@ -334,7 +334,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
             <div className="relative flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 items-start gap-3">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white dark:bg-sky-950/50 text-sky-700 dark:text-sky-200 shadow-sm ring-1 ring-sky-100 dark:ring-sky-900/70" aria-hidden="true">
-                  <HardDrive size={22} strokeWidth={2.2} />
+                  <HardDrive size={22} strokeWidth={2.2} aria-hidden="true" />
                 </div>
                 <div className="min-w-0">
                   <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-sky-700">Materiais complementares</p>
@@ -362,7 +362,7 @@ async function CourseDetail({ courseId, offerId }: { courseId: number; offerId?:
                     >
                       <span className="flex min-w-0 items-center gap-3">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-200" aria-hidden="true">
-                          <BookOpen size={18} />
+                          <BookOpen size={18} aria-hidden="true" />
                         </span>
                         <span className="min-w-0">
                           <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">Material {index + 1}</span>
