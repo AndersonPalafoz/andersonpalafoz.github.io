@@ -166,7 +166,7 @@ export default async function DashboardPage() {
         ) : (
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
             {cursosAtivos.map((enrollment, index) => {
-              const percentage = enrollment.resume?.percentage ?? enrollment.progress;
+              const percentage = Math.min(100, Math.max(0, enrollment.resume?.percentage ?? enrollment.progress ?? 0));
               const courseHref = enrollment.resume?.lesson ? `/cursos/${enrollment.course?.id}/aulas/${enrollment.resume.lesson.id}` : `/cursos/${enrollment.course?.id}`;
               return (
                 <article key={enrollment.id} className={`surface-card interactive-card overflow-hidden rounded-3xl p-5 sm:p-6 ${index === 0 ? "dashboard-feature-card lg:col-span-2" : ""}`}>
@@ -180,7 +180,7 @@ export default async function DashboardPage() {
                   </div>
                   <div className="mt-6 space-y-2">
                     <div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso do curso</span><span className="text-primary">{percentage}%</span></div>
-                    <div className="h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }} /></div>
+                    <div role="progressbar" aria-label={`Progresso de ${enrollment.course?.title || "curso"}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percentage} className="h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${percentage}%` }} /></div>
                   </div>
                   {enrollment.resume?.lesson && <p className="mt-4 rounded-xl border border-red-100 bg-red-50/70 px-3 py-2.5 text-xs leading-5 text-red-900 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200"><span className="font-black">Próxima aula:</span> {enrollment.resume.lesson.title}</p>}
                   <Button asChild variant={index === 0 ? "default" : "outline"} className="mt-5 w-full"><Link href={courseHref}>{enrollment.resume?.lesson ? "Continuar da última aula" : "Abrir curso"}<ArrowRight size={16} /></Link></Button>
@@ -207,10 +207,10 @@ export default async function DashboardPage() {
           <div className="surface-card overflow-hidden rounded-3xl">
             <div className="space-y-3 p-4 md:hidden">
               {learnerEnrollments.map((enr) => {
-                const pct = enr.progress ?? 0;
+                const pct = Math.min(100, Math.max(0, enr.progress ?? 0));
                 const isCompleted = pct >= 100 || enr.status === "completed";
                 const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
-                return <article key={enr.id} className="rounded-2xl border border-border/70 bg-background p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-black text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p><p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{enr.course?.level || "Geral"} · Matrícula em {formattedDate}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{isCompleted ? "Concluído" : "Em andamento"}</span></div><div className="mt-4"><div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{pct}%</span></div><div className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div></div><Button asChild variant="outline" className="mt-4 min-h-11 w-full"><Link href={`/cursos/${enr.courseId}${enr.offerIds?.[0] ? `?offerId=${enr.offerIds[0]}` : ""}`}>Acessar curso</Link></Button></article>;
+                return <article key={enr.id} className="rounded-2xl border border-border/70 bg-background p-4"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="break-words font-black text-foreground">{enr.course?.title || `Curso #${enr.courseId}`}</p><p className="mt-1 text-xs font-semibold uppercase text-muted-foreground">{enr.course?.level || "Geral"} · Matrícula em {formattedDate}</p></div><span className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${isCompleted ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300" : "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"}`}>{isCompleted ? "Concluído" : "Em andamento"}</span></div><div className="mt-4"><div className="flex justify-between text-xs font-bold text-muted-foreground"><span>Progresso</span><span className="text-primary">{pct}%</span></div><div role="progressbar" aria-label={`Progresso de ${enr.course?.title || `Curso ${enr.courseId}`}`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} className="mt-2 h-2.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} /></div></div><Button asChild variant="outline" className="mt-4 min-h-11 w-full"><Link href={`/cursos/${enr.courseId}${enr.offerIds?.[0] ? `?offerId=${enr.offerIds[0]}` : ""}`}>Acessar curso</Link></Button></article>;
               })}
             </div>
             <div className="hidden overflow-x-auto md:block">
@@ -226,7 +226,7 @@ export default async function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {learnerEnrollments.map((enr) => {
-                    const pct = enr.progress ?? 0;
+                    const pct = Math.min(100, Math.max(0, enr.progress ?? 0));
                     const isCompleted = pct >= 100 || enr.status === "completed";
                     const formattedDate = enr.enrolledAt ? new Date(enr.enrolledAt).toLocaleDateString("pt-BR") : "—";
                     return (
