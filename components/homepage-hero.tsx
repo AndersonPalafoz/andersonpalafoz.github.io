@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-const heroImage = "/english-lesson-banner.png";
+const heroImage = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-DHzkUiPGb3OUjAUkPWCLcSA2y2n0jv.webp";
 
 export function HomepageHero() {
   return (
@@ -32,7 +32,7 @@ export function HomepageHero() {
           <div className="relative order-1 aspect-[16/9] overflow-hidden bg-red-950 lg:order-2 lg:aspect-auto lg:min-h-[450px]">
             <Image
               src={heroImage}
-              alt="Cena ilustrativa de alunos adultos praticando inglês em uma sala de aula"
+              alt="Fotografia pessoal de Anderson Palafoz, sorrindo e usando terno azul-marinho"
               fill
               sizes="(max-width: 1023px) 100vw, 58vw"
               preload
