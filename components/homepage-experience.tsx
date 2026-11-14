@@ -1,159 +1,92 @@
 "use client";
 
+import Image from "next/image";
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { useState } from "react";
-import { ArrowRight, BookOpen, GraduationCap, MessageCircle, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, GraduationCap, MessageCircle, Sparkles, X } from "lucide-react";
 
-const services = [
-  {
-    icon: GraduationCap,
-    title: "Aulas particulares",
-    text: "Aulas organizadas em torno do seu nível, dos seus objetivos e da sua rotina.",
-    href: "/contato",
-    action: "Conversar sobre aulas",
-  },
-  {
-    icon: BookOpen,
-    title: "Cursos de inglês",
-    text: "Percursos de aprendizagem para desenvolver o idioma com clareza e continuidade.",
-    href: "/cursos",
-    action: "Conhecer os cursos",
-  },
-  {
-    icon: MessageCircle,
-    title: "Materiais de estudo",
-    text: "Atividades e recursos autorais para praticar também fora da aula.",
-    href: "/materiais",
-    action: "Explorar materiais",
-  },
+const slides = [
+  { eyebrow: "Aprendizagem com propósito", title: "Inglês para usar no mundo real.", text: "Uma jornada clara, humana e estruturada para você desenvolver confiança em cada etapa.", cta: "Conhecer os cursos", href: "/cursos", accent: "from-red-700 via-red-600 to-red-500" },
+  { eyebrow: "Conteúdo autoral", title: "Estude com materiais feitos para você.", text: "Aulas, guias e práticas organizadas para transformar estudo em progresso perceptível.", cta: "Explorar materiais", href: "/materiais", accent: "from-slate-900 via-slate-800 to-red-900" },
+  { eyebrow: "Acompanhamento próximo", title: "Seu próximo passo começa agora.", text: "Encontre uma experiência de aprendizagem que respeita seu ritmo e seus objetivos.", cta: "Falar com Anderson", href: "/contato", accent: "from-red-800 via-red-700 to-slate-700" },
 ];
 
-export function HomepageExperience() {
-  const [cookieVisible, setCookieVisible] = useState(
-    () => typeof document !== "undefined" && !document.cookie.split("; ").some((item) => item.startsWith("site-cookie-consent=")),
-  );
+const highlights = [
+  { icon: GraduationCap, title: "Percurso estruturado", text: "Do básico ao avançado, com objetivos visíveis e materiais que acompanham seu desenvolvimento.", href: "/cursos" },
+  { icon: BookOpen, title: "Materiais autorais", text: "Worksheets, guias e atividades produzidos para tornar o inglês mais claro e aplicável.", href: "/materiais" },
+  { icon: MessageCircle, title: "Prática com propósito", text: "Speaking e comunicação conectados às situações que fazem parte da sua vida.", href: "/contato" },
+];
+
+function Reveal({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <div className={`home-reveal ${className}`}>{children}</div>;
+}
+
+export function HomepageExperience({ lessonCount }: { lessonCount: number }) {
+  const [activeSlide, setActiveSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [cookieVisible, setCookieVisible] = useState(() => typeof document !== "undefined" && !document.cookie.split("; ").some((item) => item.startsWith("site-cookie-consent=")));
+  const slide = slides[activeSlide];
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-visible")), { threshold: 0.12 });
+    document.querySelectorAll(".home-reveal").forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotionPreference = () => setPrefersReducedMotion(motionPreference.matches);
+    updateMotionPreference();
+    motionPreference.addEventListener("change", updateMotionPreference);
+    return () => motionPreference.removeEventListener("change", updateMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    if (isPaused || prefersReducedMotion) return;
+    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % slides.length), 7000);
+    return () => window.clearInterval(timer);
+  }, [isPaused, prefersReducedMotion]);
 
   const closeCookies = (value: "accepted" | "dismissed") => {
     document.cookie = `site-cookie-consent=${value}; max-age=31536000; path=/; SameSite=Lax`;
     setCookieVisible(false);
   };
 
-  return (
-    <main className="homepage bg-white text-[#1f1f1f] dark:bg-slate-950 dark:text-slate-100">
-      {cookieVisible && (
-        <aside aria-labelledby="cookie-consent-title" className="border-b border-slate-200 bg-[#f8f9fa] dark:border-slate-800 dark:bg-slate-900">
-          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
-            <div>
-              <p id="cookie-consent-title" className="text-sm font-semibold text-slate-900 dark:text-white">Sua privacidade importa</p>
-              <p className="text-sm text-slate-600 dark:text-slate-300">Usamos cookies essenciais para o funcionamento do site.</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/privacidade" className="inline-flex min-h-11 items-center px-3 text-sm font-medium text-[#b91c1c] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">Saiba mais</Link>
-              <button type="button" aria-label="Fechar aviso de cookies" onClick={() => closeCookies("dismissed")} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 dark:hover:bg-slate-800">
-                <X size={16} aria-hidden="true" />
-              </button>
-              <button type="button" onClick={() => closeCookies("accepted")} className="inline-flex min-h-11 items-center rounded-lg bg-[#d62828] px-4 text-sm font-semibold text-white hover:bg-[#b91c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">
-                Aceitar
-              </button>
-            </div>
-          </div>
-        </aside>
-      )}
+  const goToSlide = (direction: -1 | 1) => {
+    setActiveSlide((current) => (current + direction + slides.length) % slides.length);
+  };
 
-      <section className="border-b border-slate-200 bg-[#f8f9fa] dark:border-slate-800 dark:bg-slate-950">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-[1.1fr_.9fr] lg:gap-20 lg:px-12 lg:py-24">
-          <div className="max-w-2xl">
-            <p className="mb-5 text-sm font-semibold text-[#b91c1c]">Anderson Palafoz <span className="px-1 text-slate-400">/</span> Professor de Inglês</p>
-            <h1 className="max-w-[18.75rem] text-4xl font-semibold leading-[1.12] tracking-[-0.035em] text-slate-950 dark:text-white sm:max-w-none sm:text-5xl lg:text-[3.5rem]">
-              Aprenda inglês com clareza, confiança e propósito.
-            </h1>
-            <p className="mt-6 max-w-xl text-base leading-7 text-slate-600 dark:text-slate-300 sm:text-lg sm:leading-8">
-              Sou licenciado em Letras Inglês pela UFBA. Crio aulas e materiais para ajudar você a desenvolver comunicação e avançar com um percurso bem estruturado.
-            </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/contato" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-[#d62828] px-5 text-sm font-semibold text-white transition-colors hover:bg-[#b91c1c] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">
-                Conversar sobre aulas <ArrowRight size={17} aria-hidden="true" />
-              </Link>
-              <Link href="/cursos" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-800 transition-colors hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800">
-                Conhecer os cursos
-              </Link>
-            </div>
-          </div>
+  return <main className="homepage bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    {cookieVisible && <aside aria-labelledby="cookie-consent-title" className="mx-auto w-full max-w-7xl border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><div className="flex flex-col gap-2 px-5 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12"><div className="min-w-0"><p id="cookie-consent-title" className="text-sm font-black text-slate-900 dark:text-white">Sua privacidade importa</p><p className="text-xs leading-5 text-slate-600 dark:text-slate-300">Usamos cookies essenciais para o funcionamento do site.</p></div><div className="flex shrink-0 items-center gap-1"><Link href="/privacidade" className="inline-flex min-h-11 items-center rounded-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:hover:bg-red-950/40">Saiba mais</Link><button type="button" aria-label="Fechar aviso de cookies" onClick={() => closeCookies("dismissed")} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:hover:bg-slate-800 dark:hover:text-white" title="Fechar"><X size={15} aria-hidden="true" /></button><button type="button" onClick={() => closeCookies("accepted")} className="inline-flex min-h-11 items-center rounded-full bg-red-600 px-4 py-2 text-xs font-black text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Aceitar</button></div></div></aside>}
+    <section aria-roledescription="carousel" aria-label="Destaques da plataforma" onFocusCapture={() => setIsPaused(true)} className="home-hero relative overflow-hidden bg-white dark:bg-slate-950">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(214,40,40,0.08),transparent_34%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_75%_20%,rgba(214,40,40,0.12),transparent_34%),linear-gradient(180deg,#020617_0%,#0f172a_100%)]" />
+      <div className="relative mx-auto grid min-h-0 lg:min-h-[min(780px,calc(100vh-76px))] max-w-7xl items-center gap-10 px-5 pb-16 pt-12 sm:px-8 lg:grid-cols-[1.02fr_.98fr] lg:gap-16 lg:px-12 lg:py-20">
+        <Reveal className="relative z-10 max-w-2xl">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/90 px-3 py-1.5 text-xs font-black uppercase dark:border-red-900 dark:bg-slate-900 tracking-[0.14em] text-red-700 shadow-sm"><Sparkles size={14} aria-hidden="true" /> {slide.eyebrow}</div>
+          <p className="mb-4 text-sm font-bold text-red-700">Anderson Palafoz · Professor de Inglês</p>
+          <h1 aria-live="polite" className="max-w-2xl text-4xl font-black leading-[1.03] tracking-[-0.04em] text-slate-900 dark:text-white sm:text-6xl lg:text-7xl">{slide.title}</h1>
+          <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">{slide.text}</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href={slide.href} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#d62828] px-6 text-sm font-black text-white shadow-lg shadow-red-700/20 transition hover:-translate-y-1 hover:bg-[#b91c1c]">{slide.cta}<ArrowRight size={17} /></Link><Link href="/sobre" className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-300 bg-white/70 px-6 text-sm font-black text-slate-700 transition hover:-translate-y-1 hover:border-red-300 hover:text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">Conhecer minha abordagem</Link></div>
+          <div className="mt-8 flex flex-wrap items-center gap-2 sm:mt-10 sm:gap-3" role="group" aria-label="Controles da apresentação"><button type="button" onClick={() => goToSlide(-1)} aria-label="Slide anterior" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-slate-700 dark:text-slate-300"><ChevronLeft size={16} aria-hidden="true" /></button><div className="flex gap-2" aria-label="Slides da apresentação">{slides.map((item, index) => <button key={item.title} type="button" aria-label={`Ir para slide ${index + 1}`} aria-pressed={index === activeSlide} onClick={() => setActiveSlide(index)} className="inline-flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"><span aria-hidden="true" className={`h-2 rounded-full transition-all ${index === activeSlide ? "w-8 bg-red-600" : "w-2 bg-red-200 hover:bg-red-400 dark:bg-slate-700 dark:hover:bg-red-400"}`} /></button>)}</div><button type="button" onClick={() => goToSlide(1)} aria-label="Próximo slide" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-slate-700 dark:text-slate-300"><ChevronRight size={16} aria-hidden="true" /></button><span className="text-xs font-bold text-slate-500">{String(activeSlide + 1).padStart(2, "0")} / 03</span><button type="button" onClick={() => setIsPaused((paused) => !paused)} aria-pressed={isPaused} disabled={prefersReducedMotion} className="min-h-11 rounded-full px-3 text-xs font-black text-slate-500 underline-offset-4 hover:text-red-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60">{prefersReducedMotion ? "Movimento reduzido" : isPaused ? "Continuar" : "Pausar"}</button></div>
+        </Reveal>
+        <Reveal className="relative mx-auto mt-2 w-full max-w-[480px] lg:mt-0 lg:justify-self-end">
+          <div className="absolute -right-5 -top-7 hidden h-28 w-28 rounded-full border-[18px] border-slate-300 sm:block" /><div className="relative overflow-hidden rounded-[2rem] border-[8px] sm:border-[10px] border-white bg-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-2xl shadow-slate-950/15"><Image src="/english-lesson-hero.png" alt="Cena ilustrativa de um professor de inglês orientando uma aluna" width={800} height={900} sizes="(max-width: 1024px) 100vw, 480px" priority className="aspect-[4/4.5] w-full object-cover object-[center_25%]" /><div className="absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur dark:bg-slate-950/90 sm:bottom-4 sm:left-4"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 ring-4 ring-emerald-500/15" /><div><p className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-300">Aprendizagem contínua</p><p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">No seu ritmo, com direção</p></div></div></div>
+        </Reveal>
+      </div>
+    </section>
 
-          <aside aria-label="Formação e abordagem de ensino" className="border-l-2 border-[#d62828] pl-6 sm:pl-8 lg:ml-auto lg:max-w-md">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Ensino de inglês, com atenção ao seu percurso</p>
-            <dl className="mt-7 divide-y divide-slate-200 dark:divide-slate-800">
-              <div className="py-5 first:pt-0">
-                <dt className="text-sm font-semibold text-slate-950 dark:text-white">Formação</dt>
-                <dd className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Licenciatura em Letras Inglês pela Universidade Federal da Bahia.</dd>
-              </div>
-              <div className="py-5">
-                <dt className="text-sm font-semibold text-slate-950 dark:text-white">Materiais autorais</dt>
-                <dd className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Recursos de estudo criados para apoiar a prática dentro e fora da aula.</dd>
-              </div>
-              <div className="py-5 last:pb-0">
-                <dt className="text-sm font-semibold text-slate-950 dark:text-white">Foco na comunicação</dt>
-                <dd className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Aprendizagem conectada a objetivos e situações reais de uso do inglês.</dd>
-              </div>
-            </dl>
-          </aside>
-        </div>
-      </section>
+    <Reveal><section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-5 py-7 sm:grid-cols-4 sm:px-8 lg:px-12"><div><strong className="text-2xl font-black text-red-600">{lessonCount || "Mais"}</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">aulas disponíveis</p></div><div><strong className="text-2xl font-black text-red-600">A1–C2</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">níveis de aprendizagem</p></div><div><strong className="text-2xl font-black text-red-600">100%</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">conteúdo autoral</p></div><div><strong className="text-2xl font-black text-red-600">1:1</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">olhar para você</p></div></div></section></Reveal>
 
-      <section aria-labelledby="services-title" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
-        <div className="max-w-2xl">
-          <p className="text-sm font-semibold text-[#b91c1c]">Ensino e recursos</p>
-          <h2 id="services-title" className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 dark:text-white sm:text-4xl">Como posso ajudar você?</h2>
-          <p className="mt-4 text-base leading-7 text-slate-600 dark:text-slate-300">Escolha por onde começar. Você pode conhecer os cursos, estudar com materiais ou conversar sobre aulas.</p>
-        </div>
-        <div className="mt-9 grid gap-4 md:grid-cols-3">
-          {services.map(({ icon: Icon, title, text, href, action }) => (
-            <article key={title} className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-6 transition-colors hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700">
-              <Icon size={21} className="text-[#d62828]" aria-hidden="true" />
-              <h3 className="mt-5 text-lg font-semibold text-slate-950 dark:text-white">{title}</h3>
-              <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
-              <Link href={href} className="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-[#b91c1c] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600">
-                {action} <ArrowRight size={15} aria-hidden="true" />
-              </Link>
-            </article>
-          ))}
-        </div>
-      </section>
+    <Reveal><section className="mx-auto max-w-7xl px-5 pb-4 pt-14 sm:px-8 lg:px-12"><div className="mb-7"><p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-red-600">Encontre seu ponto de partida</p><h2 className="max-w-2xl text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">Escolha como você quer avançar.</h2><p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 dark:text-slate-300">Uma entrada simples para encontrar o caminho certo: aprender, praticar ou conversar sobre seus objetivos.</p></div><div className="grid gap-4 md:grid-cols-3"><Link href="/cursos" className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-red-200 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"><div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300"><GraduationCap size={22} aria-hidden="true" /></div><h3 className="text-lg font-black text-slate-900 dark:text-white">Quero aprender</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Conheça os cursos e encontre um percurso adequado ao seu nível.</p><span className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-red-600">Ver cursos <ArrowRight size={14} aria-hidden="true" /></span></Link><Link href="/materiais" className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-red-200 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"><div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300"><BookOpen size={22} aria-hidden="true" /></div><h3 className="text-lg font-black text-slate-900 dark:text-white">Quero praticar</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Acesse materiais autorais para estudar com autonomia e propósito.</p><span className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-red-600">Explorar materiais <ArrowRight size={14} aria-hidden="true" /></span></Link><Link href="/contato" className="group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-red-200 hover:shadow-lg dark:border-slate-800 dark:bg-slate-900"><div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-300"><MessageCircle size={22} aria-hidden="true" /></div><h3 className="text-lg font-black text-slate-900 dark:text-white">Quero orientação</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Converse sobre objetivos, rotina de estudos e próximos passos.</p><span className="mt-5 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-red-600">Falar comigo <ArrowRight size={14} aria-hidden="true" /></span></Link></div></section></Reveal>
 
-      <section aria-labelledby="approach-title" className="border-y border-slate-200 bg-[#f8f9fa] dark:border-slate-800 dark:bg-slate-900/60">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-14 sm:px-8 sm:py-16 lg:grid-cols-[.85fr_1.15fr] lg:items-start lg:gap-16 lg:px-12">
-          <div>
-            <p className="text-sm font-semibold text-[#b91c1c]">Uma forma clara de avançar</p>
-            <h2 id="approach-title" className="mt-2 max-w-md text-3xl font-semibold tracking-tight text-slate-950 dark:text-white">Aprender é um percurso, não uma fórmula pronta.</h2>
-          </div>
-          <ol className="divide-y divide-slate-200 dark:divide-slate-800">
-            <li className="flex gap-5 py-4 first:pt-0">
-              <span className="text-sm font-semibold text-[#b91c1c]">01</span>
-              <div><h3 className="text-base font-semibold text-slate-950 dark:text-white">Entenda seu ponto de partida</h3><p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Seus objetivos, sua rotina e o que você já sabe orientam as próximas etapas.</p></div>
-            </li>
-            <li className="flex gap-5 py-4">
-              <span className="text-sm font-semibold text-[#b91c1c]">02</span>
-              <div><h3 className="text-base font-semibold text-slate-950 dark:text-white">Pratique com intenção</h3><p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Aulas e materiais aproximam o estudo das situações em que você quer usar o inglês.</p></div>
-            </li>
-            <li className="flex gap-5 py-4 last:pb-0">
-              <span className="text-sm font-semibold text-[#b91c1c]">03</span>
-              <div><h3 className="text-base font-semibold text-slate-950 dark:text-white">Acompanhe seu progresso</h3><p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Revise o que funcionou e ajuste o percurso conforme você avança.</p></div>
-            </li>
-          </ol>
-        </div>
-      </section>
+    <Reveal><section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:px-12"><div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-end"><div><p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-red-600">Método que acompanha você</p><h2 className="max-w-lg text-3xl font-black tracking-tight text-slate-900 dark:text-white sm:text-4xl">Clareza para começar. Estrutura para continuar.</h2></div><p className="max-w-xl text-sm leading-7 text-slate-600 dark:text-slate-300">Uma experiência de ensino precisa transformar intenção em rotina. Por isso, cada etapa combina objetivo visível, prática aplicável e acompanhamento próximo.</p></div><div className="mt-9 grid gap-4 md:grid-cols-3"><div className="relative rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900"><span className="text-4xl font-black text-red-200 dark:text-red-950">01</span><h3 className="mt-7 text-lg font-black text-slate-900 dark:text-white">Entenda seu ponto</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Identifique nível, objetivo e o próximo passo possível.</p></div><div className="relative rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"><span className="text-4xl font-black text-red-300 dark:text-red-900">02</span><h3 className="mt-7 text-lg font-black text-slate-900 dark:text-white">Pratique com intenção</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Use aulas e materiais em situações reais de comunicação.</p></div><div className="relative rounded-3xl border border-red-200 bg-red-50 p-6 dark:border-red-950 dark:bg-red-950/30"><span className="text-4xl font-black text-red-600 dark:text-red-300">03</span><h3 className="mt-7 text-lg font-black text-slate-900 dark:text-white">Perceba seu progresso</h3><p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">Revise, ajuste a rota e avance com mais confiança.</p></div></div></section></Reveal>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20 lg:px-12">
-        <div className="flex flex-col gap-6 rounded-xl bg-[#1f1f1f] px-6 py-8 text-white sm:px-9 sm:py-10 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Vamos conversar sobre seus objetivos com o inglês?</h2>
-            <p className="mt-3 text-sm leading-6 text-slate-300">Conte o que você procura e descubra qual caminho pode fazer sentido para você.</p>
-          </div>
-          <Link href="/contato" className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-lg bg-white px-5 text-sm font-semibold text-slate-900 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#1f1f1f]">
-            Falar comigo <ArrowRight size={17} aria-hidden="true" />
-          </Link>
-        </div>
-      </section>
-    </main>
-  );
+    <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 lg:px-12"><Reveal><div className="mb-10 flex flex-col justify-between gap-5 sm:flex-row sm:items-end"><div><p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-red-600">Uma experiência completa</p><h2 className="max-w-xl text-3xl font-black tracking-tight text-slate-900 dark:text-slate-100 sm:text-4xl">Tudo o que você precisa para avançar com confiança.</h2></div><Link href="/sobre" className="inline-flex items-center gap-2 text-sm font-black text-red-600 hover:text-red-800">Ver como funciona <ArrowRight size={16} /></Link></div></Reveal><div className="grid gap-5 md:grid-cols-3">{highlights.map(({ icon: Icon, title, text, href }, index) => <Reveal key={title} className={`delay-${index + 1}`}><article className="group h-full rounded-3xl border border-slate-200 bg-white p-7 shadow-[0_10px_30px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-2 hover:border-red-200 hover:shadow-xl dark:border-slate-800 dark:bg-slate-900"><div className="mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 transition group-hover:bg-red-600 group-hover:text-white dark:bg-red-950/40 dark:text-red-300"><Icon size={23} /></div><h3 className="text-xl font-black text-slate-900 dark:text-slate-100">{title}</h3><p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{text}</p><Link href={href} className="mt-6 inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-red-600 hover:text-red-800 dark:text-red-300 dark:hover:text-red-200">Descobrir <ArrowRight size={14} /></Link></article></Reveal>)}</div></section>
+
+    <Reveal><section className="mx-5 overflow-hidden rounded-[2rem] bg-slate-900 sm:mx-8 lg:mx-auto lg:max-w-7xl"><div className="grid items-center gap-8 px-7 py-12 sm:px-12 lg:grid-cols-[1fr_auto] lg:px-16"><div><p className="mb-3 text-xs font-black uppercase tracking-[0.18em] text-red-300">Comece pelo próximo passo</p><h2 className="max-w-2xl text-3xl font-black tracking-tight text-white sm:text-4xl">Seu inglês merece uma experiência feita com clareza.</h2><p className="mt-4 max-w-xl text-sm leading-7 text-slate-300">Explore os cursos, encontre materiais gratuitos e fale comigo sobre seus objetivos.</p></div><Link href="/contato" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-white px-6 text-sm font-black text-slate-900 transition hover:-translate-y-1 hover:bg-red-50">Vamos conversar <ArrowRight size={17} /></Link></div></section></Reveal>
+
+
+  </main>;
 }
