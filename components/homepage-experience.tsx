@@ -1,16 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ArrowRight, BookOpen, ChevronLeft, ChevronRight, GraduationCap, MessageCircle, Sparkles, X } from "lucide-react";
-
-const slides = [
-  { eyebrow: "Aprendizagem com propósito", title: "Inglês para usar no mundo real.", text: "Uma jornada clara, humana e estruturada para você desenvolver confiança em cada etapa.", cta: "Conhecer os cursos", href: "/cursos", accent: "from-red-700 via-red-600 to-red-500" },
-  { eyebrow: "Conteúdo autoral", title: "Estude com materiais feitos para você.", text: "Aulas, guias e práticas organizadas para transformar estudo em progresso perceptível.", cta: "Explorar materiais", href: "/materiais", accent: "from-slate-900 via-slate-800 to-red-900" },
-  { eyebrow: "Acompanhamento próximo", title: "Seu próximo passo começa agora.", text: "Encontre uma experiência de aprendizagem que respeita seu ritmo e seus objetivos.", cta: "Falar com Anderson", href: "/contato", accent: "from-red-800 via-red-700 to-slate-700" },
-];
+import { ArrowRight, BookOpen, GraduationCap, MessageCircle, X } from "lucide-react";
+import { HomepageHero } from "./homepage-hero";
 
 const highlights = [
   { icon: GraduationCap, title: "Percurso estruturado", text: "Do básico ao avançado, com objetivos visíveis e materiais que acompanham seu desenvolvimento.", href: "/cursos" },
@@ -23,11 +17,7 @@ function Reveal({ children, className = "" }: { children: ReactNode; className?:
 }
 
 export function HomepageExperience({ lessonCount }: { lessonCount: number }) {
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [cookieVisible, setCookieVisible] = useState(() => typeof document !== "undefined" && !document.cookie.split("; ").some((item) => item.startsWith("site-cookie-consent=")));
-  const slide = slides[activeSlide];
 
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => entries.forEach((entry) => entry.isIntersecting && entry.target.classList.add("is-visible")), { threshold: 0.12 });
@@ -35,47 +25,14 @@ export function HomepageExperience({ lessonCount }: { lessonCount: number }) {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => setPrefersReducedMotion(motionPreference.matches);
-    updateMotionPreference();
-    motionPreference.addEventListener("change", updateMotionPreference);
-    return () => motionPreference.removeEventListener("change", updateMotionPreference);
-  }, []);
-
-  useEffect(() => {
-    if (isPaused || prefersReducedMotion) return;
-    const timer = window.setInterval(() => setActiveSlide((current) => (current + 1) % slides.length), 7000);
-    return () => window.clearInterval(timer);
-  }, [isPaused, prefersReducedMotion]);
-
   const closeCookies = (value: "accepted" | "dismissed") => {
     document.cookie = `site-cookie-consent=${value}; max-age=31536000; path=/; SameSite=Lax`;
     setCookieVisible(false);
   };
 
-  const goToSlide = (direction: -1 | 1) => {
-    setActiveSlide((current) => (current + direction + slides.length) % slides.length);
-  };
-
   return <main className="homepage bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
     {cookieVisible && <aside aria-labelledby="cookie-consent-title" className="mx-auto w-full max-w-7xl border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><div className="flex flex-col gap-2 px-5 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12"><div className="min-w-0"><p id="cookie-consent-title" className="text-sm font-black text-slate-900 dark:text-white">Sua privacidade importa</p><p className="text-xs leading-5 text-slate-600 dark:text-slate-300">Usamos cookies essenciais para o funcionamento do site.</p></div><div className="flex shrink-0 items-center gap-1"><Link href="/privacidade" className="inline-flex min-h-11 items-center rounded-full px-3 py-2 text-xs font-bold text-red-600 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:hover:bg-red-950/40">Saiba mais</Link><button type="button" aria-label="Fechar aviso de cookies" onClick={() => closeCookies("dismissed")} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:hover:bg-slate-800 dark:hover:text-white" title="Fechar"><X size={15} aria-hidden="true" /></button><button type="button" onClick={() => closeCookies("accepted")} className="inline-flex min-h-11 items-center rounded-full bg-red-600 px-4 py-2 text-xs font-black text-white hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Aceitar</button></div></div></aside>}
-    <section aria-roledescription="carousel" aria-label="Destaques da plataforma" onFocusCapture={() => setIsPaused(true)} className="home-hero relative overflow-hidden bg-white dark:bg-slate-950">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(214,40,40,0.08),transparent_34%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] dark:bg-[radial-gradient(circle_at_75%_20%,rgba(214,40,40,0.12),transparent_34%),linear-gradient(180deg,#020617_0%,#0f172a_100%)]" />
-      <div className="relative mx-auto grid min-h-0 lg:min-h-[min(780px,calc(100vh-76px))] max-w-7xl items-center gap-10 px-5 pb-16 pt-12 sm:px-8 lg:grid-cols-[1.02fr_.98fr] lg:gap-16 lg:px-12 lg:py-20">
-        <Reveal className="relative z-10 max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/90 px-3 py-1.5 text-xs font-black uppercase dark:border-red-900 dark:bg-slate-900 tracking-[0.14em] text-red-700 shadow-sm"><Sparkles size={14} aria-hidden="true" /> {slide.eyebrow}</div>
-          <p className="mb-4 text-sm font-bold text-red-700">Anderson Palafoz · Professor de Inglês</p>
-          <h1 aria-live="polite" className="max-w-2xl text-4xl font-black leading-[1.03] tracking-[-0.04em] text-slate-900 dark:text-white sm:text-6xl lg:text-7xl">{slide.title}</h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 dark:text-slate-300 sm:text-lg">{slide.text}</p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href={slide.href} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#d62828] px-6 text-sm font-black text-white shadow-lg shadow-red-700/20 transition hover:-translate-y-1 hover:bg-[#b91c1c]">{slide.cta}<ArrowRight size={17} /></Link><Link href="/sobre" className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-300 bg-white/70 px-6 text-sm font-black text-slate-700 transition hover:-translate-y-1 hover:border-red-300 hover:text-red-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">Conhecer minha abordagem</Link></div>
-          <div className="mt-8 flex flex-wrap items-center gap-2 sm:mt-10 sm:gap-3" role="group" aria-label="Controles da apresentação"><button type="button" onClick={() => goToSlide(-1)} aria-label="Slide anterior" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-slate-700 dark:text-slate-300"><ChevronLeft size={16} aria-hidden="true" /></button><div className="flex gap-2" aria-label="Slides da apresentação">{slides.map((item, index) => <button key={item.title} type="button" aria-label={`Ir para slide ${index + 1}`} aria-pressed={index === activeSlide} onClick={() => setActiveSlide(index)} className="inline-flex h-11 w-11 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"><span aria-hidden="true" className={`h-2 rounded-full transition-all ${index === activeSlide ? "w-8 bg-red-600" : "w-2 bg-red-200 hover:bg-red-400 dark:bg-slate-700 dark:hover:bg-red-400"}`} /></button>)}</div><button type="button" onClick={() => goToSlide(1)} aria-label="Próximo slide" className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-red-300 hover:text-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 dark:border-slate-700 dark:text-slate-300"><ChevronRight size={16} aria-hidden="true" /></button><span className="text-xs font-bold text-slate-500">{String(activeSlide + 1).padStart(2, "0")} / 03</span><button type="button" onClick={() => setIsPaused((paused) => !paused)} aria-pressed={isPaused} disabled={prefersReducedMotion} className="min-h-11 rounded-full px-3 text-xs font-black text-slate-500 underline-offset-4 hover:text-red-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-60">{prefersReducedMotion ? "Movimento reduzido" : isPaused ? "Continuar" : "Pausar"}</button></div>
-        </Reveal>
-        <Reveal className="relative mx-auto mt-2 w-full max-w-[480px] lg:mt-0 lg:justify-self-end">
-          <div className="absolute -right-5 -top-7 hidden h-28 w-28 rounded-full border-[18px] border-slate-300 sm:block" /><div className="relative overflow-hidden rounded-[2rem] border-[8px] sm:border-[10px] border-white bg-slate-200 dark:border-slate-800 dark:bg-slate-900 shadow-2xl shadow-slate-950/15"><Image src="/english-lesson-hero.png" alt="Cena ilustrativa de um professor de inglês orientando uma aluna" width={800} height={900} sizes="(max-width: 1024px) 100vw, 480px" priority className="aspect-[4/4.5] w-full object-cover object-[center_25%]" /><div className="absolute bottom-3 left-3 flex max-w-[calc(100%-1.5rem)] items-center gap-3 rounded-2xl bg-white/95 px-4 py-3 shadow-lg backdrop-blur dark:bg-slate-950/90 sm:bottom-4 sm:left-4"><span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-emerald-500 ring-4 ring-emerald-500/15" /><div><p className="text-xs font-black uppercase tracking-wider text-red-600 dark:text-red-300">Aprendizagem contínua</p><p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">No seu ritmo, com direção</p></div></div></div>
-        </Reveal>
-      </div>
-    </section>
+    <HomepageHero />
 
     <Reveal><section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"><div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-5 py-7 sm:grid-cols-4 sm:px-8 lg:px-12"><div><strong className="text-2xl font-black text-red-600">{lessonCount || "Mais"}</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">aulas disponíveis</p></div><div><strong className="text-2xl font-black text-red-600">A1–C2</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">níveis de aprendizagem</p></div><div><strong className="text-2xl font-black text-red-600">100%</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">conteúdo autoral</p></div><div><strong className="text-2xl font-black text-red-600">1:1</strong><p className="mt-1 text-xs font-bold uppercase tracking-wider text-slate-500">olhar para você</p></div></div></section></Reveal>
 
