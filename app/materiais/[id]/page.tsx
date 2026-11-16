@@ -9,12 +9,21 @@ import { MaterialProgressButton } from "@/components/material-progress-button";
 import { MaterialCommentsSection } from "@/components/material-comments-section";
 import { Download, FileText, Image as ImageIcon } from "lucide-react";
 import { SaveMaterialButton } from "@/components/save-material-button";
+import { extractGoogleDriveFileId } from "@/lib/google-drive";
 import { MaterialLoginLock } from "@/components/material-login-lock";
 
 async function MaterialDetail({ materialId }: { materialId: number }) {
   const session = await getServerSession(authOptions);
   const isAuthenticated = Boolean(session?.user?.email);
   const material = await getMaterialById(materialId);
+  const driveFileId = material?.fileUrl ? extractGoogleDriveFileId(material.fileUrl) : null;
+  const previewUrl = driveFileId
+    ? `https://drive.google.com/file/d/${encodeURIComponent(driveFileId)}/preview`
+    : material?.fileUrl;
+  const userId = Number(session?.user?.id);
+  const savedMaterialIds = material && Number.isInteger(userId) && userId > 0
+    ? await getSavedMaterialIds(userId, [material.id])
+    : [];
 
   if (!material) {
     return (
@@ -35,13 +44,16 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
         />
 
         <div className="space-y-6">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
-              {material.category}
-            </span>
-            <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-              {material.level}
-            </span>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex rounded-full border border-slate-200 bg-slate-100 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-red-600 dark:border-slate-700 dark:bg-slate-900 dark:text-red-300">
+                {material.category}
+              </span>
+              <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                {material.level}
+              </span>
+            </div>
+            <SaveMaterialButton materialId={material.id} initialSaved={savedMaterialIds.includes(material.id)} />
           </div>
 
           <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">{material.title}</h1>
@@ -51,20 +63,20 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
           )}
 
           <div className="flex items-center gap-2 text-slate-600 text-sm dark:text-slate-300">
-            <Download size={16} className="text-red-600" />
+            <Download size={16} aria-hidden="true" className="text-red-600" />
             <span>{material.downloads} downloads</span>
           </div>
 
           <div className="space-y-5 pt-4">
-            {material.fileUrl && /\.pdf(?:$|[?#])/i.test(material.fileUrl) && (
+            {previewUrl && (driveFileId || /\.pdf(?:$|[?#])/i.test(previewUrl)) && (
               <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900" aria-label="Visualizador do PDF">
                 <div className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-800 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200">
-                  <FileText size={18} className="text-red-600" />
+                  <FileText size={18} aria-hidden="true" className="text-red-600" />
                   Leitura prévia do PDF
                 </div>
                 <iframe
-                  src={material.fileUrl}
-                  title={`Visualização de ${material.title}`}
+src={previewUrl}
+          title={`Visualização de ${material.title}`}
                   className="h-[min(70vh,720px)] w-full bg-white"
                   loading="lazy"
                 />
@@ -72,7 +84,7 @@ async function MaterialDetail({ materialId }: { materialId: number }) {
             )}
             {material.fileUrl && /\.(?:png|jpe?g|webp|gif)(?:$|[?#])/i.test(material.fileUrl) && (
               <section className="overflow-hidden rounded-2xl border border-gray-200 bg-gray-50 p-4 shadow-sm" aria-label="Visualizador da imagem">
-                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800"><ImageIcon size={18} className="text-red-600" />Pré-visualização da imagem</div>
+                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-gray-800"><ImageIcon size={18} aria-hidden="true" className="text-red-600" />Pré-visualização da imagem</div>
                 <img src={material.fileUrl} alt={`Pré-visualização de ${material.title}`} className="mx-auto max-h-[70vh] w-auto max-w-full rounded-xl object-contain" />
               </section>
             )}

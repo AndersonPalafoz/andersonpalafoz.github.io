@@ -83,7 +83,7 @@ export function CourseCatalog({
           />
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="mr-1 inline-flex items-center gap-1 text-xs font-black uppercase tracking-wide text-muted-foreground"><Filter size={14} /> Nível</span>
+          <span className="mr-1 inline-flex items-center gap-1 text-xs font-black uppercase tracking-wide text-muted-foreground"><Filter size={14} aria-hidden="true" /> Nível</span>
           {["all", ...levels].map((level) => (
             <button
               key={level}
@@ -116,15 +116,6 @@ export function CourseCatalog({
               </button>
             ))}
           </div>
-          <select
-            value={selectedCourseType}
-            onChange={(event) => setSelectedCourseType(event.target.value)}
-            aria-label="Filtrar cursos por tipo"
-            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10"
-          >
-            <option value="all">Todos os tipos</option>
-            {COURSE_TYPE_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.shortLabel}</option>)}
-          </select>
           {categories.length > 0 && (
             <>
               <span className="ml-2 mr-1 text-xs font-black uppercase tracking-wide text-muted-foreground">Categoria</span>
@@ -143,7 +134,7 @@ export function CourseCatalog({
       </div>
 
       <div className="mb-6 flex items-center justify-between gap-3">
-        <h3 className="text-xl font-black text-foreground">{filteredCourses.length} curso(s) disponível(is)</h3>
+        <h3 aria-live="polite" className="text-xl font-black text-foreground">{filteredCourses.length} curso(s) disponível(is)</h3>
         {(searchQuery || selectedLevel !== "all" || selectedCategory !== "all" || selectedCourseType !== "all") && (
           <button type="button" onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setSelectedCourseType("all"); }} className="text-xs font-black uppercase tracking-wide text-red-600 hover:underline">Limpar filtros</button>
         )}
