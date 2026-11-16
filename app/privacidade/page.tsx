@@ -21,24 +21,28 @@ export default function PrivacidadePage() {
             <Cookie size={16} aria-hidden="true" /> Transparência e privacidade
           </div>
           <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">Cookies e privacidade</h1>
-          <p className="mt-4 text-base text-slate-600 dark:text-slate-300">Última atualização: 30 de outubro de 2026</p>
+          <p className="mt-4 text-base text-slate-600 dark:text-slate-300">Última atualização: 16 de novembro de 2026</p>
         </header>
 
         <div className="space-y-8 text-base leading-8 text-slate-700 dark:text-slate-300">
           <section className="space-y-3">
             <h2 className="text-2xl font-black text-slate-900 dark:text-white">1. Como usamos cookies</h2>
-            <p>Usamos cookies essenciais para manter sessões, preferências de tema e o funcionamento seguro da plataforma. O aviso exibido no site registra apenas a escolha de consentimento no navegador.</p>
+            <p>Usamos cookies essenciais para manter sessões, preferências de tema e o funcionamento seguro da plataforma. Também usamos Vercel Web Analytics para medir, de forma agregada, visitas a páginas públicas e cliques em CTAs. O Analytics não usa cookies; o aviso exibido no site registra apenas a escolha de consentimento no navegador.</p>
           </section>
           <section className="space-y-3">
             <h2 className="text-2xl font-black text-slate-900 dark:text-white">2. Cookies essenciais</h2>
             <p>Os cookies essenciais não são usados para publicidade. Eles ajudam a manter sua autenticação, lembrar preferências e proteger áreas restritas do aluno, professor e administração.</p>
           </section>
           <section className="space-y-3">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">3. Acessibilidade com VLibras</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">3. Métricas de navegação</h2>
+            <p>O Vercel Web Analytics registra métricas agregadas de páginas públicas e cliques nos CTAs de WhatsApp e cursos. Não enviamos conteúdo de formulários ou mensagens nem identificadores de conta nesses eventos; áreas privadas são excluídas. A ferramenta não usa cookies.</p>
+          </section>
+          <section className="space-y-3">
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">4. Acessibilidade com VLibras</h2>
             <p>O site disponibiliza o VLibras, um recurso de acessibilidade carregado a partir de <strong>vlibras.gov.br</strong>. Ao utilizar o recurso, o navegador pode realizar uma conexão com o serviço externo para carregar o widget.</p>
           </section>
           <section className="space-y-3">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white">4. Como gerenciar suas preferências</h2>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white">5. Como gerenciar suas preferências</h2>
             <p>Você pode apagar cookies nas configurações do navegador. Isso pode encerrar sua sessão ou restaurar preferências padrão. Para saber como tratamos os dados pessoais, consulte a nossa <Link href="/politica-privacidade" className="font-bold text-red-600 hover:underline">Política de Privacidade</Link>.</p>
           </section>
         </div>

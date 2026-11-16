@@ -8,6 +8,7 @@ import type { Metadata } from "next";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 import { Inter, Poppins } from "next/font/google";
 import { PrivacyAwareSpeedInsights } from "@/components/speed-insights";
+import { PrivacyAwareAnalytics } from "@/components/privacy-aware-analytics";
 import { VlibrasWidget } from "@/components/vlibras-widget";
 
 const inter = Inter({
@@ -97,6 +98,7 @@ export default function RootLayout({
             <ToastProvider />
             <InactivityMonitor />
             <PrivacyAwareSpeedInsights />
+            <PrivacyAwareAnalytics />
             <VlibrasWidget />
           </ThemeProvider>
         </SessionProviderWrapper>
