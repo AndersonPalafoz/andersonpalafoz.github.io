@@ -25,7 +25,7 @@ export default function PoliticaPrivacidadePage() {
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">Política de Privacidade</h1>
           <p className="mt-4 text-base text-gray-600 dark:text-slate-400">
-            Última atualização: 15 de agosto de 2026
+            Última atualização: 16 de novembro de 2026
           </p>
         </div>
 
@@ -46,6 +46,7 @@ export default function PoliticaPrivacidadePage() {
               <li><strong>Dados de Identificação:</strong> Nome completo e endereço de e-mail obtidos durante a autenticação (Google OAuth) ou cadastro.</li>
               <li><strong>Dados Acadêmicos:</strong> Matrículas, progresso em cursos, frequência em aulas, atividades e submissões de materiais.</li>
               <li><strong>Comunicações:</strong> Mensagens enviadas através do formulário de contato ou sistema de mensagens diretas.</li>
+              <li><strong>Métricas de navegação:</strong> visualizações de páginas públicas e cliques nos CTAs de WhatsApp e cursos, mensurados de forma agregada pelo Vercel Web Analytics. Esses eventos não incluem conteúdo de formulários, mensagens ou identificadores de conta.</li>
             </ul>
           </section>
 
@@ -59,6 +60,7 @@ export default function PoliticaPrivacidadePage() {
               <li>Acompanhar o progresso pedagógico e emitir certificados de conclusão.</li>
               <li>Enviar notificações importantes sobre prazos (deadlines), atualizações de cursos e mensagens diretas.</li>
               <li>Garantir a segurança da plataforma e prevenir acessos não autorizados.</li>
+              <li>Compreender o uso das páginas públicas e avaliar a efetividade dos CTAs, sem rastrear as áreas privadas de alunos, professores ou administração.</li>
             </ul>
           </section>
 

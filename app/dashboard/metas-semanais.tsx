@@ -23,6 +23,7 @@ export function WeeklyGoalsWidget() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [traditionalMode, setTraditionalMode] = useState(false);
+  const [reloadCount, setReloadCount] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -45,14 +46,14 @@ export function WeeklyGoalsWidget() {
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, []);
+  }, [reloadCount]);
 
   if (loading) {
     return <div className="surface-card flex items-center justify-center gap-2 p-6 text-sm text-muted-foreground"><Loader2 className="animate-spin" size={18} /> Carregando atividades reais da semana…</div>;
   }
 
   if (error) {
-    return <div className="surface-card border-amber-200 bg-amber-50/60 p-6 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">Não foi possível carregar o resumo semanal. Tente atualizar a página.</div>;
+    return <div className="surface-card flex flex-col gap-4 border-amber-200 bg-amber-50/60 p-6 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200 sm:flex-row sm:items-center sm:justify-between"><p>Não foi possível carregar o resumo semanal.</p><button type="button" onClick={() => { setError(null); setLoading(true); setReloadCount((count) => count + 1); }} className="min-h-11 rounded-xl border border-amber-300 px-4 font-bold transition hover:bg-amber-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 focus-visible:ring-offset-2 dark:border-amber-800 dark:hover:bg-amber-900/40">Tentar novamente</button></div>;
   }
 
   if (!summary) return null;
@@ -100,15 +101,15 @@ export function WeeklyGoalsWidget() {
           <p className="mt-1 text-xs text-muted-foreground">Quando você concluir uma aula ou atividade, ela aparecerá aqui automaticamente.</p>
         </div>
       ) : (
-        <div className="grid h-44 grid-cols-7 items-end gap-2 rounded-2xl border border-border bg-muted/30 p-4 sm:gap-3 sm:p-6">
+        <div role="list" aria-label="Atividades concluídas por dia nesta semana" className="grid h-44 grid-cols-7 items-end gap-2 rounded-2xl border border-border bg-muted/30 p-4 sm:gap-3 sm:p-6">
           {summary.days.map((day) => {
             const total = day.lessons + day.activities;
             const height = total === 0 ? 8 : Math.max(15, (total / maxItems) * 100);
             return (
-              <div key={day.key} className="flex h-full flex-col items-center justify-end gap-2">
+              <div key={day.key} role="listitem" aria-label={`${day.label}: ${day.lessons} aulas e ${day.activities} atividades concluídas`} className="flex h-full flex-col items-center justify-end gap-2">
                 <span className="text-[10px] font-black text-foreground">{total}</span>
                 <div className="flex h-full w-full max-w-9 items-end overflow-hidden rounded-xl bg-background">
-                  <div className={`w-full rounded-xl transition-all ${total > 0 ? "bg-red-600" : "bg-muted"}`} style={{ height: `${height}%` }} />
+                  <div aria-hidden="true" className={`w-full rounded-xl transition-all ${total > 0 ? "bg-red-600" : "bg-muted"}`} style={{ height: `${height}%` }} />
                 </div>
                 <span className="text-[11px] font-bold text-muted-foreground">{day.label}</span>
               </div>

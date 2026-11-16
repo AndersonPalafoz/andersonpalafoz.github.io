@@ -1,6 +1,5 @@
 import React from "react";
 import Link from "next/link";
-import { GoogleReviewsSection } from "@/components/google-reviews-section";
 import {
   ArrowRight,
   Award,
@@ -304,9 +303,7 @@ export default function SobrePage() {
         </div>
       </section>
 
-      <section className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
-        <GoogleReviewsSection compact={false} limit={6} />
-      </section>
+
     </main>
   );
 }
