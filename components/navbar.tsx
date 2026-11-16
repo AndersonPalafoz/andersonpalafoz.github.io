@@ -11,7 +11,7 @@ import { StreakBadge } from "@/components/streak-badge";
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 
 const navLinks = [
-  { href: "/", label: "Home" },
+  { href: "/", label: "Início" },
   { href: "/sobre", label: "Sobre" },
   { href: "/cursos", label: "Cursos" },
   { href: "/materiais", label: "Materiais" },

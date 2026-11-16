@@ -1,6 +1,7 @@
 export const CONTACT_EMAIL = "palafozanderson@gmail.com";
 export const CONTACT_PHONE_DISPLAY = "(71) 9 9122-2257";
 export const CONTACT_WHATSAPP_URL = "https://wa.me/5571991222257";
+export const CONTACT_WHATSAPP_HOMEPAGE_URL = `${CONTACT_WHATSAPP_URL}?text=${encodeURIComponent("Olá, Anderson!\n\nGostaria de saber mais sobre suas aulas de inglês.")}`;
 export const CONTACT_LOCATION = "Salvador, Bahia — Brasil";
 export const CONTACT_LOCATION_URL =
   "https://www.google.com/maps/search/?api=1&query=Salvador%2C%20Bahia%2C%20Brasil";
