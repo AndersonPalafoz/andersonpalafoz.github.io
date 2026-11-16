@@ -1,27 +1,17 @@
-import { count } from "drizzle-orm";
+import { cookies } from "next/headers";
 import { HomepageExperience } from "@/components/homepage-experience";
 import { getCmsContent } from "@/lib/public-cms";
-import { db } from "@/lib/db";
-import { lessons } from "@/drizzle/schema";
 
 export const metadata = {
   title: "Anderson Palafoz | Professor de Inglês",
-  description: "Aprenda inglês com clareza, confiança e propósito através de aulas e materiais autorais.",
+  description: "Aprenda inglês com Anderson Palafoz por meio de aulas e materiais autorais. Explore os cursos e converse diretamente sobre seus objetivos."
 };
 
 export const dynamic = "force-dynamic";
 
-async function getPublishedLessonCount() {
-  try {
-    const [result] = await db.select({ value: count() }).from(lessons);
-    return Number(result?.value ?? 0);
-  } catch {
-    return 0;
-  }
-}
-
 export default async function HomePage() {
+  const cookieStore = await cookies();
   await getCmsContent("home", "hero_title", "Aprenda inglês com clareza, confiança e propósito.");
-  const lessonCount = await getPublishedLessonCount();
-  return <HomepageExperience lessonCount={lessonCount} />;
+  const showCookieNotice = !cookieStore.get("site-cookie-consent")?.value;
+  return <HomepageExperience showCookieNotice={showCookieNotice} />;
 }
