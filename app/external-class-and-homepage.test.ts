@@ -30,18 +30,24 @@ describe("external class deletion safeguards", () => {
   });
 });
 
-describe("homepage real-data contract", () => {
+describe("homepage content contract", () => {
   const page = read("app/page.tsx");
+  const experience = read("components/homepage-experience.tsx");
+  const hero = read("components/homepage-hero.tsx");
+  const credibility = read("components/homepage-credibility-strip.tsx");
 
-  it("uses the database count for the public lesson indicator", () => {
-    expect(page).toContain("getPublishedLessonCount");
-    expect(page).toContain("db.select({ value: count() }).from(lessons)");
-    expect(page).toContain("Conteúdo real disponível");
+  it("passes published CMS hero copy to the client component and keeps a fallback", () => {
+    expect(page).toContain('getCmsContent("home", "hero_title"');
+    expect(page).toContain("heroTitle={heroTitle}");
+    expect(page).toContain('||\n    "Aprenda inglês com clareza, confiança e propósito."');
+    expect(experience).toContain("<HomepageHero title={heroTitle} />");
+    expect(hero).toContain("HomepageHero({ title }: { title: string })");
+    expect(hero).toContain("{title}");
   });
 
-  it("keeps the level naming parallel and removes the obsolete speaking claim", () => {
-    expect(page).toContain("Básico ao Avançado");
-    expect(page).toContain("[A1-C2]");
-    expect(page).not.toContain("feedback instantâneo sobre pronúncia");
+  it("shows only verified academic and learning-scope claims", () => {
+    expect(credibility).toContain("Professor de inglês licenciado");
+    expect(credibility).toContain("Trajetória na UFBA");
+    expect(credibility).toContain("Aulas do A1 ao B2; materiais de apoio até C1 e C2.");
   });
 });
