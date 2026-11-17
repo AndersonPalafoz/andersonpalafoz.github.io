@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Filter, Layers, Search, BookOpen } from "lucide-react";
+import { ArrowRight, ArrowUpDown, Filter, Layers, Search, BookOpen } from "lucide-react";
 import { WishlistToggle } from "@/components/course-engagement";
 import { COURSE_TYPE_OPTIONS, getCourseTypeDefinition, getSyncModalityLabel, normalizeCourseType } from "@/lib/course-types";
 import { CalendarDays, GraduationCap } from "lucide-react";
@@ -46,6 +46,8 @@ export function CourseCatalog({
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedCourseType, setSelectedCourseType] = useState("all");
+  const [selectedPrice, setSelectedPrice] = useState("all");
+  const [sortOrder, setSortOrder] = useState("recommended");
 
   const levels = useMemo(() => Array.from(new Set(courses.map((course) => course.level))).sort(), [courses]);
   const categories = useMemo(
@@ -64,9 +66,15 @@ export function CourseCatalog({
       const matchesLevel = selectedLevel === "all" || course.level === selectedLevel;
       const matchesCategory = selectedCategory === "all" || course.category === selectedCategory;
       const matchesCourseType = selectedCourseType === "all" || String(normalizeCourseType(course.courseType)) === selectedCourseType;
-      return matchesQuery && matchesLevel && matchesCategory && matchesCourseType;
+      const matchesPrice = selectedPrice === "all" || (selectedPrice === "free" ? course.isFree : !course.isFree);
+      return matchesQuery && matchesLevel && matchesCategory && matchesCourseType && matchesPrice;
+    }).sort((a, b) => {
+      if (sortOrder === "title") return a.title.localeCompare(b.title, "pt-BR");
+      if (sortOrder === "price-asc") return Number(a.price || 0) - Number(b.price || 0);
+      if (sortOrder === "price-desc") return Number(b.price || 0) - Number(a.price || 0);
+      return 0;
     });
-  }, [courses, searchQuery, selectedLevel, selectedCategory, selectedCourseType]);
+  }, [courses, searchQuery, selectedLevel, selectedCategory, selectedCourseType, selectedPrice, sortOrder]);
 
   return (
     <>
@@ -89,6 +97,7 @@ export function CourseCatalog({
               key={level}
               type="button"
               onClick={() => setSelectedLevel(level)}
+              aria-pressed={selectedLevel === level}
               className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${selectedLevel === level ? "bg-red-600 text-white" : "bg-card text-muted-foreground hover:bg-red-50 hover:text-red-700"}`}
             >
               {level === "all" ? "Todos" : level}
@@ -130,13 +139,46 @@ export function CourseCatalog({
               </select>
             </>
           )}
+          <span className="ml-2 mr-1 text-xs font-black uppercase tracking-wide text-muted-foreground">Investimento</span>
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filtrar por preço">
+            {[{ id: "all", label: "Todos" }, { id: "free", label: "Gratuitos" }, { id: "paid", label: "Pagos" }].map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                aria-pressed={selectedPrice === option.id}
+                onClick={() => setSelectedPrice(option.id)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors focus:outline-none focus:ring-2 focus:ring-red-600 focus:ring-offset-2 ${selectedPrice === option.id ? "bg-red-600 text-white" : "bg-card text-muted-foreground hover:bg-red-50 hover:text-red-700"}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="mb-6 flex items-center justify-between gap-3">
-        <h3 aria-live="polite" className="text-xl font-black text-foreground">{filteredCourses.length} curso(s) disponível(is)</h3>
-        {(searchQuery || selectedLevel !== "all" || selectedCategory !== "all" || selectedCourseType !== "all") && (
-          <button type="button" onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setSelectedCourseType("all"); }} className="text-xs font-black uppercase tracking-wide text-red-600 hover:underline">Limpar filtros</button>
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <h3 aria-live="polite" className="text-xl font-black text-foreground">
+            {filteredCourses.length === courses.length ? `${courses.length} cursos` : `${filteredCourses.length} de ${courses.length} cursos`}
+          </h3>
+          <label className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+            <ArrowUpDown size={15} aria-hidden="true" />
+            <span>Ordenar</span>
+            <select
+              value={sortOrder}
+              onChange={(event) => setSortOrder(event.target.value)}
+              aria-label="Ordenar cursos"
+              className="rounded-lg border border-border bg-card px-3 py-2 text-xs font-bold text-foreground outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/10"
+            >
+              <option value="recommended">Recomendados</option>
+              <option value="title">Ordem alfabética</option>
+              <option value="price-asc">Menor preço</option>
+              <option value="price-desc">Maior preço</option>
+            </select>
+          </label>
+        </div>
+        {(searchQuery || selectedLevel !== "all" || selectedCategory !== "all" || selectedCourseType !== "all" || selectedPrice !== "all" || sortOrder !== "recommended") && (
+          <button type="button" onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setSelectedCourseType("all"); setSelectedPrice("all"); setSortOrder("recommended"); }} className="self-start text-xs font-black uppercase tracking-wide text-red-600 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 sm:self-auto">Limpar filtros</button>
         )}
       </div>
 
@@ -145,6 +187,7 @@ export function CourseCatalog({
           <Search className="mx-auto mb-3 text-muted-foreground" size={40} />
           <p className="font-bold text-foreground">Nenhum curso corresponde aos filtros atuais.</p>
           <p className="mt-1 text-sm text-muted-foreground">Tente outro termo ou remova algum filtro.</p>
+          <button type="button" onClick={() => { setSearchQuery(""); setSelectedLevel("all"); setSelectedCategory("all"); setSelectedCourseType("all"); setSelectedPrice("all"); setSortOrder("recommended"); }} className="mt-5 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2">Ver todos os cursos</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
