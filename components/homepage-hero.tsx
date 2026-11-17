@@ -8,7 +8,7 @@ import { CONTACT_WHATSAPP_HOMEPAGE_URL } from "@/lib/contact";
 
 const heroImage = "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image.png-DHzkUiPGb3OUjAUkPWCLcSA2y2n0jv.webp";
 
-export function HomepageHero() {
+export function HomepageHero({ title }: { title: string }) {
   return (
     <section aria-labelledby="homepage-hero-title" className="bg-white px-5 py-6 dark:bg-slate-950 sm:px-8 sm:py-8 lg:px-12">
       <div className="mx-auto max-w-7xl overflow-hidden rounded-xl bg-[#D62828] text-white">
@@ -18,7 +18,7 @@ export function HomepageHero() {
               Aulas de inglês com Anderson Palafoz
             </p>
             <h1 id="homepage-hero-title" className="max-w-xl text-4xl font-black leading-[1.04] tracking-tight text-white sm:text-5xl min-[900px]:text-[2.5rem] min-[1280px]:text-[3.75rem]">
-              Inglês para falar com confiança.
+              {title}
             </h1>
 <p className="mt-5 max-w-lg text-base leading-7 text-white/90 sm:text-lg sm:leading-8">
               Aulas e materiais autorais com orientação direta, conectados aos seus objetivos e à sua rotina.
