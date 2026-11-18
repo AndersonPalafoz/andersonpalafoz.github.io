@@ -56,7 +56,7 @@ export function VoiceSpeakingAssistant() {
       <div className="bg-slate-50 dark:bg-slate-800/60 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
         <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Desafio de Conversação de Hoje</p>
         <p className="text-base font-extrabold text-slate-900 dark:text-white">
-          "Talk about your professional goals and why you are learning English."
+          &quot;Talk about your professional goals and why you are learning English.&quot;
         </p>
 
         {/* Animação Visual de Onda Sonora durante a Gravação */}
@@ -90,7 +90,7 @@ export function VoiceSpeakingAssistant() {
         <div className="space-y-4 animate-in fade-in">
           <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-2">
             <span className="text-[10px] font-black uppercase text-slate-400">Sua Transcrição</span>
-            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 italic">"{transcript}"</p>
+            <p className="text-sm font-medium text-slate-800 dark:text-slate-200 italic">&quot;{transcript}&quot;</p>
           </div>
 
           {analyzing ? (

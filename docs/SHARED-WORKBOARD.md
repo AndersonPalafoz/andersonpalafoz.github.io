@@ -39,14 +39,31 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 **Escopo e evidências:** revisão da navegação pública, estado do catálogo após arquivamento, biblioteca, proteção de rotas, checagens de qualidade e consistência do quadro. Nove rotas públicas retornaram HTTP 200; `/dashboard`, `/professor` e `/admin` redirecionaram usuários sem sessão para `/login`. A Home foi observada em desktop e mobile. O catálogo `/cursos` agora informa zero cursos publicados, em conformidade com o arquivamento confirmado no Neon: 7 cursos, 2 ofertas/turmas internas e 2 turmas externas arquivadas; os registros dependentes foram preservados.
 
 **Achados prioritários:**
-1. `pnpm audit --prod` reportou 32 vulnerabilidades (4 críticas, 10 altas, 14 moderadas e 4 baixas), incluindo alertas para `next@16.3.4` e `dompurify@3.4.13`. Atualizar para versões corrigidas é prioridade de segurança; nenhuma dependência foi alterada nesta revisão.
-2. `app/materiais/guias-gramatica.tsx` apresenta cartões de guias com botões de “Baixar PDF”, mas o handler apenas mostra um toast e altera estado local; não inicia download nem aponta para um arquivo. A biblioteca lista 4 materiais ativos e a página usa apenas o título/descrição globais no SEO. Corrigir os downloads e adicionar metadados próprios para `/materiais`.
-3. `pnpm lint` falhou com 36 erros e 39 avisos. `pnpm test` falhou em 9 arquivos: 12 testes falharam e 748 passaram (760 no total). Entre as falhas há contratos de interface desatualizados e um teste de criação de oferta que envia payload sem os campos de agenda obrigatórios pela API.
-4. `pnpm check` e `pnpm build` passaram quando o ambiente do projeto foi carregado; o build compilou 144 páginas estáticas. `git diff --check` passou. O lint e os testes permanecem como bloqueios de regressão.
+1. A auditoria inicial reportou 32 vulnerabilidades. Nesta correção, `next` foi atualizado para 16.4.6, `dompurify` para 3.4.18 e `zod` para 4.6.7, com atualizações de dependências transitivas. A auditoria `pnpm audit --prod` ainda reporta 2 vulnerabilidades altas relacionadas a `picomatch`; elas permanecem abertas.
+2. Os botões dos quatro guias de gramática agora ficam desabilitados com aviso explícito: não existem arquivos PDF correspondentes em `public/`, portanto não afirmam mais que baixaram um arquivo ou mostram tamanho/paginação inventados. Foi adicionado metadata específico para `/materiais`.
+3. Após a atualização do Next.js, `pnpm lint` reporta 26 erros e 39 avisos. `pnpm test:unit` reporta 12 falhas e 735 testes aprovados; parte das suítes de integração depende de variáveis/serviços externos e não é coberta por esse comando. As falhas unitárias restantes precisam ser corrigidas antes de considerar a qualidade concluída.
+4. `pnpm check` passou com `NODE_OPTIONS=--max-old-space-size=4096`. `pnpm build` passou com as variáveis de ambiente carregadas e gerou 144 páginas estáticas. O preview de desenvolvimento precisou ser reiniciado após a atualização de Next.js; a verificação visual da rota segue pendente.
 5. `/aulas` redireciona para `/cursos`, diferente da arquitetura documentada que prevê páginas distintas. Confirmar se essa unificação é intencional. O fluxo autenticado de aluno, professor e administração não pôde ser percorrido nesta revisão sem sessão.
 6. O quadro contém tarefas antigas ainda marcadas como `em andamento` ou `em validação`; reconciliar TASK-010 a TASK-017 com o branch e as evidências atuais antes de encerrá-las.
 
-**Próximo passo exato:** corrigir primeiro as vulnerabilidades críticas e altas reportadas por `pnpm audit --prod`, atualizar a dependência e executar novamente o audit e o build antes de promover qualquer alteração.
+**Próximo passo exato:** continuar pela TASK-019: reduzir os erros do lint e as falhas da suíte unitária; investigar uma atualização compatível para `picomatch`; então repetir audit, TypeScript, build e verificação no navegador antes de encerrar.
+
+### TASK-019 — Correções prioritárias da auditoria geral
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` — build e TypeScript passaram; lint, testes e auditoria de dependências ainda têm bloqueios |
+| Responsável | v0 |
+| Iniciada em | 2026-11-18 |
+| Branch | `v0/homepage-credibility` |
+| Commit base | `c67444b` |
+| Arquivos principais | `app/materiais/guias-gramatica.tsx`, `app/materiais/layout.tsx`, rotas de aula, componentes com erros de lint, `package.json`, `pnpm-lock.yaml` |
+
+**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. Corrigidos nomes reservados `module` e aspas JSX em algumas rotas/componentes.
+
+**Validação:** build de produção e TypeScript passaram. O lint ainda apresenta 26 erros e 39 avisos; `pnpm test:unit` ainda tem 14 falhas (733 testes passam); `pnpm audit --prod` ainda aponta 2 vulnerabilidades altas de `picomatch`. A verificação visual pós-atualização do Next.js ainda precisa ser concluída.
+
+**Próximo passo:** resolver os erros restantes de lint/testes e investigar uma atualização transitiva compatível para `picomatch`; depois executar auditoria, suíte de testes, lint, build e verificação no navegador novamente.
 
 ### TASK-017 — Detalhe de turma e gestão de alunos funcionais
 

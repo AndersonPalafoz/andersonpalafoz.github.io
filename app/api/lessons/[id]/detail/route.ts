@@ -21,8 +21,8 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     const lesson = await getLessonById(lessonId);
     if (!lesson) return NextResponse.json({ error: "Aula não encontrada." }, { status: 404 });
 
-    const module = await getModuleById(lesson.moduleId);
-    const course = module ? await getCourseById(module.courseId) : null;
+    const lessonModule = await getModuleById(lesson.moduleId);
+    const course = lessonModule ? await getCourseById(lessonModule.courseId) : null;
 
     const isExternalCourse = course?.courseType === 4;
     const isPrivilegedUser = session?.user?.role === "admin" || session?.user?.role === "professor" || session?.user?.email === "palafozanderson@gmail.com";
@@ -49,7 +49,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     });
 
     const lessonActivities = await db.query.activities.findMany({
-      where: eq(activities.courseId, module?.courseId || 0),
+      where: eq(activities.courseId, lessonModule?.courseId || 0),
     });
 
     const progressRecord = user
@@ -66,7 +66,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({
       lesson: { ...lesson, content: getLessonBody(lesson.content), pedagogy: getLessonPedagogy(lesson.content) },
-      module,
+      module: lessonModule,
       course,
       materials: lessonMaterials,
       activities: lessonActivities,
