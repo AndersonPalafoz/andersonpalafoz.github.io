@@ -55,6 +55,9 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
 
   const selectedCount = selectedIds.size;
   const selectedIdList = useMemo(() => Array.from(selectedIds).sort((a, b) => a - b), [selectedIds]);
+  const currentSizeEstimate = selectedIdList.length === 0
+    ? { totalBytes: 0, unknownCount: 0, exceedsLimit: false }
+    : sizeEstimate;
   const normalizedSearchQuery = searchQuery.trim().toLocaleLowerCase();
   const filteredMaterials = useMemo(
     () => selectableMaterials.filter((material) => {
@@ -71,11 +74,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
   }, [someVisibleSelected]);
 
   useEffect(() => {
-    if (selectedIdList.length === 0) {
-      setSizeEstimate({ totalBytes: 0, unknownCount: 0, exceedsLimit: false });
-      setEstimating(false);
-      return;
-    }
+    if (selectedIdList.length === 0) return;
 
     const controller = new AbortController();
     setEstimating(true);
@@ -272,7 +271,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
 
           <div className="flex flex-col gap-4 border-t border-border pt-5">
             <div
-              className={`rounded-2xl border p-4 ${sizeEstimate.exceedsLimit ? "border-red-500 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200" : "border-border bg-muted/30 text-foreground"}`}
+              className={`rounded-2xl border p-4 ${currentSizeEstimate.exceedsLimit ? "border-red-500 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200" : "border-border bg-muted/30 text-foreground"}`}
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -280,23 +279,23 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="text-sm font-bold">Tamanho total estimado</span>
                 <span className="text-sm font-black tabular-nums">
-                  {estimating ? "Calculando…" : `${formatBytes(sizeEstimate.totalBytes)} / ${formatBytes(ZIP_LIMIT_BYTES)}`}
+                  {estimating ? "Calculando…" : `${formatBytes(currentSizeEstimate.totalBytes)} / ${formatBytes(ZIP_LIMIT_BYTES)}`}
                 </span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/10 dark:bg-white/10" aria-hidden="true">
-                <div className={`h-full rounded-full transition-[width] duration-200 ${sizeEstimate.exceedsLimit ? "bg-red-600" : "bg-green-600"}`} style={{ width: `${Math.min((sizeEstimate.totalBytes / ZIP_LIMIT_BYTES) * 100, 100)}%` }} />
+                <div className={`h-full rounded-full transition-[width] duration-200 ${currentSizeEstimate.exceedsLimit ? "bg-red-600" : "bg-green-600"}`} style={{ width: `${Math.min((currentSizeEstimate.totalBytes / ZIP_LIMIT_BYTES) * 100, 100)}%` }} />
               </div>
               <p className="mt-2 text-xs leading-5 opacity-80">
-                {sizeEstimate.exceedsLimit
+                {currentSizeEstimate.exceedsLimit
                   ? "A seleção ultrapassa o limite de 40 MB. Remova materiais antes de gerar o ZIP."
-                  : sizeEstimate.unknownCount > 0
-                    ? `${sizeEstimate.unknownCount} arquivo(s) não permitiram estimativa; o servidor validará o tamanho real antes de compactar.`
+                  : currentSizeEstimate.unknownCount > 0
+                    ? `${currentSizeEstimate.unknownCount} arquivo(s) não permitiram estimativa; o servidor validará o tamanho real antes de compactar.`
                     : "Estimativa baseada no tamanho dos arquivos de origem; o ZIP pode variar alguns bytes após a compactação."}
               </p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs leading-5 text-muted-foreground">Limite de segurança: até 50 materiais e 40 MB por ZIP.</p>
-              <Button type="button" onClick={generateZip} disabled={loading || estimating || selectedCount === 0 || sizeEstimate.exceedsLimit} className="min-h-11 gap-2 bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
+              <Button type="button" onClick={generateZip} disabled={loading || estimating || selectedCount === 0 || currentSizeEstimate.exceedsLimit} className="min-h-11 gap-2 bg-red-600 text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
                 {loading ? <Loader2 size={17} className="animate-spin" aria-hidden="true" /> : <Download size={17} aria-hidden="true" />}
                 {loading ? "Gerando ZIP…" : "Gerar ZIP selecionado"}
               </Button>
