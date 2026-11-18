@@ -446,7 +446,7 @@ export function ProfessorCoursesList({ initialCourses }: { initialCourses: Cours
               <h3 className="text-lg font-black text-foreground">Exclusão Definitiva de Curso</h3>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Tem certeza absoluta que deseja excluir permanentemente o curso <strong className="text-foreground">"{deleteModal.title}"</strong>? Esta ação apagará todos os dados associados do banco de dados e não poderá ser desfeita.
+              Tem certeza absoluta que deseja excluir permanentemente o curso <strong className="text-foreground">&quot;{deleteModal.title}&quot;</strong>? Esta ação apagará todos os dados associados do banco de dados e não poderá ser desfeita.
             </p>
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
               <Button
