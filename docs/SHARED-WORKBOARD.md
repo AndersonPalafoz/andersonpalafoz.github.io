@@ -23,6 +23,31 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-018 — Revisão geral do site e do workboard
+
+| Campo | Valor |
+|---|---|
+| Status | `concluída` — revisão realizada; correções recomendadas registradas abaixo |
+| Responsável | v0 |
+| Iniciada em | 2026-11-18 |
+| Branch | `v0/homepage-credibility` |
+| Commit base | `155a77b8c81410914808f27aabe4de352be40d75` |
+| Arquivos principais | `docs/SHARED-WORKBOARD.md`, `app/materiais/page.tsx`, `app/materiais/guias-gramatica.tsx`, `app/api/course-offers/route.ts`, `app/layout.tsx` |
+| Serviços afetados | Neon consultado; nenhum novo dado ou configuração foi alterado nesta revisão |
+| Confirmação necessária | Sim antes de atualizar dependências ou modificar fluxos de produção |
+
+**Escopo e evidências:** revisão da navegação pública, estado do catálogo após arquivamento, biblioteca, proteção de rotas, checagens de qualidade e consistência do quadro. Nove rotas públicas retornaram HTTP 200; `/dashboard`, `/professor` e `/admin` redirecionaram usuários sem sessão para `/login`. A Home foi observada em desktop e mobile. O catálogo `/cursos` agora informa zero cursos publicados, em conformidade com o arquivamento confirmado no Neon: 7 cursos, 2 ofertas/turmas internas e 2 turmas externas arquivadas; os registros dependentes foram preservados.
+
+**Achados prioritários:**
+1. `pnpm audit --prod` reportou 32 vulnerabilidades (4 críticas, 10 altas, 14 moderadas e 4 baixas), incluindo alertas para `next@16.3.4` e `dompurify@3.4.13`. Atualizar para versões corrigidas é prioridade de segurança; nenhuma dependência foi alterada nesta revisão.
+2. `app/materiais/guias-gramatica.tsx` apresenta cartões de guias com botões de “Baixar PDF”, mas o handler apenas mostra um toast e altera estado local; não inicia download nem aponta para um arquivo. A biblioteca lista 4 materiais ativos e a página usa apenas o título/descrição globais no SEO. Corrigir os downloads e adicionar metadados próprios para `/materiais`.
+3. `pnpm lint` falhou com 36 erros e 39 avisos. `pnpm test` falhou em 9 arquivos: 12 testes falharam e 748 passaram (760 no total). Entre as falhas há contratos de interface desatualizados e um teste de criação de oferta que envia payload sem os campos de agenda obrigatórios pela API.
+4. `pnpm check` e `pnpm build` passaram quando o ambiente do projeto foi carregado; o build compilou 144 páginas estáticas. `git diff --check` passou. O lint e os testes permanecem como bloqueios de regressão.
+5. `/aulas` redireciona para `/cursos`, diferente da arquitetura documentada que prevê páginas distintas. Confirmar se essa unificação é intencional. O fluxo autenticado de aluno, professor e administração não pôde ser percorrido nesta revisão sem sessão.
+6. O quadro contém tarefas antigas ainda marcadas como `em andamento` ou `em validação`; reconciliar TASK-010 a TASK-017 com o branch e as evidências atuais antes de encerrá-las.
+
+**Próximo passo exato:** corrigir primeiro as vulnerabilidades críticas e altas reportadas por `pnpm audit --prod`, atualizar a dependência e executar novamente o audit e o build antes de promover qualquer alteração.
+
 ### TASK-017 — Detalhe de turma e gestão de alunos funcionais
 
 | Campo | Valor |
