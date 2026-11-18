@@ -1,24 +1,19 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useLocalStorageSnapshot } from "@/lib/use-local-storage-snapshot";
 import { Sparkles, BookOpen, ShieldCheck, ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
 export function OnboardingModal() {
-  const [isOpen, setIsOpen] = useState(false);
+  const completed = useLocalStorageSnapshot("ap_onboarding_completed");
   const [step, setStep] = useState(1);
-
-  useEffect(() => {
-    const completed = localStorage.getItem("ap_onboarding_completed");
-    if (!completed) {
-      setIsOpen(true);
-    }
-  }, []);
+  const isOpen = completed !== "true";
 
   const handleComplete = () => {
     localStorage.setItem("ap_onboarding_completed", "true");
-    setIsOpen(false);
+    window.dispatchEvent(new Event("ap:local-storage-changed"));
     toast.success("Onboarding concluído! Bem-vindo(a) à plataforma Anderson Palafoz.");
   };
 

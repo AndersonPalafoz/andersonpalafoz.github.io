@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useLocalStorageSnapshot } from "@/lib/use-local-storage-snapshot";
 import { Eye, RotateCcw } from "lucide-react";
 import type { EffectiveRole } from "@/lib/role-capabilities";
 
@@ -18,20 +19,15 @@ const RolePreviewContext = createContext<RolePreviewState | null>(null);
 const STORAGE_KEY = "ap-role-preview";
 
 export function RolePreviewProvider({ actualRole, enabled, children }: { actualRole: EffectiveRole; enabled: boolean; children: React.ReactNode }) {
-  const [previewRole, setPreviewRoleState] = useState<PreviewRole | null>(null);
+  const storedRole = useLocalStorageSnapshot(STORAGE_KEY);
+  const previewRole = storedRole === "admin" || storedRole === "professor" ? storedRole : null;
 
-  useEffect(() => {
-    if (!enabled) return;
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "admin" || stored === "professor") setPreviewRoleState(stored);
-  }, [enabled]);
-
-  const setPreviewRole = (role: PreviewRole | null) => {
-    setPreviewRoleState(role);
+  const setPreviewRole = useCallback((role: PreviewRole | null) => {
     if (!enabled) return;
     if (role) window.localStorage.setItem(STORAGE_KEY, role);
     else window.localStorage.removeItem(STORAGE_KEY);
-  };
+    window.dispatchEvent(new Event("ap:local-storage-changed"));
+  }, [enabled]);
 
   const value = useMemo<RolePreviewState>(() => ({
     actualRole,
@@ -39,7 +35,7 @@ export function RolePreviewProvider({ actualRole, enabled, children }: { actualR
     visibleRole: enabled && previewRole ? previewRole : actualRole,
     enabled,
     setPreviewRole,
-  }), [actualRole, enabled, previewRole]);
+  }), [actualRole, enabled, previewRole, setPreviewRole]);
 
   return <RolePreviewContext.Provider value={value}>{children}</RolePreviewContext.Provider>;
 }
