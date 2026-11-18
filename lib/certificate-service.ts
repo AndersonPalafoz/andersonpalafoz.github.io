@@ -21,8 +21,8 @@ import { parseCertificateComposition } from "@/lib/certificate-composition";
 export async function getCourseCompletion(userId: number, courseId: number) {
   const modules = await getModulesByCourse(courseId);
   const lessonIds: number[] = [];
-  for (const module of modules) {
-    const lessons = await getLessonsByModule(module.id);
+  for (const courseModule of modules) {
+    const lessons = await getLessonsByModule(courseModule.id);
     lessonIds.push(...lessons.map(lesson => lesson.id));
   }
   if (lessonIds.length === 0)
