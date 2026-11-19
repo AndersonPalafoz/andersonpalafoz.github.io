@@ -1,22 +1,15 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useLocalStorageSnapshot } from "@/lib/use-local-storage-snapshot";
 import { Clock, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 export function ProfileInactivitySettings() {
-  const [minutes, setMinutes] = useState(20);
-
-  useEffect(() => {
-    const saved = localStorage.getItem("ap_inactivity_minutes");
-    if (saved) {
-      const parsed = parseInt(saved, 10);
-      if (!isNaN(parsed)) setMinutes(parsed);
-    }
-  }, []);
+  const savedMinutes = useLocalStorageSnapshot("ap_inactivity_minutes");
+  const parsedMinutes = savedMinutes ? Number.parseInt(savedMinutes, 10) : 20;
+  const minutes = [10, 20, 30, 45, 60].includes(parsedMinutes) ? parsedMinutes : 20;
 
   const handleChangeMinutes = (val: number) => {
-    setMinutes(val);
     localStorage.setItem("ap_inactivity_minutes", String(val));
     window.dispatchEvent(new CustomEvent("ap:inactivity-changed"));
     toast.success(`Tempo limite de inatividade alterado para ${val} minutos.`);

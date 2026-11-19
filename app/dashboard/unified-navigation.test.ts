@@ -44,9 +44,10 @@ describe("navegação lateral unificada", () => {
 
   it("usa cabeçalhos com ações agrupadas e uma quebra segura para telas estreitas", () => {
     expect(adminPage).toContain("Ações frequentes");
-    expect(professorPage).toContain("Ações frequentes");
+    expect(professorPage).toContain("Organize por área");
+    expect(professorPage).toContain("Turmas externas");
     expect(adminPage).toContain("xl:grid-cols");
-    expect(professorPage).toContain("xl:grid-cols");
+    expect(professorPage).toContain("sm:grid-cols-3 xl:grid-cols-1");
     expect(styles).toContain("@media (max-width: 420px)");
     expect(styles).toContain("grid-template-columns: minmax(0, 1fr)");
   });

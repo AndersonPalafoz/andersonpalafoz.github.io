@@ -11,7 +11,9 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const cookieStore = await cookies();
-  await getCmsContent("home", "hero_title", "Aprenda inglês com clareza, confiança e propósito.");
+  const heroTitle =
+    (await getCmsContent("home", "hero_title", "Aprenda inglês com clareza, confiança e propósito.")).trim() ||
+    "Aprenda inglês com clareza, confiança e propósito.";
   const showCookieNotice = !cookieStore.get("site-cookie-consent")?.value;
-  return <HomepageExperience showCookieNotice={showCookieNotice} />;
+  return <HomepageExperience showCookieNotice={showCookieNotice} heroTitle={heroTitle} />;
 }

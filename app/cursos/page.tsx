@@ -1,7 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { Clock, Users, Award, BookOpen, MessageCircle, Target, ArrowRight } from "lucide-react";
+import { BookOpen, MessageCircle, Target, ArrowRight, Lightbulb, PencilLine, Mic2, RotateCcw } from "lucide-react";
+import { CONTACT_WHATSAPP_HOMEPAGE_URL } from "@/lib/contact";
 import { CourseCatalog } from "@/components/course-catalog";
 import { CourseTypeLegend } from "@/components/course-type-legend";
 import { getServerSession } from "next-auth";
@@ -67,6 +68,7 @@ export default async function CursosPage() {
   const wishlistCourseIds = new Set(wishlistRows.map((row) => row.courseId));
   const cursos = [...cursosDb];
   const totalModulos = cursos.reduce((sum, c) => sum + (c.modules ?? 0), 0);
+  const totalNiveis = new Set(cursos.map((curso) => curso.level).filter(Boolean)).size;
 
   return (
     <div className="w-full">
@@ -98,8 +100,8 @@ export default async function CursosPage() {
                 <p className="text-gray-600 dark:text-slate-400 text-sm">Módulos ao Todo</p>
               </div>
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-5">
-                <p className="text-3xl font-black text-red-600">100%</p>
-                <p className="text-gray-600 dark:text-slate-400 text-sm">Prático</p>
+                <p className="text-3xl font-black text-red-600">{totalNiveis}</p>
+                <p className="text-gray-600 dark:text-slate-400 text-sm">Níveis no catálogo</p>
               </div>
             </div>
           </div>
@@ -128,6 +130,37 @@ export default async function CursosPage() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-4 py-16 dark:bg-slate-950 md:px-8 lg:px-16" aria-labelledby="metodo-title">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="text-xs font-black uppercase tracking-[0.16em] text-red-600">Aprender fazendo</p>
+            <h2 id="metodo-title" className="mt-3 text-3xl font-black tracking-tight text-slate-900 dark:text-white md:text-4xl">Um caminho claro da compreensão ao uso real</h2>
+            <p className="mt-4 leading-7 text-slate-600 dark:text-slate-300">Cada etapa ajuda você a construir conhecimento e transformar o que estudou em comunicação.</p>
+          </div>
+          <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { icon: Lightbulb, title: "Engage", text: "Ative o que você já sabe e conecte o tema à sua realidade." },
+              { icon: BookOpen, title: "Study", text: "Entenda vocabulário, gramática e pronúncia em contexto." },
+              { icon: PencilLine, title: "Practice", text: "Pratique com atividades guiadas e receba feedback construtivo." },
+              { icon: Mic2, title: "Activate", text: "Use o inglês em tarefas de fala, escrita e situações reais." },
+            ].map(({ icon: Icon, title, text }, index) => (
+              <li key={title} className="rounded-2xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-slate-400">0{index + 1}</span>
+                  <Icon className="text-red-600" size={22} aria-hidden="true" />
+                </div>
+                <h3 className="mt-5 font-black text-slate-900 dark:text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">{text}</p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-5 flex items-start gap-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <RotateCcw className="mt-1 shrink-0 text-red-600" size={16} aria-hidden="true" />
+            A reflexão sobre o aprendizado ajuda você a reconhecer avanços e planejar os próximos passos.
+          </p>
         </div>
       </section>
 
@@ -178,9 +211,15 @@ export default async function CursosPage() {
           <p className="text-lg text-red-100">
             Escolha um nível, acompanhe sua evolução e pratique com uma trilha organizada.
           </p>
-          <Link href="#catalogo-cursos" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-white px-8 py-4 text-lg font-semibold text-red-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600">
-            Explorar Cursos
-          </Link>
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
+            <a href={CONTACT_WHATSAPP_HOMEPAGE_URL} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-white px-8 py-4 text-lg font-semibold text-red-600 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600">
+              <MessageCircle size={20} aria-hidden="true" />
+              Conversar sobre meu nível
+            </a>
+            <Link href="#catalogo-cursos" className="inline-flex min-h-12 items-center justify-center rounded-lg border border-white/70 px-8 py-4 text-lg font-semibold text-white transition hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">
+              Ver cursos
+            </Link>
+          </div>
         </div>
       </section>
     </div>

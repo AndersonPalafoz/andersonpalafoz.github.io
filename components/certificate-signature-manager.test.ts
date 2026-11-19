@@ -61,7 +61,7 @@ describe("gerenciador administrativo de certificados", () => {
     expect(source).toContain("certificatesPerPage");
     expect(source).toContain("setCurrentPage(1)");
     expect(source).toContain("paginatedCertificates");
-    expect(source).toContain("Página {currentPage} de {totalPages}");
+    expect(source).toContain("Página {effectivePage} de {totalPages}");
     expect(source).toContain('aria-label="Paginação dos certificados"');
   });
 

@@ -104,7 +104,7 @@ export function LearningJournal() {
 
                 <div>
                   <span className="text-[10px] font-black uppercase text-slate-400">Seu Texto:</span>
-                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 italic mt-1 leading-relaxed">"{entry.content}"</p>
+                  <p className="text-xs font-medium text-slate-800 dark:text-slate-200 italic mt-1 leading-relaxed">&quot;{entry.content}&quot;</p>
                 </div>
 
                 <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 p-3.5 rounded-xl space-y-1">

@@ -22,6 +22,8 @@ interface StudentItem {
   createdAt?: string | Date;
 }
 
+const SEARCH_REFERENCE_TIME = Date.now();
+
 interface TeacherSearchWidgetProps {
   courses: CourseItem[];
   students: StudentItem[];
@@ -63,9 +65,10 @@ export function TeacherSearchWidget({ courses, students }: TeacherSearchWidgetPr
 
       // Date range match (based on lastSignedIn or createdAt)
       if (dateRangeFilter !== "all") {
-        const studentDate = new Date(s.lastSignedIn || s.createdAt || Date.now()).getTime();
-        const now = Date.now();
-        const diffDays = (now - studentDate) / (1000 * 60 * 60 * 24);
+        const dateValue = s.lastSignedIn || s.createdAt;
+        if (!dateValue) return false;
+        const studentDate = new Date(dateValue).getTime();
+        const diffDays = (SEARCH_REFERENCE_TIME - studentDate) / (1000 * 60 * 60 * 24);
 
         if (dateRangeFilter === "today" && diffDays > 1) return false;
         if (dateRangeFilter === "week" && diffDays > 7) return false;
