@@ -129,7 +129,7 @@ export function Navbar() {
     if (storedMode) {
       applyTheme(storedMode, false);
     } else {
-      applyTheme("light", false);
+      applyTheme("system", false);
     }
   }, []);
 

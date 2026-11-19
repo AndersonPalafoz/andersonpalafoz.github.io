@@ -46,24 +46,24 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 5. `/aulas` redireciona para `/cursos`, diferente da arquitetura documentada que prevê páginas distintas. Confirmar se essa unificação é intencional. O fluxo autenticado de aluno, professor e administração não pôde ser percorrido nesta revisão sem sessão.
 6. O quadro contém tarefas antigas ainda marcadas como `em andamento` ou `em validação`; reconciliar TASK-010 a TASK-017 com o branch e as evidências atuais antes de encerrá-las.
 
-**Próximo passo exato:** continuar pela TASK-019: reduzir os erros do lint e as falhas da suíte unitária; investigar uma atualização compatível para `picomatch`; então repetir audit, TypeScript, build e verificação no navegador antes de encerrar.
+**Próximo passo exato:** revisar as evidências atuais da TASK-019 e reconciliar as tarefas históricas ainda abertas; validar rotas autenticadas em uma sessão autorizada antes do encerramento final.
 
 ### TASK-019 — Correções prioritárias da auditoria geral
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` — build, TypeScript e auditoria de dependências aprovados; lint sem erros, com avisos; suíte unitária ainda tem falhas preexistentes |
+| Status | `em validação` — build, TypeScript, suíte unitária e auditoria aprovados; lint sem erros e com avisos remanescentes |
 | Responsável | v0 |
 | Iniciada em | 2026-11-18 |
 | Branch | `v0/homepage-credibility` |
 | Commit base | `c67444b` |
 | Arquivos principais | `app/materiais/guias-gramatica.tsx`, `app/materiais/layout.tsx`, rotas de aula, componentes com erros de lint, `package.json`, `pnpm-lock.yaml` |
 
-**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. Nesta continuação, o Vitest foi atualizado para 4.1.12, corrigido o reset da paginação ao trocar filtros, atualizados os contratos correspondentes da paginação e da página Sobre, atualizados os dados de entrada obrigatórios do teste de criação de ofertas, e corrigido o erro de lint por atualização síncrona de estado no efeito de estimativa de tamanho do ZIP. Depoimentos inventados foram evitados: a página Sobre não publica testemunhos sem fonte real e autorização.
+**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. O Vitest foi atualizado para 4.1.12; corrigidos contratos de teste que apontavam para o arquivo antigo da homepage e para textos/classes obsoletos; corrigido o mock construtor de `OAuth2`; incluído skeleton acessível no carregamento de speaking; aplicada a superfície semântica do design system ao relatório docente; e o tema padrão sem preferência salva agora respeita o tema do sistema. A estimativa do ZIP não chama `setState` sincronamente no efeito. Depoimentos não foram inventados: a página Sobre não publica testemunhos sem fonte real e autorização.
 
-**Validação em 2026-11-19:** `pnpm audit --prod` e `pnpm audit --audit-level=moderate` passaram sem vulnerabilidades conhecidas. `pnpm check` passou usando heap ampliado; `pnpm build` passou com as variáveis de ambiente do projeto carregadas. `pnpm lint` passou sem erros, com 36 avisos preexistentes. Os testes focados da paginação, renderização da página Sobre e API de ofertas passaram (17/17). A suíte unitária completa ainda registra 13 falhas e 734 aprovações em 747 testes; as falhas restantes são contratos/testes incompatíveis em relatórios, navegação, níveis, Google Drive, exportação ZIP e assets, e exigem triagem individual. A homepage foi verificada no navegador em viewport desktop escuro de 1216×597.
+**Validação em 2026-11-19:** `pnpm audit --prod` e `pnpm audit --audit-level=moderate` passaram sem vulnerabilidades conhecidas. `pnpm check` passou usando heap ampliado; `pnpm build` passou com as variáveis de ambiente do projeto carregadas. `pnpm lint` passou sem erros, com 36 avisos. A suíte unitária completa passou: 230 arquivos e 747 testes. A homepage foi verificada no navegador no viewport atual de 1216×597, em modo escuro; o painel docente protegido redirecionou para login, então as telas autenticadas não foram verificadas visualmente sem sessão autorizada.
 
-**Próximo passo:** investigar e corrigir as 13 falhas restantes da suíte unitária sem enfraquecer a cobertura nem introduzir depoimentos/dados não comprovados; depois repetir a suíte completa e fazer a verificação visual das rotas afetadas antes de encerrar.
+**Próximo passo:** reconciliar as tarefas históricas ainda abertas no workboard e fazer a validação visual das rotas protegidas em uma sessão autorizada.
 
 ### TASK-017 — Detalhe de turma e gestão de alunos funcionais
 

@@ -72,8 +72,8 @@ describe("private report visual consistency", () => {
   it("keeps external class failure status distinct from successful synchronization", () => {
     const source = read("app/professor/turmas-externas/page.tsx");
     expect(source).toContain("Falha na atualização");
-    expect(source).toContain("loadError ? \"—\" : value");
-    expect(source).toContain("pb-32");
+    expect(source).toContain('loadError ? "Falha na atualização" : lastUpdatedAt ?');
+    expect(source).toContain("pb-24");
     expect(source).toContain("Carregando turmas, alunos e indicadores");
     expect(source).toContain("Não conseguimos carregar suas turmas");
   });
