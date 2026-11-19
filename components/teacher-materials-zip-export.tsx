@@ -77,7 +77,7 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
     if (selectedIdList.length === 0) return;
 
     const controller = new AbortController();
-    setEstimating(true);
+    const estimatingTimer = window.setTimeout(() => setEstimating(true), 0);
     fetch("/api/professor/materials-size", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,10 +99,14 @@ export function TeacherMaterialsZipExport({ materials }: { materials: TeacherMat
         setSizeEstimate({ totalBytes: 0, unknownCount: selectedIdList.length, exceedsLimit: false });
       })
       .finally(() => {
+        window.clearTimeout(estimatingTimer);
         if (!controller.signal.aborted) setEstimating(false);
       });
 
-    return () => controller.abort();
+    return () => {
+      window.clearTimeout(estimatingTimer);
+      controller.abort();
+    };
   }, [selectedIdList]);
 
   function toggleMaterial(materialId: number) {
