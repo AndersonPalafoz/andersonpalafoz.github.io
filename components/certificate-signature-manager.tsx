@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 import {
   CheckCircle2,
@@ -113,7 +113,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
   const [unregisteredBranding, setUnregisteredBranding] = useState(true);
   const [unregisteredIssuing, setUnregisteredIssuing] = useState(false);
 
-  async function loadCertificates() {
+  const loadCertificates = useCallback(async () => {
     setLoading(true);
     setLoadingError(null);
     try {
@@ -134,18 +134,18 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           payload.error || "Não foi possível carregar os certificados."
         );
       setCertificates(payload.certificates || []);
+      setLoading(false);
     } catch (error) {
       setLoadingError(
         error instanceof Error
           ? error.message
           : "Não foi possível carregar os certificados."
       );
-    } finally {
       setLoading(false);
     }
-  }
+  }, [audience]);
 
-  async function loadTemplateOptions() {
+  const loadTemplateOptions = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/certificate-templates", {
         cache: "no-store",
@@ -155,12 +155,15 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     } catch {
       // A seleção é complementar; a emissão padrão continua disponível.
     }
-  }
+  }, []);
 
   useEffect(() => {
-    void loadCertificates();
-    void loadTemplateOptions();
-  }, []);
+    const timeout = window.setTimeout(() => {
+      void loadCertificates();
+      void loadTemplateOptions();
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [loadCertificates, loadTemplateOptions]);
 
   function openIssueModal(certificate: CertificateItem) {
     setIssueCert(certificate);
@@ -328,12 +331,9 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     }
   }
 
-  const visibleCertificates = useMemo(
-    () => audience === "teacher"
-      ? certificates.filter(certificate => !isTechnicalCourse({ title: certificate.courseTitle }))
-      : certificates,
-    [audience, certificates]
-  );
+  const visibleCertificates = audience === "teacher"
+    ? certificates.filter(certificate => !isTechnicalCourse({ title: certificate.courseTitle }))
+    : certificates;
 
   const filteredCertificates = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -367,22 +367,15 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     });
   }, [visibleCertificates, searchQuery, statusFilter, startDateFilter, endDateFilter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter, startDateFilter, endDateFilter]);
-
   const totalPages = Math.max(
     1,
     Math.ceil(filteredCertificates.length / certificatesPerPage)
   );
+  const effectivePage = Math.min(currentPage, totalPages);
   const paginatedCertificates = filteredCertificates.slice(
-    (currentPage - 1) * certificatesPerPage,
-    currentPage * certificatesPerPage
+    (effectivePage - 1) * certificatesPerPage,
+    effectivePage * certificatesPerPage
   );
-
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
 
   const toggleSelectAll = () => {
     const allFilteredSelected =
@@ -644,7 +637,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
             type="text"
             placeholder="Nome, CPF, e-mail ou código..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
@@ -654,7 +650,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           </label>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={e => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           >
             <option value="all">Todos os status</option>
@@ -671,7 +670,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           <input
             type="date"
             value={startDateFilter}
-            onChange={e => setStartDateFilter(e.target.value)}
+            onChange={e => {
+              setStartDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
@@ -682,7 +684,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           <input
             type="date"
             value={endDateFilter}
-            onChange={e => setEndDateFilter(e.target.value)}
+            onChange={e => {
+              setEndDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
@@ -994,7 +999,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
               <button
                 type="button"
                 onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                disabled={currentPage === 1}
+                disabled={effectivePage === 1}
                 className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Anterior
@@ -1003,7 +1008,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
                 className="text-xs font-bold text-muted-foreground"
                 aria-live="polite"
               >
-                Página {currentPage} de {totalPages} ·{" "}
+                Página {effectivePage} de {totalPages} ·{" "}
                 {filteredCertificates.length} resultados
               </span>
               <button
@@ -1011,7 +1016,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
                 onClick={() =>
                   setCurrentPage(page => Math.min(totalPages, page + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={effectivePage === totalPages}
                 className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Próxima
@@ -1493,7 +1498,7 @@ function PreviewModal({
       .catch(() => {});
   }, []);
 
-  const generatePreview = async (
+  const generatePreview = useCallback(async (
     templateIdVal: string,
     brandingVal: boolean,
     nameVal: string,
@@ -1531,20 +1536,24 @@ function PreviewModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [cert.userId, cert.courseId, composition]);
 
   useEffect(() => {
-    void generatePreview(
-      selectedTemplateId,
-      includeBranding,
-      customName,
-      customCourse,
-      customLevel,
-      customCpf,
-      customFontSize,
-      customFontColor
-    );
+    const timeout = window.setTimeout(() => {
+      void generatePreview(
+        selectedTemplateId,
+        includeBranding,
+        customName,
+        customCourse,
+        customLevel,
+        customCpf,
+        customFontSize,
+        customFontColor
+      );
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [
+    generatePreview,
     selectedTemplateId,
     includeBranding,
     customName,

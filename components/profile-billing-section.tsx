@@ -99,7 +99,7 @@ export function ProfileBillingSection() {
           ["ID da Sessão / Transação", p.checkoutSessionId],
         ]
       );
-      downloadPdf(bytes, `recibo-compra-curso-${p.course.id}-${Date.now()}.pdf`);
+      downloadPdf(bytes, `recibo-compra-curso-${p.course.id}-${p.checkoutSessionId}.pdf`);
       toast.success("Recibo individual baixado em PDF com sucesso!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao gerar recibo em PDF.");

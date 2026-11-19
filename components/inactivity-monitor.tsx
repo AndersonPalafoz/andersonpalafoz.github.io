@@ -62,10 +62,7 @@ export function InactivityMonitor() {
     }, [status, triggerLogout]);
 
   useEffect(() => {
-    if (status !== "authenticated") {
-      setShowWarning(false);
-      return;
-    }
+    if (status !== "authenticated") return;
 
     const events = ["mousedown", "mousemove", "keydown", "scroll", "touchstart", "click"];
 
@@ -81,10 +78,10 @@ export function InactivityMonitor() {
     });
     window.addEventListener("storage", handlePreferenceChange);
     window.addEventListener("ap:inactivity-changed", handlePreferenceChange);
-
-    resetTimers();
+    const initialTimer = window.setTimeout(resetTimers, 0);
 
     return () => {
+      window.clearTimeout(initialTimer);
       events.forEach(eventName => {
         window.removeEventListener(eventName, handleUserActivity);
       });
@@ -96,7 +93,7 @@ export function InactivityMonitor() {
     };
   }, [resetTimers, showWarning, status]);
 
-  if (!showWarning) return null;
+  if (status !== "authenticated" || !showWarning) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">

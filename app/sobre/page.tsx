@@ -289,6 +289,7 @@ export default function SobrePage() {
         </div>
       </section>
 
+      {/* CTA Section */}
       <section className="border-y border-slate-200 bg-slate-900 px-4 py-14 text-white dark:border-slate-800 sm:px-6 lg:px-16 lg:py-18">
         <div className="mx-auto flex max-w-7xl flex-col gap-7 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-2xl">

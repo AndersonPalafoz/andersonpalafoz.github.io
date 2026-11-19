@@ -53,9 +53,9 @@ export async function POST(
 
     let awardedMedals: string[] = [];
     if (completed) {
-      const module = await getModuleById((await getLessonById(lessonId))?.moduleId ?? 0);
-      if (module) {
-        const courseModules = await db.select({ id: modules.id }).from(modules).where(eq(modules.courseId, module.courseId));
+      const lessonModule = await getModuleById((await getLessonById(lessonId))?.moduleId ?? 0);
+      if (lessonModule) {
+        const courseModules = await db.select({ id: modules.id }).from(modules).where(eq(modules.courseId, lessonModule.courseId));
         const courseModuleIds = courseModules.map((row) => row.id);
         const courseLessons = courseModuleIds.length
           ? await db.select({ id: lessons.id }).from(lessons).where(inArray(lessons.moduleId, courseModuleIds))
@@ -77,9 +77,9 @@ export async function POST(
     let certificate = null;
     if (completed) {
       const lesson = await getLessonById(lessonId);
-      const module = lesson ? await getModuleById(lesson.moduleId) : null;
-      if (module) {
-        const result = await issueCertificateIfEligible(userId, module.courseId);
+      const lessonModule = lesson ? await getModuleById(lesson.moduleId) : null;
+      if (lessonModule) {
+        const result = await issueCertificateIfEligible(userId, lessonModule.courseId);
         certificate = result.certificate;
       }
     }

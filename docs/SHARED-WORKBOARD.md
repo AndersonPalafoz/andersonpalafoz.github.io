@@ -23,6 +23,48 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-018 — Revisão geral do site e do workboard
+
+| Campo | Valor |
+|---|---|
+| Status | `concluída` — revisão realizada; correções recomendadas registradas abaixo |
+| Responsável | v0 |
+| Iniciada em | 2026-11-18 |
+| Branch | `v0/homepage-credibility` |
+| Commit base | `155a77b8c81410914808f27aabe4de352be40d75` |
+| Arquivos principais | `docs/SHARED-WORKBOARD.md`, `app/materiais/page.tsx`, `app/materiais/guias-gramatica.tsx`, `app/api/course-offers/route.ts`, `app/layout.tsx` |
+| Serviços afetados | Neon consultado; nenhum novo dado ou configuração foi alterado nesta revisão |
+| Confirmação necessária | Sim antes de atualizar dependências ou modificar fluxos de produção |
+
+**Escopo e evidências:** revisão da navegação pública, estado do catálogo após arquivamento, biblioteca, proteção de rotas, checagens de qualidade e consistência do quadro. Nove rotas públicas retornaram HTTP 200; `/dashboard`, `/professor` e `/admin` redirecionaram usuários sem sessão para `/login`. A Home foi observada em desktop e mobile. O catálogo `/cursos` agora informa zero cursos publicados, em conformidade com o arquivamento confirmado no Neon: 7 cursos, 2 ofertas/turmas internas e 2 turmas externas arquivadas; os registros dependentes foram preservados.
+
+**Achados prioritários:**
+1. A auditoria inicial reportou 32 vulnerabilidades. Nesta correção, `next` foi atualizado para 16.4.6, `dompurify` para 3.4.18 e `zod` para 4.6.7, com atualizações de dependências transitivas. A auditoria `pnpm audit --prod` ainda reporta 2 vulnerabilidades altas relacionadas a `picomatch`; elas permanecem abertas.
+2. Os botões dos quatro guias de gramática agora ficam desabilitados com aviso explícito: não existem arquivos PDF correspondentes em `public/`, portanto não afirmam mais que baixaram um arquivo ou mostram tamanho/paginação inventados. Foi adicionado metadata específico para `/materiais`.
+3. Após a atualização do Next.js, `pnpm lint` reporta 26 erros e 39 avisos. `pnpm test:unit` reporta 12 falhas e 735 testes aprovados; parte das suítes de integração depende de variáveis/serviços externos e não é coberta por esse comando. As falhas unitárias restantes precisam ser corrigidas antes de considerar a qualidade concluída.
+4. `pnpm check` passou com `NODE_OPTIONS=--max-old-space-size=4096`. `pnpm build` passou com as variáveis de ambiente carregadas e gerou 144 páginas estáticas. O preview de desenvolvimento precisou ser reiniciado após a atualização de Next.js; a verificação visual da rota segue pendente.
+5. `/aulas` redireciona para `/cursos`, diferente da arquitetura documentada que prevê páginas distintas. Confirmar se essa unificação é intencional. O fluxo autenticado de aluno, professor e administração não pôde ser percorrido nesta revisão sem sessão.
+6. O quadro contém tarefas antigas ainda marcadas como `em andamento` ou `em validação`; reconciliar TASK-010 a TASK-017 com o branch e as evidências atuais antes de encerrá-las.
+
+**Próximo passo exato:** revisar as evidências atuais da TASK-019 e reconciliar as tarefas históricas ainda abertas; validar rotas autenticadas em uma sessão autorizada antes do encerramento final.
+
+### TASK-019 — Correções prioritárias da auditoria geral
+
+| Campo | Valor |
+|---|---|
+| Status | `em validação` — build, TypeScript, suíte unitária e auditoria aprovados; lint sem erros e com avisos remanescentes |
+| Responsável | v0 |
+| Iniciada em | 2026-11-18 |
+| Branch | `v0/homepage-credibility` |
+| Commit base | `c67444b` |
+| Arquivos principais | `app/materiais/guias-gramatica.tsx`, `app/materiais/layout.tsx`, rotas de aula, componentes com erros de lint, `package.json`, `pnpm-lock.yaml` |
+
+**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. O Vitest foi atualizado para 4.1.12; corrigidos contratos de teste que apontavam para o arquivo antigo da homepage e para textos/classes obsoletos; corrigido o mock construtor de `OAuth2`; incluído skeleton acessível no carregamento de speaking; aplicada a superfície semântica do design system ao relatório docente; e o tema padrão sem preferência salva agora respeita o tema do sistema. A estimativa do ZIP não chama `setState` sincronamente no efeito. Depoimentos não foram inventados: a página Sobre não publica testemunhos sem fonte real e autorização.
+
+**Validação em 2026-11-19:** `pnpm audit --prod` e `pnpm audit --audit-level=moderate` passaram sem vulnerabilidades conhecidas. `pnpm check` passou usando heap ampliado; `pnpm build` passou com as variáveis de ambiente do projeto carregadas. `pnpm lint` passou sem erros, com 36 avisos. A suíte unitária completa passou: 230 arquivos e 747 testes. A homepage foi verificada no navegador no viewport atual de 1216×597, em modo escuro; o painel docente protegido redirecionou para login, então as telas autenticadas não foram verificadas visualmente sem sessão autorizada.
+
+**Próximo passo:** reconciliar as tarefas históricas ainda abertas no workboard e fazer a validação visual das rotas protegidas em uma sessão autorizada.
+
 ### TASK-017 — Detalhe de turma e gestão de alunos funcionais
 
 | Campo | Valor |

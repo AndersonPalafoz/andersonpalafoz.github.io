@@ -71,13 +71,17 @@ export function CertificateTemplateManager() {
   const CANVAS_HEIGHT = 500;
 
   useEffect(() => {
-    setCustomElements(composition.elements);
-    setFieldMappings(composition.fieldMappings);
-    setFieldMappingsText(JSON.stringify(composition.fieldMappings, null, 2));
+    const timeout = window.setTimeout(() => {
+      setCustomElements(composition.elements);
+      setFieldMappings(composition.fieldMappings);
+      setFieldMappingsText(JSON.stringify(composition.fieldMappings, null, 2));
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [composition.elements, composition.fieldMappings]);
 
   useEffect(() => {
-    setActivePreset(visualVariant);
+    const timeout = window.setTimeout(() => setActivePreset(visualVariant), 0);
+    return () => window.clearTimeout(timeout);
   }, [visualVariant]);
 
   useEffect(() => {
@@ -250,24 +254,34 @@ export function CertificateTemplateManager() {
   }
 
   useEffect(() => {
-    void loadTemplates();
+    const timeout = window.setTimeout(() => void loadTemplates(), 0);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    setFieldMappingsText(JSON.stringify(fieldMappings, null, 2));
+    const timeout = window.setTimeout(() => {
+      setFieldMappingsText(JSON.stringify(fieldMappings, null, 2));
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [fieldMappings]);
 
   useEffect(() => {
-    setPreviewName(sampleData.studentName);
-    setPreviewCourse(sampleData.courseTitle);
-    setPreviewCode(sampleData.certificateCode);
-    setPreviewDate(sampleData.issuedAt);
+    const timeout = window.setTimeout(() => {
+      setPreviewName(sampleData.studentName);
+      setPreviewCourse(sampleData.courseTitle);
+      setPreviewCode(sampleData.certificateCode);
+      setPreviewDate(sampleData.issuedAt);
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [sampleData]);
 
   useEffect(() => {
-    setFieldMappings(parseCertificateComposition(composition).fieldMappings);
-    setCustomElements(parseCertificateComposition(composition).elements);
-    setFieldMappingsText(JSON.stringify(parseCertificateComposition(composition).fieldMappings, null, 2));
+    const timeout = window.setTimeout(() => {
+      setFieldMappings(parseCertificateComposition(composition).fieldMappings);
+      setCustomElements(parseCertificateComposition(composition).elements);
+      setFieldMappingsText(JSON.stringify(parseCertificateComposition(composition).fieldMappings, null, 2));
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [composition]);
 
   function handleCategoryChange(value: "internal" | "external") {

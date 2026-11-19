@@ -66,16 +66,11 @@ export function EnrollButton({
       : [],
     [offers, offersEnabled]
   );
-  const selectedOffer = availableOffers.find((offer) => offer.id === selectedOfferId) ?? null;
+  const effectiveSelectedOfferId = initialOfferId && availableOffers.some((offer) => offer.id === initialOfferId)
+    ? initialOfferId
+    : availableOffers.some((offer) => offer.id === selectedOfferId) ? selectedOfferId : null;
+  const selectedOffer = availableOffers.find((offer) => offer.id === effectiveSelectedOfferId) ?? null;
   const hasOfferContext = availableOffers.length > 0;
-
-  useEffect(() => {
-    if (initialOfferId && availableOffers.some((offer) => offer.id === initialOfferId)) {
-      setSelectedOfferId(initialOfferId);
-    } else if (selectedOfferId && !availableOffers.some((offer) => offer.id === selectedOfferId)) {
-      setSelectedOfferId(null);
-    }
-  }, [availableOffers, initialOfferId, selectedOfferId]);
 
   useEffect(() => {
     async function checkEnrollment() {
@@ -91,8 +86,8 @@ export function EnrollButton({
           const found = list.some((item) => {
             const sameCourse = item.courseId === courseId || item.course?.id === courseId;
             if (!sameCourse) return false;
-            if (!selectedOfferId) return true;
-            return item.offerId === selectedOfferId || item.courseOfferId === selectedOfferId || item.offerIds?.includes(selectedOfferId) === true;
+            if (!effectiveSelectedOfferId) return true;
+            return item.offerId === effectiveSelectedOfferId || item.courseOfferId === effectiveSelectedOfferId || item.offerIds?.includes(effectiveSelectedOfferId) === true;
           });
           setIsEnrolled(Boolean(found));
         }
@@ -103,7 +98,7 @@ export function EnrollButton({
       }
     }
     void checkEnrollment();
-  }, [status, courseId, selectedOfferId]);
+  }, [status, courseId, effectiveSelectedOfferId]);
 
   const handleEnroll = async () => {
     if (status === "unauthenticated") {
@@ -111,7 +106,7 @@ export function EnrollButton({
       return;
     }
     if (status !== "authenticated") return;
-    if (requireOfferSelection && hasOfferContext && !selectedOfferId) {
+    if (requireOfferSelection && hasOfferContext && !effectiveSelectedOfferId) {
       setMessage("Selecione uma oferta/coorte antes de continuar.");
       toast.error("Selecione uma oferta antes de continuar.");
       return;
@@ -119,7 +114,7 @@ export function EnrollButton({
 
     const enrollmentPayload = {
       courseId,
-      ...(selectedOfferId ? { offerId: selectedOfferId } : {}),
+      ...(effectiveSelectedOfferId ? { offerId: effectiveSelectedOfferId } : {}),
     };
 
     try {
@@ -167,7 +162,7 @@ export function EnrollButton({
           <span>{selectedOffer ? "Matrícula Ativa nesta Oferta" : "Matrícula Ativa neste Curso"}</span>
         </div>
         <Link
-          href={resumeLessonId ? `/cursos/${courseId}/aulas/${resumeLessonId}${selectedOfferId ? `?offerId=${selectedOfferId}` : ""}` : `/cursos/${courseId}${selectedOfferId ? `?offerId=${selectedOfferId}` : ""}`}
+          href={resumeLessonId ? `/cursos/${courseId}/aulas/${resumeLessonId}${effectiveSelectedOfferId ? `?offerId=${effectiveSelectedOfferId}` : ""}` : `/cursos/${courseId}${effectiveSelectedOfferId ? `?offerId=${effectiveSelectedOfferId}` : ""}`}
           className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-6 py-3 text-sm font-bold text-white shadow-md shadow-red-600/20 transition hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2"
           aria-label={resumeLessonId ? "Continuar na próxima aula pendente" : "Abrir o curso"}
         >
@@ -187,7 +182,7 @@ export function EnrollButton({
           <div className="relative">
             <select
               id={`course-offer-${courseId}`}
-              value={selectedOfferId ?? ""}
+              value={effectiveSelectedOfferId ?? ""}
               onChange={(event) => setSelectedOfferId(event.target.value ? Number(event.target.value) : null)}
               disabled={loading}
               className="min-h-12 w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 pr-11 text-sm font-semibold text-gray-900 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
@@ -212,7 +207,7 @@ export function EnrollButton({
       <button
         type="button"
         onClick={handleEnroll}
-        disabled={loading || status === "loading" || (requireOfferSelection && hasOfferContext && !selectedOfferId)}
+        disabled={loading || status === "loading" || (requireOfferSelection && hasOfferContext && !effectiveSelectedOfferId)}
         className="inline-flex min-h-12 items-center gap-2 rounded-xl bg-red-600 px-8 py-3.5 font-bold text-white shadow-md shadow-red-600/20 transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading && <Loader2 size={18} className="animate-spin" aria-hidden="true" />}

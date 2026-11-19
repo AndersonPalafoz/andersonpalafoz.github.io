@@ -45,7 +45,7 @@ describe("teacher materials ZIP selector", () => {
     expect(source).toContain('"/api/professor/materials-size"');
     expect(source).toContain("Tamanho total estimado");
     expect(source).toContain("Calculando…");
-    expect(source).toContain("sizeEstimate.exceedsLimit");
+    expect(source).toContain("currentSizeEstimate.exceedsLimit");
     expect(source).toContain("40 MB");
   });
 

@@ -940,9 +940,9 @@ export async function getResumeLesson(userId: number, courseId: number) {
     orderBy: asc(schema.modules.order),
   });
   const lessonRows = [] as Array<typeof schema.lessons.$inferSelect>;
-  for (const module of courseModules) {
+  for (const courseModule of courseModules) {
     const moduleLessons = await db.query.lessons.findMany({
-      where: eq(schema.lessons.moduleId, module.id),
+      where: eq(schema.lessons.moduleId, courseModule.id),
       orderBy: asc(schema.lessons.order),
     });
     lessonRows.push(...moduleLessons);

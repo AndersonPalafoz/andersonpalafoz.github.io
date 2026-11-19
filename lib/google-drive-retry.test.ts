@@ -7,7 +7,7 @@ const driveState = vi.hoisted(() => ({
 
 vi.mock("googleapis", () => ({
   google: {
-    auth: { OAuth2: vi.fn(() => ({ setCredentials: vi.fn() })) },
+    auth: { OAuth2: vi.fn(function MockOAuth2() { return { setCredentials: vi.fn() }; }) },
     drive: vi.fn(() => ({ files: { list: driveState.list, create: driveState.create } })),
   },
 }));

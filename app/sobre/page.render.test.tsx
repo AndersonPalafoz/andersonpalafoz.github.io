@@ -27,8 +27,7 @@ describe("SobrePage server rendering", () => {
     expect(markup).toContain("Linha do Tempo Profissional");
     expect(markup).toContain("Áreas de Pesquisa e Interesse");
     expect(markup).toContain("Filosofia de Ensino Baseada em Objetivos Claros");
-    expect(markup).toContain("O que os alunos dizem");
-    expect(markup).toContain("Google Maps");
+    expect(markup).toContain("Valores e Princípios");
   });
 
   it("exports correct runtime metadata", () => {

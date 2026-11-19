@@ -160,7 +160,7 @@ describe("contrato da exportação de relatórios acadêmicos de turmas externas
     expect(source).toContain("Reprovados por nota (regra da turma)");
     expect(source).toContain("Reprovados por falta (regra da turma)");
     expect(source).toContain("Relatório CSV");
-    expect(source).toContain("Relatório PDF");
+    expect(source).toContain("Relatório acadêmico PDF");
     expect(source).toContain("Relatório acadêmico CSV");
     expect(source).toContain("Relatório acadêmico PDF");
   });

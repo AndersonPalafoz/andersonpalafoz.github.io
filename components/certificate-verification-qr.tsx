@@ -11,24 +11,22 @@ type CertificateVerificationQrProps = {
 };
 
 export function CertificateVerificationQr({ code, compact = false }: CertificateVerificationQrProps) {
-  const [src, setSrc] = useState<string | null>(null);
+  const [generated, setGenerated] = useState<{ code: string; compact: boolean; src: string | null } | null>(null);
+  const src = generated && generated.code === code && generated.compact === compact ? generated.src : null;
   const verificationUrl = code ? getCertificateVerificationUrl(code, typeof window !== "undefined" ? window.location.origin + "/verificar" : undefined) : null;
 
   useEffect(() => {
     let active = true;
-    if (!code) {
-      setSrc(null);
-      return () => { active = false; };
-    }
+    if (!code) return () => { active = false; };
     void QRCode.toDataURL(getCertificateVerificationUrl(code), {
       errorCorrectionLevel: "M",
       margin: 1,
       width: compact ? 112 : 148,
       color: { dark: "#111827", light: "#ffffff" },
     }).then(value => {
-      if (active) setSrc(value);
+      if (active) setGenerated({ code, compact, src: value });
     }).catch(() => {
-      if (active) setSrc(null);
+      if (active) setGenerated({ code, compact, src: null });
     });
     return () => { active = false; };
   }, [code, compact]);
