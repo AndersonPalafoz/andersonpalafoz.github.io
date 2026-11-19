@@ -23,6 +23,35 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-020 — Remediação dos achados da auditoria de segurança
+
+| Campo | Valor |
+|---|---|
+| Status | `em andamento` — auditoria registrada; iniciando pela autorização das sessões e presenças |
+| Responsável | v0 |
+| Iniciada em | 2026-11-19 |
+| Branch | `v0/github-para-v0-61b8c97f` |
+| Commit base | `0fbdf0e` |
+| Arquivos principais | `app/api/admin/sessions/route.ts`, `app/api/auth/forgot-password/route.ts`, `app/api/contact/route.ts`, `app/api/scheduled/cleanup-trash/route.ts`, `next.config.ts`, `middleware.ts`, `.github/workflows/ci.yml` |
+| Serviços afetados | Nenhum serviço externo alterado nesta etapa |
+| Confirmação necessária | Não para correções locais; qualquer mudança de configuração/serviço externo será registrada antes de aplicar |
+
+**Achados registrados para remediação:**
+1. **Alto — autorização por oferta/turma:** `app/api/admin/sessions/route.ts` permite que qualquer professor autenticado consulte sessões, alunos e presenças em escopo global e altere sessões/registros sem verificar a oferta atribuída. Corrigir primeiro, verificando vínculo explícito do professor e escopo de estudantes.
+2. **Médio — recuperação de senha:** `app/api/auth/forgot-password/route.ts` usa o cabeçalho `Origin` para construir o link de redefinição. Usar origem canônica configurada no servidor e validar que seja HTTPS em produção.
+3. **Médio — contato público:** `app/api/contact/route.ts` não limita tamanho/formato de campos nem frequência de envio. Adicionar validação estrita e mitigação de abuso compatível com a infraestrutura disponível.
+4. **Baixo — otimizador de imagens:** `next.config.ts` aceita qualquer host HTTPS. Limitar aos domínios realmente usados, incluindo mídia Blob e miniaturas do YouTube, após conferir usos.
+5. **Confiabilidade — build/CI:** `next.config.ts` ignora erros TypeScript e `.github/workflows/ci.yml` não executa lint. Remover a supressão e incluir lint no CI após corrigir qualquer erro acionado.
+6. **Hardening — cabeçalhos:** `next.config.ts` não configura cabeçalhos base de segurança; adicionar os compatíveis com as funcionalidades do site, sem introduzir CSP bloqueante sem inventário de origens.
+7. **Hardening — rota agendada:** `app/api/scheduled/cleanup-trash/route.ts` devolve `error.message` e `stack` ao cliente; manter detalhes apenas nos logs e responder com mensagem genérica.
+8. **Compatibilidade — Next.js 16:** `middleware.ts` usa a convenção depreciada; avaliar e migrar para `proxy.ts` sem alterar os controles de acesso.
+
+**Progresso:** a API agora restringe sessões por oferta para professores, restringe cursos/alunos/presenças retornados ao mesmo conjunto autorizado, exige acesso à oferta em criação/edição/exclusão e valida que cada aluno marcado esteja matriculado naquela oferta. Administradores mantêm acesso global. Adicionados testes cobrindo a negação de criação, edição e exclusão fora do escopo.
+
+**Validação em 2026-11-19:** `pnpm run check`, ESLint focado nos arquivos alterados, `git diff --check` e `pnpm exec vitest run app/api/admin/sessions/route.test.ts --reporter=dot` passaram; 3 testes de autorização aprovados. Não foram executados ainda build de produção, suíte completa, nem verificação específica de GET com professor.
+
+**Próximo passo exato:** adicionar cobertura de GET e de presença válida/inválida; em seguida tratar origem canônica do link de redefinição e validação/limites do formulário público de contato. Permanecem pendentes cabeçalhos, allowlist de imagens, lint no CI, remoção do `ignoreBuildErrors`, migração para `proxy.ts` e resposta sem stack na rota agendada.
+
 ### TASK-018 — Revisão geral do site e do workboard
 
 | Campo | Valor |
