@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import { useCertificateWorkspace } from "@/components/certificate-workspace-context";
 import {
   CheckCircle2,
@@ -113,7 +113,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
   const [unregisteredBranding, setUnregisteredBranding] = useState(true);
   const [unregisteredIssuing, setUnregisteredIssuing] = useState(false);
 
-  async function loadCertificates() {
+  const loadCertificates = useCallback(async () => {
     setLoading(true);
     setLoadingError(null);
     try {
@@ -134,18 +134,18 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           payload.error || "Não foi possível carregar os certificados."
         );
       setCertificates(payload.certificates || []);
+      setLoading(false);
     } catch (error) {
       setLoadingError(
         error instanceof Error
           ? error.message
           : "Não foi possível carregar os certificados."
       );
-    } finally {
       setLoading(false);
     }
-  }
+  }, [audience]);
 
-  async function loadTemplateOptions() {
+  const loadTemplateOptions = useCallback(async () => {
     try {
       const response = await fetch("/api/admin/certificate-templates", {
         cache: "no-store",
@@ -155,12 +155,15 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     } catch {
       // A seleção é complementar; a emissão padrão continua disponível.
     }
-  }
+  }, []);
 
   useEffect(() => {
-    void loadCertificates();
-    void loadTemplateOptions();
-  }, []);
+    const timeout = window.setTimeout(() => {
+      void loadCertificates();
+      void loadTemplateOptions();
+    }, 0);
+    return () => window.clearTimeout(timeout);
+  }, [loadCertificates, loadTemplateOptions]);
 
   function openIssueModal(certificate: CertificateItem) {
     setIssueCert(certificate);
@@ -1483,7 +1486,7 @@ function PreviewModal({
       .catch(() => {});
   }, []);
 
-  const generatePreview = async (
+  const generatePreview = useCallback(async (
     templateIdVal: string,
     brandingVal: boolean,
     nameVal: string,
@@ -1521,20 +1524,24 @@ function PreviewModal({
     } finally {
       setLoading(false);
     }
-  };
+  }, [cert.userId, cert.courseId, composition]);
 
   useEffect(() => {
-    void generatePreview(
-      selectedTemplateId,
-      includeBranding,
-      customName,
-      customCourse,
-      customLevel,
-      customCpf,
-      customFontSize,
-      customFontColor
-    );
+    const timeout = window.setTimeout(() => {
+      void generatePreview(
+        selectedTemplateId,
+        includeBranding,
+        customName,
+        customCourse,
+        customLevel,
+        customCpf,
+        customFontSize,
+        customFontColor
+      );
+    }, 0);
+    return () => window.clearTimeout(timeout);
   }, [
+    generatePreview,
     selectedTemplateId,
     includeBranding,
     customName,
