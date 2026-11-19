@@ -70,9 +70,21 @@ describe("E2E API de ofertas e coortes", () => {
   it("cria oferta como administrador e retorna 201", async () => {
     mocks.getServerSession.mockResolvedValue(adminSession);
     mocks.userFindFirst.mockResolvedValue({ id: 1, email: adminSession.user.email, role: "admin" });
+    const startDate = new Date("2026-02-01");
+    const endDate = new Date("2026-06-30");
     const response = await listPOST(new NextRequest("http://localhost/api/course-offers", {
       method: "POST",
-      body: JSON.stringify({ courseId: 12, offerName: "Matutino — 2026.2", academicTerm: "2026.2", ownerTeacherId: 7 }),
+      body: JSON.stringify({
+        courseId: 12,
+        offerName: "Matutino — 2026.2",
+        academicTerm: "2026.2",
+        ownerTeacherId: 7,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        classDays: "seg,qua,sex",
+        classTime: "09:00-10:30",
+        modality: "Presencial",
+      }),
     }));
     expect(response.status).toBe(201);
     expect(mocks.createCourseOffer).toHaveBeenCalledWith(expect.objectContaining({ courseId: 12, ownerTeacherId: 7 }));

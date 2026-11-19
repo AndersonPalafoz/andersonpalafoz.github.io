@@ -52,18 +52,18 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em validação` — build e TypeScript passaram; lint, testes e auditoria de dependências ainda têm bloqueios |
+| Status | `em validação` — build, TypeScript e auditoria de dependências aprovados; lint sem erros, com avisos; suíte unitária ainda tem falhas preexistentes |
 | Responsável | v0 |
 | Iniciada em | 2026-11-18 |
 | Branch | `v0/homepage-credibility` |
 | Commit base | `c67444b` |
 | Arquivos principais | `app/materiais/guias-gramatica.tsx`, `app/materiais/layout.tsx`, rotas de aula, componentes com erros de lint, `package.json`, `pnpm-lock.yaml` |
 
-**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. Corrigidos nomes reservados `module` e aspas JSX em algumas rotas/componentes.
+**Implementado:** removida a falsa confirmação de download dos guias; como os PDFs não existem no repositório, as ações agora indicam indisponibilidade. `/materiais` recebeu metadados próprios. Dependências diretas vulneráveis e parte das transitivas foram atualizadas. Nesta continuação, o Vitest foi atualizado para 4.1.12, corrigido o reset da paginação ao trocar filtros, atualizados os contratos correspondentes da paginação e da página Sobre, atualizados os dados de entrada obrigatórios do teste de criação de ofertas, e corrigido o erro de lint por atualização síncrona de estado no efeito de estimativa de tamanho do ZIP. Depoimentos inventados foram evitados: a página Sobre não publica testemunhos sem fonte real e autorização.
 
-**Validação:** build de produção e TypeScript passaram. O lint ainda apresenta 26 erros e 39 avisos; `pnpm test:unit` ainda tem 14 falhas (733 testes passam); `pnpm audit --prod` ainda aponta 2 vulnerabilidades altas de `picomatch`. A verificação visual pós-atualização do Next.js ainda precisa ser concluída.
+**Validação em 2026-11-19:** `pnpm audit --prod` e `pnpm audit --audit-level=moderate` passaram sem vulnerabilidades conhecidas. `pnpm check` passou usando heap ampliado; `pnpm build` passou com as variáveis de ambiente do projeto carregadas. `pnpm lint` passou sem erros, com 36 avisos preexistentes. Os testes focados da paginação, renderização da página Sobre e API de ofertas passaram (17/17). A suíte unitária completa ainda registra 13 falhas e 734 aprovações em 747 testes; as falhas restantes são contratos/testes incompatíveis em relatórios, navegação, níveis, Google Drive, exportação ZIP e assets, e exigem triagem individual. A homepage foi verificada no navegador em viewport desktop escuro de 1216×597.
 
-**Próximo passo:** resolver os erros restantes de lint/testes e investigar uma atualização transitiva compatível para `picomatch`; depois executar auditoria, suíte de testes, lint, build e verificação no navegador novamente.
+**Próximo passo:** investigar e corrigir as 13 falhas restantes da suíte unitária sem enfraquecer a cobertura nem introduzir depoimentos/dados não comprovados; depois repetir a suíte completa e fazer a verificação visual das rotas afetadas antes de encerrar.
 
 ### TASK-017 — Detalhe de turma e gestão de alunos funcionais
 

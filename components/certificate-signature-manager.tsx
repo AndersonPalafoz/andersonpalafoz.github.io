@@ -637,7 +637,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
             type="text"
             placeholder="Nome, CPF, e-mail ou código..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
@@ -647,7 +650,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           </label>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={e => {
+              setStatusFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           >
             <option value="all">Todos os status</option>
@@ -664,7 +670,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           <input
             type="date"
             value={startDateFilter}
-            onChange={e => setStartDateFilter(e.target.value)}
+            onChange={e => {
+              setStartDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
@@ -675,7 +684,10 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
           <input
             type="date"
             value={endDateFilter}
-            onChange={e => setEndDateFilter(e.target.value)}
+            onChange={e => {
+              setEndDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full h-10 rounded-xl border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-red-600"
           />
         </div>
