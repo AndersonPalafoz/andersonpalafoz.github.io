@@ -328,12 +328,9 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     }
   }
 
-  const visibleCertificates = useMemo(
-    () => audience === "teacher"
-      ? certificates.filter(certificate => !isTechnicalCourse({ title: certificate.courseTitle }))
-      : certificates,
-    [audience, certificates]
-  );
+  const visibleCertificates = audience === "teacher"
+    ? certificates.filter(certificate => !isTechnicalCourse({ title: certificate.courseTitle }))
+    : certificates;
 
   const filteredCertificates = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
@@ -367,22 +364,15 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
     });
   }, [visibleCertificates, searchQuery, statusFilter, startDateFilter, endDateFilter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, statusFilter, startDateFilter, endDateFilter]);
-
   const totalPages = Math.max(
     1,
     Math.ceil(filteredCertificates.length / certificatesPerPage)
   );
+  const effectivePage = Math.min(currentPage, totalPages);
   const paginatedCertificates = filteredCertificates.slice(
-    (currentPage - 1) * certificatesPerPage,
-    currentPage * certificatesPerPage
+    (effectivePage - 1) * certificatesPerPage,
+    effectivePage * certificatesPerPage
   );
-
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
 
   const toggleSelectAll = () => {
     const allFilteredSelected =
@@ -994,7 +984,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
               <button
                 type="button"
                 onClick={() => setCurrentPage(page => Math.max(1, page - 1))}
-                disabled={currentPage === 1}
+                disabled={effectivePage === 1}
                 className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Anterior
@@ -1003,7 +993,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
                 className="text-xs font-bold text-muted-foreground"
                 aria-live="polite"
               >
-                Página {currentPage} de {totalPages} ·{" "}
+                Página {effectivePage} de {totalPages} ·{" "}
                 {filteredCertificates.length} resultados
               </span>
               <button
@@ -1011,7 +1001,7 @@ export function CertificateSignatureManager({ audience = "teacher" }: { audience
                 onClick={() =>
                   setCurrentPage(page => Math.min(totalPages, page + 1))
                 }
-                disabled={currentPage === totalPages}
+                disabled={effectivePage === totalPages}
                 className="rounded-xl border border-border px-4 py-2 text-xs font-bold text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Próxima
