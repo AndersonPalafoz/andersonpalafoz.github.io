@@ -14,13 +14,13 @@ describe("performance asset contract", () => {
   });
 
   it("uses responsive Next image optimization for the public brand assets", () => {
-    const home = readFileSync(resolve(process.cwd(), "app/page.tsx"), "utf8");
+    const home = readFileSync(resolve(process.cwd(), "components/homepage-hero.tsx"), "utf8");
     const navbar = readFileSync(resolve(process.cwd(), "components/navbar.tsx"), "utf8");
     const footer = readFileSync(resolve(process.cwd(), "components/footer.tsx"), "utf8");
     const config = readFileSync(resolve(process.cwd(), "next.config.ts"), "utf8");
 
     expect(home).toContain('<Image');
-    expect(home).toContain('sizes="(max-width: 1024px) 80vw, 32rem"');
+    expect(home).toContain('sizes="(max-width: 899px) 100vw, 58vw"');
     expect(navbar).toContain("priority");
     expect(footer).toContain('<Image');
     expect(config).toContain('formats: ["image/avif", "image/webp"]');

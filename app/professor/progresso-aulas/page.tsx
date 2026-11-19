@@ -88,8 +88,9 @@ export default function ProfessorProgressSpeakingPage() {
   if (loading && !data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-12 dark:bg-slate-950" aria-busy="true">
-        <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-          <p className="text-sm font-bold text-slate-600 dark:text-slate-300">Carregando painel de progresso...</p>
+        <div className="surface-card h-64 animate-pulse flex w-full max-w-3xl items-center justify-center rounded-3xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <p className="sr-only">Carregando painel de progresso...</p>
+          <div className="w-full space-y-4 px-8" aria-hidden="true"><div className="h-5 w-2/5 rounded bg-muted/50" /><div className="h-4 w-full rounded bg-muted/50" /><div className="h-4 w-4/5 rounded bg-muted/50" /></div>
         </div>
       </div>
     );

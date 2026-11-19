@@ -20,7 +20,8 @@ describe("Regressão da API de turmas externas", () => {
   });
 
   it("carrega a chamada antes de serializar cada turma", () => {
-    expect(routeSource).toContain("const attendance = await db.select().from(externalClassAttendance)");
+    expect(routeSource).toContain("const legacyAttendance = await db.select().from(externalClassAttendance)");
+    expect(routeSource).toContain("const attendance = [...normalizedOfferAttendance, ...legacyAttendance.map(normalizeAttendanceRow)");
     expect(routeSource).toContain("attendance,");
   });
 
