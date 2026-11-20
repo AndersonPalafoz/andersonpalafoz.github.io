@@ -1,27 +1,9 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { contactMessages } from "@/drizzle/schema";
+import { allowContactRequest } from "@/lib/contact-rate-limit";
 
 const MAX_BODY_BYTES = 16_384;
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const RATE_LIMIT_MAX = 5;
-const contactAttempts = new Map<string, number[]>();
-
-function allowContactRequest(key: string, now = Date.now()) {
-  const recent = (contactAttempts.get(key) || []).filter((timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS);
-  if (recent.length >= RATE_LIMIT_MAX) {
-    contactAttempts.set(key, recent);
-    return false;
-  }
-  recent.push(now);
-  contactAttempts.set(key, recent);
-  if (contactAttempts.size > 10_000) {
-    for (const [storedKey, timestamps] of contactAttempts) {
-      if (timestamps.every((timestamp) => now - timestamp >= RATE_LIMIT_WINDOW_MS)) contactAttempts.delete(storedKey);
-    }
-  }
-  return true;
-}
 
 export async function POST(req: Request) {
   try {
@@ -59,10 +41,9 @@ export async function POST(req: Request) {
     }
 
     const forwardedFor = req.headers.get("x-forwarded-for");
-    const forwardedParts = forwardedFor?.split(",");
-    const forwardedIp = forwardedParts?.[forwardedParts.length - 1]?.trim();
+    const forwardedIp = forwardedFor?.split(",")[0]?.trim();
     const ip = req.headers.get("x-real-ip")?.trim() || forwardedIp || "unknown";
-    if (!allowContactRequest(ip)) {
+    if (!(await allowContactRequest(ip))) {
       return NextResponse.json({ error: "Limite de envios atingido. Tente novamente mais tarde." }, { status: 429 });
     }
 
