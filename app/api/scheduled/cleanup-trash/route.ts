@@ -35,12 +35,11 @@ export async function POST(request: Request) {
       deletedMaterials: expiredMaterials.length,
       timestamp: new Date().toISOString(),
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("[Trash Cleanup Cron Error]", error);
     return NextResponse.json(
       {
-        error: error.message || "Erro interno ao executar limpeza da lixeira.",
-        stack: error.stack,
+        error: "Erro interno ao executar limpeza da lixeira.",
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
