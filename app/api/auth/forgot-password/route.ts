@@ -8,6 +8,32 @@ import { isPasswordAcceptable, hashPassword } from "@/lib/password";
 
 function hashToken(token: string) { return createHash("sha256").update(token).digest("hex"); }
 
+function getCanonicalOrigin() {
+  const configuredOrigin = process.env.NEXTAUTH_URL
+    || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null)
+    || (process.env.NODE_ENV !== "production" ? "http://localhost:3000" : null);
+  if (!configuredOrigin) return null;
+
+  try {
+    const url = new URL(configuredOrigin);
+    const allowedProtocol = url.protocol === "https:" || (process.env.NODE_ENV !== "production" && url.protocol === "http:");
+    if (url.username || url.password || !allowedProtocol) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character] || character);
+}
+
 export async function POST(request: Request) {
   try {
     const { email } = await request.json();
@@ -17,9 +43,18 @@ export async function POST(request: Request) {
     if (user?.email && canRecoverExternalPassword) {
       const token = randomBytes(32).toString("hex");
       await db.insert(passwordResetTokens).values({ userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(Date.now() + 30 * 60 * 1000) });
-      const origin = request.headers.get("origin") || process.env.NEXTAUTH_URL || "http://localhost:3000";
-      const resetUrl = `${origin}/redefinir-senha?token=${token}`;
-      await sendEmailNotification({ to: user.email, subject: "Redefinição segura de senha", htmlContent: `<p>Olá, ${user.name || "usuário"}.</p><p>Use o link abaixo para redefinir sua senha. Ele expira em 30 minutos e só pode ser usado uma vez.</p><p><a href="${resetUrl}">${resetUrl}</a></p>` });
+      const origin = getCanonicalOrigin();
+      if (origin) {
+        const resetUrl = new URL("/redefinir-senha", origin);
+        resetUrl.searchParams.set("token", token);
+        const safeName = escapeHtml(user.name || "usuário");
+        const safeResetUrl = escapeHtml(resetUrl.toString());
+        await sendEmailNotification({
+          to: user.email,
+          subject: "Redefinição segura de senha",
+          htmlContent: `<p>Olá, ${safeName}.</p><p>Use o link abaixo para redefinir sua senha. Ele expira em 30 minutos e só pode ser usado uma vez.</p><p><a href="${safeResetUrl}">${safeResetUrl}</a></p>`,
+        });
+      }
     }
     return NextResponse.json({ accepted: true, message: "Se o e-mail estiver cadastrado, enviaremos instruções de recuperação." });
   } catch (error) {

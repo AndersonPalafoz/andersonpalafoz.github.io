@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthSecret } from "@/lib/auth-secret";
 import { canAccessAdminPortal, canAccessProfessorPortal } from "@/lib/role-capabilities";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = await getToken({
     req: request,
     secret: getAuthSecret(),
