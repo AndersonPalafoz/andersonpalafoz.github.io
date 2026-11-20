@@ -29,7 +29,7 @@ export function HomepageHero({ title }: { title: string }) {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => track("homepage_cta_click", { action: "whatsapp", placement: "hero" })}
-                className="inline-flex min-h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-white px-3 text-sm font-bold text-[#B91C1C] transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#D62828]"
+                className="homepage-hero-primary-cta inline-flex min-h-12 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-white px-3 text-sm font-bold text-[#B91C1C] transition-colors hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#D62828]"
               >
                 Fale no WhatsApp
                 <MessageCircle size={17} aria-hidden="true" />

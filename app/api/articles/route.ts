@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { articles } from "@/drizzle/schema";
+import { getPublicArticles } from "@/lib/public-content";
 
 export async function GET() {
-  try {
-    const articleList = await db.select().from(articles).limit(100);
-    return NextResponse.json({ articles: articleList });
-  } catch (error) {
-    console.error("Error fetching articles:", error);
+  const { articles, available } = await getPublicArticles(100);
+
+  if (!available) {
     return NextResponse.json(
-      { error: "Failed to fetch articles" },
-      { status: 500 }
+      { error: "Conteúdo temporariamente indisponível." },
+      { status: 503 },
     );
   }
+
+  return NextResponse.json({ articles });
 }
