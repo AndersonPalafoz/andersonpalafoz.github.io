@@ -280,6 +280,7 @@ export const articles = pgTable("articles", {
   published: timestamp("published"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  deletedAt: timestamp("deletedAt"),
 });
 
 export type Article = typeof articles.$inferSelect;

@@ -4,7 +4,7 @@ import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, ArrowUpRight } from
 import { BRAND_ASSETS } from "@/lib/brand-assets";
 
 const navigation = [
-  ["Home", "/"],
+  ["Início", "/"],
   ["Sobre", "/sobre"],
   ["Cursos", "/cursos"],
   ["Materiais", "/materiais"],

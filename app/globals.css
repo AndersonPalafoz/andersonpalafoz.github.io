@@ -885,11 +885,18 @@ body {
   }
 }
 
-/* A logo do rodapé precisa manter fundo claro sempre (a marca é desenhada para
-   fundo branco), mesmo com a regra global ".dark .bg-white" forçando fundo
-   escuro em qualquer elemento com a classe "bg-white". */
-.dark .footer-logo-badge {
+/* A marca do rodapé e o CTA do hero precisam manter superfícies claras no dark mode. */
+.dark .footer-logo-badge,
+.dark .homepage .homepage-hero-primary-cta {
   background-color: #ffffff !important;
+}
+
+.dark .homepage .homepage-hero-primary-cta {
+  color: #b91c1c !important;
+}
+
+.dark .homepage .homepage-hero-primary-cta:hover {
+  background-color: #fef2f2 !important;
 }
 
 .external-classes-page .external-class-filters > div:not(:last-child) {

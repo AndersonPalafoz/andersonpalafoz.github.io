@@ -35,14 +35,27 @@ describe("homepage content contract", () => {
   const experience = read("components/homepage-experience.tsx");
   const hero = read("components/homepage-hero.tsx");
   const credibility = read("components/homepage-credibility-strip.tsx");
+  const footer = read("components/footer.tsx");
 
   it("passes published CMS hero copy to the client component and keeps a fallback", () => {
     expect(page).toContain('getCmsContent("home", "hero_title"');
     expect(page).toContain("heroTitle={heroTitle}");
-    expect(page).toContain('||\n    "Aprenda inglês com clareza, confiança e propósito."');
+    expect(page).toContain('cmsHeroTitle.trim() || "Aprenda inglês com clareza, confiança e propósito."');
     expect(experience).toContain("<HomepageHero title={heroTitle} />");
     expect(hero).toContain("HomepageHero({ title }: { title: string })");
     expect(hero).toContain("{title}");
+  });
+
+  it("preserves readable contrast for the WhatsApp CTA in dark mode", () => {
+    const styles = read("app/globals.css");
+    expect(hero).toContain("homepage-hero-primary-cta");
+    expect(styles).toContain(".dark .homepage .homepage-hero-primary-cta");
+    expect(styles).toContain("background-color: #ffffff !important");
+  });
+
+  it("uses the Portuguese home label in the footer navigation", () => {
+    expect(footer).toContain('["Início", "/"]');
+    expect(footer).not.toContain('["Home", "/"]');
   });
 
   it("shows only verified academic and learning-scope claims", () => {
