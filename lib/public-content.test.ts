@@ -1,21 +1,25 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  getArticles: vi.fn(),
-  getMaterials: vi.fn(),
+  findArticles: vi.fn(),
+  findMaterials: vi.fn(),
 }));
 
-vi.mock("./db", () => ({
-  getArticles: mocks.getArticles,
-  getMaterials: mocks.getMaterials,
+vi.mock("@/lib/db", () => ({
+  db: {
+    query: {
+      articles: { findMany: mocks.findArticles },
+      materials: { findMany: mocks.findMaterials },
+    },
+  },
 }));
 
 import { getPublicArticles, getPublicMaterials } from "./public-content";
 
-describe("public content resilience", () => {
+describe("public content queries", () => {
   beforeEach(() => {
-    mocks.getArticles.mockReset();
-    mocks.getMaterials.mockReset();
+    mocks.findArticles.mockReset();
+    mocks.findMaterials.mockReset();
     vi.spyOn(console, "info").mockImplementation(() => undefined);
   });
 
@@ -23,18 +27,21 @@ describe("public content resilience", () => {
     vi.restoreAllMocks();
   });
 
-  it("returns published article data when the database is available", async () => {
+  it("returns only articles selected by the published-content query", async () => {
     const articles = [{ id: 1, title: "Pronúncia", published: new Date() }];
-    mocks.getArticles.mockResolvedValue(articles);
+    mocks.findArticles.mockResolvedValue(articles);
 
-    await expect(getPublicArticles()).resolves.toEqual({
+    await expect(getPublicArticles(3)).resolves.toEqual({
       articles,
       available: true,
     });
+    expect(mocks.findArticles).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 3, where: expect.anything(), orderBy: expect.anything() }),
+    );
   });
 
-  it("returns an empty article collection when the database is unavailable", async () => {
-    mocks.getArticles.mockRejectedValue(new Error("connection timeout"));
+  it("returns an unavailable state when the article query fails", async () => {
+    mocks.findArticles.mockRejectedValue(new Error("connection timeout"));
 
     await expect(getPublicArticles()).resolves.toEqual({
       articles: [],
@@ -42,18 +49,21 @@ describe("public content resilience", () => {
     });
   });
 
-  it("returns material data when the database is available", async () => {
+  it("returns material data from the public-only query", async () => {
     const materials = [{ id: 1, title: "Worksheet A1", level: "A1" }];
-    mocks.getMaterials.mockResolvedValue(materials);
+    mocks.findMaterials.mockResolvedValue(materials);
 
-    await expect(getPublicMaterials()).resolves.toEqual({
+    await expect(getPublicMaterials(3)).resolves.toEqual({
       materials,
       available: true,
     });
+    expect(mocks.findMaterials).toHaveBeenCalledWith(
+      expect.objectContaining({ limit: 3, where: expect.anything(), orderBy: expect.anything() }),
+    );
   });
 
-  it("returns an empty material collection when the database is unavailable", async () => {
-    mocks.getMaterials.mockRejectedValue(new Error("connection timeout"));
+  it("returns an empty collection when the material query fails", async () => {
+    mocks.findMaterials.mockRejectedValue(new Error("connection timeout"));
 
     await expect(getPublicMaterials()).resolves.toEqual({
       materials: [],

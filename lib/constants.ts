@@ -5,7 +5,7 @@
 export const PROFESSOR_NAME = "Anderson Palafoz";
 
 export const NAVIGATION_LINKS = [
-  { label: "Home", href: "/" },
+  { label: "Início", href: "/" },
   { label: "Sobre", href: "/about" },
   { label: "Aulas", href: "/courses" },
   { label: "Materiais", href: "/materials" },
