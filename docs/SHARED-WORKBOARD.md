@@ -23,6 +23,33 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 ## Em andamento
 
+### TASK-020 — Remediação dos achados da auditoria de segurança
+
+| Campo | Valor |
+|---|---|
+| Status | `concluída` — correções implementadas, rate limit compartilhado e build validado |
+| Responsável | v0 |
+| Iniciada em | 2026-11-19 |
+| Branch | `v0/github-para-v0-61b8c97f` |
+| Commit base | `0fbdf0e` |
+| Arquivos principais | `app/api/admin/sessions/route.ts`, `app/api/auth/forgot-password/route.ts`, `app/api/contact/route.ts`, `lib/contact-rate-limit.ts`, `drizzle/schema.ts`, `app/api/scheduled/cleanup-trash/route.ts`, `next.config.ts`, `proxy.ts`, `.github/workflows/ci.yml` |
+| Serviços afetados | Neon: nova tabela `public.contact_rate_limits` com índice de expiração |
+| Confirmação necessária | Não para correções locais; qualquer mudança de configuração/serviço externo será registrada antes de aplicar |
+
+**Achados registrados para remediação:**
+1. **Alto — autorização por oferta/turma:** `app/api/admin/sessions/route.ts` permite que qualquer professor autenticado consulte sessões, alunos e presenças em escopo global e altere sessões/registros sem verificar a oferta atribuída. Corrigir primeiro, verificando vínculo explícito do professor e escopo de estudantes.
+2. **Médio — recuperação de senha:** `app/api/auth/forgot-password/route.ts` usa o cabeçalho `Origin` para construir o link de redefinição. Usar origem canônica configurada no servidor e validar que seja HTTPS em produção.
+3. **Médio — contato público:** `app/api/contact/route.ts` não limita tamanho/formato de campos nem frequência de envio. Adicionar validação estrita e mitigação de abuso compatível com a infraestrutura disponível.
+4. **Baixo — otimizador de imagens:** `next.config.ts` aceita qualquer host HTTPS. Limitar aos domínios realmente usados, incluindo mídia Blob e miniaturas do YouTube, após conferir usos.
+5. **Confiabilidade — build/CI:** `next.config.ts` ignora erros TypeScript e `.github/workflows/ci.yml` não executa lint. Remover a supressão e incluir lint no CI após corrigir qualquer erro acionado.
+6. **Hardening — cabeçalhos:** `next.config.ts` não configura cabeçalhos base de segurança; adicionar os compatíveis com as funcionalidades do site, sem introduzir CSP bloqueante sem inventário de origens.
+7. **Hardening — rota agendada:** `app/api/scheduled/cleanup-trash/route.ts` devolve `error.message` e `stack` ao cliente; manter detalhes apenas nos logs e responder com mensagem genérica.
+8. **Compatibilidade — Next.js 16:** `middleware.ts` usa a convenção depreciada; avaliar e migrar para `proxy.ts` sem alterar os controles de acesso.
+
+**Progresso:** autorização de sessões e presenças agora é limitada às ofertas atribuídas, com leituras de cursos/alunos/sessões no mesmo escopo e validação de matrícula antes de gravar presença. O fluxo de redefinição usa origem canônica configurada no servidor, rejeita HTTP em produção e escapa conteúdo HTML. O contato valida corpo, campos e limites; agora mantém contagem atômica compartilhada entre instâncias no Neon, armazenando HMAC do IP em vez do IP bruto e removendo janelas antigas oportunisticamente. A resposta do cron não expõe mensagem interna nem stack. Configuração endurecida com hosts explícitos de imagem, headers base, checagem TypeScript obrigatória no build, lint no CI e migração para `proxy.ts`. Seis testes cobrem autorização, GET e estados de presença; dois testes adicionais cobrem hash e limites do formulário.
+
+**Validação em 2026-11-20:** `pnpm run check`, ESLint focado, suíte unitária completa (`232 arquivos, 755 testes`), `git diff --check` e build de produção passaram. O build usou `NODE_OPTIONS=--max-old-space-size=4096` e o ambiente configurado do projeto. Validação anterior no browser confirmou redirect de `/dashboard` para `/login`, headers de segurança e rejeição HTTP 400 de contato inválido.
+
 ### TASK-018 — Revisão geral do site e do workboard
 
 | Campo | Valor |

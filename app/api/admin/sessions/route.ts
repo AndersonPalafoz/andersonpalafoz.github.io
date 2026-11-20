@@ -1,21 +1,67 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, or, isNull } from "drizzle-orm";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { attendances, classSessions, courses, users } from "@/drizzle/schema";
+import {
+  attendances,
+  classSessions,
+  courseOfferStudents,
+  courseOfferTeacherAssignments,
+  courseOffers,
+  courses,
+  users,
+} from "@/drizzle/schema";
+import { canManageCourseOffer, type AdminAuthSession } from "@/lib/admin-auth";
 
 const SUPER_ADMIN_EMAIL = "palafozanderson@gmail.com";
+const GLOBAL_ROLES = new Set(["admin", "super_admin"]);
+const ATTENDANCE_STATUSES = new Set(["present", "absent", "justified"]);
 
-async function requireAdminOrTeacher() {
+type SessionPayload = {
+  id?: number;
+  offerId?: number;
+  courseId?: number;
+  title?: string;
+  description?: string | null;
+  modality?: "individual" | "group" | "hybrid";
+  scheduledAt?: string;
+  durationMinutes?: number;
+  status?: "scheduled" | "completed" | "cancelled";
+  attendanceRecords?: Array<{ studentId: number; status: "present" | "absent" | "justified"; notes?: string }>;
+};
+
+async function requireAdminOrTeacher(): Promise<AdminAuthSession | null> {
   const session = await getServerSession(authOptions);
   const email = session?.user?.email?.toLowerCase();
-  if (!session?.user) return null;
-  const role = session.user.role;
-  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "professor") {
-    return session;
+  if (!session?.user || !email) return null;
+  if (email === SUPER_ADMIN_EMAIL || GLOBAL_ROLES.has(session.user.role || "") || session.user.role === "professor") {
+    return session as AdminAuthSession;
   }
   return null;
+}
+
+function hasGlobalAccess(session: AdminAuthSession) {
+  return session.user.email?.toLowerCase() === SUPER_ADMIN_EMAIL || GLOBAL_ROLES.has(session.user.role || "");
+}
+
+async function getManagedOfferIds(userId: number) {
+  const offers = await db
+    .select({ id: courseOffers.id })
+    .from(courseOffers)
+    .leftJoin(
+      courseOfferTeacherAssignments,
+      and(
+        eq(courseOfferTeacherAssignments.offerId, courseOffers.id),
+        eq(courseOfferTeacherAssignments.teacherId, userId)
+      )
+    )
+    .where(or(eq(courseOffers.ownerTeacherId, userId), eq(courseOfferTeacherAssignments.teacherId, userId)));
+  return offers.map((offer) => offer.id);
+}
+
+async function canManage(session: NonNullable<Awaited<ReturnType<typeof requireAdminOrTeacher>>>, offerId: number) {
+  return hasGlobalAccess(session) || canManageCourseOffer(session, offerId);
 }
 
 export async function GET(request: NextRequest) {
@@ -31,11 +77,42 @@ export async function GET(request: NextRequest) {
     const pageSize = Number.isFinite(rawPageSize) ? Math.min(100, Math.max(1, Math.floor(rawPageSize))) : 50;
     const offset = (page - 1) * pageSize;
 
-    const [sessions, availableCourses, students, allAttendances] = await Promise.all([
-      db.select().from(classSessions).orderBy(desc(classSessions.scheduledAt)).limit(pageSize).offset(offset),
-      db.select({ id: courses.id, title: courses.title, level: courses.level }).from(courses).where(isNull(courses.deletedAt)).limit(500),
-      db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), isNull(users.deletedAt))).limit(500),
-      db.select().from(attendances).limit(2000),
+    let allowedOfferIds: number[] | null = null;
+    if (!hasGlobalAccess(session)) {
+      const email = session.user.email?.toLowerCase();
+      const teacher = email ? await db.query.users.findFirst({ where: eq(users.email, email) }) : null;
+      if (!teacher || teacher.role !== "professor") {
+        return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+      }
+      allowedOfferIds = await getManagedOfferIds(teacher.id);
+    }
+
+    const sessionCondition = allowedOfferIds === null
+      ? undefined
+      : allowedOfferIds.length
+        ? inArray(classSessions.offerId, allowedOfferIds)
+        : inArray(classSessions.id, []);
+
+    const sessionsQuery = db.select().from(classSessions);
+    const sessions = await (sessionCondition
+      ? sessionsQuery.where(sessionCondition).orderBy(desc(classSessions.scheduledAt)).limit(pageSize).offset(offset)
+      : sessionsQuery.orderBy(desc(classSessions.scheduledAt)).limit(pageSize).offset(offset));
+    const sessionIds = sessions.map((item) => item.id);
+
+    const [availableCourses, students, allAttendances] = await Promise.all([
+      allowedOfferIds === null
+        ? db.select({ id: courses.id, title: courses.title, level: courses.level }).from(courses).where(isNull(courses.deletedAt)).limit(500)
+        : allowedOfferIds.length
+          ? db.selectDistinct({ id: courses.id, title: courses.title, level: courses.level }).from(courseOffers).innerJoin(courses, eq(courseOffers.courseId, courses.id)).where(inArray(courseOffers.id, allowedOfferIds)).limit(500)
+          : Promise.resolve([]),
+      allowedOfferIds === null
+        ? db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(and(eq(users.role, "user"), isNull(users.deletedAt))).limit(500)
+        : allowedOfferIds.length
+          ? db.selectDistinct({ id: users.id, name: users.name, email: users.email }).from(courseOfferStudents).innerJoin(users, eq(courseOfferStudents.userId, users.id)).where(inArray(courseOfferStudents.offerId, allowedOfferIds)).limit(500)
+          : Promise.resolve([]),
+      sessionIds.length
+        ? db.select().from(attendances).where(inArray(attendances.sessionId, sessionIds))
+        : Promise.resolve([]),
     ]);
 
     return NextResponse.json({
@@ -54,10 +131,24 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: Request) {
   try {
     const session = await requireAdminOrTeacher();
-    if (!session?.user) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
-    const body = await request.json() as { id?: number; offerId?: number; title?: string; description?: string | null; scheduledAt?: string; durationMinutes?: number; status?: "scheduled" | "completed" | "cancelled" };
-    if (!body.id || !body.offerId || !body.title?.trim() || !body.scheduledAt) return NextResponse.json({ error: "Sessão, turma, título e data são obrigatórios." }, { status: 400 });
-    const [updated] = await db.update(classSessions).set({ title: body.title.trim(), description: body.description?.trim() || null, scheduledAt: new Date(body.scheduledAt), durationMinutes: body.durationMinutes ? Number(body.durationMinutes) : 60, status: body.status || "scheduled", updatedAt: new Date() }).where(and(eq(classSessions.id, Number(body.id)), eq(classSessions.offerId, Number(body.offerId)))).returning();
+    if (!session) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    const body = await request.json() as SessionPayload;
+    const id = Number(body.id);
+    const offerId = Number(body.offerId);
+    if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(offerId) || offerId <= 0 || !body.title?.trim() || !body.scheduledAt) {
+      return NextResponse.json({ error: "Sessão, turma, título e data são obrigatórios." }, { status: 400 });
+    }
+    if (!await canManage(session, offerId)) return NextResponse.json({ error: "Acesso negado à turma." }, { status: 403 });
+    const scheduledAt = new Date(body.scheduledAt);
+    if (Number.isNaN(scheduledAt.getTime())) return NextResponse.json({ error: "Data inválida." }, { status: 400 });
+    const [updated] = await db.update(classSessions).set({
+      title: body.title.trim(),
+      description: body.description?.trim() || null,
+      scheduledAt,
+      durationMinutes: body.durationMinutes ? Number(body.durationMinutes) : 60,
+      status: body.status || "scheduled",
+      updatedAt: new Date(),
+    }).where(and(eq(classSessions.id, id), eq(classSessions.offerId, offerId))).returning();
     if (!updated) return NextResponse.json({ error: "Sessão não encontrada nessa turma." }, { status: 404 });
     return NextResponse.json({ session: updated });
   } catch (error) {
@@ -69,10 +160,15 @@ export async function PATCH(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await requireAdminOrTeacher();
-    if (!session?.user) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    if (!session) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
     const body = await request.json() as { id?: number; offerId?: number };
-    if (!body.id || !body.offerId) return NextResponse.json({ error: "Sessão e turma são obrigatórias." }, { status: 400 });
-    const deleted = await db.delete(classSessions).where(and(eq(classSessions.id, Number(body.id)), eq(classSessions.offerId, Number(body.offerId)))).returning({ id: classSessions.id });
+    const id = Number(body.id);
+    const offerId = Number(body.offerId);
+    if (!Number.isInteger(id) || id <= 0 || !Number.isInteger(offerId) || offerId <= 0) {
+      return NextResponse.json({ error: "Sessão e turma são obrigatórias." }, { status: 400 });
+    }
+    if (!await canManage(session, offerId)) return NextResponse.json({ error: "Acesso negado à turma." }, { status: 403 });
+    const deleted = await db.delete(classSessions).where(and(eq(classSessions.id, id), eq(classSessions.offerId, offerId))).returning({ id: classSessions.id });
     if (!deleted.length) return NextResponse.json({ error: "Sessão não encontrada nessa turma." }, { status: 404 });
     return NextResponse.json({ deleted: deleted[0].id });
   } catch (error) {
@@ -84,50 +180,62 @@ export async function DELETE(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await requireAdminOrTeacher();
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    if (!session) return NextResponse.json({ error: "Acesso restrito." }, { status: 403 });
+    const body = await request.json() as SessionPayload;
+    const offerId = Number(body.offerId);
+    const title = body.title?.trim();
+    const scheduledAt = new Date(body.scheduledAt || "");
+    if (!Number.isInteger(offerId) || offerId <= 0 || !title || title.length > 255 || Number.isNaN(scheduledAt.getTime())) {
+      return NextResponse.json({ error: "Turma, título e data válidos são obrigatórios." }, { status: 400 });
+    }
+    if (!await canManage(session, offerId)) return NextResponse.json({ error: "Acesso negado à turma." }, { status: 403 });
+
+    const email = session.user.email?.toLowerCase();
+    const teacher = email ? await db.query.users.findFirst({ where: eq(users.email, email) }) : null;
+    if (!teacher) return NextResponse.json({ error: "Usuário não encontrado." }, { status: 403 });
+    const offer = await db.query.courseOffers.findFirst({ where: eq(courseOffers.id, offerId) });
+    if (!offer || (body.courseId && Number(body.courseId) !== offer.courseId)) {
+      return NextResponse.json({ error: "Turma ou curso inválido." }, { status: 400 });
     }
 
-    const body = await request.json();
-    const { courseId, offerId, title, description, modality, scheduledAt, durationMinutes, attendanceRecords } = body;
-
-    if (!title || !scheduledAt) {
-      return NextResponse.json({ error: "Título e data da aula são obrigatórios." }, { status: 400 });
+    const records = Array.isArray(body.attendanceRecords) ? body.attendanceRecords : [];
+    if (records.length > 500 || records.some((record) => !Number.isInteger(Number(record.studentId)) || Number(record.studentId) <= 0 || !ATTENDANCE_STATUSES.has(record.status))) {
+      return NextResponse.json({ error: "Lista de presença inválida." }, { status: 400 });
+    }
+    const studentIds = [...new Set(records.map((record) => Number(record.studentId)))];
+    if (studentIds.length) {
+      const enrolled = await db.select({ userId: courseOfferStudents.userId })
+        .from(courseOfferStudents)
+        .where(and(inArray(courseOfferStudents.offerId, [offerId]), inArray(courseOfferStudents.userId, studentIds)));
+      const enrolledIds = new Set(enrolled.map((row) => row.userId).filter((id): id is number => id !== null));
+      if (studentIds.some((id) => !enrolledIds.has(id))) {
+        return NextResponse.json({ error: "A lista contém alunos que não pertencem a esta turma." }, { status: 403 });
+      }
     }
 
-    const teacherUser = await db.query.users.findFirst({
-      where: eq(users.email, session.user.email || SUPER_ADMIN_EMAIL),
-    });
-
-    const teacherId = teacherUser?.id || 1;
-
-    const newSession = await db.insert(classSessions).values({
-      courseId: courseId ? Number(courseId) : null,
-      offerId: offerId ? Number(offerId) : null,
-      teacherId,
+    const [newSession] = await db.insert(classSessions).values({
+      courseId: offer.courseId,
+      offerId,
+      teacherId: teacher.id,
       title,
-      description: description || null,
-      modality: modality || "group",
-      scheduledAt: new Date(scheduledAt),
-      durationMinutes: durationMinutes ? Number(durationMinutes) : 60,
-      status: "scheduled",
+      description: body.description?.trim() || null,
+      modality: body.modality || "group",
+      scheduledAt,
+      durationMinutes: body.durationMinutes ? Number(body.durationMinutes) : 60,
+      status: body.status || "scheduled",
     }).returning();
 
-    const sessionId = newSession[0].id;
-
-    if (Array.isArray(attendanceRecords) && attendanceRecords.length > 0) {
-      const valuesToInsert = attendanceRecords.map((rec: { studentId: number; status: "present" | "absent" | "justified"; notes?: string }) => ({
-        sessionId,
-        studentId: Number(rec.studentId),
-        present: rec.status === "present",
-        status: rec.status || "present",
-        notes: rec.notes || null,
-      }));
-
-      await db.insert(attendances).values(valuesToInsert);
+    if (records.length) {
+      await db.insert(attendances).values(records.map((record) => ({
+        sessionId: newSession.id,
+        studentId: Number(record.studentId),
+        present: record.status === "present",
+        status: record.status,
+        notes: record.notes?.trim() || null,
+      })));
     }
 
-    return NextResponse.json({ session: newSession[0], message: "Chamada criada e salva com sucesso!" }, { status: 201 });
+    return NextResponse.json({ session: newSession, message: "Chamada criada e salva com sucesso!" }, { status: 201 });
   } catch (error) {
     console.error("Erro ao salvar chamada:", error);
     return NextResponse.json({ error: "Não foi possível salvar a chamada." }, { status: 500 });

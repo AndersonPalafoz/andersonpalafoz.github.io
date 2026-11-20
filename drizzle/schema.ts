@@ -8,6 +8,7 @@ import {
   integer,
   boolean,
   uniqueIndex,
+  index,
   jsonb,
   numeric,
 } from "drizzle-orm/pg-core";
@@ -528,6 +529,16 @@ export const contactMessages = pgTable("contact_messages", {
 
 export type ContactMessageRecord = typeof contactMessages.$inferSelect;
 export type InsertContactMessage = typeof contactMessages.$inferInsert;
+
+export const contactRateLimits = pgTable(
+  "contact_rate_limits",
+  {
+    keyHash: text("key_hash").primaryKey(),
+    windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull(),
+    requestCount: integer("request_count").notNull().default(0),
+  },
+  (table) => [index("contact_rate_limits_window_started_at_idx").on(table.windowStartedAt)],
+);
 
 /**
  * Direct Messages table - mensagens diretas entre alunos e professores.
