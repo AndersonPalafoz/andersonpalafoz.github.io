@@ -27,13 +27,13 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `concluída` — correções implementadas e build de produção validado |
+| Status | `concluída` — correções implementadas, rate limit compartilhado e build validado |
 | Responsável | v0 |
 | Iniciada em | 2026-11-19 |
 | Branch | `v0/github-para-v0-61b8c97f` |
 | Commit base | `0fbdf0e` |
-| Arquivos principais | `app/api/admin/sessions/route.ts`, `app/api/auth/forgot-password/route.ts`, `app/api/contact/route.ts`, `app/api/scheduled/cleanup-trash/route.ts`, `next.config.ts`, `middleware.ts`, `.github/workflows/ci.yml` |
-| Serviços afetados | Nenhum serviço externo alterado nesta etapa |
+| Arquivos principais | `app/api/admin/sessions/route.ts`, `app/api/auth/forgot-password/route.ts`, `app/api/contact/route.ts`, `lib/contact-rate-limit.ts`, `drizzle/schema.ts`, `app/api/scheduled/cleanup-trash/route.ts`, `next.config.ts`, `proxy.ts`, `.github/workflows/ci.yml` |
+| Serviços afetados | Neon: nova tabela `public.contact_rate_limits` com índice de expiração |
 | Confirmação necessária | Não para correções locais; qualquer mudança de configuração/serviço externo será registrada antes de aplicar |
 
 **Achados registrados para remediação:**
@@ -46,9 +46,9 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 7. **Hardening — rota agendada:** `app/api/scheduled/cleanup-trash/route.ts` devolve `error.message` e `stack` ao cliente; manter detalhes apenas nos logs e responder com mensagem genérica.
 8. **Compatibilidade — Next.js 16:** `middleware.ts` usa a convenção depreciada; avaliar e migrar para `proxy.ts` sem alterar os controles de acesso.
 
-**Progresso:** autorização de sessões e presenças agora é limitada às ofertas atribuídas, com leituras de cursos/alunos/sessões no mesmo escopo e validação de matrícula antes de gravar presença. O fluxo de redefinição usa origem canônica configurada no servidor, rejeita HTTP em produção e escapa conteúdo HTML. O contato valida corpo, campos e limites, com rate limit por IP em memória por instância; a resposta do cron não expõe mensagem interna nem stack. Configuração endurecida com hosts explícitos de imagem, headers base, checagem TypeScript obrigatória no build, lint no CI e migração de `middleware.ts` para `proxy.ts`. Seis testes cobrem autorização, GET e estados de presença.
+**Progresso:** autorização de sessões e presenças agora é limitada às ofertas atribuídas, com leituras de cursos/alunos/sessões no mesmo escopo e validação de matrícula antes de gravar presença. O fluxo de redefinição usa origem canônica configurada no servidor, rejeita HTTP em produção e escapa conteúdo HTML. O contato valida corpo, campos e limites; agora mantém contagem atômica compartilhada entre instâncias no Neon, armazenando HMAC do IP em vez do IP bruto e removendo janelas antigas oportunisticamente. A resposta do cron não expõe mensagem interna nem stack. Configuração endurecida com hosts explícitos de imagem, headers base, checagem TypeScript obrigatória no build, lint no CI e migração para `proxy.ts`. Seis testes cobrem autorização, GET e estados de presença; dois testes adicionais cobrem hash e limites do formulário.
 
-**Validação em 2026-11-19:** `pnpm run check`, lint completo (`pnpm run lint`, somente avisos preexistentes), ESLint focado, seis testes da API de sessões, suíte unitária (`231 arquivos, 753 testes`), `git diff --check` e build de produção passaram. O build final usou `NODE_OPTIONS=--max-old-space-size=4096` e o ambiente configurado do projeto. Verificação no browser confirmou redirect de `/dashboard` para `/login`, headers de segurança e rejeição HTTP 400 de contato inválido. O rate limit de contato é best-effort e limitado à instância; para proteção consistente entre instâncias será necessário armazenamento compartilhado ou rate limiting na camada de borda.
+**Validação em 2026-11-20:** `pnpm run check`, ESLint focado, suíte unitária completa (`232 arquivos, 755 testes`), `git diff --check` e build de produção passaram. O build usou `NODE_OPTIONS=--max-old-space-size=4096` e o ambiente configurado do projeto. Validação anterior no browser confirmou redirect de `/dashboard` para `/login`, headers de segurança e rejeição HTTP 400 de contato inválido.
 
 ### TASK-018 — Revisão geral do site e do workboard
 
