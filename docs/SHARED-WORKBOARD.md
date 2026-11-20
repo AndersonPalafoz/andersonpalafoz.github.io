@@ -27,7 +27,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 | Campo | Valor |
 |---|---|
-| Status | `em andamento` — auditoria registrada; iniciando pela autorização das sessões e presenças |
+| Status | `concluída` — correções implementadas e build de produção validado |
 | Responsável | v0 |
 | Iniciada em | 2026-11-19 |
 | Branch | `v0/github-para-v0-61b8c97f` |
@@ -48,9 +48,7 @@ Nenhuma tarefa deve ser marcada como concluída apenas porque o código foi escr
 
 **Progresso:** autorização de sessões e presenças agora é limitada às ofertas atribuídas, com leituras de cursos/alunos/sessões no mesmo escopo e validação de matrícula antes de gravar presença. O fluxo de redefinição usa origem canônica configurada no servidor, rejeita HTTP em produção e escapa conteúdo HTML. O contato valida corpo, campos e limites, com rate limit por IP em memória por instância; a resposta do cron não expõe mensagem interna nem stack. Configuração endurecida com hosts explícitos de imagem, headers base, checagem TypeScript obrigatória no build, lint no CI e migração de `middleware.ts` para `proxy.ts`. Seis testes cobrem autorização, GET e estados de presença.
 
-**Validação em 2026-11-19:** `pnpm run check`, lint completo (`pnpm run lint`, somente avisos preexistentes), ESLint focado, seis testes da API de sessões, suíte unitária (`231 arquivos, 753 testes`) e `git diff --check` passaram. Verificação no browser confirmou redirect de `/dashboard` para `/login`, headers de segurança e rejeição HTTP 400 de contato inválido. O build compilou o projeto, mas a verificação TypeScript interna do `next build` terminou por falta de memória do processo (heap de ~2 GB); a verificação independente `pnpm run check` passou.
-
-**Próximo passo exato:** repetir o build em ambiente com memória suficiente e então atualizar o status desta tarefa. O rate limit de contato é best-effort e limitado à instância; para proteção consistente entre instâncias será necessário um armazenamento compartilhado ou rate limiting na camada de borda.
+**Validação em 2026-11-19:** `pnpm run check`, lint completo (`pnpm run lint`, somente avisos preexistentes), ESLint focado, seis testes da API de sessões, suíte unitária (`231 arquivos, 753 testes`), `git diff --check` e build de produção passaram. O build final usou `NODE_OPTIONS=--max-old-space-size=4096` e o ambiente configurado do projeto. Verificação no browser confirmou redirect de `/dashboard` para `/login`, headers de segurança e rejeição HTTP 400 de contato inválido. O rate limit de contato é best-effort e limitado à instância; para proteção consistente entre instâncias será necessário armazenamento compartilhado ou rate limiting na camada de borda.
 
 ### TASK-018 — Revisão geral do site e do workboard
 
