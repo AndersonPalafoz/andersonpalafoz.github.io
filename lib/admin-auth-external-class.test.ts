@@ -15,7 +15,10 @@ describe("external class authorization contract", () => {
     const adminBlock = source.slice(source.indexOf("export async function requireAdmin"), source.indexOf("export async function requireSuperAdmin"));
     const teachingBlock = source.slice(source.indexOf("export async function requireTeacherOrAdmin"), source.indexOf("/**"));
     expect(adminBlock).not.toContain('role === "professor"');
-    expect(teachingBlock).toContain('role === "professor"');
+    expect(teachingBlock).toContain('["admin", "super_admin", "professor"]');
+    expect(source).toContain("getAuthorizedSession");
+    expect(source).toContain('user.approvalStatus !== "approved"');
+    expect(source).toContain("user.deletedAt");
     expect(source).toContain("canManageCourse");
     expect(source).toContain("canManageExternalClass");
   });
