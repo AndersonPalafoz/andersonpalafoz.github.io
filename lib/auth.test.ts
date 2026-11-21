@@ -19,6 +19,7 @@ import { authOptions } from "./auth";
 describe("NextAuth role persistence", () => {
   const jwtCallback = authOptions.callbacks?.jwt;
   const sessionCallback = authOptions.callbacks?.session;
+  const signInCallback = authOptions.callbacks?.signIn;
 
   beforeEach(() => {
     mocks.findFirst.mockReset();
@@ -66,21 +67,44 @@ describe("NextAuth role persistence", () => {
     });
   });
 
-  it("keeps the main admin account authorized when the role lookup fails", async () => {
+  it("removes authorization claims when the role lookup fails", async () => {
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
     mocks.findFirst.mockRejectedValue(new Error("database unavailable"));
 
     const token = await jwtCallback?.({
-      token: { email: "palafozanderson@gmail.com" },
+      token: { email: "palafozanderson@gmail.com", id: "42", role: "admin", approvalStatus: "approved" },
       user: undefined,
       account: undefined,
     } as any);
 
-    expect(token).toMatchObject({
-      email: "palafozanderson@gmail.com",
-      role: "admin",
-      approvalStatus: "approved",
-    });
+    expect(token?.id).toBeUndefined();
+    expect(token?.role).toBeUndefined();
+    expect(token?.approvalStatus).toBeUndefined();
+    expect(token?.deletedAt).toBeTruthy();
+    expect(errorSpy).toHaveBeenCalledOnce();
+  });
+
+  it("rejects Google sign-in for a soft-deleted account", async () => {
+    mocks.findFirst.mockResolvedValue({ id: 88, email: "student@example.com", deletedAt: new Date(), role: "user" });
+
+    const allowed = await signInCallback?.({
+      user: { id: "88", email: "student@example.com", name: "Student" },
+      account: { provider: "google", providerAccountId: "google-88" },
+    } as any);
+
+    expect(allowed).toBe(false);
+  });
+
+  it("denies sign-in when the authorization database lookup fails", async () => {
+    const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    mocks.findFirst.mockRejectedValue(new Error("database unavailable"));
+
+    const allowed = await signInCallback?.({
+      user: { id: "88", email: "student@example.com", name: "Student" },
+      account: { provider: "google", providerAccountId: "google-88" },
+    } as any);
+
+    expect(allowed).toBe(false);
     expect(errorSpy).toHaveBeenCalledOnce();
   });
 

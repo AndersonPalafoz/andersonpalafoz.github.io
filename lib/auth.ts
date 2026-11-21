@@ -59,6 +59,10 @@ export const authOptions: NextAuthOptions = {
           where: eq(users.email, user.email),
         });
 
+        if (existingUser?.deletedAt && user.email.trim().toLowerCase() !== ADMIN_EMAIL) {
+          return false;
+        }
+
         if (!existingUser) {
           const isAdminUser = user.email === ADMIN_EMAIL;
           const userRole = isAdminUser ? "admin" : "user";
@@ -107,7 +111,7 @@ export const authOptions: NextAuthOptions = {
         return true;
       } catch (error) {
         console.error("Error in signIn callback:", error);
-        return true;
+        return false;
       }
     },
 
@@ -167,9 +171,13 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (error) {
           console.error("Error resolving user role in jwt callback:", error);
+          token.id = undefined;
+          token.role = undefined;
+          token.approvalStatus = undefined;
+          token.deletedAt = new Date().toISOString();
         }
 
-        if (token.email === ADMIN_EMAIL) {
+        if (token.email === ADMIN_EMAIL && token.id) {
           token.role = "admin";
           token.approvalStatus = "approved";
         }
