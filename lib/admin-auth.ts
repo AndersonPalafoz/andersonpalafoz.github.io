@@ -15,33 +15,34 @@ export interface AdminAuthSession {
   };
 }
 
-export async function requireAdmin(): Promise<AdminAuthSession | null> {
+async function getAuthorizedSession(allowedRoles: string[]): Promise<AdminAuthSession | null> {
   const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.toLowerCase();
+  const email = session?.user?.email?.trim().toLowerCase();
   if (!email || !session?.user) return null;
-  const role = session.user.role;
-  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin") {
-    return session as AdminAuthSession;
-  }
-  return null;
+
+  const user = await db.query.users.findFirst({ where: eq(users.email, email) });
+  if (!user || user.deletedAt || user.approvalStatus !== "approved") return null;
+
+  const isSuperAdmin = email === SUPER_ADMIN_EMAIL && user.role === "admin";
+  if (!isSuperAdmin && !allowedRoles.includes(user.role)) return null;
+
+  return {
+    ...session,
+    user: { ...session.user, id: user.id, role: user.role },
+  } as AdminAuthSession;
+}
+
+export async function requireAdmin(): Promise<AdminAuthSession | null> {
+  return getAuthorizedSession(["admin", "super_admin"]);
 }
 
 export async function requireSuperAdmin(): Promise<AdminAuthSession | null> {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.toLowerCase();
-  if (!email || email !== SUPER_ADMIN_EMAIL || !session?.user) return null;
-  return session as AdminAuthSession;
+  const session = await getAuthorizedSession(["admin"]);
+  return session?.user.email?.trim().toLowerCase() === SUPER_ADMIN_EMAIL ? session : null;
 }
 
 export async function requireTeacherOrAdmin(): Promise<AdminAuthSession | null> {
-  const session = await getServerSession(authOptions);
-  const email = session?.user?.email?.toLowerCase();
-  if (!email || !session?.user) return null;
-  const role = session.user.role;
-  if (email === SUPER_ADMIN_EMAIL || role === "admin" || role === "super_admin" || role === "professor") {
-    return session as AdminAuthSession;
-  }
-  return null;
+  return getAuthorizedSession(["admin", "super_admin", "professor"]);
 }
 
 /**

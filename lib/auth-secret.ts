@@ -6,5 +6,10 @@ const DEVELOPMENT_SECRET = "fallback-secret-for-development";
  * com o ambiente legado do projeto durante o desenvolvimento local.
  */
 export function getAuthSecret() {
-  return process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || DEVELOPMENT_SECRET;
+  const secret = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("NEXTAUTH_SECRET or JWT_SECRET must be configured in production.");
+  }
+  return DEVELOPMENT_SECRET;
 }

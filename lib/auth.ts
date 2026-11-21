@@ -6,6 +6,7 @@ import { db } from "./db";
 import { eventLogs, users } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 import { getAuthSecret } from "./auth-secret";
+import { allowLimitedRequest, getRequestIp } from "./contact-rate-limit";
 import { hasClassroomReadonlyScope, persistClassroomConnection } from "./google-classroom-oauth";
 
 const ADMIN_EMAIL = "palafozanderson@gmail.com";
@@ -29,10 +30,15 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "E-mail e senha",
       credentials: { email: { label: "E-mail", type: "email" }, password: { label: "Senha", type: "password" } },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const email = String(credentials?.email || "").trim().toLowerCase();
         const password = String(credentials?.password || "");
         if (!email || !password) return null;
+
+        const ip = getRequestIp(request.headers || {});
+        if (!(await allowLimitedRequest("login-ip", ip, 30))) return null;
+        if (!(await allowLimitedRequest("login-email", email, 10))) return null;
+
         const existingUser = await db.query.users.findFirst({ where: eq(users.email, email) });
         if (!existingUser || existingUser.deletedAt || !verifyPassword(password, existingUser.passwordHash)) return null;
         return { id: String(existingUser.id), email: existingUser.email || email, name: existingUser.name || email, image: existingUser.avatarUrl || undefined };
