@@ -17,7 +17,7 @@ export function isContactRequestAllowed(requestCount: number) {
   return requestCount <= CONTACT_RATE_LIMIT_MAX;
 }
 
-export async function allowContactRequest(ip: string) {
+export async function allowLimitedRequest(scope: string, identifier: string, maximum: number) {
   const secret =
     process.env.NEXTAUTH_SECRET ||
     process.env.JWT_SECRET ||
@@ -27,7 +27,7 @@ export async function allowContactRequest(ip: string) {
     throw new Error("A configured application secret is required for contact rate limiting.");
   }
 
-  const keyHash = hashContactRateLimitKey(ip, secret);
+  const keyHash = hashContactRateLimitKey(`${scope}:${identifier}`, secret);
   const [bucket] = await db
     .insert(contactRateLimits)
     .values({
@@ -45,7 +45,7 @@ export async function allowContactRequest(ip: string) {
     .returning({ requestCount: contactRateLimits.requestCount });
 
   if (!bucket) {
-    throw new Error("The contact rate limit bucket could not be updated.");
+    throw new Error("The rate limit bucket could not be updated.");
   }
 
   if (Math.random() < 0.01) {
@@ -66,5 +66,16 @@ export async function allowContactRequest(ip: string) {
     }
   }
 
-  return isContactRequestAllowed(bucket.requestCount);
+  return bucket.requestCount <= maximum;
+}
+
+export function getRequestIp(headers: Headers | Record<string, string | string[] | undefined>) {
+  const get = (name: string) => headers instanceof Headers ? headers.get(name) : headers[name] as string | undefined;
+  const forwardedFor = get("x-forwarded-for");
+  const forwardedIp = Array.isArray(forwardedFor) ? forwardedFor[0] : forwardedFor?.split(",")[0]?.trim();
+  return (get("x-real-ip") || forwardedIp || "unknown").trim();
+}
+
+export async function allowContactRequest(ip: string) {
+  return allowLimitedRequest("contact", ip, CONTACT_RATE_LIMIT_MAX);
 }

@@ -4,9 +4,15 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users } from "@/drizzle/schema";
 import { hashPassword, isPasswordAcceptable } from "@/lib/password";
+import { allowLimitedRequest, getRequestIp } from "@/lib/contact-rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const ip = getRequestIp(request.headers);
+    if (!(await allowLimitedRequest("register-ip", ip, 8))) {
+      return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });
+    }
+
     const body = await request.json();
     const name = String(body.name || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
