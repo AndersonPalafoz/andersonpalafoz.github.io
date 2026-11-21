@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getAuthSecret } from "./auth-secret";
 
 describe("getAuthSecret", () => {
@@ -10,6 +10,7 @@ describe("getAuthSecret", () => {
     else process.env.NEXTAUTH_SECRET = originalNextAuth;
     if (originalJwt === undefined) delete process.env.JWT_SECRET;
     else process.env.JWT_SECRET = originalJwt;
+    vi.unstubAllEnvs();
   });
 
   it("prefers NEXTAUTH_SECRET when both secrets exist", () => {
@@ -24,9 +25,17 @@ describe("getAuthSecret", () => {
     expect(getAuthSecret()).toBe("legacy-secret");
   });
 
-  it("keeps a development fallback when no secret is configured", () => {
+  it("keeps a development fallback when no secret is configured outside production", () => {
+    vi.stubEnv("NODE_ENV", "test");
     delete process.env.NEXTAUTH_SECRET;
     delete process.env.JWT_SECRET;
     expect(getAuthSecret()).toBe("fallback-secret-for-development");
+  });
+
+  it("fails closed in production when no secret is configured", () => {
+    vi.stubEnv("NODE_ENV", "production");
+    delete process.env.NEXTAUTH_SECRET;
+    delete process.env.JWT_SECRET;
+    expect(() => getAuthSecret()).toThrow("must be configured in production");
   });
 });
