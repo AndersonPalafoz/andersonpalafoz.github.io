@@ -7,7 +7,8 @@ describe("Blog API Contract", () => {
     const routeSource = readFileSync(join(process.cwd(), "app/api/articles/route.ts"), "utf8");
     const pageSource = readFileSync(join(process.cwd(), "app/blog/[slug]/page.tsx"), "utf8");
 
-    expect(routeSource).toContain("return NextResponse.json({ articles: articleList })");
+    expect(routeSource).toContain("getPublicArticles(100)");
+    expect(routeSource).toContain("return NextResponse.json({ articles })");
     expect(pageSource).toContain("data.articles");
   });
 });
