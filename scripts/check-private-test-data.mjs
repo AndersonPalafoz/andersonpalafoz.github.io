@@ -15,7 +15,9 @@ const STRUCTURED_DATA_FILE = /\.(?:csv|tsv|jsonl?)$/i;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const CPF_PATTERN = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
 const IDENTIFIER_FIELD_PATTERN = /\b(?:studentIdNumber|student_id_number|student_id|cpf|phone|mobile|telefone)\s*[:=]\s*["'`]([^"'`]{4,})["'`]/gi;
+const PERSON_NAME_FIELD_PATTERN = /(?:^|[,{]\s*)["']?(?:studentName|student_name|fullName|full_name|name|nome|nomeCompleto|nome_completo)["']?\s*:\s*["'`]([^"'`]{3,})["'`]/gim;
 const SAFE_IDENTIFIER = /^(?:0+|123456+|test(?:[-_ ]?\d+)?|dummy|example|ficticio|fake|sample)$/i;
+const SAFE_PERSON_NAME = /^(?:test student|student test|example student|sample student|fake student|aluno teste|aluna teste|estudante teste|aluno fict[ií]cio|aluna fict[ií]cia|student|aluno|aluna|estudante)(?:\s+\d+)?$/i;
 
 export function findPrivateDataIndicators(filePath, content) {
   const indicators = [];
@@ -36,6 +38,10 @@ export function findPrivateDataIndicators(filePath, content) {
       if (!SAFE_IDENTIFIER.test(match[1].trim())) {
         indicators.push("identificador pessoal literal");
       }
+    }
+
+    for (const match of content.matchAll(PERSON_NAME_FIELD_PATTERN)) {
+      if (!SAFE_PERSON_NAME.test(match[1].trim())) indicators.push("nome pessoal literal");
     }
   }
 
