@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   deleteMaterial: vi.fn(),
   db: {
     query: {
+      users: { findFirst: vi.fn() },
       articles: {
         findMany: vi.fn(),
         findFirst: vi.fn(),
@@ -80,6 +81,18 @@ describe("Admin content API contracts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getServerSession.mockResolvedValue(null);
+    mocks.db.query.users.findFirst.mockImplementation(async () => {
+      const session = await mocks.getServerSession();
+      return session?.user
+        ? {
+            id: Number(session.user.id),
+            email: session.user.email,
+            role: session.user.role,
+            approvalStatus: "approved",
+            deletedAt: null,
+          }
+        : null;
+    });
   });
 
   describe("Blog", () => {

@@ -55,6 +55,17 @@ const pendingUser = {
   lastSignedIn: new Date("2026-08-15"),
 };
 
+function mockAuthorizedTarget(target: unknown, session = superAdminSession) {
+  mocks.findFirst.mockResolvedValueOnce({
+    id: Number(session.user.id),
+    email: session.user.email,
+    role: session.user.role,
+    approvalStatus: "approved",
+    deletedAt: null,
+  });
+  mocks.findFirst.mockResolvedValueOnce(target);
+}
+
 function updateChain(result: unknown) {
   const returning = vi.fn().mockResolvedValue(result);
   const where = vi.fn().mockReturnValue({ returning });
@@ -68,7 +79,18 @@ describe("Admin users API", () => {
     vi.clearAllMocks();
     mocks.getServerSession.mockResolvedValue(null);
     mocks.findMany.mockResolvedValue([]);
-    mocks.findFirst.mockResolvedValue(undefined);
+    mocks.findFirst.mockImplementation(async () => {
+      const session = await mocks.getServerSession();
+      return session?.user
+        ? {
+            id: Number(session.user.id),
+            email: session.user.email,
+            role: session.user.role,
+            approvalStatus: "approved",
+            deletedAt: null,
+          }
+        : undefined;
+    });
     mocks.insert.mockReturnValue({ values: vi.fn().mockResolvedValue([]) });
     mocks.select.mockReturnValue({ from: vi.fn().mockResolvedValue([]) });
   });
@@ -102,7 +124,7 @@ describe("Admin users API", () => {
 
   it("approves a pending account", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
-    mocks.findFirst.mockResolvedValue(pendingUser);
+    mockAuthorizedTarget(pendingUser);
     const updated = { ...pendingUser, approvalStatus: "approved" as const };
     const chain = updateChain([updated]);
 
@@ -119,7 +141,7 @@ describe("Admin users API", () => {
 
   it("restores a logically deleted account", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
-    mocks.findFirst.mockResolvedValue({ ...pendingUser, deletedAt: new Date("2026-08-15") });
+    mockAuthorizedTarget({ ...pendingUser, deletedAt: new Date("2026-08-15") });
     const chain = updateChain([{ ...pendingUser, deletedAt: null }]);
 
     const response = await PUT(new Request("http://localhost/api/admin/users", {
@@ -135,7 +157,7 @@ describe("Admin users API", () => {
 
   it("edits only non-sensitive profile fields", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
-    mocks.findFirst.mockResolvedValue(pendingUser);
+    mockAuthorizedTarget(pendingUser);
     const updated = { ...pendingUser, name: "Nome Atualizado", phone: "+55 71 99999-0000", location: "Salvador", bio: "Professor" };
     const chain = updateChain([updated]);
 
@@ -158,7 +180,7 @@ describe("Admin users API", () => {
   it("soft-deletes a professor account through the same super-admin flow", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
     const teacher = { ...pendingUser, id: 8, name: "Professor de Teste", email: "professor@example.com", role: "professor" as const, approvalStatus: "approved" as const };
-    mocks.findFirst.mockResolvedValue(teacher);
+    mockAuthorizedTarget(teacher);
     const chain = updateChain([{ ...teacher, deletedAt: new Date("2026-08-25") }]);
 
     const response = await DELETE(new Request("http://localhost/api/admin/users?id=8", { method: "DELETE" }) as never);
@@ -170,7 +192,7 @@ describe("Admin users API", () => {
 
   it("soft-deletes a user but never the principal account", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
-    mocks.findFirst.mockResolvedValue(pendingUser);
+    mockAuthorizedTarget(pendingUser);
     const chain = updateChain([{ ...pendingUser, deletedAt: new Date("2026-08-15") }]);
 
     const response = await DELETE(new Request("http://localhost/api/admin/users?id=7", { method: "DELETE" }) as never);
@@ -178,7 +200,7 @@ describe("Admin users API", () => {
     expect(chain.set).toHaveBeenCalledWith(expect.objectContaining({ deletedAt: expect.any(Date) }));
     expect(mocks.insert).toHaveBeenCalledOnce();
 
-    mocks.findFirst.mockResolvedValue({ ...pendingUser, email: "palafozanderson@gmail.com" });
+    mockAuthorizedTarget({ ...pendingUser, email: "palafozanderson@gmail.com" });
     const protectedResponse = await DELETE(new Request("http://localhost/api/admin/users?id=7", { method: "DELETE" }) as never);
     expect(protectedResponse.status).toBe(403);
   });
@@ -190,7 +212,7 @@ describe("Admin users API", () => {
       body: JSON.stringify({ userId: 7, role: "admin" }),
     }) as never);
     expect(response.status).toBe(403);
-    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.findFirst).toHaveBeenCalledOnce();
   });
 });
 

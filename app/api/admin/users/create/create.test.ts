@@ -40,6 +40,13 @@ describe("Manual user creation", () => {
 
   it("creates a student without querying or inserting enrollments", async () => {
     mocks.getServerSession.mockResolvedValue(superAdminSession);
+    mocks.findFirst.mockResolvedValueOnce({
+      id: 1,
+      email: superAdminSession.user.email,
+      role: "admin",
+      approvalStatus: "approved",
+      deletedAt: null,
+    });
     const response = await POST(new Request("http://localhost/api/admin/users/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -48,7 +55,7 @@ describe("Manual user creation", () => {
     expect(response.status).toBe(200);
     expect((await response.json()).user).toMatchObject({ id: 15, email: "real@example.com", approvalStatus: "approved" });
     expect(mocks.insert).toHaveBeenCalledOnce();
-    expect(mocks.findFirst).toHaveBeenCalledOnce();
+    expect(mocks.findFirst).toHaveBeenCalledTimes(2);
   });
 });
 

@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   getServerSession: vi.fn(),
   db: {
     query: {
+      users: { findFirst: vi.fn() },
       forumPosts: { findFirst: vi.fn() },
       forumPostLikes: { findFirst: vi.fn() },
     },
@@ -40,6 +41,18 @@ describe("Forum API contracts", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getServerSession.mockResolvedValue(null);
+    mocks.db.query.users.findFirst.mockImplementation(async () => {
+      const session = await mocks.getServerSession();
+      return session?.user
+        ? {
+            id: Number(session.user.id),
+            email: session.user.email,
+            role: session.user.role,
+            approvalStatus: "approved",
+            deletedAt: null,
+          }
+        : null;
+    });
   });
 
   it("rejects anonymous forum publication", async () => {
