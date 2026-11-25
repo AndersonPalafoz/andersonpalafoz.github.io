@@ -11,7 +11,9 @@ const RESERVED_EMAIL_DOMAINS = new Set([
   "invalid",
 ]);
 const SENSITIVE_FIXTURE_PATH = /(?:^|[\/._-])(?:\.tmp|tmp|temp|seed|seeds|fixture|fixtures|test[-_]?data|sample[-_]?data|demo[-_]?data)(?:$|[\/._-])/i;
-const STRUCTURED_DATA_FILE = /\.(?:csv|tsv|jsonl?)$/i;
+const STRUCTURED_DATA_FILE = /\.(?:csv|tsv|jsonl)$/i;
+const JSON_DATA_FILE = /\.json$/i;
+const DATA_DIRECTORY_PATH = /(?:^|\/)(?:data|imports?|exports?)(?:\/|$)/i;
 const EMAIL_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const CPF_PATTERN = /\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/g;
 const IDENTIFIER_FIELD_PATTERN = /\b(?:studentIdNumber|student_id_number|student_id|cpf|phone|mobile|telefone)\s*[:=]\s*["'`]([^"'`]{4,})["'`]/gi;
@@ -19,10 +21,16 @@ const PERSON_NAME_FIELD_PATTERN = /(?:^|[,{]\s*)["']?(?:studentName|student_name
 const SAFE_IDENTIFIER = /^(?:0+|123456+|test(?:[-_ ]?\d+)?|dummy|example|ficticio|fake|sample)$/i;
 const SAFE_PERSON_NAME = /^(?:test student|student test|example student|sample student|fake student|aluno teste|aluna teste|estudante teste|aluno fict[ií]cio|aluna fict[ií]cia|student|aluno|aluna|estudante)(?:\s+\d+)?$/i;
 
+function isSensitiveDataFile(filePath) {
+  return SENSITIVE_FIXTURE_PATH.test(filePath)
+    || STRUCTURED_DATA_FILE.test(filePath)
+    || (JSON_DATA_FILE.test(filePath) && DATA_DIRECTORY_PATH.test(filePath));
+}
+
 export function findPrivateDataIndicators(filePath, content) {
   const indicators = [];
 
-  if (SENSITIVE_FIXTURE_PATH.test(filePath) || STRUCTURED_DATA_FILE.test(filePath)) {
+  if (isSensitiveDataFile(filePath)) {
     for (const match of content.matchAll(EMAIL_PATTERN)) {
       const domain = match[0].split("@")[1].toLowerCase();
       const isReserved = RESERVED_EMAIL_DOMAINS.has(domain)
@@ -95,7 +103,7 @@ function main() {
       continue;
     }
 
-    if (!SENSITIVE_FIXTURE_PATH.test(filePath) && !STRUCTURED_DATA_FILE.test(filePath)) continue;
+    if (!isSensitiveDataFile(filePath)) continue;
 
     const indicators = findPrivateDataIndicators(filePath, readFileSync(filePath, "utf8"));
     for (const indicator of indicators) violations.push(`${filePath}: ${indicator}`);
